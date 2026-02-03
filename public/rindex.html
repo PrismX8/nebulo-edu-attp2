@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Nebulo OS V5.3</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --card: rgba(16, 24, 40, 0.70);
+      --card2: rgba(18, 28, 48, 0.78);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(125, 211, 192, 0.28);
+
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.70);
+      --muted2: rgba(234,240,255,.55);
+
+      --accent:#7dd3c0;
+      --accent2:#60a5fa;
+      --danger:#ff5c7a;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow2: 0 12px 28px rgba(0,0,0,.45);
+
+      --taskbar: rgba(9, 14, 26, 0.80);
+      --taskbar2: rgba(12, 18, 34, 0.86);
+
+      --radius: 18px;
+      --radius2: 14px;
+
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color-scheme: dark;
+    }
+
+    *{box-sizing:border-box}
+    html, body{height:100%}
+    body{
+      margin:0;
+      color: var(--text);
+      overflow:hidden;
+      user-select:none;
+
+      background:
+        radial-gradient(1200px 700px at 50% 0%, rgba(96,165,250,.18), transparent 60%),
+        radial-gradient(900px 600px at 12% 16%, rgba(125,211,192,.12), transparent 60%),
+        radial-gradient(900px 600px at 85% 20%, rgba(139,92,246,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    /* Subtle background text */
+    .nebulo-os-bg{
+      position: fixed;
+      inset: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      z-index:0;
+      opacity:.9;
+    }
+    .nebulo-os-bg span{
+      font-weight: 900;
+      font-size: min(14vw, 140px);
+      letter-spacing: 1.6vw;
+      background: linear-gradient(90deg,
+        rgba(96,165,250,.14),
+        rgba(125,211,192,.10),
+        rgba(96,165,250,.14)
+      );
+      -webkit-background-clip:text;
+      background-clip:text;
+      color: transparent;
+      filter: blur(.2px);
+      text-shadow: 0 0 22px rgba(96,165,250,.10);
+      transform: translateY(-10px);
+      animation: bgFloat 18s ease-in-out infinite;
+      white-space: nowrap;
+    }
+    @keyframes bgFloat{
+      0%,100%{ transform: translateY(-10px) rotate(0deg) scale(1); }
+      50%{ transform: translateY(8px) rotate(.6deg) scale(1.01); }
+    }
+
+    /* Floating particles */
+    .bg-elements{
+      position: fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      overflow:hidden;
+    }
+    .bg-particle{
+      position:absolute;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(125,211,192,.10), transparent 70%);
+      animation: particleFloat linear infinite;
+      opacity: .5;
+      filter: blur(.2px);
+    }
+    @keyframes particleFloat{
+      from { transform: translateY(110vh) rotate(0deg); }
+      to { transform: translateY(-120px) rotate(360deg); }
+    }
+
+    /* Bootloader */
+    #bootloader{
+      position: fixed;
+      inset:0;
+      z-index: 50000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(900px 600px at 50% 20%, rgba(96,165,250,.18), transparent 60%),
+        linear-gradient(180deg, #050814, #070b14);
+      transition: opacity .45s ease, transform .45s ease;
+    }
+    #bootloader.hidden{
+      opacity:0;
+      transform: scale(1.02);
+      pointer-events:none;
+    }
+    .boot-card{
+      width: min(560px, 92vw);
+      border-radius: 26px;
+      background: rgba(7, 10, 18, .72);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 30px 90px rgba(0,0,0,.65);
+      backdrop-filter: blur(26px) saturate(160%);
+      padding: 28px 26px 22px;
+      position: relative;
+      overflow:hidden;
+    }
+    .boot-card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(500px 220px at 40% -10%, rgba(125,211,192,.20), transparent 60%),
+                  radial-gradient(500px 220px at 60% 0%, rgba(96,165,250,.18), transparent 60%);
+      opacity:.7;
+      pointer-events:none;
+    }
+    .boot-top{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .boot-logo{
+      width:52px; height:52px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .boot-logo img{
+      width: 38px; height:38px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+    }
+    .boot-title{
+      display:flex;
+      flex-direction:column;
+      gap: 3px;
+    }
+    .boot-title h1{
+      margin:0;
+      font-size: 20px;
+      letter-spacing:.08em;
+      font-weight: 800;
+    }
+    .boot-title .ver{
+      font-size: 12px;
+      color: rgba(125,211,192,.95);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .boot-progress{
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .bar{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.09);
+      overflow:hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .bar > div{
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(125,211,192,.95), rgba(96,165,250,.95));
+      box-shadow: 0 0 16px rgba(125,211,192,.25);
+      transition: width .25s ease;
+    }
+    .boot-msg{
+      margin-top: 12px;
+      font-size: 12px;
+      color: rgba(234,240,255,.70);
+      line-height: 1.45;
+      min-height: 36px;
+    }
+    .boot-footer{
+      margin-top: 16px;
+      font-size: 12px;
+      color: rgba(234,240,255,.52);
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .boot-proxy{
+      margin-top: 8px;
+      font-size: 11px;
+      color: rgba(234,240,255,.65);
+      letter-spacing: 0.2px;
+    }
+
+    /* Top search bar */
+    .search-container{
+      position: fixed;
+      top: 0; left:0; right:0;
+      height: 58px;
+      z-index: 12000;
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 0 16px;
+      background: rgba(9, 14, 26, 0.72);
+      backdrop-filter: blur(20px) saturate(160%);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+    .search-logo{
+      width: 36px; height: 36px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04) url('/assets/img/nebulologo.png') center/contain no-repeat;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+      flex-shrink: 0;
+    }
+    .search-logo:hover{
+      transform: translateY(-1px);
+      border-color: rgba(125,211,192,.32);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }
+    .search-form{ flex: 1; position: relative; }
+    .search-bar{
+      width: 100%;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(16, 24, 40, .55);
+      color: var(--text);
+      padding: 0 16px;
+      outline: none;
+      transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+      box-shadow: 0 10px 26px rgba(0,0,0,.30);
+      font-size: 14px;
+    }
+    .search-bar:focus{
+      border-color: rgba(125,211,192,.35);
+      background: rgba(16, 24, 40, .72);
+      box-shadow: 0 14px 36px rgba(0,0,0,.38);
+    }
+    .search-suggestions{
+      position:absolute;
+      top: 50px;
+      left: 0;
+      right: 0;
+      background: rgba(10, 14, 24, 0.78);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      overflow:hidden;
+      display:none;
+      box-shadow: 0 22px 60px rgba(0,0,0,.55);
+      backdrop-filter: blur(22px) saturate(150%);
+      z-index: 13000;
+    }
+    .suggestion-item{
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(234,240,255,.88);
+      cursor:pointer;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      transition: background .15s ease, padding-left .15s ease;
+    }
+    .suggestion-item:hover{
+      background: rgba(255,255,255,.06);
+      padding-left: 18px;
+    }
+    .suggestion-item:last-child{ border-bottom:none; }
+    .suggestion-item i, .suggestion-item svg { opacity: .95; color: rgba(125,211,192,.95); }
+    .suggestion-header{
+      padding: 10px 14px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: rgba(255,255,255,.55);
+    }
+
+    /* Desktop */
+    .desktop{
+      position: fixed;
+      top: 58px;
+      left: 0; right:0;
+      bottom: 56px;
+      padding: 18px;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 116px);
+      grid-auto-rows: 100px;
+      gap: 14px;
+      overflow:auto;
+    }
+    .desktop::-webkit-scrollbar{ width: 10px; }
+    .desktop::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.10); border-radius: 999px; }
+    .desktop::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.16); }
+
+    /* Desktop Icons (clean + subtle) */
+    .app-icon{
+      width: 116px;
+      height: 100px;
+      border-radius: 18px;
+      padding: 10px 8px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      cursor: default;
+      position: relative;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+      border: 1px solid transparent;
+    }
+    .app-icon.selected{
+      background: rgba(255,255,255,.04);
+      border-color: rgba(125,211,192,.20);
+    }
+    .app-icon:hover{
+      transform: translateY(-2px);
+    }
+    .app-icon-container{
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(16, 24, 40, .55);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 12px 28px rgba(0,0,0,.32);
+      position: relative;
+      overflow:hidden;
+    }
+    .app-icon-container::after{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(120px 60px at 30% 20%, rgba(125,211,192,.18), transparent 60%),
+                  radial-gradient(120px 60px at 70% 10%, rgba(96,165,250,.16), transparent 60%);
+      opacity:.8;
+      pointer-events:none;
+    }
+    .app-icon-fa{ font-size: 26px; z-index:1; }
+    .app-icon-img{ width: 30px; height: 30px; object-fit: contain; z-index:1; }
+    .app-icon-text{
+      width: 100%;
+      font-size: 12px;
+      font-weight: 600;
+      text-align:center;
+      color: rgba(234,240,255,.92);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(10, 14, 24, 0.45);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* Taskbar (Windows-ish) */
+    .taskbar{
+      position: fixed;
+      left: 0; right:0; bottom:0;
+      height: 56px;
+      z-index: 20000;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 0 12px;
+      background: var(--taskbar);
+      backdrop-filter: blur(22px) saturate(160%);
+      border-top: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 -18px 50px rgba(0,0,0,.45);
+      min-width: 320px;
+    }
+    .taskbar-left{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-shrink:0;
+    }
+    .start-button{
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--text);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      cursor:pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .start-button:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: rgba(125,211,192,.22);
+    }
+    .start-button img{
+      width: 22px; height: 22px; object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+    }
+    .start-button span{
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    .taskbar-center{
+      flex: 1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      min-width: 140px;
+    }
+    .dock{
+      display:flex;
+      align-items:center;
+      gap: 6px;
+      padding: 6px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      max-width: min(720px, 64vw);
+      overflow:auto;
+    }
+    .dock::-webkit-scrollbar{ height: 8px; }
+    .dock::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.10); border-radius:999px; }
+
+    .taskbar-app{
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      position: relative;
+      flex: 0 0 auto;
+      background: transparent;
+      color: rgba(234,240,255,.92);
+    }
+    .taskbar-app:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.10);
+    }
+    .taskbar-app.active{
+      background: linear-gradient(135deg, rgba(125,211,192,.22), rgba(96,165,250,.18));
+      border-color: rgba(125,211,192,.25);
+    }
+    .taskbar-app.running::after{
+      content:"";
+      position:absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(125,211,192,.75);
+      opacity: .8;
+    }
+    .taskbar-app img{
+      width: 18px; height: 18px; object-fit: contain;
+    }
+
+    .taskbar-right{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-shrink:0;
+    }
+    .tray{
+      display:flex;
+      align-items:center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(16px);
+    }
+    .tray-btn{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      color: rgba(234,240,255,.85);
+      transition: background .16s ease, transform .16s ease;
+    }
+    .tray-btn:hover{
+      background: rgba(255,255,255,.06);
+      transform: translateY(-1px);
+    }
+    .clock{
+      min-width: 100px;
+      text-align:center;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(234,240,255,.90);
+      padding: 6px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .ver-pill{
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .10em;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: rgba(125,211,192,.95);
+      border: 1px solid rgba(125,211,192,.22);
+      background: rgba(125,211,192,.08);
+    }
+
+    /* Start menu (Script1-ish tiles/cards) */
+    .start-menu{
+      position: fixed;
+      left: 12px;
+      bottom: 66px;
+      width: min(460px, 92vw);
+      height: min(640px, 76vh);
+      z-index: 25000;
+      display:none;
+      flex-direction: column;
+      border-radius: 22px;
+      overflow:hidden;
+
+      background: rgba(10, 14, 24, 0.78);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 30px 90px rgba(0,0,0,.65);
+      backdrop-filter: blur(26px) saturate(150%);
+      transform-origin: bottom left;
+      animation: pop .18s ease-out;
+    }
+    @keyframes pop{
+      from{ opacity:0; transform: scale(.98) translateY(10px); }
+      to{ opacity:1; transform: scale(1) translateY(0); }
+    }
+    .start-menu.active{ display:flex; }
+
+    .start-header{
+      padding: 18px 18px 14px;
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(600px 240px at 40% 0%, rgba(125,211,192,.14), transparent 60%),
+        radial-gradient(600px 240px at 60% 0%, rgba(96,165,250,.12), transparent 60%);
+    }
+    .start-avatar{
+      width: 44px; height:44px;
+      border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 14px 30px rgba(0,0,0,.35);
+      color: rgba(125,211,192,.95);
+      flex-shrink:0;
+    }
+    .start-user{
+      flex:1;
+      min-width:0;
+    }
+    .start-user h3{
+      margin:0;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .start-user p{
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: rgba(234,240,255,.62);
+    }
+    .start-actions{
+      display:flex;
+      gap: 8px;
+    }
+    .start-action-btn{
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(234,240,255,.90);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .start-action-btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: rgba(125,211,192,.22);
+    }
+    .start-search{
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .start-search input{
+      width: 100%;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(16, 24, 40, .55);
+      color: var(--text);
+      padding: 0 14px;
+      outline:none;
+      font-size: 13px;
+    }
+    .start-apps{
+      padding: 14px 18px 18px;
+      overflow:auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .start-apps::-webkit-scrollbar{ width: 10px; }
+    .start-apps::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.10); border-radius:999px; }
+
+    /* App cards like Script1 */
+    .app-item{
+      background: linear-gradient(135deg, rgba(10, 13, 22, 0.92), rgba(26, 31, 47, 0.88));
+      border: 1px solid rgba(125, 211, 192, 0.18);
+      border-radius: 20px;
+      padding: 12px 12px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 64px;
+      box-shadow: 0 18px 30px rgba(0,0,0,.30);
+      backdrop-filter: blur(16px);
+      overflow:hidden;
+    }
+    .app-item:hover{
+      transform: translateY(-2px);
+      border-color: rgba(125, 211, 192, 0.32);
+      box-shadow: 0 22px 38px rgba(0,0,0,.40);
+    }
+    .app-icon-shell{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    .app-icon-shell i{ font-size: 18px; color: rgba(125,211,192,.95); }
+    .app-icon-shell img{ width: 22px; height: 22px; object-fit:contain; }
+    .app-info{
+      min-width:0;
+      flex:1;
+    }
+    .app-name{
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(234,240,255,.94);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .app-desc{
+      margin-top: 3px;
+      font-size: 12px;
+      color: rgba(234,240,255,.58);
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Windows */
+    .window{
+      position: absolute;
+      min-width: 420px;
+      min-height: 320px;
+      width: 560px;
+      height: 420px;
+
+      border-radius: 18px;
+      background: rgba(12, 18, 34, 0.86);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 28px 60px rgba(0,0,0,.55);
+      backdrop-filter: blur(20px) saturate(160%);
+      overflow: hidden;
+
+      display:none;
+      flex-direction: column;
+
+      transform-origin: center;
+      animation: winOpen .18s ease-out;
+    }
+    @keyframes winOpen{
+      from{ opacity:0; transform: scale(.97) translateY(14px); }
+      to{ opacity:1; transform: scale(1) translateY(0); }
+    }
+    .window.active{ display:flex; }
+    .window.maximized{
+      border-radius: 16px;
+    }
+
+    .window-header{
+      height: 44px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 0 10px 0 12px;
+      background: rgba(0,0,0,.20);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      cursor: move;
+    }
+    .window-title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+      font-size: 13px;
+      font-weight: 650;
+      color: rgba(234,240,255,.92);
+      letter-spacing:.01em;
+    }
+    .window-title .title-text{
+      min-width:0;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .window-title i, .window-title svg{
+      color: rgba(125,211,192,.95);
+      opacity:.95;
+    }
+    .window-controls{
+      display:flex;
+      gap: 6px;
+      flex-shrink:0;
+    }
+    .window-btn{
+      width: 34px;
+      height: 30px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,.03);
+      color: rgba(234,240,255,.80);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: background .14s ease, border-color .14s ease, transform .14s ease;
+    }
+    .window-btn:hover{
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.10);
+      transform: translateY(-1px);
+    }
+    .window-btn.close:hover{
+      background: rgba(255, 92, 122, .85);
+      border-color: rgba(255, 92, 122, .35);
+      color: #fff;
+    }
+
+    .window-content{
+      position: relative;
+      flex:1;
+      background: rgba(6, 10, 18, .30);
+    }
+    .window iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      background: transparent;
+    }
+    .window-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(8, 12, 22, .60);
+      backdrop-filter: blur(10px);
+      z-index: 5;
+    }
+    .spinner{
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 3px solid rgba(125,211,192,.18);
+      border-top-color: rgba(125,211,192,.85);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    .window-fallback{
+      margin-top: 6px;
+      font-size: 12px;
+      color: rgba(234,240,255,.70);
+      text-align:center;
+      max-width: 380px;
+      padding: 0 16px;
+    }
+    .window-fallback a{
+      color: rgba(125,211,192,.95);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .window-fallback a:hover{ text-decoration: underline; }
+
+    /* Context menu */
+    .context-menu{
+      position: fixed;
+      z-index: 30000;
+      display:none;
+      min-width: 190px;
+      border-radius: 14px;
+      overflow:hidden;
+      background: rgba(10, 14, 24, 0.88);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 22px 60px rgba(0,0,0,.65);
+      backdrop-filter: blur(22px) saturate(150%);
+    }
+    .context-item{
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(234,240,255,.86);
+      cursor:pointer;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: background .14s ease;
+    }
+    .context-item:hover{ background: rgba(255,255,255,.06); }
+    .context-item:last-child{ border-bottom:none; }
+    .context-item i{ color: rgba(125,211,192,.95); }
+
+    /* Small screen */
+    @media (max-width: 768px){
+      .desktop{ grid-template-columns: repeat(auto-fill, 104px); grid-auto-rows: 96px; }
+      .app-icon{ width: 104px; height: 96px; }
+      .window{ min-width: 320px; min-height: 380px; width: min(92vw, 560px); height: min(74vh, 520px); }
+      .clock{ min-width: 86px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Boot -->
+  <div id="bootloader">
+    <div class="boot-card">
+      <div class="boot-top">
+        <div class="boot-logo">
+          <img src="/assets/img/nebulologo.png" alt="Nebulo" onerror="this.style.display='none'">
+        </div>
+        <div class="boot-title">
+          <h1>NEBULO OS</h1>
+          <div class="ver" id="bootVer">V5.3</div>
+        </div>
+      </div>
+
+      <div class="boot-progress">
+        <div class="bar"><div id="bootBar"></div></div>
+        <div class="boot-msg" id="bootMsg">Starting services…</div>
+      </div>
+
+      <div class="boot-footer">
+        <span id="bootLeft">Preparing desktop</span>
+        <span style="opacity:.8">made with <i class="fa-solid fa-heart" style="color:rgba(255,92,122,.9)"></i> by PrismX</span>
+      </div>
+      <div class="boot-proxy" id="bootProxy"></div>
+    </div>
+  </div>
+
+  <!-- Background -->
+  <div class="nebulo-os-bg"><span id="nebuloBgText">NEBULO V5.3</span></div>
+  <div class="bg-elements" id="bgElements"></div>
+
+  <!-- Hidden iframe (kept) -->
+  <iframe id="frame" src="/search" style="display:none;"></iframe>
+
+  <!-- Top Search -->
+  <div class="search-container">
+    <div class="search-logo" id="nebuloLogo" title="Show desktop"></div>
+    <div class="search-form">
+      <input class="search-bar" id="searchInput" placeholder="Search or enter a URL…" autocomplete="off" />
+      <div class="search-suggestions" id="searchSuggestions"></div>
+    </div>
+  </div>
+
+  <!-- Desktop -->
+  <div class="desktop" id="desktop"></div>
+
+  <!-- Start menu -->
+  <div class="start-menu" id="startMenu" aria-hidden="true">
+    <div class="start-header">
+      <div class="start-avatar"><i class="fa-solid fa-user"></i></div>
+      <div class="start-user">
+        <h3 id="startUserName">User</h3>
+        <p id="startSubtitle">Nebulo OS <span id="startVer">V5.3</span></p>
+      </div>
+      <div class="start-actions">
+        <button class="start-action-btn" id="startOpenBrowser" title="Browser">
+          <i class="fa-solid fa-globe"></i>
+        </button>
+        <button class="start-action-btn" id="startCloseAll" title="Close all windows">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div class="start-search">
+      <input id="startSearch" placeholder="Search apps…" autocomplete="off" />
+    </div>
+    <div class="start-apps" id="startApps"></div>
+  </div>
+
+  <!-- Taskbar -->
+  <div class="taskbar" id="taskbar">
+    <div class="taskbar-left">
+      <button class="start-button" id="startButton">
+        <img src="/assets/img/nebulologo.png" alt="Nebulo" onerror="this.style.display='none'">
+        <span>Start</span>
+      </button>
+    </div>
+
+    <div class="taskbar-center">
+      <div class="dock" id="dock">
+        <!-- pinned + running -->
+      </div>
+    </div>
+
+    <div class="taskbar-right">
+      <div class="tray">
+        <div class="tray-btn" id="trayDesktop" title="Show desktop"><i class="fa-regular fa-window-minimize"></i></div>
+        <div class="tray-btn" id="trayRefresh" title="Refresh page"><i class="fa-solid fa-rotate"></i></div>
+        <div class="tray-btn" id="trayInfo" title="About"><i class="fa-solid fa-circle-info"></i></div>
+        <div class="ver-pill" id="trayVer">V5.3</div>
+        <div class="clock" id="timeDisplay">00:00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-item" id="ctxOpen"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</div>
+    <div class="context-item" id="ctxPin"><i class="fa-solid fa-thumbtack"></i> Pin to taskbar</div>
+    <div class="context-item" id="ctxUnpin"><i class="fa-regular fa-circle-xmark"></i> Unpin</div>
+  </div>
+
+  <!-- Load scripts (kept exactly so you don't break your setup) -->
+  <script src="/assets/js/init.js"></script>
+  <script src="/baremux/index.js" defer></script>
+  <script src="/epoxy/index.js" defer></script>
+  <script src="/uv/uv.bundle.js" defer></script>
+  <script src="/uv/uv.config.js" defer></script>
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="/ec/eclipse.codecs.js" defer></script>
+  <script src="/ec/eclipse.config.js" defer></script>
+  <script src="/assets/js/search.js"></script>
+
+  <script>
+    /* =========================
+       Nebulo OS V5.3 — UI + WM
+       With integrated proxy logic from the first script
+       ========================= */
+
+    const VERSION = "V5.3";
+    const PROXY_DISPLAY_NAMES = {
+      sj: "pr0xY Sc@mjet",
+      uv: "Uv",
+      ec: "Eclipse",
+      rh: "Rammerhead"
+    };
+    const SEARCH_HISTORY_KEY = "nebuloSearchHistory";
+    const MAX_SEARCH_HISTORY = 6;
+
+const apps = [
+      { id:'browser', name:'Browser', url:'/search', icon:'fa-globe', desc:'Browse the web' },
+      { id:'games', name:'Games', url:'/games', icon:'fa-gamepad', desc:'Play your favorites' },
+      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'fa-robot', desc:'Open the bot tool', proxied: true },
+      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'fa-music', desc:'Listen & chill', proxied: true },
+      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'fa-film', desc:'Watch something', proxied: true },
+      { id:'roblox', name:'Roblox', url:'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', icon:'/img/roblox.png', desc:'Launch Roblox', proxied: true, forceProxy: 'uv' },
+      { id:'clash-royale', name:'Clash Royale', url:'https://astra.pxi-fusion.com/embed/clash-royale?web-socket-enabled=false', icon:'/img/clash-royale.png', desc:'Quick matches', proxied: true, forceProxy: 'uv' },
+      { id:'minecraft', name:'Minecraft', url:'https://eaglercraft1-8.github.io/', icon:'/Minecraft/Minecraft-Grass-Block.jpg', desc:'Build a world', proxied: true },
+      { id:'chat', name:'Global Chat', url:'/pages/chat-only.html', icon:'fa-comments', desc:'Talk with others' },
+      { id:'links', name:'Links', url:'/links', icon:'fa-link', desc:'Useful shortcuts' },
+      { id:'files', name:'Files', url:'/files', icon:'fa-folder', desc:'Browse files' },
+      { id:'terminal', name:'Terminal', url:'/terminal', icon:'fa-terminal', desc:'Command line' },
+      { id:'settings', name:'Settings', url:'/settings', icon:'fa-cog', desc:'System settings' },
+      { id:'editor', name:'Text Editor', url:'/editor', icon:'fa-pen-to-square', desc:'Edit text' },
+      { id:'photos', name:'Photos', url:'/photos', icon:'fa-images', desc:'View images' },
+      { id:'help', name:'Help', url:'/help', icon:'fa-circle-question', desc:'Get help' },
+      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-star', desc:'Updates & notes' },
+      { id:'appstore', name:'App Store', url:'/appstore', icon:'fa-store', desc:'Install apps' },
+      { id:'cloaking', name:'Cloaking', url:'/cloaking', icon:'fa-mask', desc:'Privacy options' },
+      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-trophy', desc:'Track progress' },
+    ];
+
+    // Pinned apps (feel free to reorder)
+    const DEFAULT_PINNED = ['browser','games','music','chat','settings'];
+
+    const state = {
+      windows: [],
+      z: 2000,
+      activeId: null,
+      contextAppId: null,
+      pinned: new Set(JSON.parse(localStorage.getItem('nebuloPinnedV53') || "null") || DEFAULT_PINNED),
+      iconSelected: null,
+    };
+
+    /* ---------- Proxy Functions from First Script ---------- */
+    const SEARCH_ENGINE_DEFAULT = "brave";
+
+    function resolveSearchUrl(query) {
+      if (query.startsWith('http://') || query.startsWith('https://')) {
+        return query;
+      } else if (query.includes('.') && !query.includes(' ')) {
+        return 'https://' + query;
+      }
+
+      const engine = (localStorage.getItem('searchEngine') || SEARCH_ENGINE_DEFAULT).toLowerCase();
+
+      switch (engine) {
+        case 'brave':
+          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+        case 'google':
+          return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        case 'duckduckgo':
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+        case 'bing':
+          return `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        case 'yahoo':
+          return `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
+        case 'ecosia':
+          return `https://www.ecosia.org/search?q=${encodeURIComponent(query)}`;
+        case 'irs':
+          return `https://www.irs.gov/site-index-search?search=${encodeURIComponent(query)}`;
+        default:
+          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+      }
+    }
+
+    // Proxy encoding function
+    async function encodeWithProxy(url, proxyHint = null) {
+      try {
+        if (window.proxyEncoder) {
+          return await window.proxyEncoder.encode(url, proxyHint);
+        } else if (typeof __uv$config !== 'undefined') {
+          return __uv$config.prefix + __uv$config.encodeUrl(url);
+        } else if (typeof window.encodeProxiedUrl === "function") {
+          return window.encodeProxiedUrl(url);
+        }
+      } catch(e) {
+        console.error('Proxy encoding failed:', e);
+      }
+      return url;
+    }
+
+    // Quick function from first script
+    function quick(url) {
+      let encodedUrl = url;
+      try {
+        if (typeof __uv$config !== 'undefined') {
+          encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(url);
+        }
+      } catch(e) {
+        console.error('Proxy encoding failed:', e);
+      }
+      
+      localStorage.setItem("url", encodedUrl);
+      sessionStorage.setItem("Url", encodedUrl);
+      
+      // Open in a window instead of navigating current page
+      const searchApp = {
+        id: 'quick-' + Date.now(),
+        name: 'Quick Access',
+        url: encodedUrl,
+        icon: 'fa-external-link-alt',
+        color: '#3b82f6'
+      };
+      
+      createWindow(searchApp);
+    }
+
+    // Make quick function globally available
+    window.quick = quick;
+
+    /* ---------- Boot ---------- */
+    function bootSequence(){
+      document.getElementById('bootVer').textContent = VERSION;
+      document.getElementById('trayVer').textContent = VERSION;
+      document.getElementById('startVer').textContent = VERSION;
+      document.getElementById('nebuloBgText').textContent = `NEBULO ${VERSION}`;
+
+      const bar = document.getElementById('bootBar');
+      const msg = document.getElementById('bootMsg');
+      const left = document.getElementById('bootLeft');
+      const proxyLabel = document.getElementById('bootProxy');
+
+      const steps = [
+        ["Checking UI assets…", "Loading shell"],
+        ["Starting window manager…", "Preparing desktop"],
+        ["Initializing apps…", "Indexing shortcuts"],
+        ["Finishing up…", "Almost ready"],
+      ];
+
+      let p = 0;
+      let i = 0;
+
+      const tick = () => {
+        p = Math.min(100, p + (8 + Math.random()*14));
+        bar.style.width = p.toFixed(0) + "%";
+
+        const s = steps[Math.min(steps.length-1, i)];
+        msg.textContent = s[0];
+        left.textContent = s[1];
+
+        if (p >= (i+1) * 25 && i < steps.length-1) i++;
+        if (p >= 100) return;
+        setTimeout(tick, 220);
+      };
+
+      tick();
+      if (proxyLabel) {
+        const proxyKey = localStorage.getItem('proxy') || 'uv';
+        const displayName = PROXY_DISPLAY_NAMES[proxyKey] || PROXY_DISPLAY_NAMES.uv;
+        proxyLabel.textContent = `You are using the ${displayName}`;
+      }
+    }
+
+    function loadSearchHistory(){
+      try {
+        const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (err) {
+        console.warn('Failed to parse search history', err);
+        return [];
+      }
+    }
+
+    function saveSearchHistory(history){
+      try {
+        localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+      } catch {}
+    }
+
+    function addSearchHistory(term){
+      if (!term) return;
+      const normalized = term.trim();
+      if (!normalized) return;
+      let history = loadSearchHistory();
+      history = history.filter(entry => entry.toLowerCase() !== normalized.toLowerCase());
+      history.unshift(normalized);
+      if (history.length > MAX_SEARCH_HISTORY) {
+        history = history.slice(0, MAX_SEARCH_HISTORY);
+      }
+      saveSearchHistory(history);
+    }
+
+    function hideBoot(){
+      const boot = document.getElementById('bootloader');
+      boot.classList.add('hidden');
+      setTimeout(()=> boot.remove(), 700);
+    }
+
+    /* ---------- Background particles ---------- */
+    function createBackgroundElements(){
+      const bg = document.getElementById('bgElements');
+      bg.innerHTML = '';
+      const count = Math.min(22, Math.floor(window.innerWidth / 55));
+
+      for (let i=0;i<count;i++){
+        const p = document.createElement('div');
+        p.className = 'bg-particle';
+        const size = 30 + Math.random()*90;
+        p.style.width = size + "px";
+        p.style.height = size + "px";
+        p.style.left = (Math.random()*100) + "%";
+        p.style.opacity = (0.20 + Math.random()*0.25).toFixed(2);
+        p.style.animationDuration = (12 + Math.random()*18).toFixed(2) + "s";
+        p.style.animationDelay = (Math.random()*10).toFixed(2) + "s";
+        bg.appendChild(p);
+      }
+    }
+
+    /* ---------- Time ---------- */
+    function updateTime(){
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      document.getElementById('timeDisplay').textContent = `${hh}:${mm}`;
+    }
+
+    /* ---------- Desktop + Start ---------- */
+    function iconHTML(app){
+      if (app.icon.startsWith('fa-')) return `<i class="fa-solid ${app.icon} app-icon-fa"></i>`;
+      if (app.icon.endsWith('.png') || app.icon.endsWith('.jpg') || app.icon.endsWith('.jpeg') || app.icon.startsWith('/')) {
+        return `<img src="${app.icon}" class="app-icon-img" alt="${escapeHtml(app.name)}">`;
+      }
+      return `<i class="fa-solid fa-globe app-icon-fa"></i>`;
+    }
+
+    function buildDesktop(){
+      const desktop = document.getElementById('desktop');
+      desktop.innerHTML = '';
+
+      apps.forEach(app=>{
+        const el = document.createElement('div');
+        el.className = 'app-icon';
+        el.dataset.appId = app.id;
+
+        el.innerHTML = `
+          <div class="app-icon-container">${iconHTML(app)}</div>
+          <div class="app-icon-text">${escapeHtml(app.name)}</div>
+        `;
+
+        // single click select
+        el.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          selectIcon(app.id);
+        });
+
+        // double click open (desktop)
+        el.addEventListener('dblclick', (e)=>{
+          e.stopPropagation();
+          openApp(app.id);
+        });
+
+        // mobile double-tap fallback
+        let lastTap = 0;
+        el.addEventListener('touchend', (e)=>{
+          const now = Date.now();
+          const dt = now - lastTap;
+          lastTap = now;
+          if (dt < 280) openApp(app.id);
+        });
+
+        el.addEventListener('contextmenu', (e)=>{
+          e.preventDefault();
+          showContextMenu(e.clientX, e.clientY, app.id);
+        });
+
+        desktop.appendChild(el);
+      });
+    }
+
+    function buildStartMenu(){
+      const startApps = document.getElementById('startApps');
+      startApps.innerHTML = '';
+
+      apps.forEach(app=>{
+        const card = document.createElement('div');
+        card.className = 'app-item';
+        card.dataset.appId = app.id;
+        card.innerHTML = `
+          <div class="app-icon-shell">
+            ${app.icon.startsWith('fa-') ? `<i class="fa-solid ${app.icon}"></i>` : `<img src="${app.icon}" alt="${escapeHtml(app.name)}">`}
+          </div>
+          <div class="app-info">
+            <div class="app-name">${escapeHtml(app.name)}</div>
+            <div class="app-desc">${escapeHtml(app.desc || "Open application")}</div>
+          </div>
+        `;
+        card.addEventListener('click', ()=>{
+          openApp(app.id);
+          hideStartMenu();
+        });
+        startApps.appendChild(card);
+      });
+    }
+
+    function selectIcon(appId){
+      const desktop = document.getElementById('desktop');
+      [...desktop.querySelectorAll('.app-icon')].forEach(n=> n.classList.remove('selected'));
+      const node = desktop.querySelector(`.app-icon[data-app-id="${cssEscape(appId)}"]`);
+      if (node) node.classList.add('selected');
+      state.iconSelected = appId;
+    }
+
+    document.addEventListener('click', ()=>{
+      // clear desktop selection
+      const desktop = document.getElementById('desktop');
+      [...desktop.querySelectorAll('.app-icon')].forEach(n=> n.classList.remove('selected'));
+      state.iconSelected = null;
+      hideContextMenu();
+    });
+
+    /* ---------- Start menu controls ---------- */
+    function toggleStartMenu(){
+      const menu = document.getElementById('startMenu');
+      menu.classList.toggle('active');
+      menu.setAttribute('aria-hidden', menu.classList.contains('active') ? 'false' : 'true');
+      if (menu.classList.contains('active')) document.getElementById('startSearch').focus();
+    }
+    function hideStartMenu(){
+      const menu = document.getElementById('startMenu');
+      menu.classList.remove('active');
+      menu.setAttribute('aria-hidden','true');
+    }
+
+    /* ---------- Dock (Pinned + Running) ---------- */
+    function savePinned(){
+      localStorage.setItem('nebuloPinnedV53', JSON.stringify([...state.pinned]));
+    }
+
+    function renderDock(){
+      const dock = document.getElementById('dock');
+      dock.innerHTML = '';
+
+      // pinned first
+      [...state.pinned].forEach(appId=>{
+        const app = apps.find(a=>a.id===appId);
+        if (!app) return;
+        dock.appendChild(makeDockButton(app, null, true));
+      });
+
+      // running windows (unique by appId)
+      const runningAppIds = [...new Set(state.windows.map(w=>w.appId))];
+      runningAppIds.forEach(appId=>{
+        // skip if pinned already; still show running state on pinned button
+        if (state.pinned.has(appId)) return;
+        const app = apps.find(a=>a.id===appId);
+        if (!app) return;
+        dock.appendChild(makeDockButton(app, appId, false));
+      });
+
+      // update pinned buttons running/active
+      updateDockStates();
+    }
+
+    function makeDockButton(app, appId, pinned){
+      const btn = document.createElement('div');
+      btn.className = 'taskbar-app';
+      btn.dataset.appId = app.id;
+      btn.title = app.name;
+
+      btn.innerHTML = app.icon.startsWith('fa-')
+        ? `<i class="fa-solid ${app.icon}"></i>`
+        : `<img src="${app.icon}" alt="${escapeHtml(app.name)}">`;
+
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        // if there is a window for this app -> toggle minimize/restore; else open
+        const win = state.windows.find(w=>w.appId===app.id);
+        if (win) toggleMinRestore(win.id);
+        else openApp(app.id);
+      });
+
+      btn.addEventListener('contextmenu', (e)=>{
+        e.preventDefault();
+        state.contextAppId = app.id;
+        showContextMenu(e.clientX, e.clientY, app.id);
+      });
+
+      return btn;
+    }
+
+    function updateDockStates(){
+      const dock = document.getElementById('dock');
+      [...dock.querySelectorAll('.taskbar-app')].forEach(btn=>{
+        const appId = btn.dataset.appId;
+        const hasWin = state.windows.some(w=>w.appId===appId);
+        btn.classList.toggle('running', hasWin);
+
+        const activeWin = state.windows.find(w=>w.id===state.activeId);
+        btn.classList.toggle('active', !!activeWin && activeWin.appId === appId && !activeWin.minimized);
+      });
+    }
+
+    /* ---------- Windows ---------- */
+    async function resolveAppUrl(app){
+      const rawUrl = app.url;
+      const external = /^https?:\/\//i.test(rawUrl);
+      if (!external) return rawUrl;
+
+      if (app.proxied || !rawUrl.includes(location.hostname)) {
+        try {
+          const proxyHint = app.forceProxy || null;
+          return await encodeWithProxy(rawUrl, proxyHint);
+        } catch (err) {
+          console.error('Proxy encoding failed for', rawUrl, err);
+        }
+      }
+
+      return rawUrl;
+    }
+
+    async function openApp(appId){
+      const app = apps.find(a=>a.id===appId);
+      if (!app) return;
+
+      // If window exists, bring to front + restore
+      const existing = state.windows.find(w=>w.appId===appId);
+      if (existing){
+        restoreWindow(existing.id);
+        focusWindow(existing.id);
+        return;
+      }
+
+      await createWindow(app);
+    }
+
+    async function createWindow(app){
+      const winId = `win-${app.id}-${Date.now()}`;
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.id = winId;
+      win.dataset.appId = app.id;
+
+      const titleIcon = app.icon.startsWith('fa-')
+        ? `<i class="fa-solid ${app.icon}"></i>`
+        : (app.icon.endsWith('.png') || app.icon.endsWith('.jpg') || app.icon.endsWith('.jpeg') || app.icon.startsWith('/') )
+            ? `<img src="${app.icon}" style="width:16px;height:16px;object-fit:contain;opacity:.95">`
+            : `<i class="fa-solid fa-globe"></i>`;
+
+      // Encode URL with proxy if it's an external URL
+      const rawAppUrl = app.url;
+      const isExternal = /^https?:\/\//i.test(rawAppUrl);
+      const safeUrl = await resolveAppUrl(app);
+
+      win.innerHTML = `
+        <div class="window-header">
+          <div class="window-title">
+            ${titleIcon}
+            <div class="title-text">${escapeHtml(app.name)}</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-btn minimize" title="Minimize"><i class="fa-solid fa-window-minimize"></i></button>
+            <button class="window-btn maximize" title="Maximize"><i class="fa-regular fa-square"></i></button>
+            <button class="window-btn close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="window-loading" id="loading-${winId}">
+            <div class="spinner"></div>
+            <div style="font-weight:700; letter-spacing:.02em;">Loading ${escapeHtml(app.name)}…</div>
+              ${isExternal ? `
+              <div class="window-fallback">
+                If this page blocks embedding, <a href="${escapeAttr(safeUrl)}" target="_blank" rel="noopener">open it in a new tab</a>.
+              </div>` : ``}
+          </div>
+          <iframe src="${escapeAttr(safeUrl)}" loading="lazy"></iframe>
+        </div>
+      `;
+
+      document.body.appendChild(win);
+
+      // position
+      const offset = 26 + (state.windows.length * 18);
+      const left = Math.min(offset, window.innerWidth - 620);
+      const top = Math.min(offset + 12, window.innerHeight - 520);
+
+      win.style.left = Math.max(10, left) + "px";
+      win.style.top = Math.max(66, top) + "px"; // avoid top bar
+      win.style.display = "flex";
+
+      // handlers
+      const iframe = win.querySelector('iframe');
+      if (app.id === 'movies') {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin');
+      }
+      const loading = win.querySelector(`#loading-${cssEscape(winId)}`);
+
+      iframe.addEventListener('load', ()=>{
+        if (loading) loading.style.display = 'none';
+      });
+
+      // Control buttons
+      win.querySelector('.window-btn.minimize').addEventListener('click', (e)=>{ e.stopPropagation(); minimizeWindow(winId); });
+      win.querySelector('.window-btn.maximize').addEventListener('click', (e)=>{ e.stopPropagation(); toggleMaximize(winId); });
+      win.querySelector('.window-btn.close').addEventListener('click', (e)=>{ e.stopPropagation(); closeWindow(winId); });
+
+      // Double click header to maximize
+      const header = win.querySelector('.window-header');
+      header.addEventListener('dblclick', (e)=>{
+        // don't toggle if clicking buttons
+        if (e.target.closest('.window-controls')) return;
+        toggleMaximize(winId);
+      });
+
+      // Drag + Snap
+      makeDraggable(win);
+
+      // store
+      state.windows.push({
+        id: winId,
+        appId: app.id,
+        el: win,
+        minimized: false,
+        maximized: false,
+        prev: null,
+      });
+
+      renderDock();
+      focusWindow(winId);
+    }
+
+    function focusWindow(winId){
+      const w = state.windows.find(x=>x.id===winId);
+      if (!w) return;
+
+      state.activeId = winId;
+      state.z += 1;
+      w.el.style.zIndex = String(state.z);
+
+      state.windows.forEach(x=>{
+        x.el.classList.toggle('active', x.id===winId && !x.minimized);
+      });
+
+      updateDockStates();
+    }
+
+    function minimizeWindow(winId){
+      const w = state.windows.find(x=>x.id===winId);
+      if (!w) return;
+      w.minimized = true;
+      w.el.style.display = 'none';
+      if (state.activeId === winId) state.activeId = null;
+      updateDockStates();
+    }
+
+    function restoreWindow(winId){
+      const w = state.windows.find(x=>x.id===winId);
+      if (!w) return;
+      w.minimized = false;
+      w.el.style.display = 'flex';
+      focusWindow(winId);
+    }
+
+    function toggleMinRestore(winId){
+      const w = state.windows.find(x=>x.id===winId);
+      if (!w) return;
+      if (w.minimized) restoreWindow(winId);
+      else minimizeWindow(winId);
+    }
+
+    function toggleMaximize(winId){
+      const w = state.windows.find(x=>x.id===winId);
+      if (!w) return;
+
+      const el = w.el;
+
+      if (!w.maximized){
+        const rect = el.getBoundingClientRect();
+        w.prev = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+        w.maximized = true;
+
+        el.classList.add('maximized');
+        el.style.left = "10px";
+        el.style.top = "66px";
+        el.style.width = `calc(100% - 20px)`;
+        el.style.height = `calc(100% - 132px)`; // top bar + taskbar
+      } else {
+        w.maximized = false;
+        el.classList.remove('maximized');
+        if (w.prev){
+          el.style.left = w.prev.left + "px";
+          el.style.top = w.prev.top + "px";
+          el.style.width = w.prev.width + "px";
+          el.style.height = w.prev.height + "px";
+        }
+      }
+
+      focusWindow(winId);
+    }
+
+    function closeWindow(winId){
+      const idx = state.windows.findIndex(x=>x.id===winId);
+      if (idx === -1) return;
+
+      const w = state.windows[idx];
+      w.el.style.opacity = "0";
+      w.el.style.transform = "scale(.985) translateY(6px)";
+      setTimeout(()=>{
+        w.el.remove();
+        state.windows.splice(idx, 1);
+        if (state.activeId === winId) state.activeId = null;
+        renderDock();
+        updateDockStates();
+      }, 140);
+    }
+
+    function closeAllWindows(){
+      // copy list because closeWindow mutates
+      const ids = state.windows.map(w=>w.id);
+      ids.forEach(id=>closeWindow(id));
+    }
+
+    function showDesktop(){
+      // minimize all
+      state.windows.forEach(w=>{ if(!w.minimized) minimizeWindow(w.id); });
+      hideStartMenu();
+    }
+
+    /* Drag + Snap */
+    function makeDraggable(win){
+      const header = win.querySelector('.window-header');
+
+      let dragging = false;
+      let startX=0, startY=0;
+      let baseLeft=0, baseTop=0;
+
+      const SNAP = 26;
+
+      header.addEventListener('mousedown', (e)=>{
+        if (e.button !== 0) return;
+        if (e.target.closest('.window-controls')) return;
+
+        const w = state.windows.find(x=>x.id===win.id);
+        if (w && w.maximized) return; // don't drag when maximized
+
+        dragging = true;
+        const rect = win.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        baseLeft = rect.left;
+        baseTop = rect.top;
+
+        focusWindow(win.id);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        e.preventDefault();
+      });
+
+      function onMove(e){
+        if (!dragging) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        const newLeft = baseLeft + dx;
+        const newTop = baseTop + dy;
+
+        // clamp inside screen (account for top bar & taskbar)
+        const minLeft = 6;
+        const minTop = 60;
+        const maxLeft = window.innerWidth - win.offsetWidth - 6;
+        const maxTop = window.innerHeight - win.offsetHeight - 62;
+
+        win.style.left = Math.max(minLeft, Math.min(newLeft, maxLeft)) + "px";
+        win.style.top = Math.max(minTop, Math.min(newTop, maxTop)) + "px";
+      }
+
+      function onUp(e){
+        if (!dragging) return;
+        dragging = false;
+
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+
+        // snap logic
+        const rect = win.getBoundingClientRect();
+        const nearTop = rect.top <= 70;
+        const nearLeft = rect.left <= SNAP;
+        const nearRight = rect.right >= (window.innerWidth - SNAP);
+
+        const w = state.windows.find(x=>x.id===win.id);
+        if (!w) return;
+
+        if (nearTop){
+          toggleMaximize(win.id);
+          return;
+        }
+
+        if (nearLeft || nearRight){
+          // store prev state
+          if (!w.prev){
+            w.prev = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+          }
+
+          w.maximized = false;
+          win.classList.remove('maximized');
+
+          win.style.top = "66px";
+          win.style.height = `calc(100% - 132px)`;
+          win.style.width = `calc(50% - 14px)`;
+          win.style.left = nearLeft ? "10px" : `calc(50% + 4px)`;
+
+          focusWindow(win.id);
+          return;
+        }
+      }
+
+      // bring to front on click anywhere
+      win.addEventListener('mousedown', ()=>focusWindow(win.id));
+    }
+
+    /* ---------- Search (with proxy) ---------- */
+    async function performSearch(query){
+      const trimmed = query.trim();
+      if (!trimmed) return;
+
+      addSearchHistory(trimmed);
+
+      const url = resolveSearchUrl(trimmed);
+      const encodedUrl = await encodeWithProxy(url);
+
+      // Open in a new window (search tab)
+      const searchApp = {
+        id: 'search-' + Date.now(),
+        name: `Search: ${trimmed.length > 30 ? trimmed.slice(0,30) + "…" : trimmed}`,
+        url: encodedUrl,
+        icon: 'fa-magnifying-glass',
+        desc: 'Search result tab'
+      };
+
+      createWindow(searchApp);
+      document.getElementById('searchInput').value = '';
+      hideSuggestions();
+    }
+
+    function initSearch(){
+      const input = document.getElementById('searchInput');
+      input.addEventListener('focus', ()=>{ showSuggestions(''); });
+      input.addEventListener('input', ()=>{ showSuggestions(input.value); });
+
+      input.addEventListener('keydown', async (e)=>{
+        if (e.key === 'Enter'){
+          e.preventDefault();
+          await performSearch(input.value);
+        } else if (e.key === 'Escape'){
+          hideSuggestions();
+          input.blur();
+        }
+      });
+
+      document.addEventListener('click', (e)=>{
+        const box = document.getElementById('searchSuggestions');
+        if (!box.contains(e.target) && e.target !== input) hideSuggestions();
+      });
+    }
+
+    function showSuggestions(q){
+      const box = document.getElementById('searchSuggestions');
+      const input = document.getElementById('searchInput');
+      box.style.display = 'block';
+
+      const trimmed = (q || '').trim();
+      const query = trimmed.toLowerCase();
+      const matches = query
+        ? apps.filter(a=>a.name.toLowerCase().includes(query)).slice(0,4)
+        : apps.slice(0,6);
+
+      let html = matches.map(app=>`
+        <div class="suggestion-item" data-app="${escapeAttr(app.id)}">
+          ${app.icon.startsWith('fa-') ? `<i class="fa-solid ${app.icon}"></i>` : `<i class="fa-solid fa-grid-2"></i>`}
+          ${escapeHtml(app.name)}
+        </div>
+      `).join('');
+
+      const history = loadSearchHistory();
+      const historyMatches = query
+        ? history.filter(entry => entry.toLowerCase().includes(query)).slice(0,4)
+        : history.slice(0,4);
+
+      if (historyMatches.length) {
+        html += `<div class="suggestion-header">Recent searches</div>`;
+        html += historyMatches.map(entry => `
+          <div class="suggestion-item" data-history="${escapeAttr(entry)}">
+            <i class="fa-regular fa-clock"></i>
+            ${escapeHtml(entry)}
+          </div>
+        `).join('');
+      }
+
+      if (trimmed){
+        html += `
+          <div class="suggestion-item suggestion-search" data-search="${escapeAttr(trimmed)}">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            Search web for "${escapeHtml(trimmed)}"
+          </div>
+        `;
+      }
+
+      box.innerHTML = html;
+
+      [...box.querySelectorAll('[data-app]')].forEach(el=>{
+        el.addEventListener('click', ()=>{
+          openApp(el.getAttribute('data-app'));
+          hideSuggestions();
+        });
+      });
+
+      [...box.querySelectorAll('[data-history]')].forEach(el=>{
+        el.addEventListener('click', async ()=>{
+          const term = el.getAttribute('data-history');
+          if (!term) return;
+          input.value = term;
+          await performSearch(term);
+        });
+      });
+
+      const s = box.querySelector('[data-search]');
+      if (s){
+        s.addEventListener('click', async ()=>{
+          await performSearch(s.getAttribute('data-search'));
+        });
+      }
+    }
+
+    function hideSuggestions(){
+      const box = document.getElementById('searchSuggestions');
+      box.style.display = 'none';
+    }
+
+    /* ---------- Context menu ---------- */
+    function showContextMenu(x, y, appId){
+      state.contextAppId = appId;
+
+      const menu = document.getElementById('contextMenu');
+      const maxX = window.innerWidth - 220;
+      const maxY = window.innerHeight - 200;
+
+      menu.style.left = Math.max(8, Math.min(x, maxX)) + "px";
+      menu.style.top = Math.max(66, Math.min(y, maxY)) + "px";
+      menu.style.display = "block";
+
+      // toggle pin/unpin visibility
+      const isPinned = state.pinned.has(appId);
+      document.getElementById('ctxPin').style.display = isPinned ? "none" : "flex";
+      document.getElementById('ctxUnpin').style.display = isPinned ? "flex" : "none";
+    }
+
+    function hideContextMenu(){
+      const menu = document.getElementById('contextMenu');
+      menu.style.display = "none";
+    }
+
+    /* ---------- Wiring ---------- */
+    function wireUI(){
+      // Version
+      document.getElementById('trayVer').textContent = VERSION;
+
+      // Start
+      document.getElementById('startButton').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        toggleStartMenu();
+      });
+
+      document.getElementById('startOpenBrowser').addEventListener('click', ()=>openApp('browser'));
+      document.getElementById('startCloseAll').addEventListener('click', closeAllWindows);
+
+      document.addEventListener('click', (e)=>{
+        const menu = document.getElementById('startMenu');
+        const btn = document.getElementById('startButton');
+        if (!menu.contains(e.target) && !btn.contains(e.target)){
+          hideStartMenu();
+        }
+      });
+
+      // Start menu app filter
+      const startSearch = document.getElementById('startSearch');
+      startSearch.addEventListener('input', ()=>{
+        const q = startSearch.value.trim().toLowerCase();
+        const list = document.getElementById('startApps');
+        [...list.children].forEach(card=>{
+          const appId = card.dataset.appId;
+          const app = apps.find(a=>a.id===appId);
+          const show = !q || (app && app.name.toLowerCase().includes(q));
+          card.style.display = show ? "flex" : "none";
+        });
+      });
+
+      // Logo shows desktop
+      document.getElementById('nebuloLogo').addEventListener('click', ()=>{
+        showDesktop();
+        document.getElementById('searchInput').value = '';
+        hideSuggestions();
+      });
+
+      // Tray
+      document.getElementById('trayDesktop').addEventListener('click', showDesktop);
+      document.getElementById('trayRefresh').addEventListener('click', ()=>location.reload());
+      document.getElementById('trayInfo').addEventListener('click', ()=>{
+        const msg = `Nebulo OS ${VERSION}\n\n• Clean desktop UI\n• Window manager: snap / maximize / minimize\n• Start menu tiles\n• Integrated proxy system for browsing`;
+        alert(msg);
+      });
+
+      // Context menu actions
+      document.getElementById('ctxOpen').addEventListener('click', ()=>{
+        if (state.contextAppId) openApp(state.contextAppId);
+        hideContextMenu();
+      });
+
+      document.getElementById('ctxPin').addEventListener('click', ()=>{
+        if (!state.contextAppId) return;
+        state.pinned.add(state.contextAppId);
+        savePinned();
+        renderDock();
+        hideContextMenu();
+      });
+
+      document.getElementById('ctxUnpin').addEventListener('click', ()=>{
+        if (!state.contextAppId) return;
+        state.pinned.delete(state.contextAppId);
+        savePinned();
+        renderDock();
+        hideContextMenu();
+      });
+
+      // Right click on empty desktop closes menu
+      document.getElementById('desktop').addEventListener('contextmenu', (e)=>{
+        if (!e.target.closest('.app-icon')){
+          e.preventDefault();
+          hideContextMenu();
+        }
+      });
+    }
+
+    /* ---------- Utils ---------- */
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c]));
+    }
+    function escapeAttr(s){
+      // safe enough for attributes; already inside quotes
+      return escapeHtml(s).replace(/`/g, '&#096;');
+    }
+    function cssEscape(s){
+      return String(s).replace(/["\\]/g, "\\$&");
+    }
+
+    /* ---------- Init ---------- */
+    function init(){
+      // Version text
+      document.getElementById('nebuloBgText').textContent = `NEBULO ${VERSION}`;
+      document.getElementById('startVer').textContent = VERSION;
+      document.getElementById('trayVer').textContent = VERSION;
+
+      createBackgroundElements();
+      buildDesktop();
+      buildStartMenu();
+      renderDock();
+      initSearch();
+      wireUI();
+
+      updateTime();
+      setInterval(updateTime, 60000);
+
+      // boot
+      bootSequence();
+      // Don't hide boot until window load so it feels stable
+      window.addEventListener('load', ()=>{
+        setTimeout(hideBoot, 420);
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e)=>{
+      if (e.key === "Escape"){
+        hideStartMenu();
+        hideSuggestions();
+        hideContextMenu();
+      }
+      // Ctrl+Shift+F for fullscreen
+      if (e.ctrlKey && e.shiftKey && e.key === "F") {
+        const activeWin = state.windows.find(w=>w.id===state.activeId);
+        if (activeWin) toggleMaximize(activeWin.id);
+      }
+    });
+
+    window.addEventListener('resize', ()=>{
+      createBackgroundElements();
+    });
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Global Chat - NautilusOS</title>
+  <meta name="description" content="NautilusOS Global Chat - Connect and chat with the community.">
+  <meta name="keywords" content="chat, community, NautilusOS">
+  <meta name="author" content="NautilusOS">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/open-props">
+  <link rel="stylesheet" href="https://unpkg.com/open-props/normalize.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/open-props/buttons.min.css">
+
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #7dd3c0;
+      --accent-hover: #5bb98c;
+      --border: rgba(255, 255, 255, 0.1);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --info: #3b82f6;
+      --owner-text: #2b1b05;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--bg-primary);
+    }
+
+    .chat-header {
+      background: rgba(30, 35, 48, 0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .online-count {
+      background: rgba(125, 211, 192, 0.2);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .chat-title i { color: var(--accent); font-size: 1.1rem; }
+    .chat-actions { display: flex; gap: 5px; }
+
+    .chat-action-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .chat-action-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
+
+    .chat-content { flex: 1; display: block; overflow: hidden; height: 100%; }
+
+    .messages-area {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: rgba(15, 18, 25, 0.6);
+    }
+
+    .messages-container {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 100%;
+    }
+
+    .message { display: flex; margin-bottom: 8px; }
+
+    /* Center messages (system + moderation) */
+    .message.system { justify-content: center; }
+
+    /* Default center message look (normal system/info) */
+    .message.system .message-content {
+      background: rgba(125, 211, 192, 0.1);
+      border: 1px solid rgba(125, 211, 192, 0.2);
+      border-radius: 12px;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--accent);
+      max-width: 70%;
+    }
+
+    /* Moderation center message look (red blurred background) */
+    .message.system.mod .message-content {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow:
+        0 0 0 1px rgba(239, 68, 68, 0.15),
+        0 10px 30px rgba(239, 68, 68, 0.12);
+    }
+
+    .message.system.ban .message-content {
+      background: rgba(251, 146, 60, 0.16);
+      border: 1px solid rgba(251, 146, 60, 0.35);
+      color: #fb923c;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .message.user { justify-content: flex-end; }
+    .message.other { justify-content: flex-start; }
+
+    .message-content {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .message.user .message-content {
+      background: var(--accent);
+      color: var(--bg-primary);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.other .message-content {
+      background: rgba(30, 35, 48, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.respected .message-content,
+    .message.user.respected .message-content {
+      background: #bbf7d0;
+      border: 1px solid #6ee7b7;
+      color: #064e3b;
+    }
+    .message.respected .message-username {
+      color: #065f46;
+    }
+
+    /* Moderation normal chat bubble (NOT centered, NOT system) */
+    .message.moderation .message-content {
+      background: rgba(239, 68, 68, 0.22);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fff;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
+    }
+
+    .message.moderation .message-username {
+      color: #fecaca;
+    }
+
+    .message.owner .message-content {
+      background: linear-gradient(135deg, #f7dc8b, #f0b64b);
+      color: var(--owner-text);
+      border: 1px solid rgba(255, 222, 138, 0.9);
+      box-shadow: 0 0 0 1px rgba(255, 215, 120, 0.6);
+      position: relative;
+      isolation: isolate;
+    }
+
+    .message.owner .message-content::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 236, 170, 0.7);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .message.owner .message-content > * { position: relative; z-index: 1; }
+
+    .message.booty .message-content {
+      background: #392c20;
+      color: #fef5e6;
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .message.user .message-header { justify-content: flex-end; }
+    .message.other .message-header { justify-content: flex-start; }
+
+    .message-username { font-weight: 600; color: var(--accent); }
+    .message.user .message-username { color: var(--bg-primary); }
+    .message.owner .message-username { color: #111; }
+
+    .message-timestamp { color: var(--text-secondary); font-size: 0.75rem; }
+    .message.user .message-timestamp { color: rgba(15, 23, 42, 0.7); }
+    .message.owner .message-timestamp { color: rgba(66, 45, 8, 0.75); }
+
+    .message.sending .message-content {
+      opacity: 0.85;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .message.failed .message-content {
+      opacity: 0.75;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .sending-indicator, .failed-indicator {
+      margin-left: 8px;
+      font-size: 0.8rem;
+      opacity: 0.9;
+      white-space: nowrap;
+    }
+
+    .sending-indicator { color: #f59e0b; }
+    .failed-indicator { color: #ef4444; }
+    .sending-indicator i { margin-right: 4px; }
+
+    .input-area {
+      background: rgba(21, 25, 35, 0.9);
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .typing-indicator {
+      width: 100%;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      min-height: 18px;
+      line-height: 1.5;
+    }
+    .typing-indicator.active {
+      opacity: 0.9;
+    }
+
+    .chat-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .chat-overlay-content {
+      color: #ffffff;
+      font-size: clamp(1.2rem, 1.5vw, 1.5rem);
+      font-weight: 600;
+      line-height: 1.5;
+      max-width: 960px;
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(30, 35, 48, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+      transition: all 0.2s ease;
+    }
+
+    .message-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(30, 35, 48, 0.95);
+    }
+
+    .message-input::placeholder { color: var(--text-muted); }
+
+    .send-button {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border: none;
+      border-radius: 12px;
+      color: var(--bg-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .send-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(125, 211, 192, 0.3);
+    }
+
+    .send-button:active { transform: translateY(0); }
+
+    .messages-container::-webkit-scrollbar { width: 6px; }
+    .messages-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+    .messages-container::-webkit-scrollbar-thumb { background: rgba(125, 211, 192, 0.3); border-radius: 3px; }
+    .messages-container::-webkit-scrollbar-thumb:hover { background: rgba(125, 211, 192, 0.5); }
+
+    @media (max-width: 768px) {
+      .message-content { max-width: 85%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-overlay" role="status" aria-live="polite">
+    <div class="chat-overlay-content">
+      I didn’t think I would need to do this, but the global chat is temporarily disabled due to spammers and people being racist. The chat will be back up some time in the future, but the chat will be worked on until it is fully functional.<br><br>
+      If you have any issues with anything, join the Discord and let me know or fill out the “issue loading a game” app on the desktop. Thanks to everyone who didn’t abuse the chat, and be on the lookout for when the chat comes back.
+    </div>
+  </div>
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="chat-title">
+        <i class="fas fa-comments"></i>
+        <span class="online-count">12</span> online
+      </div>
+      <div class="chat-actions">
+        <button class="chat-action-btn" onclick="toggleSound()" title="Toggle Sound">
+          <i class="fas fa-volume-up" id="soundIcon"></i>
+        </button>
+        <button class="chat-action-btn" onclick="clearMessages()" title="Clear Chat">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-content">
+      <div class="messages-area">
+        <div class="messages-container" id="messagesContainer"></div>
+      </div>
+    </div>
+
+        <div class="input-area">
+          <!--
+          <div id="typingIndicator" class="typing-indicator" aria-live="polite"></div>
+          <textarea
+            class="message-input"
+            id="messageInput"
+            placeholder="Type your message..."
+            onkeydown="handleKeyPress(event)"
+            maxlength="750"
+          ></textarea>
+          <button class="send-button" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+          -->
+        </div>
+  </div>
+
+  <!-- Supabase client library (defines window.supabase). -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+
+  <script>
+    // =====================================================
+    // GLOBAL CHAT - CLOUDFLARE (PRIMARY) + SUPABASE (FALLBACK)
+    // - Fixes: "mod is not defined"
+    // - Fixes: undefined rawUsername in send moderation
+    // - Supabase fallback reliably used when Cloudflare 429/5xx/etc
+    // - Removed hard-coded bad-words lists (place comments where to add)
+    // =====================================================
+
+    // Cloudflare Worker base (set by parent window, URL param, or fallback)
+    let CHAT_API_BASE = null;
+    const DEFAULT_CHAT_API_BASE = "https://chat-worker.ethan-owsiany.workers.dev";
+
+    // Supabase (browser-safe anon/publishable key)
+    const SUPABASE_URL = "https://bvhigzazfcsoqeivnmxe.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DMZNbwUB_8qvQRTtl5xS5g_OMdvEZdQ";
+    const SUPABASE_TABLE = "chat_messages";
+    const SUPABASE_BAN_TABLE = "chat_bans";
+    const SUPABASE_ROLE_TABLE = "chat_roles";
+    const ABLY_TOKEN_ENDPOINT = ""; // configure your own token request endpoint
+    const ABLY_CHANNEL_NAME = "nebulo-chat";
+    const ABLY_MESSAGE_EVENT = "message";
+    const ABLY_BAN_EVENT = "ban";
+    const ABLY_ROLE_EVENT = "role";
+    const ABLY_TYPING_EVENT = "typing";
+    const ABLY_TYPING_SEND_COOLDOWN_MS = 2500;
+    const ABLY_TYPING_INDICATOR_MS = 4000;
+    const SUPABASE_BACKOFF_MS = 2 * 60 * 1000;
+
+    // IMPORTANT: do NOT name this "supabase" (Nebulo likely already has a global)
+    const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Cloudflare circuit breaker (rate-limit backoff)
+    let cfBackoffUntil = 0;
+    const CF_BACKOFF_MS = 10 * 60 * 1000; // 10 minutes
+
+    // Simple per-user burst limiter
+    const RATE_LIMIT_WINDOW_MS = 2000;
+    const RATE_LIMIT_THRESHOLD = 4;
+    const RATE_LIMIT_PENALTY_MS = 25000;
+    const userRateState = new Map();
+
+    // Chat state
+    let currentUsername = 'User'; // placeholder until resolved
+    let messages = [];
+
+    // --- Username resolution + persistence (fixes random "User") ---
+    const LS_USERNAME_KEY = "nebulo_chat_username_v1";
+
+    function sanitizeUsername(u) {
+      const s = String(u || "").trim();
+      if (!s) return "";
+      // optional: clamp length + remove weird control chars
+      return s.replace(/[\u0000-\u001F\u007F]/g, "").slice(0, 24);
+    }
+
+    function setCurrentUsername(next, source = "unknown") {
+      const clean = sanitizeUsername(next);
+      if (!clean) return false;
+
+      if (clean !== currentUsername) {
+        console.log(`👤 Username set (${source}):`, clean);
+        currentUsername = clean;
+        try {
+          localStorage.setItem(LS_USERNAME_KEY, clean);
+        } catch {}
+      }
+      return true;
+    }
+
+    function resolveUsernameNow() {
+      // 1) URL param
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUsername = urlParams.get("username");
+        if (setCurrentUsername(urlUsername, "url")) return true;
+      } catch {}
+
+      // 2) localStorage (last known)
+      try {
+        const saved = localStorage.getItem(LS_USERNAME_KEY);
+        if (setCurrentUsername(saved, "localStorage")) return true;
+      } catch {}
+
+      return false;
+    }
+
+    // try URL/localStorage immediately
+    resolveUsernameNow();
+    let soundEnabled = true;
+    let notificationsEnabled = false;
+    let globalChatSending = false;
+
+    // Unread / window state
+    let unreadMessageCount = 0;
+    let isChatWindowOpen = false;
+
+    // Bootstrap / UI flags
+    let chatBootstrapInFlight = false;
+    let periodicNotificationsStarted = false;
+    let onlineCountIntervalStarted = false;
+    let chatHistoryBootstrapped = false;
+    let shouldAutoScroll = true;
+    let lastScrollTop = 0;
+
+    // Backend mode tracking
+    let backendMode = "unknown"; // "cloudflare" | "supabase" | "unknown"
+    let chatWorkerAvailable = true;
+    let chatWorkerBackoffUntil = 0;
+    const CHAT_WORKER_BACKOFF_MS = 5 * 60 * 1000;
+    let lastGlobalChatMessageSig = "";
+
+    // Dedup + DOM tracking
+    const seenSigs = new Set();
+    const messageNodeIndex = new Map();
+
+    // Pending "sending" reconciliation (prevents duplicate popups)
+    const pendingOutbox = []; // [{tempId, name, text, createdAtMs}]
+    const PENDING_MATCH_WINDOW_MS = 60 * 1000;
+
+    const OWNER_USERNAME = 'shs12lord';
+    const OWNER_DISPLAY_NAME = 'Owner';
+    const BAN_REFRESH_INTERVAL_MS = 60 * 1000;
+    const ROLE_EVENT_PREFIX = "[ROLE_EVENT]";
+    const ROLE_DEFAULT_BG_COLOR = "#7dd3c0";
+    const ROLE_DEFAULT_TEXT_COLOR = "#0f172a"; 
+    const BAN_EVENT_PREFIX = "[BAN_EVENT]";
+    const banEventNonces = new Set();
+    let ablyRealtime = null;
+    let ablyChannel = null;
+    let ablyTokenInfo = null;
+    let ablySubscribed = false;
+    let ablyFallbackActive = false;
+    let supabaseBackoffUntil = 0;
+    const typingUsers = new Map();
+    const typingTimers = new Map();
+    let typingIndicatorElement = null;
+    let lastTypingSentAt = 0;
+    const roleEventNonces = new Set();
+
+    let bannedUsers = new Map();
+    let banRefreshTimer = null;
+    const LAST_MESSAGE_TIMES = new Map();
+    const SLOW_MODE_MS = 2000;
+    const userRoles = new Map();
+
+    // ------------------------------
+    // MODERATION (PLACEHOLDERS ONLY)
+    // Add your patterns/words in the commented spots below.
+    // ------------------------------
+    function buildWordRegex(words) {
+      const escaped = (words || []).map(w => String(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      if (!escaped.length) return null;
+      return new RegExp(`\\b(${escaped.join("|")})\\b`, "i");
+    }
+
+    const MOD = {
+      enabled: true,
+
+      hatePatterns: [
+        /\b(white\s*power|heil\s*hitler|ku\s*klux\s*klan|kkk|1488|14\/88|nigger|nigga)\b/i,
+        /\b(go\s+back\s+to\s+your\s+country)\b/i,
+        /\b(kill|exterminate|lynch|gas)\s+(all|every)\s+(black|white|asian|mexican|latino|jewish|muslim|christian|immigrant)s?\b/i,
+        /\b(all|every)\s+(black|white|asian|mexican|latino|jewish|muslim|christian|immigrant)s?\s+(should|must)\s+(die|be\s+killed|be\s+gone)\b/i
+      ],
+
+      sexualPatterns: [],
+      selfHarmPatterns: [],
+      violencePatterns: [],
+      hackingPatterns: [],
+      illegalPatterns: []
+    };
+
+    MOD.sexualPatterns.push(buildWordRegex([
+      "porn", "xxx", "hentai", "fetish", "erotic", "milf", "bdsm", "cam", "webcam",
+      "nude", "nudity", "boobs", "tits", "pussy", "anal", "cum", "blowjob", "jav",
+      "incest", "amateur", "softcore","goon","daddy","diddy","gooner","ballsack",
+      "oil","gay","lesbian","shemale","trans","balls", "gaping","creampie","threesome",
+      "o!l","mom","dad","freaky","nsfw","nsfwchat","bdsm","bondage","spanking",
+      "roast","harder","tickling","watersports","swing","stupid",
+
+      "pornhub.com", "xvideos.com", "redtube.com", "youporn.com", "xhamster.com", "xnxx.com",
+      "spankbang.com", "tube8.com", "tnaflix.com", "porndig.com", "efukt.com", "empflix.com",
+      "javhub.com", "faproulette.com", "sex.com", "cam4.com", "chaturbate.com", "livejasmin.com",
+
+      "4chan.org", "8kun.top", "kiwifarms.net", "reddit.com/r/nsfw", "reddit.com/r/gonewild",
+
+      "write porn story", "erotic roleplay", "roleplay as my girlfriend", "be my sexbot",
+      "generate nude", "make nsfw image", "make porn", "draw hentai", "make me a sex story",
+      "write erotic novel", "write smut", "dirty story", "make nsfw picture", "make nude picture",
+      "simulate sex", "roleplay nsfw", "pretend to be my lover", "dirty talk", "make hentai"
+    ]));
+
+    MOD.selfHarmPatterns.push(buildWordRegex([
+      "help me kill myself", "tell me how to die", "help me suicide", "write suicide note",
+      "make me self harm", "ways to kill myself", "how to commit suicide", "how to overdose",
+      "what’s the best way to die", "help me harm myself", "tell me how to hang myself"
+    ]));
+
+    MOD.violencePatterns.push(buildWordRegex([
+      "how to make a bomb", "how to make explosives", "build a gun", "how to stab",
+      "how to poison", "how to kill someone", "murder plan", "terrorist guide",
+      "shooting guide", "assassin instructions", "step by step bomb", "terror attack"
+    ]));
+
+    MOD.hackingPatterns.push(buildWordRegex([
+      "how to hack facebook", "hack instagram", "hack gmail", "steal password",
+      "crack wifi", "bypass paywall", "bypass filter", "how to ddos", "how to hack website",
+      "prompt injection", "jailbreak ai", "bypass moderation", "ignore your rules", "act as unrestricted ai"
+    ]));
+
+    MOD.illegalPatterns.push(buildWordRegex([
+      "pirated movies", "torrent site", "warez", "crack download", "serial key generator",
+      "download paid content free", "illegal software", "piracy site", "dark web drugs",
+      "buy cocaine", "buy heroin", "order weed online", "illegal marketplace",
+
+      "deepfake celebrity", "make fake nude", "deepfake generator", "fake porn",
+      "ai nsfw generator", "make porn ai", "deepfake video"
+    ]));
+
+    function classifyModeration(text) {
+      if (!MOD.enabled) return { ok: true };
+      const t = (text || "").trim();
+      if (!t) return { ok: false, kind: "empty" };
+
+      for (const r of (MOD.hatePatterns || [])) if (r && r.test && r.test(t)) return { ok: false, kind: "hate" };
+      for (const r of (MOD.sexualPatterns || [])) if (r && r.test && r.test(t)) return { ok: false, kind: "sexual" };
+      for (const r of (MOD.selfHarmPatterns || [])) if (r && r.test && r.test(t)) return { ok: false, kind: "selfharm" };
+      for (const r of (MOD.violencePatterns || [])) if (r && r.test && r.test(t)) return { ok: false, kind: "violence" };
+      for (const r of (MOD.hackingPatterns || [])) if (r && r.test && r.test(t)) return { ok: false, kind: "hacking" };
+      for (const r of (MOD.illegalPatterns || [])) if (r && r.test && r.test(t)) return { ok: false, kind: "illegal" };
+
+      return { ok: true };
+    }
+
+    const RESPECTED_USERNAMES = new Set(['ethen2x', 'kilo']);
+    function normalizeUsername(name) { return (name || '').trim(); }
+
+    const BOOTY_USERNAMES = new Set(["bootyclapperyunomiles"]);
+
+    function isBootyUser(name) {
+      if (!name) return false;
+      const normalized = normalizeUsername(name);
+      if (!normalized) return false;
+      return BOOTY_USERNAMES.has(normalized.toLowerCase());
+    }
+    function isOwnerUser(name) { return normalizeUsername(name).toLowerCase() === OWNER_USERNAME; }
+    function isRespectedUser(name) {
+      const normalized = normalizeUsername(name).toLowerCase();
+      return normalized && RESPECTED_USERNAMES.has(normalized);
+    }
+    function getDisplayUsername(name) {
+      const normalized = normalizeUsername(name);
+      if (isOwnerUser(normalized)) return OWNER_DISPLAY_NAME;
+      if (!normalized) return 'Unknown';
+      return isRespectedUser(normalized) ? `${normalized} - Respected` : normalized;
+    }
+
+    function normalizeBanName(name) {
+      const normalized = normalizeUsername(name);
+      return normalized ? normalized.toLowerCase() : '';
+    }
+
+    function normalizeColorInput(value) {
+      if (!value) return null;
+      let color = value.trim();
+      if (!color) return null;
+      if (!color.startsWith("#")) {
+        color = `#${color}`;
+      }
+      if (/^#[0-9a-fA-F]{3}$/.test(color)) {
+        color = color
+          .slice(1)
+          .split("")
+          .map(char => char + char)
+          .join("");
+        color = `#${color}`;
+      }
+      if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+        return color.toLowerCase();
+      }
+      return null;
+    }
+
+    function parseRoleColorString(value) {
+      const parts = String(value || "")
+        .split(",")
+        .map(part => normalizeColorInput(part))
+        .filter(Boolean);
+      const bgColor = parts[0] || ROLE_DEFAULT_BG_COLOR;
+      const textColor = parts[1] || ROLE_DEFAULT_TEXT_COLOR;
+      return { bgColor, textColor };
+    }
+
+    function formatRoleColorString(bgColor, textColor) {
+      const bg = bgColor || ROLE_DEFAULT_BG_COLOR;
+      const text = textColor || ROLE_DEFAULT_TEXT_COLOR;
+      return `${bg},${text}`;
+    }
+
+    function applyRoleLocally(normalizedName, roleName, colorSpec) {
+      if (!normalizedName) return;
+      const normalizedColors = parseRoleColorString(colorSpec);
+      userRoles.set(normalizedName, {
+        roleName: roleName ? roleName.trim() : "",
+        bgColor: normalizedColors.bgColor,
+        textColor: normalizedColors.textColor
+      });
+      renderAllMessages();
+    }
+
+    function getUserRoleMetadata(name) {
+      const normalized = normalizeBanName(name);
+      if (!normalized) return null;
+      return userRoles.get(normalized) || null;
+    }
+
+    function markSupabaseSuccess() {
+      supabaseBackoffUntil = 0;
+      if (ablyFallbackActive) ablyFallbackActive = false;
+    }
+
+    function markSupabaseFailure(activateAblyFallback = false) {
+      supabaseBackoffUntil = Date.now() + SUPABASE_BACKOFF_MS;
+      if (activateAblyFallback && !ablyFallbackActive) {
+        ablyFallbackActive = true;
+        ensureAblyRealtime().catch(err => console.warn("Ably init failed:", err));
+      }
+    }
+
+    function shouldUseAblyFallback() {
+      if (!ABLY_TOKEN_ENDPOINT) return false;
+      if (ablyFallbackActive) return true;
+      if (Date.now() < supabaseBackoffUntil) {
+        ablyFallbackActive = true;
+        ensureAblyRealtime().catch(() => {});
+        return true;
+      }
+      return false;
+    }
+
+    async function fetchAblyToken(force = false) {
+      if (!ABLY_TOKEN_ENDPOINT) return null;
+      const now = Date.now();
+      if (!force && ablyTokenInfo && ablyTokenInfo.token && ablyTokenInfo.expiresAt && now < ablyTokenInfo.expiresAt - 10000) {
+        return ablyTokenInfo.token;
+      }
+      const resp = await fetch(ABLY_TOKEN_ENDPOINT, { cache: 'no-store' });
+      if (!resp.ok) throw new Error("Unable to fetch Ably token");
+      const data = await resp.json().catch(() => null);
+      const token = data?.token;
+      if (!token) throw new Error("Ably token response missing token");
+      const expiresAt = Number(data?.expires) && Number(data?.expires) > now
+        ? Number(data.expires)
+        : now + ((Number(data?.ttl) || 60) * 1000);
+      ablyTokenInfo = { token, expiresAt };
+      return token;
+    }
+
+    async function ensureAblyRealtime(forceReinit = false) {
+      if (!ABLY_TOKEN_ENDPOINT) return null;
+      if (ablyRealtime && ablyChannel && !forceReinit) return ablyChannel;
+      const token = await fetchAblyToken(forceReinit);
+      if (!token) return null;
+      if (ablyRealtime) {
+        try { ablyRealtime.close(); } catch {}
+        ablyRealtime = null;
+        ablyChannel = null;
+        ablySubscribed = false;
+      }
+      ablyRealtime = new Ably.Realtime.Promise({ token });
+      ablyRealtime.connection.on('failed', () => {
+        ablySubscribed = false;
+      });
+      ablyChannel = ablyRealtime.channels.get(ABLY_CHANNEL_NAME);
+      subscribeToAblyChannel();
+      return ablyChannel;
+    }
+
+    function subscribeToAblyChannel() {
+      if (!ablyChannel || ablySubscribed) return;
+      ablyChannel.subscribe(ABLY_MESSAGE_EVENT, handleAblyMessageEvent);
+      ablyChannel.subscribe(ABLY_BAN_EVENT, (msg) => handleAblyBanPayload(msg?.data));
+      ablyChannel.subscribe(ABLY_ROLE_EVENT, (msg) => handleAblyRoleEvent(msg?.data));
+      ablyChannel.subscribe(ABLY_TYPING_EVENT, (msg) => handleTypingEvent(msg?.data?.username));
+      ablySubscribed = true;
+    }
+
+    function appendAblyIncoming(raw) {
+      appendIncomingMessage(
+        {
+          name: raw.username,
+          username: raw.username,
+          message: raw.message || raw.text,
+          content: raw.message || raw.text,
+          created_at: raw.timestamp || raw.createdAt || new Date().toISOString(),
+          variant: raw.variant || 'ably',
+          id: raw.id || raw.messageId || `${ABLY_CHANNEL_NAME}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        },
+        "ably"
+      );
+    }
+
+    function handleAblyMessageEvent(msg) {
+      const payload = msg?.data;
+      if (!payload) return;
+      appendAblyIncoming(payload);
+    }
+
+    function handleAblyBanPayload(payload) {
+      if (!payload) return;
+      const normalized = payload.targetNormalized || normalizeBanName(payload.target);
+      if (normalized && payload.expiresAt && payload.expiresAt > Date.now()) {
+        bannedUsers.set(normalized, Number(payload.expiresAt));
+      }
+      banEventNonces.add(payload.nonce || `ably-${Date.now()}`);
+      if (payload.fallback) {
+        const actor = payload.actor || OWNER_DISPLAY_NAME;
+        const target = payload.target || payload.targetNormalized || 'someone';
+        const duration = payload.durationLabel ? ` for ${payload.durationLabel}` : '';
+        addCenterText(`🟠 ${actor} banned ${target}${duration}.`, 'ban');
+      }
+    }
+
+    function applyRolePayload(payload) {
+      if (!payload) return null;
+      const normalizedTarget = payload.targetNormalized || normalizeBanName(payload.target);
+      if (!normalizedTarget) return null;
+      const colors = parseRoleColorString(payload.color);
+      const colorSpec = formatRoleColorString(colors.bgColor, colors.textColor);
+      applyRoleLocally(normalizedTarget, payload.roleName || "", colorSpec);
+      return normalizedTarget;
+    }
+
+    function handleAblyRoleEvent(payload) {
+      if (!payload) return;
+      const nonce = payload.nonce || `ably-${payload.target}-${Date.now()}`;
+      if (roleEventNonces.has(nonce)) return;
+      roleEventNonces.add(nonce);
+      const targetDisplay = payload.target || payload.targetNormalized || 'someone';
+      const roleName = payload.roleName || '';
+      applyRolePayload(payload);
+      if (payload.fallback) {
+        const roleLabel = roleName ? ` the role "${roleName}"` : " a role";
+        addCenterText(`🟢 ${payload.actor || OWNER_DISPLAY_NAME} gave ${targetDisplay}${roleLabel}.`, 'role');
+      }
+    }
+
+    async function publishAblyEvent(eventName, payload) {
+      if (!eventName || !payload) return;
+      try {
+        const channel = await ensureAblyRealtime();
+        if (!channel) return;
+        await channel.publish(eventName, payload);
+      } catch (error) {
+        console.warn("Ably publish failed:", error);
+      }
+    }
+
+    async function publishAblyMessage(text) {
+      if (!text || !currentUsername) throw new Error("Missing message data");
+      await publishAblyEvent(ABLY_MESSAGE_EVENT, {
+        username: currentUsername,
+        text,
+        timestamp: new Date().toISOString(),
+        messageId: `ably-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      });
+    }
+
+    async function publishAblyBan(payload) {
+      await publishAblyEvent(ABLY_BAN_EVENT, payload);
+    }
+
+    async function publishAblyRole(payload) {
+      await publishAblyEvent(ABLY_ROLE_EVENT, payload);
+    }
+
+    async function publishAblyTyping() {
+      if (!ABLY_TOKEN_ENDPOINT || !currentUsername) return;
+      const now = Date.now();
+      if (now - lastTypingSentAt < ABLY_TYPING_SEND_COOLDOWN_MS) return;
+      lastTypingSentAt = now;
+      await publishAblyEvent(ABLY_TYPING_EVENT, { username: currentUsername });
+    }
+
+    function refreshTypingIndicator() {
+      const indicator = typingIndicatorElement || document.getElementById('typingIndicator');
+      if (!indicator) return;
+      typingIndicatorElement = indicator;
+      const active = Array.from(typingUsers.keys());
+      if (!active.length) {
+        indicator.textContent = '';
+        indicator.classList.remove('active');
+        return;
+      }
+      const text = active.length === 1
+        ? `${active[0]} is typing...`
+        : `${active[0]} and ${active.length - 1} others are typing...`;
+      indicator.textContent = text;
+      indicator.classList.add('active');
+    }
+
+    function handleTypingEvent(username) {
+      if (!username || username === currentUsername) return;
+      typingUsers.set(username, Date.now());
+      if (typingTimers.has(username)) {
+        clearTimeout(typingTimers.get(username));
+      }
+      const timer = setTimeout(() => {
+        typingUsers.delete(username);
+        typingTimers.delete(username);
+        refreshTypingIndicator();
+      }, ABLY_TYPING_INDICATOR_MS);
+      typingTimers.set(username, timer);
+      refreshTypingIndicator();
+    }
+
+    function setupTypingIndicator() {
+      const input = document.getElementById('messageInput');
+      if (!input) return;
+      input.addEventListener('input', () => {
+        publishAblyTyping().catch(() => {});
+      });
+    }
+
+    function formatHoursLabel(hours) {
+      const safe = Number.isFinite(hours) && hours > 0 ? hours : 1;
+      const rounded = Number.isInteger(safe) ? safe : Number(safe.toFixed(1));
+      return `${rounded} hour${Math.abs(rounded) === 1 ? '' : 's'}`;
+    }
+
+    function getBanHoursRemaining(name) {
+      const normalized = normalizeBanName(name);
+      const expiresAt = bannedUsers.get(normalized);
+      if (!expiresAt) return null;
+      const now = Date.now();
+      if (expiresAt <= now) {
+        bannedUsers.delete(normalized);
+        return null;
+      }
+      return (expiresAt - now) / 3600000;
+    }
+
+    function isUserBanned(name) {
+      const remaining = getBanHoursRemaining(name);
+      return remaining !== null;
+    }
+
+    function getRateRecord(username) {
+      const normalized = normalizeUsername(username);
+      if (!normalized) return null;
+      let record = userRateState.get(normalized);
+      if (!record) {
+        record = { timestamps: [], penaltyUntil: 0 };
+        userRateState.set(normalized, record);
+      }
+      return record;
+    }
+
+    function checkRateLimit(username) {
+      const record = getRateRecord(username);
+      if (!record) return { allowed: true };
+      const now = Date.now();
+      if (record.penaltyUntil && now < record.penaltyUntil) {
+        return { allowed: false, waitMs: record.penaltyUntil - now };
+      }
+      return { allowed: true };
+    }
+
+    function registerRateUsage(username) {
+      const record = getRateRecord(username);
+      if (!record) return { penaltyTriggered: false };
+      const now = Date.now();
+      const windowStart = now - RATE_LIMIT_WINDOW_MS;
+      record.timestamps = record.timestamps.filter((ts) => ts >= windowStart);
+      record.timestamps.push(now);
+      if (record.timestamps.length >= RATE_LIMIT_THRESHOLD) {
+        record.penaltyUntil = now + RATE_LIMIT_PENALTY_MS;
+        record.timestamps = [];
+        return { penaltyTriggered: true };
+      }
+      return { penaltyTriggered: false };
+    }
+
+    // Center-of-chat text helper with variant: "info" or "mod"
+    function addCenterText(content, variant = "info") {
+      const message = {
+        id: Date.now() + "_center",
+        content,
+        type: 'system',
+        variant,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      messages.push(message);
+      renderMessage(message);
+      scrollToBottom();
+    }
+
+    function addSystemMessage(content) {
+      addCenterText(content, "info");
+    }
+
+    // Moderation center text (red blurred style)
+    function postModerationCenter(kind, whoDisplay) {
+      const who = whoDisplay || "Someone";
+      let msg = "🚫 Message blocked by moderation.";
+      if (kind === "hate") msg = `🚫 ${who} tried to post blocked content.`;
+      else if (kind === "sexual") msg = `🚫 ${who} tried to post blocked content.`;
+      else if (kind === "selfharm") msg = `🚫 ${who} tried to post blocked content.`;
+      else if (kind === "violence") msg = `🚫 ${who} tried to post blocked content.`;
+      else if (kind === "hacking") msg = `🚫 ${who} tried to post blocked content.`;
+      else if (kind === "illegal") msg = `🚫 ${who} tried to post blocked content.`;
+      addCenterText(msg, "mod");
+    }
+
+    // Broadcast a SAFE moderation event so EVERYONE sees it (no original content)
+    async function broadcastModerationEvent(kind, offenderName) {
+      const who = getDisplayUsername(offenderName);
+      const safeName = "Moderation";
+      const safeText = `🚫 ${who} tried to post blocked content.`;
+
+      try {
+        await sbInsertMessage(safeName, safeText);
+      } catch (e) {
+        console.warn("Failed to broadcast moderation event:", e);
+      }
+    }
+
+
+    // ------------------------------
+    // Supabase helpers (load last 50 + realtime inserts)
+    // ------------------------------
+    async function sbInsertMessage(username, message) {
+      const payload = {
+        username: String(username || "").trim(),
+        message: String(message || "").trim()
+      };
+      if (!payload.username || !payload.message) return;
+
+      const { data, error } = await sbClient
+        .from("chat_messages")
+        .insert(payload)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      markSupabaseSuccess();
+      return data;
+    }
+
+    function parseSupabaseBanExpires(value) {
+      if (value == null) return 0;
+      const numeric = Number(value);
+      if (Number.isFinite(numeric) && numeric > 0) return numeric;
+      const dateMs = new Date(value).getTime();
+      return Number.isFinite(dateMs) && dateMs > 0 ? dateMs : 0;
+    }
+
+    async function refreshBanListFromSupabase() {
+      if (!sbClient) return false;
+      try {
+        const { data, error } = await sbClient
+          .from(SUPABASE_BAN_TABLE)
+          .select("username, expires_at")
+          .order("expires_at", { ascending: false })
+          .limit(300);
+        if (error) throw error;
+        const now = Date.now();
+        const map = new Map();
+        (data || []).forEach((entry) => {
+          const normalized = normalizeBanName(entry?.username);
+          const expiresAt = parseSupabaseBanExpires(entry?.expires_at);
+          if (!normalized || expiresAt <= now) return;
+          map.set(normalized, expiresAt);
+        });
+        bannedUsers = map;
+        markSupabaseSuccess();
+        return true;
+      } catch (error) {
+        console.warn("Failed to refresh ban list from Supabase:", error);
+        markSupabaseFailure();
+        return false;
+      }
+    }
+
+    async function handleBanSuccess(normalizedTarget, displayTarget, durationLabel, expiresAt) {
+      const payload = {
+        target: displayTarget,
+        targetNormalized: normalizedTarget,
+        durationLabel,
+        nonce: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        actor: OWNER_DISPLAY_NAME,
+        expiresAt: expiresAt || null,
+      };
+      banEventNonces.add(payload.nonce);
+      addCenterText(`🟠 ${OWNER_DISPLAY_NAME} banned ${displayTarget} for ${durationLabel}.`, "ban");
+      try {
+        await broadcastBanEvent(payload);
+      } catch (error) {
+        console.warn("Failed to broadcast ban event:", error);
+      }
+      if (normalizedTarget && expiresAt) {
+        bannedUsers.set(normalizedTarget, expiresAt);
+      }
+    }
+
+    async function banViaSupabase(targetNormalized, displayTarget, requestedHours, durationLabel) {
+      if (!sbClient) return false;
+      const expiresAt = new Date(Date.now() + requestedHours * 3600000).toISOString();
+      try {
+      const { error } = await sbClient
+        .from(SUPABASE_BAN_TABLE)
+        .upsert(
+          { username: targetNormalized, expires_at: expiresAt },
+          { onConflict: "username", count: "exact" }
+        );
+        if (error) throw error;
+        const expiresMs = parseSupabaseBanExpires(expiresAt);
+        if (expiresMs > 0) {
+          bannedUsers.set(targetNormalized, expiresMs);
+        }
+        await handleBanSuccess(targetNormalized, displayTarget, durationLabel, expiresMs);
+        markSupabaseSuccess();
+        return true;
+      } catch (error) {
+        console.warn("Supabase ban failed:", error);
+        markSupabaseFailure();
+        return false;
+      }
+    }
+
+    async function sbFetchRecent50() {
+      const { data, error } = await sbClient
+        .from("chat_messages")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return (data || []).reverse(); // oldest -> newest for display
+    }
+
+    let supabaseBanChannelCleanup = null;
+
+    function handleSupabaseBanChange(row) {
+      if (!row) return;
+      const normalized = normalizeBanName(row?.username);
+      const expiresAt = parseSupabaseBanExpires(row?.expires_at);
+      if (!normalized || expiresAt <= Date.now()) return;
+      if (!bannedUsers.has(normalized) || bannedUsers.get(normalized) < expiresAt) {
+        bannedUsers.set(normalized, expiresAt);
+      }
+    }
+
+    function subscribeToSupabaseBanChanges() {
+      if (!sbClient || !SUPABASE_BAN_TABLE || typeof sbClient.channel !== "function") return;
+      if (supabaseBanChannelCleanup) {
+        supabaseBanChannelCleanup();
+        supabaseBanChannelCleanup = null;
+      }
+      const channel = sbClient.channel("chat_bans_stream");
+      const onChange = (payload) => {
+        handleSupabaseBanChange(payload?.new);
+      };
+      channel
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: SUPABASE_BAN_TABLE },
+          onChange
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: SUPABASE_BAN_TABLE },
+          onChange
+        )
+        .subscribe((status) => {
+          console.log("Supabase ban channel status:", status);
+        });
+
+      supabaseBanChannelCleanup = () => sbClient.removeChannel(channel);
+    }
+
+    function sbSubscribeRealtime(onRow) {
+      const channel = sbClient
+        .channel("chat_messages_stream")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "chat_messages" },
+          (payload) => {
+            if (payload?.new) onRow(payload.new);
+          }
+        )
+        .subscribe((status) => {
+          console.log("Realtime status:", status);
+        });
+
+      return () => sbClient.removeChannel(channel);
+    }
+
+    // ------------------------------
+    // Cloudflare helpers
+    // ------------------------------
+    async function cfInsertMessage(username, message) {
+      if (!CHAT_API_BASE) throw new Error("Cloudflare API base not set");
+      const resp = await fetch(`${CHAT_API_BASE}/chat/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: username, text: message })
+      });
+
+      let data = null;
+      try {
+        data = await resp.json();
+      } catch (parseError) {
+        console.warn("Failed to parse Cloudflare response:", parseError);
+      }
+
+      if (resp.status === 429) {
+        const err = new Error(data?.error || "Rate limit exceeded");
+        err.status = 429;
+        throw err;
+      }
+
+      if (resp.status === 403) {
+        const err = new Error(data?.error || "Forbidden");
+        err.status = 403;
+        err.hoursRemaining = data?.hoursRemaining;
+        throw err;
+      }
+
+      if (!resp.ok) {
+        const err = new Error(data?.error || `Cloudflare error: ${resp.status}`);
+        err.status = resp.status;
+        throw err;
+      }
+
+      return data?.message;
+    }
+
+    async function cfFetchRecent(limit = 50) {
+      if (!CHAT_API_BASE) return [];
+      try {
+        const resp = await fetch(`${CHAT_API_BASE}/chat/recent?limit=${limit}`);
+        if (!resp.ok) return [];
+        return await resp.json();
+      } catch (e) {
+        // Only log if not a standard fetch failure (to reduce console noise during outages)
+        if (e.name !== 'TypeError') {
+          console.error("cfFetchRecent failed:", e);
+        }
+        throw e; // Throw so caller can detect failure
+      }
+    }
+
+    function appendRowAsMessage(row) {
+      appendIncomingMessage(
+        {
+          username: row.username,
+          message: row.message,
+          created_at: row.created_at,
+          id: row.id
+        },
+        "supabase"
+      );
+
+      // Keep UI to 50 too (matches DB behavior)
+      if (messages.length > 60) {
+        // trim a bit above 50 to account for system messages etc
+        messages = messages.slice(-60);
+        renderAllMessages();
+      }
+    }
+
+
+    // ------------------------------
+    // Rendering
+    // ------------------------------
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function makeSig(name, text, id = null) {
+      if (id) return `ID|${id}`;
+      const n = (name || '').trim().toLowerCase();
+      const x = (text || '').trim().replace(/\s+/g, ' ').toLowerCase();
+      return `${n}|${x}`;
+    }
+
+    function renderMessageElement(message) {
+      const messageDiv = document.createElement('div');
+      messageDiv.dataset.messageId = String(message.id);
+
+      // SYSTEM (centered)
+      if (message.type === 'system') {
+        const variantClass = message.variant ? ` ${message.variant}` : '';
+        messageDiv.className = `message system${variantClass}`;
+        messageDiv.innerHTML = `<div class="message-content">${escapeHtml(message.content)}</div>`;
+        return messageDiv;
+      }
+
+      const isOwner = message.isOwner || isOwnerUser(message.username);
+      const isModeration = message.username === "Moderation";
+      const displayUsername = message.displayUsername || getDisplayUsername(message.username);
+      const isBooty = isBootyUser(message.username);
+      const roleMeta = getUserRoleMetadata(message.username);
+      const roleBgStyle = roleMeta?.bgColor ? ` style="background-color:${roleMeta.bgColor};"` : "";
+      const usernameColorStyle = roleMeta?.textColor ? ` style="color:${roleMeta.textColor};"` : "";
+      const messageTextStyle = roleMeta?.textColor ? ` style="color:${roleMeta.textColor};"` : "";
+      const roleSuffix = roleMeta?.roleName ? ` - ${escapeHtml(roleMeta.roleName)}` : "";
+
+      messageDiv.className =
+        `message ${message.isCurrentUser ? 'user' : 'other'} ` +
+        `${message.isSending ? 'sending' : ''} ${message.isFailed ? 'failed' : ''} ` +
+        `${isOwner ? 'owner' : ''} ${isModeration ? 'moderation' : ''}` +
+        `${message.isRespected ? ' respected' : ''}` +
+        `${isBooty ? ' booty' : ''}`;
+
+      messageDiv.innerHTML = `
+        <div class="message-content"${roleBgStyle}>
+          <div class="message-header">
+            <span class="message-username"${usernameColorStyle}>${escapeHtml(displayUsername)}${roleSuffix}</span>
+            <span class="message-timestamp">${escapeHtml(message.timestamp || '')}</span>
+            ${message.isSending ? '<span class="sending-indicator"><i class="fas fa-circle-notch fa-spin"></i> Sending...</span>' : ''}
+            ${message.isFailed ? '<span class="failed-indicator"><i class="fas fa-exclamation-triangle"></i> Failed</span>' : ''}
+          </div>
+          <div${messageTextStyle}>${escapeHtml(message.content || '')}</div>
+        </div>
+      `;
+
+      return messageDiv;
+    }
+
+    function renderMessage(message) {
+      const container = document.getElementById('messagesContainer');
+      const node = renderMessageElement(message);
+      container.appendChild(node);
+      messageNodeIndex.set(String(message.id), node);
+    }
+
+    function renderAllMessages() {
+      const container = document.getElementById('messagesContainer');
+      container.innerHTML = '';
+      messageNodeIndex.clear();
+      for (const m of messages) renderMessage(m);
+    }
+
+    function replaceRenderedMessage(oldId, newMessageObj) {
+      const oldKey = String(oldId);
+      const existingNode = messageNodeIndex.get(oldKey);
+
+      const newNode = renderMessageElement(newMessageObj);
+      messageNodeIndex.set(String(newMessageObj.id), newNode);
+
+      if (existingNode && existingNode.parentNode) {
+        existingNode.parentNode.replaceChild(newNode, existingNode);
+        messageNodeIndex.delete(oldKey);
+      } else {
+        renderAllMessages();
+      }
+    }
+
+    function markMessageFailed(tempId) {
+      const idx = messages.findIndex(m => String(m.id) === String(tempId));
+      if (idx === -1) return;
+      messages[idx].isSending = false;
+      messages[idx].isFailed = true;
+      messages[idx].timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      replaceRenderedMessage(tempId, messages[idx]);
+    }
+
+    function markMessageSent(tempId, serverIdMaybe = null, serverTsIsoMaybe = null) {
+      const idx = messages.findIndex(m => String(m.id) === String(tempId));
+      if (idx === -1) return;
+
+      const msg = messages[idx];
+      msg.isSending = false;
+      msg.isFailed = false;
+
+      if (serverIdMaybe !== null && serverIdMaybe !== undefined) msg.id = serverIdMaybe;
+
+      const ts = serverTsIsoMaybe ? new Date(serverTsIsoMaybe) : new Date();
+      msg.timestamp = ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      seenSigs.add(makeSig(msg.username, msg.content, serverIdMaybe));
+      replaceRenderedMessage(tempId, msg);
+    }
+
+    // ------------------------------
+    // Pending/outbox reconciliation
+    // ------------------------------
+    function addPending(tempId, name, text) {
+      pendingOutbox.push({ tempId, name, text, createdAtMs: Date.now() });
+      prunePending();
+    }
+
+    function prunePending() {
+      const cutoff = Date.now() - PENDING_MATCH_WINDOW_MS;
+      for (let i = pendingOutbox.length - 1; i >= 0; i--) {
+        if (pendingOutbox[i].createdAtMs < cutoff) pendingOutbox.splice(i, 1);
+      }
+    }
+
+    function findPendingMatch(name, text) {
+      prunePending();
+      const n = (name || '').trim();
+      const t = (text || '').trim();
+      for (let i = pendingOutbox.length - 1; i >= 0; i--) {
+        const p = pendingOutbox[i];
+        if (p.name === n && p.text === t) return { index: i, tempId: p.tempId };
+      }
+      return null;
+    }
+
+    function removePendingAt(index) {
+      if (index >= 0 && index < pendingOutbox.length) pendingOutbox.splice(index, 1);
+    }
+
+    // ------------------------------
+    // Message ingestion (normalize CF + SB formats)
+    // Includes moderation on incoming messages too
+    // ------------------------------
+    function appendIncomingMessage(raw, source) {
+      const rawUsername = raw.name || raw.username || 'Unknown';
+      const content = raw.text || raw.content || raw.message || '';
+
+      if (typeof content === 'string' && content.startsWith(ROLE_EVENT_PREFIX)) {
+        const payload = handleRoleEventPayload(content.slice(ROLE_EVENT_PREFIX.length));
+        if (payload) {
+          const actor = payload.actor || OWNER_DISPLAY_NAME;
+          const target = payload.target || payload.targetNormalized || 'someone';
+          const roleName = payload.roleName || '';
+          const roleLabel = roleName ? ` the role "${roleName}"` : " a role";
+          addCenterText(`🟢 ${actor} gave ${target}${roleLabel}.`, 'role');
+        }
+        return;
+      }
+
+      if (typeof content === 'string' && content.startsWith(BAN_EVENT_PREFIX)) {
+        const payloadText = content.slice(BAN_EVENT_PREFIX.length);
+        try {
+          const payload = JSON.parse(payloadText);
+        if (payload?.nonce && !banEventNonces.has(payload.nonce)) {
+          banEventNonces.add(payload.nonce);
+          const actor = payload.actor || OWNER_DISPLAY_NAME;
+          const target = payload.target || 'someone';
+          const duration = payload.durationLabel ? ` for ${payload.durationLabel}` : '';
+          if (payload?.targetNormalized && payload?.expiresAt) {
+            const expiresAt = Number(payload.expiresAt);
+            if (Number.isFinite(expiresAt) && expiresAt > Date.now()) {
+              bannedUsers.set(payload.targetNormalized, expiresAt);
+            }
+          }
+          addCenterText(`🟠 ${actor} banned ${target}${duration}.`, 'ban');
+        }
+        } catch (error) {
+          console.warn('Malformed ban event payload:', error);
+        }
+        return;
+      }
+      const tsIso = raw.t || raw.created_at || null;
+
+      // Incoming moderation: hide bad content and show mod center text
+      const mod = classifyModeration(content);
+      if (!mod.ok && mod.kind !== "empty") {
+        const alertSig = `MOD|${mod.kind}|${rawUsername}|${makeSig(rawUsername, content, raw.id)}`;
+        if (!seenSigs.has(alertSig)) {
+          seenSigs.add(alertSig);
+          postModerationCenter(mod.kind, getDisplayUsername(rawUsername));
+        }
+        return;
+      }
+
+      // If this is our own message and it matches pending, confirm instead of duplicating
+      if ((rawUsername || '') === (currentUsername || '')) {
+        const pending = findPendingMatch(rawUsername, content);
+        if (pending) {
+          const serverId = raw.id ?? null;
+          markMessageSent(pending.tempId, serverId, tsIso);
+          removePendingAt(pending.index);
+          return;
+        }
+      }
+
+      // Dedup normal messages
+      const sig = makeSig(rawUsername, content, raw.id);
+      if (seenSigs.has(sig)) return;
+      seenSigs.add(sig);
+
+      const displayTime = tsIso
+        ? new Date(tsIso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const msg = {
+        id: raw.id || `${source}_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        content,
+        username: rawUsername,
+        displayUsername: getDisplayUsername(rawUsername),
+        isOwner: isOwnerUser(rawUsername),
+        timestamp: displayTime,
+        isCurrentUser: rawUsername === currentUsername,
+        _source: source,
+        isRespected: isRespectedUser(rawUsername),
+        type: raw.type,
+        variant: raw.variant
+      };
+
+      messages.push(msg);
+      renderMessage(msg);
+
+      if (!msg.isCurrentUser && chatHistoryBootstrapped) {
+        if (!isChatWindowOpen) {
+          unreadMessageCount++;
+          updateUnreadBadge();
+        }
+        if (notificationsEnabled) showChatNotification(msg);
+      }
+
+      scrollToBottom();
+    }
+
+    // ------------------------------
+    // Bootstrap + Realtime
+    // ------------------------------
+    async function requestInitialSnapshot() {
+      // Load last 50 on startup
+      try {
+        setBackendMode("cloudflare");
+
+        const [sbMsgs, cfMsgs] = await Promise.all([
+          sbFetchRecent50().catch(() => []),
+          cfFetchRecent().catch(() => {
+            // If CF initial fetch fails, trigger backoff immediately
+            cfBackoffUntil = Date.now() + (5 * 60 * 1000); 
+            console.warn("Cloudflare unavailable at startup, using Supabase fallback.");
+            return [];
+          })
+        ]);
+
+        const normalize = (m) => {
+          const t = m.t || (m.created_at ? new Date(m.created_at).getTime() : Date.now());
+          return { ...m, _t: t };
+        };
+
+        const all = [
+          ...sbMsgs.map(m => ({ ...normalize(m), _src: 'supabase' })),
+          ...cfMsgs.map(m => ({ ...normalize(m), _src: 'cloudflare' }))
+        ];
+
+        // Sort ascending by time
+        all.sort((a, b) => a._t - b._t);
+        await refreshRoleListFromSupabase();
+
+        if (all.length === 0) {
+          addSystemMessage("ℹ️ No recent messages found.");
+        } else {
+          all.forEach(m => appendIncomingMessage(m, m._src));
+          addSystemMessage(`✅ Loaded ${all.length} recent messages.`);
+        }
+      } catch (err) {
+        console.error("requestInitialSnapshot failed:", err);
+        throw err;
+      }
+    }
+
+    function bootstrapChatExperience() {
+      if (chatBootstrapInFlight || chatHistoryBootstrapped) return;
+      chatBootstrapInFlight = true;
+
+      addSystemMessage("🔄 Connecting to chat service...");
+
+      requestInitialSnapshot()
+        .then(() => {
+          chatHistoryBootstrapped = true;
+          
+          // Subscribe to realtime inserts (no polling needed for Supabase)
+          sbSubscribeRealtime(appendRowAsMessage);
+          // Listen for ban table changes so bans apply immediately
+          subscribeToSupabaseBanChanges();
+
+          // Start polling for Cloudflare since it lacks realtime
+          startCloudflarePolling();
+
+          startPeriodicNotifications();
+          chatBootstrapInFlight = false;
+        })
+        .catch(err => {
+          console.error("Bootstrap failed:", err);
+          addSystemMessage("❌ Chat connection failed.");
+          chatHistoryBootstrapped = true;
+          startPeriodicNotifications();
+          chatBootstrapInFlight = false;
+        });
+    }
+
+    let cfPollingInterval = null;
+    function startCloudflarePolling() {
+      if (cfPollingInterval) return;
+      cfPollingInterval = setInterval(async () => {
+        // Skip polling if in backoff
+        if (Date.now() < cfBackoffUntil) return;
+
+        try {
+          const recent = await cfFetchRecent(20);
+          if (recent && Array.isArray(recent)) {
+            recent.forEach(m => appendIncomingMessage(m, "cloudflare"));
+          }
+        } catch (e) {
+          console.warn("Cloudflare poll failed:", e);
+          // If polling fails, trigger a short backoff (2 minutes) to avoid spamming errors
+          cfBackoffUntil = Date.now() + (2 * 60 * 1000);
+        }
+      }, 10000); // Poll every 10 seconds
+    }
+
+    // ------------------------------
+    // Sending (CF first, SB fallback)
+    // Includes moderation BEFORE sending (and broadcasts safe mod event)
+    // ------------------------------
+    function setBackendMode(mode) {
+      if (backendMode !== mode) {
+        backendMode = mode;
+        console.log("🔁 Backend mode:", backendMode);
+      }
+    }
+
+    async function refreshBanList() {
+      if (!CHAT_API_BASE) {
+        await refreshBanListFromSupabase();
+        return;
+      }
+      try {
+        const resp = await fetch(`${CHAT_API_BASE}/chat/bans`, { cache: 'no-store' });
+        if (!resp.ok) {
+          chatWorkerAvailable = false;
+          chatWorkerBackoffUntil = Date.now() + CHAT_WORKER_BACKOFF_MS;
+          await refreshBanListFromSupabase();
+          return;
+        }
+        const data = await resp.json().catch(() => null);
+        const list = Array.isArray(data?.bans) ? data.bans : [];
+        const now = Date.now();
+        const fallbackExpiry = now + 24 * 3600000;
+        const map = new Map();
+        list.forEach((entry) => {
+          let username = "";
+          let expiresAt = fallbackExpiry;
+          if (typeof entry === 'string') {
+            username = normalizeBanName(entry);
+          } else {
+            username = normalizeBanName(entry.username || entry.name || entry.target);
+            expiresAt = Number(entry.expiresAt || entry.expiration || entry.expires || 0) || fallbackExpiry;
+          }
+          if (!username) return;
+          if (expiresAt <= now) return;
+          map.set(username, expiresAt);
+        });
+        bannedUsers = map;
+      } catch (error) {
+        const message = typeof error === "string" ? error : error?.message || "";
+        if (message.includes("Failed to fetch") || error?.name === "TypeError") {
+          chatWorkerAvailable = false;
+          chatWorkerBackoffUntil = Date.now() + CHAT_WORKER_BACKOFF_MS;
+          await refreshBanListFromSupabase();
+          return;
+        }
+        console.warn("Failed to refresh ban list:", error);
+      }
+    }
+
+    function ensureBanRefreshTimer() {
+      if (banRefreshTimer) return;
+      banRefreshTimer = setInterval(() => {
+        refreshBanList();
+      }, BAN_REFRESH_INTERVAL_MS);
+    }
+
+    async function refreshRoleListFromSupabase() {
+      if (!sbClient) return;
+      try {
+        const { data, error } = await sbClient
+          .from(SUPABASE_ROLE_TABLE)
+          .select("username, role_name, color");
+        if (error) throw error;
+        userRoles.clear();
+        (data || []).forEach((entry) => {
+          const normalizedName = normalizeBanName(entry?.username);
+          if (!normalizedName) return;
+          applyRoleLocally(normalizedName, entry?.role_name || "", entry?.color || formatRoleColorString());
+        });
+        markSupabaseSuccess();
+      } catch (error) {
+        console.warn("Failed to refresh role list from Supabase:", error);
+        markSupabaseFailure();
+      }
+    }
+
+    async function broadcastBanEvent(payload) {
+      if (!payload || !payload.nonce) return;
+      const safePayload = {
+        actor: payload.actor || OWNER_DISPLAY_NAME,
+        target: payload.target || "",
+        durationLabel: payload.durationLabel || "",
+        nonce: payload.nonce,
+      };
+
+      try {
+        await sbInsertMessage(OWNER_USERNAME, `${BAN_EVENT_PREFIX}${JSON.stringify(safePayload)}`);
+      } catch (error) {
+        console.warn("Failed to broadcast ban event:", error);
+      }
+      publishAblyBan(safePayload).catch(() => {});
+    }
+
+    function tokenizeCommandArgs(argsText) {
+      const tokens = [];
+      let current = "";
+      let quoteChar = null;
+      for (const ch of (argsText || "")) {
+        if (quoteChar) {
+          if (ch === quoteChar) {
+            tokens.push(current);
+            current = "";
+            quoteChar = null;
+            continue;
+          }
+          current += ch;
+          continue;
+        }
+
+        if (ch === '"' || ch === "'") {
+          quoteChar = ch;
+          continue;
+        }
+
+        if (/\s/.test(ch)) {
+          if (current) {
+            tokens.push(current);
+            current = "";
+          }
+          continue;
+        }
+
+        current += ch;
+      }
+
+      if (current) tokens.push(current);
+      return tokens;
+    }
+
+    async function broadcastRoleEvent(payload) {
+      if (!payload || !payload.nonce) return;
+      const safePayload = {
+        actor: payload.actor || OWNER_DISPLAY_NAME,
+        target: payload.target || "",
+        targetNormalized: payload.targetNormalized || "",
+        roleName: payload.roleName || "",
+        color: payload.color || "",
+        nonce: payload.nonce,
+      };
+
+      try {
+        await sbInsertMessage(OWNER_USERNAME, `${ROLE_EVENT_PREFIX}${JSON.stringify(safePayload)}`);
+      } catch (error) {
+        console.warn("Failed to broadcast role event:", error);
+      }
+    }
+
+    function handleRoleEventPayload(payloadText) {
+      if (!payloadText) return null;
+      try {
+        const payload = JSON.parse(payloadText);
+        if (!payload?.nonce) return null;
+        if (roleEventNonces.has(payload.nonce)) return null;
+        roleEventNonces.add(payload.nonce);
+        if (payload?.targetNormalized) {
+          applyRoleLocally(payload.targetNormalized, payload.roleName || "", payload.color || formatRoleColorString());
+        }
+        return payload;
+      } catch (error) {
+        console.warn("Malformed role event payload:", error);
+        return null;
+      }
+    }
+
+    async function handleBanCommand(targetRaw, hoursArg) {
+      const target = targetRaw ? targetRaw.trim() : "";
+      if (!target) {
+        addSystemMessage('⚠️ Usage: /*ban username');
+        return;
+      }
+
+      if (!CHAT_API_BASE) {
+        addSystemMessage('⚠️ Chat service unavailable.');
+        return;
+      }
+
+      const displayTarget = getDisplayUsername(target);
+      const parsedHours = Number(hoursArg);
+      const requestedHours = Number.isFinite(parsedHours) && parsedHours > 0 ? parsedHours : 1;
+      const durationLabel = formatHoursLabel(requestedHours);
+      const normalizedTarget = normalizeBanName(target);
+      const trySupabaseFallback = async () => {
+        if (!normalizedTarget) return false;
+        return await banViaSupabase(normalizedTarget, displayTarget, requestedHours, durationLabel);
+      };
+
+      try {
+        const shouldSkipWorker = !chatWorkerAvailable && Date.now() < chatWorkerBackoffUntil;
+        if (shouldSkipWorker) {
+          const fallbackHandled = await trySupabaseFallback();
+          if (fallbackHandled) return;
+          addSystemMessage(`⚠️ Chat worker unreachable; can't ban ${displayTarget} right now.`);
+          return;
+        }
+
+        const base = CHAT_API_BASE.replace(/\/+$/, '');
+        const resp = await fetch(`${base}/chat/ban`, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: OWNER_USERNAME,
+            target,
+            hours: requestedHours
+          })
+        });
+        const data = await resp.json().catch(() => null);
+        if (!resp.ok) {
+          chatWorkerAvailable = false;
+          chatWorkerBackoffUntil = Date.now() + CHAT_WORKER_BACKOFF_MS;
+          const fallbackSuccess = await trySupabaseFallback();
+          if (fallbackSuccess) return;
+          addSystemMessage(`⚠️ Unable to ban ${displayTarget}: ${data?.error || resp.statusText}`);
+          return;
+        }
+        chatWorkerAvailable = true;
+        chatWorkerBackoffUntil = 0;
+        await refreshBanList();
+        const expiresAt = Number(data?.expiresAt) || Date.now() + requestedHours * 3600000;
+        await handleBanSuccess(normalizedTarget, displayTarget, durationLabel, expiresAt);
+      } catch (error) {
+        console.error('Ban command failed:', error);
+        chatWorkerAvailable = false;
+        chatWorkerBackoffUntil = Date.now() + CHAT_WORKER_BACKOFF_MS;
+        const message = typeof error === "string" ? error : error?.message || "Network error";
+        const hint = message.toLowerCase().includes("failed to fetch")
+          ? " (chat worker unreachable; check your connection or try again)"
+          : "";
+        const fallbackHandled = await trySupabaseFallback();
+        if (fallbackHandled) return;
+        markSupabaseFailure(true);
+        const expiresMs = Date.now() + requestedHours * 3600000;
+        if (normalizedTarget && expiresMs > Date.now()) {
+          bannedUsers.set(normalizedTarget, expiresMs);
+        }
+        const ablyPayload = {
+          actor: OWNER_DISPLAY_NAME,
+          target: displayTarget,
+          targetNormalized: normalizedTarget,
+          durationLabel,
+          expiresAt: expiresMs,
+          nonce: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          fallback: true
+        };
+        await publishAblyBan(ablyPayload);
+        addSystemMessage(`⚠️ Unable to ban ${displayTarget}: ${message}${hint}`);
+      }
+    }
+
+    async function handleRoleCommand(targetRaw, roleNameRaw, colorSpecRaw) {
+      const target = targetRaw ? targetRaw.trim() : "";
+      const roleName = roleNameRaw ? roleNameRaw.trim() : "";
+      if (!target || !roleName) {
+        addSystemMessage('⚠️ Usage: /*role username roleName [color]');
+        return;
+      }
+
+      if (!sbClient) {
+        addSystemMessage('⚠️ Role service unavailable.');
+        return;
+      }
+
+      const normalizedTarget = normalizeBanName(target);
+      if (!normalizedTarget) {
+        addSystemMessage(`⚠️ Invalid username: ${target}`);
+        return;
+      }
+
+      const colors = parseRoleColorString(colorSpecRaw);
+      const displayTarget = normalizeUsername(target) || normalizedTarget;
+      const payload = {
+        target: displayTarget,
+        targetNormalized: normalizedTarget,
+        roleName,
+        color: formatRoleColorString(colors.bgColor, colors.textColor),
+        actor: OWNER_DISPLAY_NAME,
+        nonce: `${Date.now()}_${Math.random().toString(36).slice(2)}`
+      };
+
+      try {
+        const { error } = await sbClient
+          .from(SUPABASE_ROLE_TABLE)
+          .upsert(
+            { username: normalizedTarget, role_name: roleName, color: payload.color },
+            { onConflict: "username", count: "exact" }
+          );
+        if (error) throw error;
+
+        roleEventNonces.add(payload.nonce);
+        applyRoleLocally(normalizedTarget, roleName, payload.color);
+        markSupabaseSuccess();
+        await broadcastRoleEvent(payload);
+        await publishAblyRole({ ...payload, fallback: ablyFallbackActive });
+        addCenterText(`🟢 ${OWNER_DISPLAY_NAME} gave ${displayTarget} the role "${roleName}".`, 'role');
+      } catch (error) {
+        console.error('Role command failed:', error);
+        markSupabaseFailure();
+        const message = typeof error === "string" ? error : error?.message || "Network error";
+        addSystemMessage(`⚠️ Unable to set role: ${message}`);
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const text = (input.value || '').trim();
+      if (!text || globalChatSending) return;
+
+      const normalizedUser = (currentUsername || 'User').trim();
+      const now = Date.now();
+      const lastSent = LAST_MESSAGE_TIMES.get(normalizedUser) || 0;
+      if (now - lastSent < SLOW_MODE_MS) {
+        const wait = Math.ceil((SLOW_MODE_MS - (now - lastSent)) / 1000);
+        addSystemMessage(`⏱ Slow mode is active. Please wait ${wait} second${wait === 1 ? '' : 's'} before sending another message.`);
+        return;
+      }
+      LAST_MESSAGE_TIMES.set(normalizedUser, now);
+
+      const roleCommandMatch = text.match(/^\/\*role\b/i);
+      if (roleCommandMatch && isOwnerUser(currentUsername)) {
+        const argsText = text.slice(roleCommandMatch[0].length).trim();
+        const args = tokenizeCommandArgs(argsText);
+        const targetName = args[0];
+        const roleName = args[1];
+        const colorSpec = [args[2], args[3]].filter(Boolean).join(',');
+        if (!targetName || !roleName) {
+          addSystemMessage('⚠️ Usage: /*role username roleName [color]');
+        } else {
+          await handleRoleCommand(targetName, roleName, colorSpec);
+        }
+        input.value = '';
+        input.style.height = '44px';
+        return;
+      }
+
+      const banCommandMatch = text.match(/^\/\*ban\s+(?:"([^"]+)"|'([^']+)'|([^\s]+))(?:\s+([\d.]+))?/i);
+      if (banCommandMatch && isOwnerUser(currentUsername)) {
+        const targetName = banCommandMatch[1] || banCommandMatch[2] || banCommandMatch[3];
+        if (targetName) {
+          await handleBanCommand(targetName, banCommandMatch[4]);
+        }
+        input.value = '';
+        input.style.height = '44px';
+        return;
+      }
+
+      if (isUserBanned(currentUsername)) {
+        const hoursRemaining = getBanHoursRemaining(currentUsername);
+        const detail = hoursRemaining ? ` for ${formatHoursLabel(hoursRemaining)}` : '';
+        addCenterText(`⚠️ You are banned from chat${detail}.`, 'mod');
+        input.value = '';
+        return;
+      }
+
+      // If username didn't arrive yet, refuse to send as "User"
+      resolveUsernameNow();
+      if (!currentUsername || currentUsername === "User") {
+        addSystemMessage("⚠️ Your username hasn't loaded yet. Please, Refresh the page (Control+Shift+R)");
+        return;
+      }
+
+      const rateCheck = checkRateLimit(currentUsername);
+      if (!rateCheck.allowed) {
+        const waitSec = Math.max(1, Math.ceil(rateCheck.waitMs / 1000));
+        addSystemMessage(`⚠️ You're sending too fast. Please wait ${waitSec} second${waitSec === 1 ? "" : "s"} before sending again.`);
+        return;
+      }
+
+      const mod = classifyModeration(text);
+      if (!mod.ok && mod.kind !== "empty") {
+        postModerationCenter(mod.kind, getDisplayUsername(currentUsername));
+        broadcastModerationEvent(mod.kind, currentUsername);
+        input.value = '';
+        return;
+      }
+
+      if (text.length > 750) {
+        addSystemMessage('❌ Message too long. Maximum 750 characters.');
+        return;
+      }
+
+      const dedupSig = text.replace(/\s+/g, ' ').toLowerCase();
+      if (dedupSig === lastGlobalChatMessageSig) {
+        addSystemMessage('❌ Duplicate message blocked.');
+        return;
+      }
+      lastGlobalChatMessageSig = dedupSig;
+
+      const rateUsage = registerRateUsage(currentUsername);
+      if (rateUsage.penaltyTriggered) {
+        addSystemMessage('⚠️ You hit the burst limit. Wait 25 seconds before sending another message.');
+        return;
+      }
+
+      const sendButtonIcon = document.querySelector('.send-button i');
+      if (!sendButtonIcon) return;
+
+      globalChatSending = true;
+
+      const tempMessageId = 'temp_' + Date.now();
+
+      // clear input
+      input.value = '';
+      input.style.height = '44px';
+
+      // spinner on send button
+      const originalIcon = sendButtonIcon.className;
+      sendButtonIcon.className = 'fas fa-spinner fa-spin';
+
+      // optimistic bubble
+      const sendingMessage = {
+        id: tempMessageId,
+        content: text,
+        username: currentUsername,
+        displayUsername: getDisplayUsername(currentUsername),
+        isOwner: isOwnerUser(currentUsername),
+        timestamp: 'Sending...',
+        isCurrentUser: true,
+        isSending: true,
+        isFailed: false,
+        isRespected: isRespectedUser(currentUsername)
+      };
+
+      messages.push(sendingMessage);
+      renderMessage(sendingMessage);
+      scrollToBottom();
+
+      // track as pending so echo confirms (no duplicate)
+      addPending(tempMessageId, currentUsername, text);
+
+      let useSupabase = false;
+      try {
+        let row = null;
+        const now = Date.now();
+
+        if (shouldUseAblyFallback()) {
+          await publishAblyMessage(text);
+          addSystemMessage("ℹ️ Sent message via Ably fallback.");
+          return;
+        }
+
+        if (now < cfBackoffUntil) {
+          useSupabase = true;
+        } else {
+          try {
+            setBackendMode("cloudflare");
+            row = await cfInsertMessage(currentUsername, text);
+          } catch (cfErr) {
+            console.warn("Cloudflare send failed:", cfErr);
+            if (cfErr?.status === 403) {
+              const detail = cfErr.hoursRemaining ? ` for ${formatHoursLabel(cfErr.hoursRemaining)}` : '';
+              addCenterText(`⚠️ You are banned from chat${detail}.`, 'mod');
+              throw cfErr;
+            }
+            cfBackoffUntil = Date.now() + CF_BACKOFF_MS;
+            useSupabase = true;
+          }
+        }
+
+        if (useSupabase && !row) {
+          setBackendMode("supabase");
+          row = await sbInsertMessage(currentUsername, text);
+        }
+
+        if (!row) {
+          throw new Error("Unable to deliver message via Cloudflare or Supabase.");
+        }
+
+        const serverId = row && row.id ? row.id : null;
+        const serverTs = (row && (row.t || row.created_at)) ? (row.t || row.created_at) : null;
+
+        markMessageSent(tempMessageId, serverId, serverTs);
+        
+        // Safety fallback: if realtime echo never arrives, remove from outbox anyway
+        setTimeout(() => {
+          const p = pendingOutbox.findIndex(x => x.tempId === tempMessageId);
+          if (p !== -1) removePendingAt(p);
+        }, 5000);
+      } catch (err) {
+        console.error("Send failed:", err);
+        const attemptedSupabase = useSupabase;
+        if (attemptedSupabase) {
+          markSupabaseFailure(true);
+          if (ABLY_TOKEN_ENDPOINT) {
+            try {
+              await publishAblyMessage(text);
+              addSystemMessage("â„¹ï¸ Sent message via Ably fallback.");
+              return;
+            } catch (ablyErr) {
+              console.warn("Ably fallback send failed:", ablyErr);
+            }
+          }
+        }
+        markMessageFailed(tempMessageId);
+
+        const p = pendingOutbox.findIndex(x => x.tempId === tempMessageId);
+        if (p !== -1) removePendingAt(p);
+
+        addSystemMessage('❌ Failed to send message.');
+      } finally {
+        sendButtonIcon.className = originalIcon;
+        globalChatSending = false;
+      }
+    }
+
+    // ------------------------------
+    // UX utilities
+    // ------------------------------
+    function scrollToBottom() {
+      if (shouldAutoScroll) {
+        const container = document.getElementById('messagesContainer');
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function handleScroll() {
+      const container = document.getElementById('messagesContainer');
+      if (!container) return;
+
+      const currentScrollTop = container.scrollTop;
+      const maxScrollTop = container.scrollHeight - container.clientHeight;
+
+      if (currentScrollTop >= maxScrollTop - 50) {
+        shouldAutoScroll = true;
+      } else if (lastScrollTop > currentScrollTop && currentScrollTop < maxScrollTop - 100) {
+        shouldAutoScroll = false;
+      }
+
+      lastScrollTop = currentScrollTop;
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+      const textarea = event.target;
+      textarea.style.height = '44px';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      if (soundEnabled) {
+        icon.className = 'fas fa-volume-up';
+        addSystemMessage('🔊 Sound notifications enabled');
+      } else {
+        icon.className = 'fas fa-volume-mute';
+        addSystemMessage('🔇 Sound notifications disabled');
+      }
+    }
+
+    function clearMessages() {
+      if (confirm('Clear all messages?')) {
+        messages = [];
+        seenSigs.clear();
+        pendingOutbox.length = 0;
+        const container = document.getElementById('messagesContainer');
+        container.innerHTML = '';
+        messageNodeIndex.clear();
+        addSystemMessage('🧹 Chat cleared');
+      }
+    }
+
+    function updateUnreadBadge() {
+      try {
+        window.parent.postMessage({
+          type: 'updateChatBadge',
+          count: unreadMessageCount,
+          show: unreadMessageCount > 0
+        }, '*');
+      } catch {}
+    }
+
+    function showChatNotification(message) {
+      if (notificationsEnabled && !isChatWindowOpen) {
+        try {
+          window.parent.postMessage({
+            type: 'showChatNotification',
+            username: message.displayUsername || getDisplayUsername(message.username),
+            content: (message.content || '').substring(0, 50) + ((message.content || '').length > 50 ? '...' : '')
+          }, '*');
+        } catch {}
+      }
+    }
+
+    function resetUnreadCount() {
+      unreadMessageCount = 0;
+      updateUnreadBadge();
+    }
+
+    function startPeriodicNotifications() {
+      if (periodicNotificationsStarted) return;
+      periodicNotificationsStarted = true;
+
+      setInterval(() => {
+        if (notificationsEnabled && !isChatWindowOpen) {
+          try {
+            window.parent.postMessage({
+              type: 'showChatNotification',
+              username: 'System',
+              content: 'There are new messages in Global Chat!'
+            }, '*');
+          } catch {}
+        }
+      }, 300000);
+    }
+
+    function updateOnlineCount() {
+      const fakeCount = Math.floor(Math.random() * 18) + 8;
+      const onlineCountElement = document.querySelector('.online-count');
+      if (onlineCountElement) onlineCountElement.textContent = fakeCount;
+    }
+
+    function getApiBaseFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlApiBase = urlParams.get('apiBase');
+      const urlUsername = urlParams.get('username');
+      if (urlApiBase) CHAT_API_BASE = urlApiBase;
+      if (urlUsername) currentUsername = urlUsername;
+    }
+
+    function initChat() {
+      getApiBaseFromUrl();
+      if (!CHAT_API_BASE && window.CHAT_API_BASE) {
+        CHAT_API_BASE = window.CHAT_API_BASE;
+      }
+      if (!CHAT_API_BASE) {
+        CHAT_API_BASE = DEFAULT_CHAT_API_BASE;
+      }
+
+      refreshBanList();
+      ensureBanRefreshTimer();
+
+      // Ask parent for init info (helps on fresh accounts / race conditions)
+      try {
+        window.parent.postMessage({ type: "requestInitChat" }, "*");
+      } catch {}
+
+      window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'initChat') {
+          setCurrentUsername(event.data.username, "parent:initChat");
+          if (event.data.chatApiBase) CHAT_API_BASE = event.data.chatApiBase;
+          refreshBanList();
+          ensureBanRefreshTimer();
+          bootstrapChatExperience(); // safe; it won't double-run
+        } else if (event.data && event.data.type === 'chatOpened') {
+          resetUnreadCount();
+          isChatWindowOpen = true;
+
+          if (!onlineCountIntervalStarted) {
+            onlineCountIntervalStarted = true;
+            updateOnlineCount();
+            setInterval(updateOnlineCount, 30000);
+          }
+        } else if (event.data && event.data.type === 'chatClosed') {
+          isChatWindowOpen = false;
+        } else if (event.data && event.data.type === 'toggleNotifications') {
+          notificationsEnabled = !!event.data.enabled;
+          console.log('Chat notifications ' + (notificationsEnabled ? 'enabled' : 'disabled'));
+        }
+      });
+
+      // Bootstrap only after username is resolved, with a short fallback timeout
+      let booted = false;
+
+      function tryBootstrap(reason) {
+        if (booted) return;
+        if (currentUsername && currentUsername !== "User") {
+          booted = true;
+          bootstrapChatExperience();
+          return;
+        }
+        // If still not resolved, keep waiting (but not forever)
+      }
+
+      const start = Date.now();
+      const waitTimer = setInterval(() => {
+        resolveUsernameNow();
+        if (currentUsername && currentUsername !== "User") {
+          clearInterval(waitTimer);
+          tryBootstrap("resolved");
+          return;
+        }
+        // fallback after 2 seconds: still boot, but sending will be blocked until name arrives
+        if (Date.now() - start > 2000) {
+          clearInterval(waitTimer);
+          if (!booted) {
+            booted = true;
+            bootstrapChatExperience();
+            addSystemMessage("⚠️ Username not loaded yet — waiting for account name...");
+          }
+        }
+      }, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Chat iframe DOM loaded, initializing...');
+      setupTypingIndicator();
+      if (ABLY_TOKEN_ENDPOINT) {
+        ensureAblyRealtime().catch(() => {});
+      }
+      initChat();
+
+      const messagesContainer = document.getElementById('messagesContainer');
+      if (messagesContainer) {
+        messagesContainer.addEventListener('scroll', handleScroll);
+        lastScrollTop = messagesContainer.scrollTop;
+        setTimeout(scrollToBottom, 500);
+      }
+
+      setTimeout(updateUnreadBadge, 1000);
+    });
+  </script>
+</body>
+</html>
