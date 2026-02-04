@@ -1,3 +1,125 @@
+const PROXY_WARNING_ID = "proxy-warning-overlay";
+const PROXY_WARNING_RETRY_MS = 15000;
+
+function shouldWarnAboutProxyError(url) {
+    if (!url) return false;
+    const patterns = [
+        "/uv/service/",
+        "/uv/uv.bundle.js",
+        "/uv/uv.config.js",
+        "/uv/uv.handler.js",
+        "/scram/",
+        "cineby.gd",
+        "math.school.dovereducation.org",
+        "hvtrs8"
+    ];
+    return patterns.some(pattern => url.includes(pattern));
+}
+
+function showProxyWarning(message, { autoRetry = true, retryDelay = PROXY_WARNING_RETRY_MS } = {}) {
+    if (document.getElementById(PROXY_WARNING_ID)) return;
+
+    const mountBanner = () => {
+        if (!document.body) {
+            document.addEventListener("DOMContentLoaded", mountBanner, { once: true });
+            return;
+        }
+
+        if (document.getElementById(PROXY_WARNING_ID)) return;
+
+        const banner = document.createElement("div");
+        banner.id = PROXY_WARNING_ID;
+        Object.assign(banner.style, {
+            position: "fixed",
+            left: "1rem",
+            right: "1rem",
+            bottom: "1rem",
+            padding: "1rem 1.25rem",
+            borderRadius: "0.75rem",
+            background: "linear-gradient(135deg, rgba(8, 6, 31, 0.95), rgba(229, 57, 53, 0.95))",
+            color: "#fff",
+            fontFamily: "Inter, system-ui, sans-serif",
+            boxShadow: "0 15px 40px rgba(0, 0, 0, 0.45)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.6rem",
+            zIndex: "99999",
+        });
+
+        const text = document.createElement("div");
+        text.style.fontSize = "0.95rem";
+        text.style.lineHeight = "1.4";
+        text.textContent = message;
+        banner.appendChild(text);
+
+        const actions = document.createElement("div");
+        actions.style.display = "flex";
+        actions.style.gap = "0.65rem";
+        actions.style.flexWrap = "wrap";
+        actions.style.alignItems = "center";
+
+        const retryBtn = document.createElement("button");
+        retryBtn.type = "button";
+        retryBtn.textContent = "Retry now";
+        retryBtn.style.cssText = "border:none;border-radius:0.5rem;padding:0.45rem 0.9rem;font-weight:600;background:#fff;color:#b71c1c;cursor:pointer;";
+        retryBtn.addEventListener("click", () => location.reload());
+        actions.appendChild(retryBtn);
+
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.textContent = "Dismiss";
+        closeBtn.style.cssText = "border:none;border-radius:0.5rem;padding:0.45rem 0.9rem;background:rgba(255,255,255,0.15);color:#fff;cursor:pointer;";
+        closeBtn.addEventListener("click", () => banner.remove());
+        actions.appendChild(closeBtn);
+
+        if (autoRetry) {
+            const countdown = document.createElement("span");
+            countdown.style.fontSize = "0.85rem";
+            countdown.style.marginLeft = "auto";
+            countdown.style.opacity = "0.9";
+            actions.appendChild(countdown);
+
+            let remaining = Math.ceil(retryDelay / 1000);
+            countdown.textContent = `Retrying in ${remaining}s...`;
+            const intervalId = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearInterval(intervalId);
+                    location.reload();
+                    return;
+                }
+                countdown.textContent = `Retrying in ${remaining}s...`;
+            }, 1000);
+        }
+
+        banner.appendChild(actions);
+        document.body.appendChild(banner);
+    };
+
+    mountBanner();
+}
+
+window.addEventListener("error", (event) => {
+    const target = event?.target;
+    const url = target?.src || target?.href || event?.filename;
+    if (shouldWarnAboutProxyError(url)) {
+        showProxyWarning(
+            "The proxy backend is being rate limited or returned an error. Please wait a few seconds and try again.",
+            { autoRetry: true }
+        );
+    }
+}, true);
+
+window.addEventListener("unhandledrejection", (event) => {
+    const reason = event?.reason?.message || event?.reason?.toString?.();
+    if (reason && reason.includes("Failed to fetch dynamically imported module")) {
+        showProxyWarning(
+            "The proxy failed to fetch a module because the upstream server responded with an error. Please reload when the proxy recovers.",
+            { autoRetry: true }
+        );
+    }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
 	const form = document.getElementById("form");
 	const input = document.getElementById("indexInput");

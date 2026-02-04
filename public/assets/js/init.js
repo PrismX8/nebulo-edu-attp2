@@ -2,12 +2,84 @@
 // LocalStorage Defaults
 // =====================
 
+const SITE_VERSION = "2026-02-04-1";
+const previousSiteVersion = localStorage.getItem("site_version");
+
+if (previousSiteVersion && previousSiteVersion !== SITE_VERSION) {
+    showSiteUpdateBanner(previousSiteVersion);
+}
+
+localStorage.setItem("site_version", SITE_VERSION);
+
 // default icon
 const CustomIcon = localStorage.getItem("CustomIcon") || (() => {
 const url = "/assets/img/nebulologo.png";
     localStorage.setItem("CustomIcon", url);
     return url;
 })();
+
+function showSiteUpdateBanner(prevVersion) {
+    const mountBanner = () => {
+        if (!document.body) {
+            document.addEventListener("DOMContentLoaded", mountBanner, { once: true });
+            return;
+        }
+
+        if (document.getElementById("site-update-banner")) {
+            return;
+        }
+
+        const banner = document.createElement("div");
+        banner.id = "site-update-banner";
+        Object.assign(banner.style, {
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            padding: "0.85rem 1rem",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: "#111",
+            color: "#fff",
+            fontSize: "0.9rem",
+            fontFamily: "system-ui, sans-serif",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.35)",
+            zIndex: "9999",
+        });
+
+        const message = document.createElement("span");
+        message.textContent = `Updated from ${prevVersion} to ${SITE_VERSION}. Refresh to load the latest version.`;
+        banner.appendChild(message);
+
+        const refreshBtn = document.createElement("button");
+        refreshBtn.type = "button";
+        refreshBtn.textContent = "Refresh now";
+        refreshBtn.style.cssText = "border:none;background:#1c7ed6;color:#fff;padding:0.45rem 0.85rem;border-radius:0.35rem;cursor:pointer;";
+        refreshBtn.addEventListener("click", () => {
+            banner.remove();
+            location.reload();
+        });
+
+        const dismissBtn = document.createElement("button");
+        dismissBtn.type = "button";
+        dismissBtn.textContent = "Dismiss";
+        dismissBtn.style.cssText = "border:none;background:#444;color:#fff;padding:0.45rem 0.85rem;border-radius:0.35rem;cursor:pointer;";
+        dismissBtn.addEventListener("click", () => banner.remove());
+
+        const buttonWrapper = document.createElement("div");
+        buttonWrapper.style.display = "flex";
+        buttonWrapper.style.gap = "0.5rem";
+        buttonWrapper.append(refreshBtn, dismissBtn);
+        banner.appendChild(buttonWrapper);
+
+        document.body.insertBefore(banner, document.body.firstChild);
+    };
+
+    mountBanner();
+}
 
 // default name
 const CustomName = localStorage.getItem("CustomName") || (() => {

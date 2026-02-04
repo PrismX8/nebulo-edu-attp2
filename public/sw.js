@@ -1,3 +1,5 @@
+const SW_VERSION = "2026-02-04-1";
+
 if (navigator.userAgent.includes('Firefox')) {
     Object.defineProperty(globalThis, 'crossOriginIsolated', {
         value: true,
@@ -47,4 +49,13 @@ async function handleRequest(event) {
 
 self.addEventListener("fetch", (event) => {
     event.respondWith(handleRequest(event));
+});
+
+
+self.addEventListener("install", (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+    event.waitUntil(self.clients.claim());
 });
