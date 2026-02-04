@@ -8,11 +8,14 @@ import fastifyStatic from "@fastify/static";
 import { scramjetPath } from "@mercuryworkshop/scramjet/path";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
+import 'dotenv/config';
+import Ably from 'ably';
 
 // ---------------------
 // Paths
 // ---------------------
 const publicPath = fileURLToPath(new URL("public/", import.meta.url));
+const pagesPath = fileURLToPath(new URL("pages/", import.meta.url));
 
 
 // ---------------------
@@ -100,8 +103,14 @@ const fastify = Fastify({
 // Static files
 // ---------------------
 fastify.register(fastifyStatic, {
-	root: publicPath,
-	decorateReply: true,
+  root: pagesPath,
+  prefix: "/pages/",
+  decorateReply: false,
+});
+
+fastify.register(fastifyStatic, {
+  root: publicPath,
+  decorateReply: true,
 });
 
 fastify.register(fastifyStatic, {
@@ -154,9 +163,13 @@ const pages = [
   { path: "/test", file: "browser.html" },
   { path: "/search", file: "search.html" },
   { path: "/helper", file: "ai.html" },
+  { path: "/help", file: "help.html" },
   { path: "/tool", file: "tools.html" },
   { path: "/blocked", file: "blocked.html" },
+  { path: "/links", file: "links.html" },
   { path: "/bug", file: "report.html" },
+  { path: "/whatsnew", file: "whatsnew.html" },
+  { path: "/achievements", file: "achievements.html" },
   { path: "/watch", file: "watch.html" },
 ];
 
@@ -244,6 +257,18 @@ function shutdown() {
 	fastify.close();
 	process.exit(0);
 }
+fastify.get('/ably/token', async (req, reply) => {
+  const apiKey = process.env.ABLY_API_KEY;
+  if (!apiKey) return reply.code(500).send({ error: 'Missing ABLY_API_KEY in .env' });
+
+  const ably = new Ably.Rest(apiKey);
+
+  // Optional: use a clientId if you want presence/features later
+  const tokenRequest = await ably.auth.createTokenRequest({ clientId: 'nebulo-web' });
+
+  reply.header('Cache-Control', 'no-store');
+  return tokenRequest;
+});
 
 let port = parseInt(process.env.PORT || "3000");
 

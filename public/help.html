@@ -261,7 +261,7 @@
   <meta property="og:title" content="Nebulo Education Plus - Educational Algebra Practice Tests">
   <meta property="og:description" content="Step into a dedicated math site built around educational algebra practice tests designed to enhance advanced math skills.">
 
-<title>Blocked</title>
+<title>Nebulo Help</title>
 
 
 
@@ -325,199 +325,7 @@
 
 
 
-<link rel="icon" type="image/x-icon" href="/assets/img/nebulologo.png" />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <link rel="stylesheet" href="assets/css/index.css">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <link rel="stylesheet" href="assets/css/themes.css">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
+  <link rel="stylesheet" href="/assets/css/themes.css">
 
 
 
@@ -645,6 +453,518 @@
 
 
 
+    :root {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      --bg: #030712;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      --card: #111827;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      --accent: #7dd3c0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      --text: #f8fafc;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      --muted: rgba(248, 250, 252, 0.75);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    * { box-sizing: border-box; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     body {
 
 
@@ -709,7 +1029,7 @@
 
 
 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
 
 
 
@@ -773,7 +1093,7 @@
 
 
 
-      background-color: var(--primary);
+      min-height: 100vh;
 
 
 
@@ -837,7 +1157,199 @@
 
 
 
-      color: white;
+      background: radial-gradient(circle at top, rgba(125, 211, 192, 0.25), transparent 45%), var(--bg);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      font-family: "Inter", system-ui, sans-serif;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      color: var(--text);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      padding: 2rem 1rem;
 
 
 
@@ -965,70 +1477,6 @@
 
 
 
-      flex-direction: column;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       justify-content: center;
 
 
@@ -1093,7 +1541,7 @@
 
 
 
-      align-items: center;
+    }
 
 
 
@@ -1157,7 +1605,199 @@
 
 
 
-      height: 100vh;
+    main {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      width: min(1100px, 100%);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    header {
 
 
 
@@ -1285,327 +1925,7 @@
 
 
 
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    h1 {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      font-size: 48px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      margin-bottom: 20px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      color: var(--font);
+      margin-bottom: 1.5rem;
 
 
 
@@ -1733,6 +2053,7 @@
 
 
 
+    header h1 {
 
 
 
@@ -1796,8 +2117,8 @@
 
 
 
+      margin: 0;
 
-    p {
 
 
 
@@ -1860,136 +2181,7 @@
 
 
 
-
-      font-size: 18px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      margin-bottom: 40px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      color: var(--font);
+      font-size: clamp(2.25rem, 4vw, 3rem);
 
 
 
@@ -2117,6 +2309,7 @@
 
 
 
+    header p {
 
 
 
@@ -2180,8 +2373,8 @@
 
 
 
+      color: var(--muted);
 
-    .retry-btn {
 
 
 
@@ -2244,456 +2437,7 @@
 
 
 
-
-      padding: 12px 24px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      font-size: 16px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      background-color: var(--accent);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      color: #fff;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      border: none;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      border-radius: 8px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      cursor: pointer;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      transition: background 0.2s;
+      margin-top: 0.5rem;
 
 
 
@@ -2821,6 +2565,7 @@
 
 
 
+    .grid {
 
 
 
@@ -2884,8 +2629,8 @@
 
 
 
+      display: grid;
 
-    .retry-btn:hover {
 
 
 
@@ -2948,8 +2693,71 @@
 
 
 
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 
-      background-color: #5555ff;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      gap: 1rem;
 
 
 
@@ -3077,6 +2885,7 @@
 
 
 
+    article {
 
 
 
@@ -3140,8 +2949,8 @@
 
 
 
+      background: var(--card);
 
-    #countdown {
 
 
 
@@ -3204,8 +3013,8 @@
 
 
 
+      border-radius: 16px;
 
-      margin-top: 20px;
 
 
 
@@ -3268,8 +3077,8 @@
 
 
 
+      padding: 1.25rem;
 
-      font-size: 14px;
 
 
 
@@ -3332,8 +3141,1543 @@
 
 
 
+      border: 1px solid rgba(255,255,255,0.06);
 
-      opacity: 0.8;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      box-shadow: 0 18px 45px rgba(0,0,0,0.4);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    article h2 {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      margin-top: 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      margin-bottom: 0.75rem;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      font-size: 1.1rem;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      color: var(--accent);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    article ul {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      margin: 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      padding-left: 1rem;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      color: var(--muted);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      line-height: 1.6;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    article ul li {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      margin-bottom: 0.5rem;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .note {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      margin-top: 1rem;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      padding: 0.85rem;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      border-radius: 10px;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      background: rgba(125, 211, 192, 0.08);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      border: 1px solid rgba(125, 211, 192, 0.4);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      color: #a7f3d0;
 
 
 
@@ -3525,70 +4869,6 @@
 
 
 
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </head>
 
 
@@ -3653,7 +4933,7 @@
 
 
 
-<body><h1>Access Blocked</h1>
+<body>
 
 
 
@@ -3717,7 +4997,7 @@
 
 
 
-  <p>Sorry, this site is blocked for violating policy. You may try again later.</p>
+  <main>
 
 
 
@@ -3781,7 +5061,7 @@
 
 
 
-  <button class="retry-btn" onclick="window.location.href='/'">Retry</button>
+    <header>
 
 
 
@@ -3845,7 +5125,7 @@
 
 
 
-<div id="countdown"></div>
+      <h1>Nebulo OS Help</h1>
 
 
 
@@ -3909,7 +5189,7 @@
 
 
 
-<script>
+      <p>Step-by-step reminders on keeping your workspace moving smoothly.</p>
 
 
 
@@ -3973,7 +5253,7 @@
 
 
 
-const countdownEl = document.getElementById("countdown");
+    </header>
 
 
 
@@ -4101,7 +5381,7 @@ const countdownEl = document.getElementById("countdown");
 
 
 
-// Use your getFingerprint function
+    <div class="grid">
 
 
 
@@ -4165,7 +5445,7 @@ const countdownEl = document.getElementById("countdown");
 
 
 
-async function getFingerprint() {
+      <article>
 
 
 
@@ -4229,7 +5509,7 @@ async function getFingerprint() {
 
 
 
-    function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);}return(h>>>0).toString(16);}
+        <h2>Launching Apps</h2>
 
 
 
@@ -4293,7 +5573,7 @@ async function getFingerprint() {
 
 
 
-    function canvasFP(){const c=document.createElement('canvas');const ctx=c.getContext('2d');ctx.font='16px Arial';ctx.fillText('fp-demo',2,2);ctx.fillRect(50,10,100,20);return c.toDataURL();}
+        <ul>
 
 
 
@@ -4357,7 +5637,7 @@ async function getFingerprint() {
 
 
 
-    function webglFP(){const c=document.createElement('canvas');const gl=c.getContext('webgl')||c.getContext('experimental-webgl');if(!gl)return'';const dbg=gl.getExtension('WEBGL_debug_renderer_info');return[gl.getParameter(gl.VERSION),gl.getParameter(gl.VENDOR),gl.getParameter(gl.RENDERER),dbg?gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL):'',dbg?gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL):''].join('|');}
+          <li>Click an icon on the desktop to open it in a new window. Double-clicking brings it to focus.</li>
 
 
 
@@ -4421,7 +5701,7 @@ async function getFingerprint() {
 
 
 
-    async function audioFP(){return new Promise(resolve=>{const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC)return resolve('');const ctx=new AC(1,44100,44100);const osc=ctx.createOscillator();const anl=ctx.createAnalyser();osc.connect(anl);anl.connect(ctx.destination);osc.start(0);ctx.startRendering().then(buf=>resolve(buf.getChannelData(0).slice(0,1000).reduce((a,b)=>a+b,0).toString())).catch(()=>resolve(''));});}
+          <li>Use the taskbar at the bottom to reopen or minimize any running window.</li>
 
 
 
@@ -4485,7 +5765,7 @@ async function getFingerprint() {
 
 
 
-    function browserInfo(){return[navigator.userAgent,screen.width,screen.height,screen.colorDepth,Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');}
+          <li>The start menu mirrors the same list—tap a card to launch the corresponding app.</li>
 
 
 
@@ -4549,7 +5829,7 @@ async function getFingerprint() {
 
 
 
-    const combined=[hash(canvasFP()),hash(webglFP()),hash(await audioFP()),hash(browserInfo())].join('|');
+        </ul>
 
 
 
@@ -4613,7 +5893,7 @@ async function getFingerprint() {
 
 
 
-    return hash(combined);
+      </article>
 
 
 
@@ -4677,7 +5957,6 @@ async function getFingerprint() {
 
 
 
-}
 
 
 
@@ -4742,6 +6021,7 @@ async function getFingerprint() {
 
 
 
+      <article>
 
 
 
@@ -4805,6 +6085,7 @@ async function getFingerprint() {
 
 
 
+        <h2>Window Controls</h2>
 
 
 
@@ -4868,8 +6149,8 @@ async function getFingerprint() {
 
 
 
+        <ul>
 
-// Fetch remaining ban time from server
 
 
 
@@ -4932,8 +6213,8 @@ async function getFingerprint() {
 
 
 
+          <li>The window header contains minimize, maximize, and close controls. Hover to see the tooltips.</li>
 
-async function updateServerCountdown() {
 
 
 
@@ -4996,8 +6277,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>You can move windows by dragging the header and resize them from the edges or corners.</li>
 
-  const key = "nebulo_chances_" + await getFingerprint();
 
 
 
@@ -5060,8 +6341,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>If something blocks a window, you can refresh the entire desktop with the tray refresh button.</li>
 
-    localStorage.setItem(key, "2");
 
 
 
@@ -5124,8 +6405,8 @@ async function updateServerCountdown() {
 
 
 
+        </ul>
 
-    const fingerprint = await getFingerprint();
 
 
 
@@ -5188,6 +6469,7 @@ async function updateServerCountdown() {
 
 
 
+      </article>
 
 
 
@@ -5253,7 +6535,6 @@ async function updateServerCountdown() {
 
 
 
-    try {
 
 
 
@@ -5316,8 +6597,8 @@ async function updateServerCountdown() {
 
 
 
+      <article>
 
-        const res = await fetch('/api/ban-time', {
 
 
 
@@ -5380,8 +6661,8 @@ async function updateServerCountdown() {
 
 
 
+        <h2>Organizing Icons</h2>
 
-            method: 'POST',
 
 
 
@@ -5444,8 +6725,8 @@ async function updateServerCountdown() {
 
 
 
+        <ul>
 
-            headers: { 'Content-Type': 'application/json' },
 
 
 
@@ -5508,8 +6789,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>Drag icons on the desktop to rearrange them. If you accidentally start dragging, just release and click again.</li>
 
-            body: JSON.stringify({ fingerprint })
 
 
 
@@ -5572,8 +6853,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>Position data is saved automatically so your layout stays consistent across sessions.</li>
 
-        });
 
 
 
@@ -5636,8 +6917,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>Right-click an icon for options like pinning it to the taskbar for quick access.</li>
 
-        const data = await res.json();
 
 
 
@@ -5700,6 +6981,7 @@ async function updateServerCountdown() {
 
 
 
+        </ul>
 
 
 
@@ -5763,9 +7045,9 @@ async function updateServerCountdown() {
 
 
 
+      </article>
 
 
-        if (data.remainingMinutes <= -2) {
 
 
 
@@ -5829,7 +7111,6 @@ async function updateServerCountdown() {
 
 
 
-            countdownEl.textContent = "Ban expired. You can retry now.";
 
 
 
@@ -5892,8 +7173,8 @@ async function updateServerCountdown() {
 
 
 
+      <article>
 
-            window.location.href = "/@"; // redirect to main page
 
 
 
@@ -5956,8 +7237,8 @@ async function updateServerCountdown() {
 
 
 
+        <h2>Settings & Preferences</h2>
 
-        } else {
 
 
 
@@ -6020,8 +7301,8 @@ async function updateServerCountdown() {
 
 
 
+        <ul>
 
-            countdownEl.textContent = `Try again in ${data.remainingMinutes} minute(s)`;
 
 
 
@@ -6084,8 +7365,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>Open Settings to switch themes, set a panic key, or update your background image.</li>
 
-        }
 
 
 
@@ -6148,8 +7429,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>Any changes dispatch live events so running apps can react to fresh preferences.</li>
 
-    } catch (err) {
 
 
 
@@ -6212,8 +7493,8 @@ async function updateServerCountdown() {
 
 
 
+          <li>Export/Import lets you back up cookies, localStorage, and theme settings for safekeeping.</li>
 
-        console.error('Failed to fetch remaining ban time:', err);
 
 
 
@@ -6276,8 +7557,8 @@ async function updateServerCountdown() {
 
 
 
+        </ul>
 
-        countdownEl.textContent = "Failed to fetch remaining ban time.";
 
 
 
@@ -6340,8 +7621,8 @@ async function updateServerCountdown() {
 
 
 
+      </article>
 
-    }
 
 
 
@@ -6404,8 +7685,8 @@ async function updateServerCountdown() {
 
 
 
+    </div>
 
-}
 
 
 
@@ -6532,8 +7813,8 @@ async function updateServerCountdown() {
 
 
 
+    <section class="note">
 
-// Update every 30 seconds
 
 
 
@@ -6596,8 +7877,8 @@ async function updateServerCountdown() {
 
 
 
+      Keep this page bookmarked in the help app for quick reminders when you reboot the environment.
 
-updateServerCountdown();
 
 
 
@@ -6660,8 +7941,8 @@ updateServerCountdown();
 
 
 
+    </section>
 
-setInterval(updateServerCountdown, 30000);
 
 
 
@@ -6724,8 +8005,7 @@ setInterval(updateServerCountdown, 30000);
 
 
 
-
-</script>
+  </main>
 
 
 
