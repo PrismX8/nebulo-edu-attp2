@@ -102,8 +102,9 @@ if (!localStorage.getItem("firstOpen")) {
 
 
     // =====================
-    // AB open cloaked window
+    // AB open cloaked window (temporarily disabled to stop about:blank popups)
     // =====================
+    /*
     function AB_Cloak() {
         let framed;
         try { framed = window !== top; }
@@ -138,4 +139,5 @@ if (!localStorage.getItem("firstOpen")) {
     }
 
     AB_Cloak();
+    */
 })();
