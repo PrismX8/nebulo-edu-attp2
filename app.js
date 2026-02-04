@@ -368,8 +368,8 @@ if (cluster.isPrimary && WORKERS > 1) {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  let port = parseInt(process.env.PORT || "3000", 10);
-  if (isNaN(port)) port = 3000;
+  let port = parseInt(process.env.PORT || "8081", 10);
+  if (isNaN(port)) port = 8081;
 
   fastify.listen({ port, host: "0.0.0.0" });
 }
