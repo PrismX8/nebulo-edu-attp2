@@ -16,7 +16,7 @@ function shouldWarnAboutProxyError(url) {
     return patterns.some(pattern => url.includes(pattern));
 }
 
-function showProxyWarning(message, { autoRetry = true, retryDelay = PROXY_WARNING_RETRY_MS } = {}) {
+function showProxyWarning(message, { autoRetry = false, retryDelay = PROXY_WARNING_RETRY_MS } = {}) {
     if (document.getElementById(PROXY_WARNING_ID)) return;
 
     const mountBanner = () => {
@@ -72,26 +72,6 @@ function showProxyWarning(message, { autoRetry = true, retryDelay = PROXY_WARNIN
         closeBtn.addEventListener("click", () => banner.remove());
         actions.appendChild(closeBtn);
 
-        if (autoRetry) {
-            const countdown = document.createElement("span");
-            countdown.style.fontSize = "0.85rem";
-            countdown.style.marginLeft = "auto";
-            countdown.style.opacity = "0.9";
-            actions.appendChild(countdown);
-
-            let remaining = Math.ceil(retryDelay / 1000);
-            countdown.textContent = `Retrying in ${remaining}s...`;
-            const intervalId = setInterval(() => {
-                remaining -= 1;
-                if (remaining <= 0) {
-                    clearInterval(intervalId);
-                    location.reload();
-                    return;
-                }
-                countdown.textContent = `Retrying in ${remaining}s...`;
-            }, 1000);
-        }
-
         banner.appendChild(actions);
         document.body.appendChild(banner);
     };
@@ -104,8 +84,7 @@ window.addEventListener("error", (event) => {
     const url = target?.src || target?.href || event?.filename;
     if (shouldWarnAboutProxyError(url)) {
         showProxyWarning(
-            "The proxy backend is being rate limited or returned an error. Please wait a few seconds and try again.",
-            { autoRetry: true }
+            "The proxy backend is being rate limited or returned an error. Please wait a few seconds and try again."
         );
     }
 }, true);
@@ -114,8 +93,7 @@ window.addEventListener("unhandledrejection", (event) => {
     const reason = event?.reason?.message || event?.reason?.toString?.();
     if (reason && reason.includes("Failed to fetch dynamically imported module")) {
         showProxyWarning(
-            "The proxy failed to fetch a module because the upstream server responded with an error. Please reload when the proxy recovers.",
-            { autoRetry: true }
+            "The proxy failed to fetch a module because the upstream server responded with an error. Please reload when the proxy recovers."
         );
     }
 });

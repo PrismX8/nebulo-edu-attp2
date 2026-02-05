@@ -1591,17 +1591,17 @@
     // Apps arranged in order
     const apps = [
       { id:'browser', name:'Browser', url:'/test', icon:'/assets/imgs/browser.png', desc:'Browse the web', goldenRing: true },
-      { id:'games', name:'Games', url:'#folder', icon:'<i class="fa-solid fa-gamepad"></i>', desc:'Games collection', folder: true, goldenRing: true },
-      { id:'apps', name:'Apps', url:'#apps-folder', icon:'<i class="fa-brands fa-app-store"></i>', desc:'Apps collection', folder: true, goldenRing: true },
-      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'<i class="fa-solid fa-headphones"></i>', desc:'Listen & chill', proxied: true },
-      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'<i class="fa-solid fa-tv"></i>', desc:'Watch something', proxied: true },
-      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'<i class="fa-solid fa-robot"></i>', desc:'Open the bot tool', proxied: true, ring:'red' },
-      { id:'chat', name:'Global Chat', url:'https://tlk.io/nebulo', icon:'fa-comments', desc:'Talk with others', proxied: true },
-      { id:'links', name:'Links', url:'/links', icon:'fa-link', desc:'Useful shortcuts' },
-      { id:'settings', name:'Settings', url:'/settings', icon:'fa-cog', desc:'System settings' },
-      { id:'help', name:'Help', url:'/help', icon:'fa-circle-question', desc:'Get help' },
-      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-star', desc:'Updates & notes' },
-      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-trophy', desc:'Track progress' },
+      { id:'games', name:'Games', url:'#folder', icon:'fa-solid fa-gamepad', desc:'Games collection', folder: true, goldenRing: true },
+      { id:'apps', name:'Apps', url:'#apps-folder', icon:'fa-brands fa-app-store', desc:'Apps collection', folder: true, goldenRing: true },
+      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'fa-solid fa-headphones', desc:'Listen & chill', proxied: true },
+      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'fa-solid fa-tv', desc:'Watch something', proxied: true },
+      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'fa-solid fa-robot', desc:'Open the bot tool', proxied: true, ring:'red' },
+      { id:'chat', name:'Global Chat', url:'https://tlk.io/nebulo', icon:'fa-solid fa-comments', desc:'Talk with others', proxied: true },
+      { id:'links', name:'Links', url:'/links', icon:'fa-solid fa-link', desc:'Useful shortcuts' },
+      { id:'settings', name:'Settings', url:'/settings', icon:'fa-solid fa-cog', desc:'System settings' },
+      { id:'help', name:'Help', url:'/help', icon:'fa-solid fa-circle-question', desc:'Get help' },
+      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-solid fa-star', desc:'Updates & notes' },
+      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-solid fa-trophy', desc:'Track progress' },
       { id:'something-not-working', name:'Not working?', url:'https://forms.gle/GbmQTfsa8ta8oV8n8', icon:'/assets/img/warning.png', desc:'Report an outage or broken app', proxied: false },
     ];
     // Games folder contents
@@ -1805,7 +1805,7 @@
     }
     /* ---------- Desktop + Start ---------- */
     function iconHTML(app){
-      if (app.icon.startsWith('fa-')) return `<i class="fa-solid ${app.icon} app-icon-fa"></i>`;
+      if (typeof app.icon === 'string' && app.icon.startsWith('fa-')) return `<i class="${app.icon} app-icon-fa"></i>`;
       const isImageUrl = /\.(png|jpe?g|webp|svg)(\?.*)?$/.test(app.icon) || app.icon.startsWith('/') || app.icon.startsWith('http');
       if (isImageUrl) {
         return `<img src="${app.icon}" class="app-icon-img" alt="${escapeHtml(app.name)}">`;
