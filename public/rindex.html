@@ -1631,7 +1631,7 @@
     ];
     // Pinned apps
     const DEFAULT_PINNED = ['browser','games','music','chat','settings'];
-    const state = {
+    const state = (window.state = {
       windows: [],
       z: 2000,
       activeId: null,
@@ -1645,7 +1645,7 @@
       dragOffsetX: 0,
       dragOffsetY: 0,
       dragCandidate: null,
-    };
+    });
     const DESKTOP_ORDER_KEY = 'nebuloDesktopOrderV53';
     /* ---------- Proxy Functions ---------- */
     const SEARCH_ENGINE_DEFAULT = "brave";
@@ -3156,4 +3156,71 @@
     })();
   </script>
 </body>
+
+<div id="workspace-popup" class="workspace-popup">
+  <div class="workspace-popup__card">
+    <strong>Quick update</strong>
+    <p>
+      I’ll be spending time improving functionality, but the next release is still a while away.
+      Before making more changes, I will make sure everything is working.
+      You can still use the site, but a few features may not behave perfectly yet.
+    </p>
+    <button id="workspace-popup-close">Ok</button>
+  </div>
+</div>
+
+<style>
+  .workspace-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 10, 20, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .workspace-popup.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .workspace-popup__card {
+    background: rgba(10, 15, 25, 0.97);
+    border-radius: 18px;
+    padding: 1.5rem;
+    max-width: 420px;
+    width: min(90vw, 420px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    color: #f5f7ff;
+    font-family: Inter, system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .workspace-popup__card button {
+    margin-top: 0.5rem;
+    padding: 0.65rem 1.4rem;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #7dd3c0, #60a5fa);
+    color: #111;
+    font-weight: 700;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const popup = document.getElementById("workspace-popup");
+    const closeBtn = document.getElementById("workspace-popup-close");
+    if (!popup || !closeBtn) return;
+    popup.classList.add("show");
+    closeBtn.addEventListener("click", () => {
+      popup.classList.remove("show");
+    });
+  });
+</script>
 </html>
