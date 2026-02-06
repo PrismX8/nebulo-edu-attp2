@@ -81,6 +81,7 @@ function showProxyWarning(message, { autoRetry = false, retryDelay = PROXY_WARNI
 window.addEventListener("error", (event) => {
     const target = event?.target;
     const url = target?.src || target?.href || event?.filename;
+	handleMuxError(event?.error || event?.message, "window.error");
     if (shouldWarnAboutProxyError(url)) {
         showProxyWarning(
             "The proxy backend is being rate limited or returned an error. Please wait a few seconds and try again."
@@ -95,6 +96,7 @@ window.addEventListener("unhandledrejection", (event) => {
             "The proxy failed to fetch a module because the upstream server responded with an error. Please reload when the proxy recovers."
         );
     }
+	handleMuxError(event?.reason, "unhandledrejection");
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -113,6 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	scramjet.init();
 
 	let baremuxConnection = null;
+	let baremuxInitPromise = null;
+	let lastBaremuxReconnect = 0;
+	const BAREMUX_RECONNECT_THROTTLE_MS = 2500;
 
 	// === Helper: async-safe localStorage write ===
 	function safeStore(key, value) {
@@ -124,26 +129,45 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// === BareMux init (only once per session) ===
-	async function initBareMux() {
-		try {
-			if (baremuxConnection) return baremuxConnection;
-			baremuxConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-			const wispUrl =
-				(location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
-
-			const transport = localStorage.getItem("transport") || "epoxy";
-			localStorage.setItem("transport", transport);
-
-			const expectedTransport =
-				transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
-
-			if ((await baremuxConnection.getTransport()) !== expectedTransport) {
-				await baremuxConnection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
-				console.log(`Using ${transport} transport. Wisp URL: ${wispUrl}`);
-			}
-		} catch (err) {
-			console.error("An error occurred while setting up BareMux:", err);
+	async function initBareMux({ force = false } = {}) {
+		if (force) {
+			baremuxConnection = null;
+			baremuxInitPromise = null;
 		}
+		if (baremuxInitPromise) {
+			return baremuxInitPromise;
+		}
+
+		baremuxInitPromise = (async () => {
+			try {
+				if (!baremuxConnection) {
+					baremuxConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+				}
+
+				const wispUrl =
+					(location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+
+				const transport = localStorage.getItem("transport") || "epoxy";
+				localStorage.setItem("transport", transport);
+
+				const expectedTransport =
+					transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+
+				if ((await baremuxConnection.getTransport()) !== expectedTransport) {
+					await baremuxConnection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
+					console.log(`Using ${transport} transport. Wisp URL: ${wispUrl}`);
+				}
+
+				return baremuxConnection;
+			} catch (err) {
+				console.error("An error occurred while setting up BareMux:", err);
+				throw err;
+			} finally {
+				baremuxInitPromise = null;
+			}
+		})();
+
+		return baremuxInitPromise;
 	}
 
 	// === Service Worker (register once if missing) ===
@@ -156,6 +180,47 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		} catch (err) {
 			console.error("Service worker registration failed:", err);
+		}
+	}
+
+	function normalizeMuxError(value) {
+		if (!value) return "";
+		if (typeof value === "string") return value;
+		if (value.message) return value.message;
+		try {
+			return String(value);
+		} catch {
+			return "";
+		}
+	}
+
+	function shouldRestartBareMux(value) {
+		const text = normalizeMuxError(value).toLowerCase();
+		if (!text) return false;
+		return (
+			text.includes("muxtaskended") ||
+			text.includes("multiplexor task ended") ||
+			text.includes("mux task ended") ||
+			text.includes("hyper client") ||
+			text.includes("wisp")
+		);
+	}
+
+	async function rebuildBareMux(reason) {
+		const now = Date.now();
+		if (now - lastBaremuxReconnect < BAREMUX_RECONNECT_THROTTLE_MS) return;
+		lastBaremuxReconnect = now;
+		console.warn(`Reinitializing BareMux because ${reason}`);
+		try {
+			await initBareMux({ force: true });
+		} catch (err) {
+			console.error("BareMux reinitialization failed:", err);
+		}
+	}
+
+	function handleMuxError(value, label) {
+		if (shouldRestartBareMux(value)) {
+			rebuildBareMux(label);
 		}
 	}
 
@@ -400,6 +465,12 @@ if (form && input) {
 	if (lastDecodedUrl && input) {
 		input.placeholder = lastDecodedUrl;
 	}
+
+	document.addEventListener("visibilitychange", () => {
+		if (document.visibilityState === "visible") {
+			initBareMux().catch((err) => console.warn("BareMux warm-up failed:", err));
+		}
+	});
 
 	// === Lazy init background tasks ===
 	window.addEventListener("load", () => {
