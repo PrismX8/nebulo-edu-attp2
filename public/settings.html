@@ -785,7 +785,7 @@ const initSettings = () => {
   themeSelect.value = storage.get('theme', 'default');
   proxySelect.value = storage.get('proxy', 'uv');
   transportSelect.value = storage.get('transport', 'epoxy');
-  engineSelect.value = storage.get('searchEngine', 'brave');
+  engineSelect.value = storage.get('searchEngine', 'duckduckgo');
   particlesSelect.value = storage.get('particles', 'true');
   themeSelect.addEventListener('change', () => storage.set('theme', themeSelect.value));
   const notifyChange = (key, value) => {

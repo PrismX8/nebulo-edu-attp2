@@ -1648,7 +1648,7 @@
     });
     const DESKTOP_ORDER_KEY = 'nebuloDesktopOrderV53';
     /* ---------- Proxy Functions ---------- */
-    const SEARCH_ENGINE_DEFAULT = "brave";
+    const SEARCH_ENGINE_DEFAULT = "duckduckgo";
     function resolveSearchUrl(query) {
       if (query.startsWith('http://') || query.startsWith('https://')) {
         return query;
@@ -1672,7 +1672,7 @@
         case 'irs':
           return `https://www.irs.gov/site-index-search?search=${encodeURIComponent(query)}`;
         default:
-          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
       }
     }
     async function encodeWithProxy(url, proxyHint = null) {

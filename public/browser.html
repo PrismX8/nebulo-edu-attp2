@@ -518,7 +518,7 @@
       { id:'settings', name:'Settings', url:'/settings', icon:'fa-cog' }
     ];
     // Search engines
-    const SEARCH_ENGINE_DEFAULT = "brave";
+    const SEARCH_ENGINE_DEFAULT = "duckduckgo";
     const PROXY_DEFAULT = "uv";
     // Initialize browser functionality
     document.addEventListener('DOMContentLoaded', function() {
@@ -588,7 +588,7 @@
           case 'irs':
             return `https://www.irs.gov/site-index-search?search=${encodeURIComponent(query)}`;
           default:
-            return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+            return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
         }
       }
       // Proxy encoding function (same as OS)

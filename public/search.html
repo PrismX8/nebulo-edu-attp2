@@ -959,7 +959,7 @@
           return trimmedQuery.startsWith('www.') ? 'https://' + trimmedQuery : 'https://www.' + trimmedQuery;
         }
         // Otherwise, treat as search query
-        const engine = localStorage.getItem('searchEngine') || 'brave';
+        const engine = localStorage.getItem('searchEngine') || 'duckduckgo';
         switch(engine) {
           case 'google':
             return `https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`;
@@ -972,8 +972,9 @@
           case 'ecosia':
             return `https://www.ecosia.org/search?q=${encodeURIComponent(trimmedQuery)}`;
           case 'brave':
-          default:
             return `https://search.brave.com/search?q=${encodeURIComponent(trimmedQuery)}`;
+          default:
+            return `https://duckduckgo.com/?q=${encodeURIComponent(trimmedQuery)}`;
         }
       }
       // Perform search - FIXED VERSION

@@ -225,7 +225,7 @@ if (form && input) {
 
 		// --- Search engine fallback ---
 		if (!isUrl(url)) {
-			const engine = localStorage.getItem("searchEngine") || "brave";
+			const engine = localStorage.getItem("searchEngine") || "duckduckgo";
 			switch (engine) {
 				case "brave":
 					url = "https://search.brave.com/search?q=" + url;
@@ -249,7 +249,7 @@ if (form && input) {
 					url = "https://www.irs.gov/site-index-search?search=" + url;
 					break;
 				default:
-					url = "https://search.brave.com/search?q=" + url;
+					url = "https://duckduckgo.com/?t=h_&q=" + url;
 					break;
 			}
 		} else if (!url.startsWith("https://") && !url.startsWith("http://")) {

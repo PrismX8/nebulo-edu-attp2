@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { element: themeSelect, key: 'theme' },
         { element: proxySelect, key: 'proxy' },
         { element: transSelect, key: 'transport', default: 'eproxy' },
-        { element: engineSelect, key: 'searchEngine', default: 'brave' }
+        { element: engineSelect, key: 'searchEngine', default: 'duckduckgo' }
     ];
 
     // === Load saved values ===
