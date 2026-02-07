@@ -875,12 +875,12 @@
     
     <div class="search-container">
       <div class="search-wrapper">
-        <input type="text" class="search-input" id="searchInput" placeholder="Enter URL (e.g., google.com, youtube.com)..." />
+        <input type="text" class="search-input" id="searchInput" placeholder="Search or enter URL..." />
         <i class="fas fa-search search-icon"></i>
         <div class="search-suggestions" id="searchSuggestions"></div>
       </div>
       <div class="search-hint">
-        <i class="fas fa-lightbulb"></i> Press Enter to browse any website through the proxy
+        <i class="fas fa-lightbulb"></i> Press Enter to search, or type a URL to browse
       </div>
     </div>
   </main>
@@ -890,11 +890,25 @@
     <!-- Browser windows will be added here -->
   </div>
 
+  <!-- Hidden iframe -->
+  <iframe id="frame" src="/search" style="display:none;"></iframe>
+
+  <!-- Load scripts -->
+  <script src="/assets/js/init.js?v=20260204"></script>
+  <script src="/baremux/index.js" defer></script>
+  <script src="/epoxy/index.js" defer></script>
+  <script src="/uv/uv.bundle.js" defer></script>
+  <script src="/uv/uv.config.js" defer></script>
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="/ec/eclipse.codecs.js" defer></script>
+  <script src="/ec/eclipse.config.js" defer></script>
+  <script src="/assets/js/search.js"></script>
+
   <!-- Main Application Script -->
   <script>
     // ======================
     // NEBULO OS V5.4
-    // Direct Proxy Navigation - No Search Engine Redirects
+    // Using Original Proxy Logic
     // ======================
     
     const VERSION = "V5.4";
@@ -1219,10 +1233,9 @@
       const loading = document.getElementById(`loading-${tabId}`);
       
       try {
-        // For external URLs, always use the proxy
         let finalUrl = url;
         
-        // Check if it's an external URL (starts with http:// or https://)
+        // For external URLs, use the proxy
         if (url.startsWith('http://') || url.startsWith('https://')) {
           // Use the proxy for this URL
           finalUrl = await encodeWithProxy(url);
@@ -1426,55 +1439,64 @@
       createNewTab(app, app.url, app.name);
     }
     
-    // Simple proxy encoding - DIRECT PROXY USAGE
-    async function encodeWithProxy(url) {
+    // Proxy functions - FROM YOUR ORIGINAL CODE
+    const SEARCH_ENGINE_DEFAULT = "duckduckgo";
+    
+    function resolveSearchUrl(query) {
+      if (query.startsWith('http://') || query.startsWith('https://')) {
+        return query;
+      } else if (query.includes('.') && !query.includes(' ')) {
+        return 'https://' + query;
+      }
+      const engine = (localStorage.getItem('searchEngine') || SEARCH_ENGINE_DEFAULT).toLowerCase();
+      switch (engine) {
+        case 'brave':
+          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+        case 'google':
+          return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        case 'duckduckgo':
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+        case 'bing':
+          return `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        case 'yahoo':
+          return `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
+        default:
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+      }
+    }
+    
+    async function encodeWithProxy(url, proxyHint = null) {
       try {
-        // Use Ultraviolet proxy if available
-        if (typeof __uv$config !== 'undefined') {
+        if (window.proxyEncoder) {
+          return await window.proxyEncoder.encode(url, proxyHint);
+        } else if (typeof __uv$config !== 'undefined') {
           return __uv$config.prefix + __uv$config.encodeUrl(url);
+        } else if (typeof window.encodeProxiedUrl === "function") {
+          return window.encodeProxiedUrl(url);
         }
-        
-        // If UV is not available, try to use the proxy endpoint directly
-        // This assumes your proxy is set up at /uv/service/
-        return '/uv/service/' + encodeURIComponent(url);
-        
       } catch(e) {
         console.error('Proxy encoding failed:', e);
-        // If proxy fails, return the original URL (will likely fail but gives user feedback)
-        return url;
       }
+      return url;
     }
     
-    // Parse user input to create proper URL
-    function parseUserInput(input) {
-      const trimmed = input.trim();
+    async function resolveAppUrl(app) {
+      const rawUrl = app.url;
+      const external = /^https?:\/\//i.test(rawUrl);
+      if (!external) return rawUrl;
       
-      // If it's already a full URL, use it
-      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-        return trimmed;
-      }
-      
-      // If it looks like a domain (has dots, no spaces)
-      if (trimmed.includes('.') && !trimmed.includes(' ')) {
-        // Check if it starts with www.
-        if (trimmed.startsWith('www.')) {
-          return 'https://' + trimmed;
+      if (app.proxied || !rawUrl.includes(location.hostname)) {
+        try {
+          const proxyHint = app.forceProxy || null;
+          return await encodeWithProxy(rawUrl, proxyHint);
+        } catch (err) {
+          console.error('Proxy encoding failed for', rawUrl, err);
         }
-        // Add https:// by default
-        return 'https://' + trimmed;
       }
-      
-      // If it's a local path (starts with /)
-      if (trimmed.startsWith('/')) {
-        return trimmed;
-      }
-      
-      // Otherwise, assume it's a search query and use a simple search
-      // But we're not using search engines, so we'll just try to navigate to it as a domain
-      return 'https://' + trimmed + '.com';
+      return rawUrl;
     }
     
-    // Search functionality - SIMPLIFIED - Just goes directly to sites via proxy
+    // Search functionality - USING YOUR ORIGINAL LOGIC
     function initSearch() {
       const input = document.getElementById('searchInput');
       const suggestions = document.getElementById('searchSuggestions');
@@ -1490,7 +1512,7 @@
       input.addEventListener('keydown', async (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          await navigateToSite(input.value);
+          await performSearch(input.value);
         } else if (e.key === 'Escape') {
           suggestions.style.display = 'none';
         }
@@ -1529,13 +1551,13 @@
       
       if (query.trim()) {
         suggestions.innerHTML += `
-          <div class="suggestion-item" data-go="${escapeAttr(query)}">
+          <div class="suggestion-item" data-search="${escapeAttr(query)}">
             <div style="width: 32px; height: 32px; background: rgba(52, 152, 219, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--accent-blue);">
-              <i class="fas fa-external-link-alt"></i>
+              <i class="fas fa-search"></i>
             </div>
             <div>
-              <div>Go to "${escapeHtml(query)}"</div>
-              <div style="font-size: 12px; color: var(--text-secondary);">Press Enter to browse via proxy</div>
+              <div>Search for "${escapeHtml(query)}"</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Press Enter to search the web</div>
             </div>
           </div>
         `;
@@ -1555,32 +1577,31 @@
         });
       });
       
-      const goBtn = suggestions.querySelector('[data-go]');
-      if (goBtn) {
-        goBtn.addEventListener('click', async () => {
-          await navigateToSite(goBtn.dataset.go);
+      const searchBtn = suggestions.querySelector('[data-search]');
+      if (searchBtn) {
+        searchBtn.addEventListener('click', async () => {
+          await performSearch(searchBtn.dataset.search);
           suggestions.style.display = 'none';
         });
       }
     }
     
-    async function navigateToSite(input) {
-      const trimmed = input.trim();
+    async function performSearch(query) {
+      const trimmed = query.trim();
       if (!trimmed) return;
       
-      const url = parseUserInput(trimmed);
+      const url = resolveSearchUrl(trimmed);
       const encodedUrl = await encodeWithProxy(url);
       
-      const siteApp = {
-        id: 'site-' + Date.now(),
-        name: `Site: ${trimmed.substring(0, 20)}${trimmed.length > 20 ? '...' : ''}`,
+      const searchApp = {
+        id: 'search-' + Date.now(),
+        name: `Search: ${trimmed.substring(0, 20)}${trimmed.length > 20 ? '...' : ''}`,
         url: encodedUrl,
-        icon: 'fa-external-link-alt',
-        desc: 'External website',
-        proxied: true
+        icon: 'fa-search',
+        desc: 'Search result'
       };
       
-      createNewTab(siteApp, encodedUrl, `Site: ${trimmed}`);
+      createNewTab(searchApp, encodedUrl, `Search: ${trimmed}`);
       document.getElementById('searchInput').value = '';
       document.getElementById('searchSuggestions').style.display = 'none';
     }
@@ -1624,7 +1645,7 @@
     
     // Global functions for external use
     window.openApp = openApp;
-    window.navigateToSite = navigateToSite;
+    window.performSearch = performSearch;
     
   </script>
 </body>
