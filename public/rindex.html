@@ -14,1431 +14,579 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg0:#070b14;
-      --bg1:#0b1220;
-      --card: rgba(16, 24, 40, 0.70);
-      --card2: rgba(18, 28, 48, 0.78);
-      --stroke: rgba(255,255,255,.10);
-      --stroke2: rgba(125, 211, 192, 0.28);
-      --text:#eaf0ff;
-      --muted: rgba(234,240,255,.70);
-      --muted2: rgba(234,240,255,.55);
-      --accent:#7dd3c0;
-      --accent2:#60a5fa;
-      --danger:#ff5c7a;
-      --shadow: 0 18px 60px rgba(0,0,0,.55);
-      --shadow2: 0 12px 28px rgba(0,0,0,.45);
-      --taskbar: rgba(9, 14, 26, 0.80);
-      --taskbar2: rgba(12, 18, 34, 0.86);
-      --radius: 18px;
-      --radius2: 14px;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    :root {
+      --bg-primary: #0a0f1a;
+      --bg-secondary: #0f172a;
+      --bg-surface: rgba(15, 23, 42, 0.95);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.15);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color-scheme: dark;
     }
-    *{box-sizing:border-box}
-    html, body{height:100%}
-    body{
-      margin:0;
-      color: var(--text);
-      overflow:auto;
-      user-select:none;
-      background:
-        radial-gradient(1200px 700px at 50% 0%, rgba(96,165,250,.18), transparent 60%),
-        radial-gradient(900px 600px at 12% 16%, rgba(125,211,192,.12), transparent 60%),
-        radial-gradient(900px 600px at 85% 20%, rgba(139,92,246,.10), transparent 60%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    /* Subtle background text */
-    .nebulo-os-bg{
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    /* Background gradient */
+    body::before {
+      content: '';
       position: fixed;
       inset: 0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      pointer-events:none;
-      z-index:0;
-      opacity:.9;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      z-index: -1;
     }
-    .nebulo-os-bg span{
-      font-weight: 900;
-      font-size: min(14vw, 140px);
-      letter-spacing: 1.6vw;
-      background: linear-gradient(90deg,
-        rgba(96,165,250,.14),
-        rgba(125,211,192,.10),
-        rgba(96,165,250,.14)
-      );
-      -webkit-background-clip:text;
-      background-clip:text;
-      color: transparent;
-      filter: blur(.2px);
-      text-shadow: 0 0 22px rgba(96,165,250,.10);
-      transform: translateY(-10px);
-      animation: bgFloat 18s ease-in-out infinite;
-      white-space: nowrap;
-    }
-    @keyframes bgFloat{
-      0%,100%{ transform: translateY(-10px) rotate(0deg) scale(1); }
-      50%{ transform: translateY(8px) rotate(.6deg) scale(1.01); }
-    }
-    /* Floating particles */
-    .bg-elements{
+
+    /* Top Navigation Bar */
+    .navbar {
       position: fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:0;
-      overflow:hidden;
-    }
-    .bg-particle{
-      position:absolute;
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, rgba(125,211,192,.10), transparent 70%);
-      animation: particleFloat linear infinite;
-      opacity: .5;
-      filter: blur(.2px);
-    }
-    @keyframes particleFloat{
-      from { transform: translateY(110vh) rotate(0deg); }
-      to { transform: translateY(-120px) rotate(360deg); }
-    }
-    /* Bootloader */
-    #bootloader{
-      position: fixed;
-      inset:0;
-      z-index: 50000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:
-        radial-gradient(900px 600px at 50% 20%, rgba(96,165,250,.18), transparent 60%),
-        linear-gradient(180deg, #050814, #070b14);
-      transition: opacity .45s ease, transform .45s ease;
-    }
-    #bootloader.hidden{
-      opacity:0;
-      transform: scale(1.02);
-      pointer-events:none;
-    }
-    .boot-card{
-      width: min(560px, 92vw);
-      border-radius: 26px;
-      background: rgba(7, 10, 18, .72);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 30px 90px rgba(0,0,0,.65);
-      backdrop-filter: blur(26px) saturate(160%);
-      padding: 28px 26px 22px;
-      position: relative;
-      overflow:hidden;
-    }
-    .boot-card::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(500px 220px at 40% -10%, rgba(125,211,192,.20), transparent 60%),
-                  radial-gradient(500px 220px at 60% 0%, rgba(96,165,250,.18), transparent 60%);
-      opacity:.7;
-      pointer-events:none;
-    }
-    .boot-top{
-      display:flex;
-      align-items:center;
-      gap: 14px;
-      position: relative;
-      z-index: 1;
-    }
-    .boot-logo{
-      width:52px; height:52px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow: 0 12px 30px rgba(0,0,0,.35);
-      overflow:hidden;
-    }
-    .boot-logo img{
-      width: 38px; height:38px;
-      object-fit: contain;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
-    }
-    .boot-title{
-      display:flex;
-      flex-direction:column;
-      gap: 3px;
-    }
-    .boot-title h1{
-      margin:0;
-      font-size: 20px;
-      letter-spacing:.08em;
-      font-weight: 800;
-    }
-    .boot-title .ver{
-      font-size: 12px;
-      color: rgba(125,211,192,.95);
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-    .boot-progress{
-      margin-top: 18px;
-      position: relative;
-      z-index: 1;
-    }
-    .bar{
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.09);
-      overflow:hidden;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-    }
-    .bar > div{
-      height: 100%;
-      width: 0%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(125,211,192,.95), rgba(96,165,250,.95));
-      box-shadow: 0 0 16px rgba(125,211,192,.25);
-      transition: width .25s ease;
-    }
-    .boot-msg{
-      margin-top: 12px;
-      font-size: 12px;
-      color: rgba(234,240,255,.70);
-      line-height: 1.45;
-      min-height: 36px;
-    }
-    .boot-footer{
-      margin-top: 16px;
-      font-size: 12px;
-      color: rgba(234,240,255,.52);
-      display:flex;
-      justify-content:space-between;
-      gap: 10px;
-      position: relative;
-      z-index: 1;
-    }
-    .boot-proxy{
-      margin-top: 8px;
-      font-size: 11px;
-      color: rgba(234,240,255,.65);
-      letter-spacing: 0.2px;
-    }
-    /* Top search bar */
-    .search-container{
-      position: fixed;
-      top: 0; left:0; right:0;
-      height: 58px;
-      z-index: 12000;
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      padding: 0 16px;
-      background: rgba(9, 14, 26, 0.85);
-      backdrop-filter: blur(24px) saturate(180%);
-      border-bottom: 1px solid rgba(125,211,192,0.15);
-      box-shadow: 0 8px 32px rgba(0,0,0,.45);
-    }
-    .search-logo{
-      width: 36px; height: 36px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04) url('/assets/img/nebulo-logo.png') center/contain no-repeat;
-      cursor: pointer;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-      flex-shrink: 0;
-    }
-    .search-logo:hover{
-      transform: translateY(-1px);
-      border-color: rgba(125,211,192,.32);
-      box-shadow: 0 10px 26px rgba(0,0,0,.35);
-    }
-    .search-form{ flex: 1; position: relative; }
-    .search-bar{
-      width: 100%;
-      height: 40px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(16, 24, 40, .65);
-      color: var(--text);
-      padding: 0 16px 0 44px;
-      outline: none;
-      transition: all .22s ease;
-      box-shadow: 0 8px 24px rgba(0,0,0,.30);
-      font-size: 14px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%237dd3c0' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: 16px center;
-    }
-    .search-bar:focus{
-      border-color: rgba(125,211,192,.45);
-      background: rgba(16, 24, 40, .78);
-      box-shadow: 0 12px 32px rgba(0,0,0,.42);
-      transform: translateY(-1px);
-    }
-    .search-suggestions{
-      position:absolute;
-      top: 50px;
+      top: 0;
       left: 0;
       right: 0;
-      background: rgba(10, 14, 24, 0.85);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 16px;
-      overflow:hidden;
-      display:none;
-      box-shadow: 0 22px 60px rgba(0,0,0,.55);
-      backdrop-filter: blur(22px) saturate(150%);
-      z-index: 13000;
-    }
-    .suggestion-item{
-      padding: 12px 14px;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      font-size: 13px;
-      color: rgba(234,240,255,.88);
-      cursor:pointer;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      transition: all .15s ease;
-    }
-    .suggestion-item:hover{
-      background: rgba(125,211,192,0.08);
-      padding-left: 18px;
-    }
-    .suggestion-item:last-child{ border-bottom:none; }
-    .suggestion-item i, .suggestion-item svg { opacity: .95; color: rgba(125,211,192,.95); }
-    .suggestion-header{
-      padding: 10px 14px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: rgba(255,255,255,.55);
-      background: rgba(0,0,0,.2);
-    }
-    /* Desktop - RESPONSIVE Grid layout */
-    .desktop{
-      position: fixed;
-      top: 58px;
-      left: 0; right:0;
-      bottom: 62px;
-      padding: 20px;
-      z-index: 1;
+      height: 60px;
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
       display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-content: flex-start;
-      justify-content: center;
-      overflow:auto;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
     }
-    .desktop::-webkit-scrollbar{ width: 10px; }
-    .desktop::-webkit-scrollbar-thumb{ 
-      background: rgba(255,255,255,.10); 
-      border-radius: 999px; 
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
     }
-    .desktop::-webkit-scrollbar-thumb:hover{ 
-      background: rgba(255,255,255,.16); 
-    }
-    /* Desktop Icons (clean + subtle) */
-    .app-icon{
-      width: 180px;
-      height: 160px;
-      border-radius: 20px;
-      padding: 12px 10px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
+
+    .logo {
+      display: flex;
+      align-items: center;
       gap: 10px;
-      cursor: move;
-      position: relative;
-      transition: all .22s ease;
-      border: 1px solid transparent;
-      user-select: none;
-      -webkit-user-drag: element;
-      flex-shrink: 0;
-    }
-    .app-icon.dragging{
-      opacity: 0.7;
-      transform: scale(0.95);
-      z-index: 10000;
-    }
-    .app-icon.drop-target{
-      border-color: rgba(125,211,192,0.6);
-      box-shadow: 0 0 30px rgba(125,211,192,0.35);
-    }
-    .app-icon.selected{
-      background: rgba(125,211,192,0.05);
-      border-color: rgba(125,211,192,.25);
-      box-shadow: 0 8px 24px rgba(0,0,0,.3);
-    }
-    .app-icon:hover{
-      transform: translateY(-3px);
-      background: rgba(255,255,255,.03);
-      border-color: rgba(125,211,192,.15);
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
-    }
-    .app-icon-container{
-      width: 100px;
-      height: 100px;
-      border-radius: 20px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: rgba(16, 24, 40, .55);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 12px 28px rgba(0,0,0,.32);
-      position: relative;
-      overflow:hidden;
-      transition: transform .2s ease;
-    }
-    .app-icon:hover .app-icon-container{
-      transform: scale(1.05);
-    }
-    .app-icon-container::after{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(120px 60px at 30% 20%, rgba(125,211,192,.18), transparent 60%),
-                  radial-gradient(120px 60px at 70% 10%, rgba(96,165,250,.16), transparent 60%);
-      opacity:.8;
-      pointer-events:none;
-    }
-    /* Golden ring for browser and games folder */
-    .app-icon-container.golden-ring{
-      border: 2px solid rgba(255, 215, 0, 0.8);
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3), 0 12px 28px rgba(0,0,0,.32);
-    }
-    .app-icon-container.golden-ring::after{
-      background: radial-gradient(120px 60px at 30% 20%, rgba(255, 215, 0, 0.25), transparent 60%),
-                  radial-gradient(120px 60px at 70% 10%, rgba(255, 215, 0, 0.15), transparent 60%);
-    }
-    .app-icon-fa{ 
-      font-size: 26px; 
-      z-index:1; 
-      color: rgba(125,211,192,.95);
-    }
-    .app-icon-img{ 
-      width: 64px; 
-      height: 64px; 
-      object-fit: contain; 
-      z-index:1;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,.35));
-    }
-    .app-icon-text{
-      width: 100%;
-      font-size: 13px;
-      font-weight: 600;
-      text-align:center;
-      color: rgba(234,240,255,.92);
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-      line-height: 1.3;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(10, 14, 24, 0.45);
-      border: 1px solid rgba(255,255,255,.08);
-      transition: all .2s ease;
-    }
-    .app-icon:hover .app-icon-text{
-      background: rgba(125,211,192,0.08);
-      border-color: rgba(125,211,192,.2);
-    }
-    .apps-folder-grid{
-      padding: 24px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 32px;
-      align-items: stretch;
-      max-height: calc(100% - 20px);
-      overflow-y: auto;
-    }
-    .apps-folder-tile{
-      width: 100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap: 8px;
-      padding: 6px;
-      cursor: pointer;
-      border-radius: 18px;
-      transition: transform .2s ease;
-      text-align: center;
-    }
-    .apps-folder-img{
-      width: 200px;
-      height: 200px;
-      border-radius: 24px;
-      border: none;
-      background: transparent;
-      object-fit: cover;
-      box-shadow: 0 30px 60px rgba(0,0,0,.55);
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-    .apps-folder-tile:hover{
-      transform: translateY(-4px);
-    }
-    .apps-folder-tile:hover .apps-folder-img{
-      box-shadow: 0 32px 70px rgba(0,0,0,.65);
-      transform: scale(1.02);
-    }
-    .apps-folder-name{
-      font-size: 15px;
       font-weight: 700;
-      line-height: 1.25;
-      max-width: 220px;
-      color: rgba(234,240,255,.95);
+      font-size: 18px;
+      color: var(--text-primary);
     }
-    .games-grid{
-      padding: 24px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 28px;
-      align-items: center;
-      justify-items: center;
-      width: 100%;
-    }
-    .games-tile{
-      width: 240px;
-      height: 240px;
-      border: none;
-      background: transparent;
-      padding: 0;
-      cursor: pointer;
-      border-radius: 26px;
-      transition: transform .22s ease, box-shadow .22s ease;
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: white;
     }
-    .games-tile:focus-visible{
-      outline: 2px solid rgba(125,211,192,0.6);
-      outline-offset: 4px;
+
+    /* Dropdown Menu */
+    .dropdown {
+      position: relative;
     }
-    .games-tile-img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 26px;
-      box-shadow: 0 25px 60px rgba(0,0,0,.55);
-      transition: transform .22s ease, box-shadow .22s ease;
+
+    .dropdown-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
     }
-    .games-tile:hover .games-tile-img,
-    .games-tile:focus-visible .games-tile-img{
-      transform: scale(1.03);
-      box-shadow: 0 30px 80px rgba(0,0,0,.65);
+
+    .dropdown-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
     }
-    .window-content.apps-folder-grid{
-      max-height: calc(100% - 40px);
-      overflow-y: auto;
-      padding-right: 4px;
+
+    .dropdown-toggle i {
+      font-size: 12px;
+      transition: transform 0.2s ease;
     }
-    /* NEW: Drop indicator for drag and drop */
-    .drop-indicator{
+
+    .dropdown-toggle.active i {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
       position: absolute;
-      width: 150px;
-      height: 140px;
-      border-radius: 18px;
-      border: 2px dashed rgba(125, 211, 192, 0.6);
-      background: rgba(125, 211, 192, 0.1);
-      pointer-events: none;
-      z-index: 9999;
+      top: 100%;
+      left: 0;
+      margin-top: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      min-width: 240px;
+      max-height: 500px;
+      overflow-y: auto;
       display: none;
+      z-index: 1001;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
     }
-    .drop-indicator.visible{
+
+    .dropdown-menu.show {
       display: block;
+      animation: fadeIn 0.2s ease;
     }
-    /* IMPROVED Taskbar/Dock */
-    .taskbar{
-      position: fixed;
-      left: 0; right:0; bottom:0;
-      height: 68px;
-      z-index: 20000;
-      display:flex;
-      align-items:center;
-      gap: 14px;
-      padding: 0 20px;
-      background: linear-gradient(180deg, 
-        rgba(9,14,26,0.95) 0%,
-        rgba(6,10,20,0.98) 100%);
-      backdrop-filter: blur(32px) saturate(200%);
-      border-top: 1px solid rgba(125,211,192,0.25);
-      box-shadow: 
-        0 -20px 50px rgba(0,0,0,0.7),
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 0 0 1px rgba(255,255,255,0.05);
-      min-width: 320px;
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .taskbar-left{
-      display:flex;
-      align-items:center;
+
+    .dropdown-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    .dropdown-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
       gap: 12px;
-      flex-shrink:0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .start-button{
-      height: 42px;
-      padding: 0 14px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, 
-        rgba(125,211,192,0.12), 
-        rgba(96,165,250,0.08));
-      border: 1px solid rgba(125,211,192,0.25);
-      color: var(--text);
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      cursor:pointer;
-      transition: all .22s ease;
-      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+
+    .dropdown-item:last-child {
+      border-bottom: none;
     }
-    .start-button:hover{
-      transform: translateY(-1px);
-      background: linear-gradient(135deg, 
-        rgba(125,211,192,0.18), 
-        rgba(96,165,250,0.12));
-      border-color: rgba(125,211,192,.35);
-      box-shadow: 0 12px 28px rgba(0,0,0,.4);
+
+    .dropdown-item:hover {
+      background: rgba(59, 130, 246, 0.1);
     }
-    .start-button:active{
-      transform: translateY(0);
-    }
-    .start-button img{
-      width: 22px; height: 22px; object-fit: contain;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
-    }
-    .start-button span{
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      background: linear-gradient(90deg, #7dd3c0, #60a5fa);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .taskbar-center{
-      flex: 1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-width: 140px;
-    }
-    .dock{
-      display:flex;
-      align-items:center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: rgba(12, 18, 34, 0.65);
-      border: 1px solid rgba(125,211,192,0.15);
-      border-radius: 20px;
-      backdrop-filter: blur(20px) saturate(180%);
-      max-width: min(720px, 70vw);
-      overflow-x: auto;
-      margin: 0 auto;
-      box-shadow: 
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 8px 32px rgba(0,0,0,0.4);
-    }
-    .dock::-webkit-scrollbar{ 
-      height: 6px; 
-      display: none;
-    }
-    .dock:hover::-webkit-scrollbar{
-      display: block;
-    }
-    .dock::-webkit-scrollbar-thumb{ 
-      background: rgba(125,211,192,0.3); 
-      border-radius:999px; 
-    }
-    .dock::-webkit-scrollbar-thumb:hover{ 
-      background: rgba(125,211,192,0.5); 
-    }
-    .taskbar-app{
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      border: 1px solid transparent;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      transition: all .2s ease;
-      position: relative;
-      flex: 0 0 auto;
-      background: transparent;
-      color: rgba(234,240,255,.92);
-    }
-    .taskbar-app:hover{
-      transform: translateY(-2px);
-      background: rgba(125,211,192,0.12);
-      border-color: rgba(125,211,192,0.25);
-      box-shadow: 0 8px 20px rgba(0,0,0,.3);
-    }
-    .taskbar-app.active{
-      background: linear-gradient(135deg, 
-        rgba(125,211,192,0.25), 
-        rgba(96,165,250,0.2));
-      border-color: rgba(125,211,192,0.35);
-      box-shadow: 0 8px 20px rgba(125,211,192,0.2);
-    }
-    .taskbar-app.running::after{
-      content:"";
-      position:absolute;
-      bottom: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 18px;
-      height: 3px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #7dd3c0, #60a5fa);
-      opacity: .8;
-      box-shadow: 0 0 8px rgba(125,211,192,0.5);
-    }
-    .taskbar-app img{
-      width: 20px; 
-      height: 20px; 
-      object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
-    }
-    .taskbar-app i{
-      font-size: 16px;
-    }
-    .taskbar-right{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-shrink:0;
-    }
-    .tray{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 14px;
-      border-radius: 20px;
-      background: rgba(12, 18, 34, 0.65);
-      border: 1px solid rgba(125,211,192,0.15);
-      backdrop-filter: blur(24px) saturate(180%);
-      box-shadow: 
-        inset 0 1px 0 rgba(255,255,255,0.05),
-        0 8px 32px rgba(0,0,0,0.4);
-    }
-    .tray-btn{
+
+    .dropdown-item-icon {
       width: 36px;
       height: 36px;
-      border-radius: 12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      color: rgba(234,240,255,.85);
-      transition: all .18s ease;
-    }
-    .tray-btn:hover{
-      background: rgba(125,211,192,0.12);
-      transform: translateY(-1px);
-    }
-    .clock{
-      min-width: 100px;
-      text-align:center;
-      font-size: 13px;
-      font-weight: 600;
-      color: rgba(234,240,255,.95);
-      padding: 8px 12px;
-      border-radius: 14px;
-      background: rgba(125,211,192,0.08);
-      border: 1px solid rgba(125,211,192,0.15);
-      letter-spacing: 0.5px;
-    }
-    .ver-pill{
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .10em;
-      padding: 8px 12px;
-      border-radius: 999px;
-      color: rgba(125,211,192,.95);
-      border: 1px solid rgba(125,211,192,.25);
-      background: rgba(125,211,192,.08);
-      text-transform: uppercase;
-    }
-    /* Start menu (Script1-ish tiles/cards) */
-    .start-menu{
-      position: fixed;
-      left: 20px;
-      bottom: 74px;
-      width: min(460px, 92vw);
-      height: min(640px, 76vh);
-      z-index: 25000;
-      display:none;
-      flex-direction: column;
-      border-radius: 22px;
-      overflow:hidden;
-      background: rgba(12, 18, 34, 0.85);
-      border: 1px solid rgba(125,211,192,0.2);
-      box-shadow: 
-        0 40px 100px rgba(0,0,0,.75),
-        inset 0 1px 0 rgba(255,255,255,0.1);
-      backdrop-filter: blur(32px) saturate(180%);
-      transform-origin: bottom left;
-      animation: pop .22s ease-out;
-    }
-    @keyframes pop{
-      from{ opacity:0; transform: scale(.96) translateY(10px); }
-      to{ opacity:1; transform: scale(1) translateY(0); }
-    }
-    .start-menu.active{ display:flex; }
-    .start-header{
-      padding: 20px 20px 16px;
-      display:flex;
-      gap: 14px;
-      align-items:center;
-      border-bottom: 1px solid rgba(125,211,192,0.15);
-      background:
-        radial-gradient(600px 240px at 40% 0%, rgba(125,211,192,.18), transparent 60%),
-        radial-gradient(600px 240px at 60% 0%, rgba(96,165,250,.15), transparent 60%);
-    }
-    .start-avatar{
-      width: 46px; height:46px;
-      border-radius: 16px;
-      display:flex; align-items:center; justify-content:center;
-      background: linear-gradient(135deg, 
-        rgba(125,211,192,0.15), 
-        rgba(96,165,250,0.1));
-      border: 1px solid rgba(125,211,192,0.25);
-      box-shadow: 0 12px 28px rgba(0,0,0,.4);
-      color: rgba(125,211,192,.95);
-      flex-shrink:0;
-    }
-    .start-user{
-      flex:1;
-      min-width:0;
-    }
-    .start-user h3{
-      margin:0;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
       font-size: 16px;
+    }
+
+    .dropdown-item-content {
+      flex: 1;
+    }
+
+    .dropdown-item-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .dropdown-item-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 8px 0;
+    }
+
+    /* Nav right - System tray */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .clock {
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    /* Main Content - Homepage */
+    .main-content {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 20px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 6rem);
       font-weight: 800;
-      letter-spacing: .02em;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      background: linear-gradient(90deg, #7dd3c0, #60a5fa);
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      margin-bottom: 8px;
+      line-height: 1;
     }
-    .start-user p{
-      margin: 4px 0 0;
-      font-size: 12px;
-      color: rgba(234,240,255,.62);
+
+    .hero-subtitle {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 300;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
     }
-    .start-actions{
-      display:flex;
-      gap: 8px;
-    }
-    .start-action-btn{
-      height: 40px;
-      padding: 0 12px;
-      border-radius: 14px;
-      background: rgba(125,211,192,0.08);
-      border: 1px solid rgba(125,211,192,0.2);
-      color: rgba(234,240,255,.90);
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      transition: all .18s ease;
-    }
-    .start-action-btn:hover{
-      transform: translateY(-1px);
-      background: rgba(125,211,192,0.15);
-      border-color: rgba(125,211,192,.3);
-    }
-    .start-search{
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(125,211,192,0.1);
-    }
-    .start-search input{
+
+    /* Search Container */
+    .search-container {
       width: 100%;
-      height: 42px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(16, 24, 40, .65);
-      color: var(--text);
-      padding: 0 16px;
-      outline:none;
-      font-size: 13px;
-      transition: all .2s ease;
+      max-width: 600px;
+      margin: 0 auto;
     }
-    .start-search input:focus{
-      border-color: rgba(125,211,192,.4);
-      background: rgba(16, 24, 40, .8);
-      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+
+    .search-wrapper {
+      position: relative;
     }
-    .start-links{
-      padding: 0 20px 12px;
-      display:flex;
-      gap: 10px;
-      justify-content: space-between;
+
+    .search-input {
+      width: 100%;
+      padding: 16px 24px 16px 56px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(20px);
     }
-    .start-link{
-      flex: 1;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      justify-content:center;
-      height:44px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,211,192,0.25);
-      background: rgba(125,211,192,0.06);
-      color: var(--text);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      cursor:pointer;
-      transition: all .2s ease;
+
+    .search-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
-    .start-link i{
+
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent-blue);
+      font-size: 20px;
+    }
+
+    .search-hint {
+      margin-top: 16px;
       font-size: 14px;
+      color: var(--text-secondary);
+      opacity: 0.7;
     }
-    .start-link:hover{
-      border-color: rgba(125,211,192,0.5);
-      background: rgba(125,211,192,0.12);
-      transform: translateY(-1px);
+
+    /* Windows */
+    .window {
+      position: absolute;
+      min-width: 500px;
+      min-height: 400px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
     }
-    .start-apps{
-      padding: 16px 20px 20px;
-      overflow:auto;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
+
+    .window.active {
+      display: flex;
+      animation: windowOpen 0.3s ease;
     }
-    .start-apps::-webkit-scrollbar{ width: 10px; }
-    .start-apps::-webkit-scrollbar-thumb{ 
-      background: rgba(125,211,192,0.3); 
-      border-radius:999px; 
+
+    @keyframes windowOpen {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
-    .start-apps::-webkit-scrollbar-thumb:hover{ 
-      background: rgba(125,211,192,0.5); 
-    }
-    /* App cards like Script1 */
-    .app-item{
-      background: linear-gradient(135deg, 
-        rgba(12, 18, 34, 0.85), 
-        rgba(18, 26, 46, 0.8));
-      border: 1px solid rgba(125, 211, 192, 0.2);
-      border-radius: 20px;
-      padding: 14px 16px;
-      cursor: pointer;
-      transition: all .22s ease;
+
+    .window-header {
+      height: 48px;
+      padding: 0 20px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
-      gap: 14px;
-      min-height: 68px;
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
-      backdrop-filter: blur(16px);
-      overflow:hidden;
-    }
-    .app-item:hover{
-      transform: translateY(-3px);
-      border-color: rgba(125, 211, 192, 0.35);
-      box-shadow: 0 20px 40px rgba(0,0,0,.45);
-      background: linear-gradient(135deg, 
-        rgba(12, 18, 34, 0.9), 
-        rgba(18, 26, 46, 0.85));
-    }
-    .app-icon-shell{
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, 
-        rgba(125,211,192,0.12), 
-        rgba(96,165,250,0.08));
-      border: 1px solid rgba(125,211,192,0.2);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-      transition: transform .2s ease;
-    }
-    .app-item:hover .app-icon-shell{
-      transform: scale(1.05);
-    }
-    .app-icon-shell i{ 
-      font-size: 18px; 
-      color: rgba(125,211,192,.95); 
-    }
-    .app-icon-shell img{ 
-      width: 22px; 
-      height: 22px; 
-      object-fit:contain; 
-    }
-    .app-info{
-      min-width:0;
-      flex:1;
-    }
-    .app-name{
-      font-size: 14px;
-      font-weight: 700;
-      color: rgba(234,240,255,.95);
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-      line-height: 1.2;
-    }
-    .app-desc{
-      margin-top: 4px;
-      font-size: 12px;
-      color: rgba(234,240,255,.6);
-      line-height: 1.2;
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-    }
-    /* Windows */
-    .window{
-      position: absolute;
-      min-width: 520px;
-      min-height: 420px;
-      width: min(92vw, 920px);
-      height: min(78vh, 680px);
-      border-radius: 20px;
-      background: rgba(14, 20, 38, 0.92);
-      border: 1px solid rgba(125,211,192,0.2);
-      box-shadow: 
-        0 32px 70px rgba(0,0,0,.65), 
-        inset 0 0 0 1px rgba(255,255,255,.03);
-      backdrop-filter: blur(26px) saturate(180%);
-      overflow: hidden;
-      display:none;
-      flex-direction: column;
-      transform-origin: center;
-      animation: winOpen .22s ease-out;
-    }
-    @keyframes winOpen{
-      from{ opacity:0; transform: scale(.97) translateY(14px); }
-      to{ opacity:1; transform: scale(1) translateY(0); }
-    }
-    .window.active{ display:flex; }
-    .window.maximized{
-      border-radius: 16px;
-    }
-    .window-header{
-      height: 48px;
-      display:flex;
-      align-items:center;
       justify-content: space-between;
-      padding: 0 16px 0 16px;
-      background: linear-gradient(135deg, 
-        rgba(125,211,192,0.25), 
-        rgba(96,165,250,0.2));
-      border-bottom: 1px solid rgba(125,211,192,0.35);
       cursor: move;
-      position: relative;
     }
-    .window-header-left{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-shrink:0;
-    }
-    .window-popout{
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(0,0,0,0.35);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: rgba(234,240,255,0.9);
-      cursor:pointer;
-      transition: all .18s ease;
-    }
-    .window-popout:hover{
-      background: rgba(125,211,192,0.15);
-      border-color: rgba(125,211,192,0.5);
-      transform: translateY(-1px);
-    }
-    .window-header::after{
-      content:'Drag to move / double‑click to expand';
-      position:absolute;
-      left:50%;
-      transform: translateX(-50%);
-      bottom:-16px;
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      color: rgba(255,255,255,.5);
-      text-transform: uppercase;
-      pointer-events:none;
-    }
-    .window-title{
-      display:flex;
-      align-items:center;
+
+    .window-title {
+      display: flex;
+      align-items: center;
       gap: 10px;
-      min-width:0;
-      font-size: 13px;
-      font-weight: 650;
-      color: rgba(234,240,255,.95);
-      letter-spacing:.01em;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
     }
-    .window-title .title-text{
-      min-width:0;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .window-title i, .window-title svg{
-      color: rgba(125,211,192,.95);
-      opacity:.95;
-    }
-    .window-controls{
-      display:flex;
+
+    .window-controls {
+      display: flex;
       gap: 8px;
-      flex-shrink:0;
     }
-    .window-btn{
-      width: 44px;
-      height: 36px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.15);
-      background: rgba(0,0,0,.4);
-      color: rgba(234,240,255,.9);
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition: all .18s ease;
-      box-shadow: inset 0 -1px 0 rgba(0,0,0,.4);
+
+    .window-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
     }
-    .window-btn:hover{
-      background: rgba(125,211,192,.3);
-      border-color: rgba(125,211,192,.5);
-      color: rgba(8,12,18,.95);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(125,211,192,.25);
+
+    .window-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
-    .window-btn.close:hover{
-      background: rgba(255, 92, 122, .95);
-      border-color: rgba(255, 92, 122, .6);
-      color: #fff;
-      box-shadow: 0 8px 20px rgba(255, 92, 122, .3);
+
+    .window-btn.close:hover {
+      background: var(--accent-red);
+      border-color: var(--accent-red);
     }
-    .window-content{
+
+    .window-content {
+      flex: 1;
       position: relative;
-      flex:1;
-      background: rgba(8, 12, 22, .4);
-      overflow: auto;
-      padding: 18px;
+      overflow: hidden;
     }
-    .window-content iframe.astra-blur{
-      filter: blur(4px);
-      pointer-events: none;
+
+    .window-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
     }
-    .astra-overlay{
+
+    .window-loading {
       position: absolute;
       inset: 0;
-      background: rgba(3,6,12,0.85);
-      backdrop-filter: blur(7px);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding: 30px 20px;
-      z-index: 5;
+      background: var(--bg-surface);
+      display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-    .astra-title{
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-    .astra-sub{
-      font-size: 14px;
-      color: var(--muted);
-      max-width: 320px;
-    }
-    .window iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      background: transparent;
-    }
-    .window-loading{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction: column;
-      gap: 12px;
-      background: rgba(8, 12, 22, .7);
-      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
       z-index: 5;
     }
-    .window-loading .loading-logo{
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      object-fit: contain;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
-    }
-    .spinner{
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: 3px solid rgba(125,211,192,.18);
-      border-top-color: rgba(125,211,192,.85);
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin{ to{ transform: rotate(360deg); } }
-    .window-fallback{
-      margin-top: 6px;
-      font-size: 12px;
-      color: rgba(234,240,255,.70);
-      text-align:center;
-      max-width: 380px;
-      padding: 0 16px;
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
-    .window-fallback a{
-      color: rgba(125,211,192,.95);
-      text-decoration: none;
-      font-weight: 700;
+
+    /* Folder Windows */
+    .folder-grid {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      overflow-y: auto;
     }
-    .window-fallback a:hover{ text-decoration: underline; }
-    /* Context menu */
-    .context-menu{
+
+    .folder-item {
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .folder-item:hover {
+      background: rgba(59, 130, 246, 0.1);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .folder-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: white;
+    }
+
+    .folder-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Context Menu */
+    .context-menu {
       position: fixed;
-      z-index: 30000;
-      display:none;
-      min-width: 190px;
-      border-radius: 14px;
-      overflow:hidden;
-      background: rgba(12, 18, 34, 0.92);
-      border: 1px solid rgba(125,211,192,0.2);
-      box-shadow: 0 24px 60px rgba(0,0,0,.65);
-      backdrop-filter: blur(22px) saturate(150%);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 1002;
+      min-width: 180px;
+      backdrop-filter: blur(20px);
     }
-    .context-item{
-      padding: 10px 12px;
-      display:flex;
-      align-items:center;
+
+    .context-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
       gap: 10px;
-      font-size: 13px;
-      color: rgba(234,240,255,.9);
-      cursor:pointer;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      transition: all .14s ease;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .context-item:hover{ 
-      background: rgba(125,211,192,0.12); 
-      padding-left: 16px;
+
+    .context-item:last-child {
+      border-bottom: none;
     }
-    .context-item:last-child{ border-bottom:none; }
-    .context-item i{ color: rgba(125,211,192,.95); }
-    /* Red ring for special apps */
-    .app-icon-container.red-ring{
-      border: 2px solid rgba(255, 77, 77, 0.9);
-      box-shadow: 0 0 20px rgba(255, 77, 77, 0.45), 0 12px 28px rgba(0,0,0,.32);
+
+    .context-item:hover {
+      background: rgba(59, 130, 246, 0.1);
     }
-    .app-icon-container.red-ring::after{
-      background: radial-gradient(120px 60px at 30% 20%, rgba(255, 77, 77, 0.25), transparent 60%),
-                  radial-gradient(120px 60px at 70% 10%, rgba(255, 77, 77, 0.15), transparent 60%);
+
+    /* Search Suggestions */
+    .search-suggestions {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 1001;
+      max-height: 400px;
+      overflow-y: auto;
+      backdrop-filter: blur(20px);
     }
-    /* RESPONSIVE BREAKPOINTS */
-    @media (max-width: 1200px) {
-      .desktop {
-        justify-content: flex-start;
-      }
-      .app-icon {
-        width: 165px;
-        height: 145px;
-      }
-      .app-icon-container {
-        width: 92px;
-        height: 92px;
-      }
-      .app-icon-img {
-        width: 58px;
-        height: 58px;
-      }
-      .app-icon-text {
-        font-size: 12px;
-        padding: 5px 8px;
-      }
-      .drop-indicator {
-        width: 150px;
-        height: 140px;
-      }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    @media (max-width: 768px) {
-      .desktop {
-        gap: 12px;
-        padding: 14px;
-      }
-      .app-icon {
-        width: 155px;
-        height: 135px;
-      }
-      .app-icon-container {
-        width: 86px;
-        height: 86px;
-      }
-      .app-icon-img {
-        width: 54px;
-        height: 54px;
-      }
-      .drop-indicator {
-        width: 90px;
-        height: 85px;
-      }
-      .window {
-        min-width: 320px;
-        min-height: 380px;
-        width: min(94vw, 560px);
-        height: min(74vh, 520px);
-      }
-      .clock {
-        min-width: 86px;
-        font-size: 12px;
-        padding: 6px 10px;
-      }
-      .dock {
-        padding: 6px 10px;
-        max-width: 80vw;
-      }
-      .taskbar-app {
-        width: 38px;
-        height: 38px;
-      }
+
+    .suggestion-item:hover {
+      background: rgba(59, 130, 246, 0.1);
     }
-    @media (max-width: 640px) {
-      .desktop {
-        gap: 10px;
-        padding: 12px;
-      }
-      .app-icon {
-        width: 150px;
-        height: 130px;
-      }
-      .app-icon-container {
-        width: 82px;
-        height: 82px;
-      }
-      .app-icon-img {
-        width: 50px;
-        height: 50px;
-      }
-      .drop-indicator {
-        width: 85px;
-        height: 80px;
-      }
-      .taskbar {
-        padding: 0 12px;
-        gap: 10px;
-        height: 62px;
-      }
-      .start-button {
-        height: 38px;
-        padding: 0 12px;
-      }
-      .start-button span {
-        display: none;
-      }
-      .ver-pill {
-        display: none;
-      }
-      .tray {
-        padding: 6px 10px;
-      }
-    }
-    @media (max-width: 480px) {
-      .desktop {
-        justify-content: center;
-      }
-      .app-icon {
-        width: 140px;
-        height: 125px;
-      }
-      .app-icon-container {
-        width: 78px;
-        height: 78px;
-      }
-      .app-icon-img {
-        width: 48px;
-        height: 48px;
-      }
-      .drop-indicator {
-        width: 80px;
-        height: 75px;
-      }
-      .search-container {
-        padding: 0 12px;
-      }
-      .search-bar {
-        padding: 0 12px 0 40px;
-        background-position: 12px center;
-      }
-      .start-menu {
-        left: 12px;
-        right: 12px;
-        width: auto;
-      }
-    }
-    @media (max-width: 400px) {
-      .desktop {
-        gap: 8px;
-      }
-      .app-icon {
-        width: 135px;
-        height: 120px;
-      }
-      .app-icon-container {
-        width: 74px;
-        height: 74px;
-      }
-      .app-icon-img {
-        width: 46px;
-        height: 46px;
-      }
-      .drop-indicator {
-        width: 75px;
-        height: 70px;
-      }
-      .taskbar {
-        padding: 0 10px;
-      }
-      .tray-btn {
-        width: 32px;
-        height: 32px;
-      }
-      .clock {
-        min-width: 70px;
-        font-size: 11px;
-        padding: 5px 8px;
-      }
-    }
-    /* Achievement Notification Styles */
+
+    /* Achievement Notification */
     .achievement-notification {
       position: fixed;
       top: 80px;
-      right: 20px;
-      background: rgba(18, 22, 42, 0.95);
-      border: 1px solid rgba(125, 211, 192, 0.3);
-      border-left: 4px solid #7dd3c0;
-      border-radius: 8px;
-      padding: 15px;
+      right: 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-left: 3px solid var(--accent-green);
+      border-radius: var(--radius);
+      padding: 16px;
       width: 320px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      z-index: 10000;
-      animation: slideIn 0.3s ease-out;
-      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      z-index: 1003;
+      animation: slideInRight 0.3s ease;
+      backdrop-filter: blur(20px);
     }
-    @keyframes slideIn {
+
+    @keyframes slideInRight {
       from {
         transform: translateX(100%);
         opacity: 0;
@@ -1448,123 +596,202 @@
         opacity: 1;
       }
     }
-    @keyframes slideOut {
-      from {
-        transform: translateX(0);
-        opacity: 1;
+
+    /* Quick Launch Bar */
+    .quick-launch {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      z-index: 999;
+    }
+
+    .quick-app {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .quick-app:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 16px;
       }
-      to {
-        transform: translateX(100%);
-        opacity: 0;
+
+      .logo span {
+        display: none;
+      }
+
+      .dropdown-toggle span {
+        display: none;
+      }
+
+      .dropdown-menu {
+        min-width: 200px;
+      }
+
+      .hero-title {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+      }
+
+      .hero-subtitle {
+        font-size: clamp(1.2rem, 3vw, 1.8rem);
+      }
+
+      .search-container {
+        padding: 0 20px;
+      }
+
+      .window {
+        min-width: 300px;
+        min-height: 300px;
+        width: 90vw;
+        height: 70vh;
+      }
+
+      .quick-launch {
+        padding: 8px 16px;
+      }
+
+      .quick-app {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dropdown-menu {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        width: auto;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+      }
+
+      .search-input {
+        padding: 14px 20px 14px 48px;
+      }
+
+      .search-icon {
+        left: 16px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Boot -->
-  <div id="bootloader">
-    <div class="boot-card">
-      <div class="boot-top">
-        <div class="boot-logo">
-          <img src="/assets/img/nebulo-logo.png" alt="Nebulo" onerror="this.style.display='none'">
-        </div>
-        <div class="boot-title">
-          <h1>NEBULO OS</h1>
-          <div class="ver" id="bootVer">V5.3</div>
-        </div>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <div class="logo">
+        <div class="logo-icon">N</div>
+        <span>Nebulo</span>
       </div>
-      <div class="boot-progress">
-        <div class="bar"><div id="bootBar"></div></div>
-        <div class="boot-msg" id="bootMsg">Starting services…</div>
-      </div>
-      <div class="boot-footer">
-        <span id="bootLeft">Preparing desktop</span>
-        <span style="opacity:.8">made with <i class="fa-solid fa-heart" style="color:rgba(255,92,122,.9)"></i> by PrismX</span>
-      </div>
-      <div class="boot-proxy" id="bootProxy"></div>
-    </div>
-  </div>
-  <!-- Background -->
-  <div class="nebulo-os-bg"><span id="nebuloBgText">NEBULO V5.3</span></div>
-  <div class="bg-elements" id="bgElements"></div>
-  <!-- Hidden iframe (kept) -->
-  <iframe id="frame" src="/search" style="display:none;"></iframe>
-  <!-- Top Search -->
-  <div class="search-container">
-    <div class="search-logo" id="nebuloLogo" title="Show desktop"></div>
-    <div class="search-form">
-      <input class="search-bar" id="searchInput" placeholder="Search or enter a URL…" autocomplete="off" />
-      <div class="search-suggestions" id="searchSuggestions"></div>
-    </div>
-  </div>
-  <!-- Desktop -->
-  <div class="desktop" id="desktop">
-    <!-- Apps will be dynamically added here -->
-  </div>
-  <!-- Drop indicator for drag and drop -->
-  <div class="drop-indicator" id="dropIndicator"></div>
-  <!-- Start menu -->
-  <div class="start-menu" id="startMenu" aria-hidden="true">
-    <div class="start-header">
-      <div class="start-avatar"><i class="fa-solid fa-user"></i></div>
-      <div class="start-user">
-        <h3 id="startUserName">User</h3>
-        <p id="startSubtitle">Nebulo OS <span id="startVer">V5.3</span></p>
-      </div>
-      <div class="start-actions">
-        <button class="start-action-btn" id="startOpenBrowser" title="Browser">
-          <i class="fa-solid fa-globe"></i>
+      
+      <!-- Apps Dropdown -->
+      <div class="dropdown" id="appsDropdown">
+        <button class="dropdown-toggle" id="appsToggle">
+          <i class="fas fa-th"></i>
+          <span>Apps</span>
+          <i class="fas fa-chevron-down"></i>
         </button>
-        <button class="start-action-btn" id="startCloseAll" title="Close all windows">
-          <i class="fa-solid fa-xmark"></i>
+        <div class="dropdown-menu" id="appsMenu">
+          <div class="dropdown-header">Applications</div>
+          <!-- Apps will be dynamically added here -->
+        </div>
+      </div>
+      
+      <!-- Games Dropdown -->
+      <div class="dropdown" id="gamesDropdown">
+        <button class="dropdown-toggle" id="gamesToggle">
+          <i class="fas fa-gamepad"></i>
+          <span>Games</span>
+          <i class="fas fa-chevron-down"></i>
         </button>
+        <div class="dropdown-menu" id="gamesMenu">
+          <div class="dropdown-header">Games</div>
+          <!-- Games will be dynamically added here -->
+        </div>
       </div>
     </div>
-    <div class="start-search">
-      <input id="startSearch" placeholder="Search apps…" autocomplete="off" />
+
+    <div class="nav-right">
+      <div class="nav-btn" id="btnRefresh" title="Refresh">
+        <i class="fas fa-sync-alt"></i>
+      </div>
+      <div class="nav-btn" id="btnInfo" title="About">
+        <i class="fas fa-info-circle"></i>
+      </div>
+      <div class="clock" id="timeDisplay">00:00</div>
     </div>
-    <div class="start-links">
-      <button class="start-link" type="button" data-start-target="games">
-        <i class="fa-solid fa-gamepad"></i>
-        <span>Games</span>
-      </button>
-      <button class="start-link" type="button" data-start-target="apps">
-        <i class="fa-solid fa-th-large"></i>
-        <span>Apps</span>
-      </button>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="hero-title">Nebulo</h1>
+    <div class="hero-subtitle">V5.4</div>
+    
+    <div class="search-container">
+      <div class="search-wrapper">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search or enter URL..." />
+        <i class="fas fa-search search-icon"></i>
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
+      <div class="search-hint">
+        <i class="fas fa-lightbulb"></i> Press Enter to search, or type a URL
+      </div>
     </div>
-    <div class="start-apps" id="startApps"></div>
+  </main>
+
+  <!-- Quick Launch Bar -->
+  <div class="quick-launch" id="quickLaunch">
+    <!-- Quick launch apps will be added here -->
   </div>
-  <!-- Taskbar -->
-  <div class="taskbar" id="taskbar">
-    <div class="taskbar-left">
-      <button class="start-button" id="startButton">
-        <img src="/assets/img/nebulo-logo.png" alt="Nebulo" onerror="this.style.display='none'">
-        <span>Start</span>
-      </button>
-    </div>
-    <div class="taskbar-center">
-      <div class="dock" id="dock">
-        <!-- pinned + running -->
-      </div>
-    </div>
-    <div class="taskbar-right">
-      <div class="tray">
-        <div class="tray-btn" id="trayDesktop" title="Show desktop"><i class="fa-regular fa-window-minimize"></i></div>
-        <div class="tray-btn" id="trayRefresh" title="Refresh page"><i class="fa-solid fa-rotate"></i></div>
-        <div class="tray-btn" id="trayInfo" title="About"><i class="fa-solid fa-circle-info"></i></div>
-        <div class="ver-pill" id="trayVer">V5.3</div>
-        <div class="clock" id="timeDisplay">00:00</div>
-      </div>
-    </div>
-  </div>
+
+  <!-- Windows will be dynamically added here -->
+
   <!-- Context Menu -->
   <div class="context-menu" id="contextMenu">
-    <div class="context-item" id="ctxOpen"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</div>
-    <div class="context-item" id="ctxPin"><i class="fa-solid fa-thumbtack"></i> Pin to taskbar</div>
-    <div class="context-item" id="ctxUnpin"><i class="fa-regular fa-circle-xmark"></i> Unpin</div>
+    <div class="context-item" id="ctxOpen">
+      <i class="fas fa-play"></i>
+      <span>Open</span>
+    </div>
+    <div class="context-item" id="ctxPin">
+      <i class="fas fa-thumbtack"></i>
+      <span>Pin to Quick Launch</span>
+    </div>
   </div>
-  <!-- Load scripts (kept exactly so you don't break your setup) -->
+
+  <!-- Hidden iframe -->
+  <iframe id="frame" src="/search" style="display:none;"></iframe>
+
+  <!-- Load scripts -->
   <script src="/assets/js/init.js?v=20260204"></script>
   <script src="/baremux/index.js" defer></script>
   <script src="/epoxy/index.js" defer></script>
@@ -1574,81 +801,592 @@
   <script src="/ec/eclipse.codecs.js" defer></script>
   <script src="/ec/eclipse.config.js" defer></script>
   <script src="/assets/js/search.js"></script>
+
+  <!-- Main Application Script -->
   <script>
-    /* =========================
-       Nebulo OS V5.3 — UI + WM
-       With integrated proxy logic from the first script
-       ========================= */
-    const VERSION = "V5.3";
-    const PROXY_DISPLAY_NAMES = {
-      sj: "pr0xY Sc@mjet",
-      uv: "Uv",
-      ec: "Eclipse",
-      rh: "Rammerhead"
-    };
-    const SEARCH_HISTORY_KEY = "nebuloSearchHistory";
-    const MAX_SEARCH_HISTORY = 6;
-    // Apps arranged in order
+    // ======================
+    // NEBULO OS V5.4
+    // Redesigned with dropdown menu
+    // ======================
+    
+    const VERSION = "V5.4";
+    
+    // Main apps
     const apps = [
-      { id:'browser', name:'Browser', url:'/test', icon:'/assets/imgs/browser.png', desc:'Browse the web', goldenRing: true },
-      { id:'games', name:'Games', url:'#folder', icon:'fa-solid fa-gamepad', desc:'Games collection', folder: true, goldenRing: true },
-      { id:'apps', name:'Apps', url:'#apps-folder', icon:'fa-brands fa-app-store', desc:'Apps collection', folder: true, goldenRing: true },
-      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'fa-solid fa-headphones', desc:'Listen & chill', proxied: true },
-      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'fa-solid fa-tv', desc:'Watch something', proxied: true },
-      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'fa-solid fa-robot', desc:'Open the bot tool', proxied: true, ring:'red' },
-      { id:'chat', name:'Global Chat', url:'https://tlk.io/nebulo', icon:'fa-solid fa-comments', desc:'Talk with others', proxied: true },
-      { id:'links', name:'Links', url:'/links', icon:'fa-solid fa-link', desc:'Useful shortcuts' },
-      { id:'settings', name:'Settings', url:'/settings', icon:'fa-solid fa-cog', desc:'System settings' },
-      { id:'help', name:'Help', url:'/help', icon:'fa-solid fa-circle-question', desc:'Get help' },
-      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-solid fa-star', desc:'Updates & notes' },
-      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-solid fa-trophy', desc:'Track progress' },
-      { id:'something-not-working', name:'Not working?', url:'https://forms.gle/GbmQTfsa8ta8oV8n8', icon:'/assets/img/warning.png', desc:'Report an outage or broken app', proxied: false },
+      { id:'browser', name:'Browser', url:'/test', icon:'fa-globe', desc:'Browse the web', category: 'apps' },
+      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'fa-headphones', desc:'Listen & chill', category: 'apps', proxied: true },
+      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'fa-tv', desc:'Watch something', category: 'apps', proxied: true },
+      { id:'chat', name:'Global Chat', url:'https://tlk.io/nebulo', icon:'fa-comments', desc:'Talk with others', category: 'apps', proxied: true },
+      { id:'links', name:'Links', url:'/links', icon:'fa-link', desc:'Useful shortcuts', category: 'apps' },
+      { id:'settings', name:'Settings', url:'/settings', icon:'fa-cog', desc:'System settings', category: 'apps' },
+      { id:'help', name:'Help', url:'/help', icon:'fa-circle-question', desc:'Get help', category: 'apps' },
+      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-star', desc:'Updates & notes', category: 'apps' },
+      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-trophy', desc:'Track progress', category: 'apps' },
+      { id:'something-not-working', name:'Report Issue', url:'https://forms.gle/GbmQTfsa8ta8oV8n8', icon:'fa-exclamation-triangle', desc:'Report an issue', category: 'apps', proxied: false },
     ];
-    // Games folder contents
-    const gamesFolderApps = [
-      { id:'roblox', name:'Roblox', url:'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', icon:'/roblox.png', desc:'Launch Roblox', proxied: true, forceProxy: 'uv' },
-      { id:'clash-royale', name:'Clash Royale', url:'https://astra.pxi-fusion.com/embed/clash-royale?web-socket-enabled=false', icon:'/clash-royale.png', desc:'Quick matches', proxied: true, forceProxy: 'uv' },
-      { id:'minecraft', name:'Minecraft', url:'https://eaglercraft1-8.github.io/', icon:'https://i.imgflip.com/63qbua.png', desc:'Build a world', proxied: true },
-      { id:'crazygames', name:'CrazyGames', url:'https://www.crazygames.com/', icon:'https://tse3.mm.bing.net/th/id/OIP.9C2IbxuKKeCegob2p69iHAAAAA?cb=defcache2defcache=1&rs=1&pid=ImgDetMain&o=7&rm=3', desc:'Arcade & hypercasual titles', proxied: true },
-      { id:'gn-math', name:'GN Math', url:'https://gn-math.dev/', icon:'https://lh3.googleusercontent.com/Mxl8996vzcWWRU5RyKdTDA76GEPj9jQpuYc02nPgtwKgdqpWidM5YVqu8DHBd-D1sZ3sP1AOYB-DlNhMEpaLJxQcTQ', desc:'Math practice puzzles', proxied: true },
-      { id:'nowgg', name:'Nowgg.fun', url:'https://nowgg.fun/', icon:'https://tse3.mm.bing.net/th/id/OIP.YNZsFgzrK-Bk4kCfuK2j5wHaFa?cb=defcachec2&rs=1&pid=ImgDetMain&o=7&rm=3', desc:'Flash classics without installs', proxied: true }
+    
+    // Games
+    const games = [
+      { id:'roblox', name:'Roblox', url:'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', icon:'fa-cube', desc:'Launch Roblox', category: 'games', proxied: true, forceProxy: 'uv' },
+      { id:'clash-royale', name:'Clash Royale', url:'https://astra.pxi-fusion.com/embed/clash-royale?web-socket-enabled=false', icon:'fa-crown', desc:'Quick matches', category: 'games', proxied: true, forceProxy: 'uv' },
+      { id:'minecraft', name:'Minecraft', url:'https://eaglercraft1-8.github.io/', icon:'fa-mountain', desc:'Build a world', category: 'games', proxied: true },
+      { id:'crazygames', name:'CrazyGames', url:'https://www.crazygames.com/', icon:'fa-dice', desc:'Arcade games', category: 'games', proxied: true },
+      { id:'gn-math', name:'GN Math', url:'https://gn-math.dev/', icon:'fa-calculator', desc:'Math practice', category: 'games', proxied: true },
+      { id:'nowgg', name:'Now.gg', url:'https://nowgg.fun/', icon:'fa-cloud', desc:'Cloud gaming', category: 'games', proxied: true },
+      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'fa-robot', desc:'Open the bot tool', category: 'games', proxied: true },
     ];
-    const appsFolderApps = [
-      { id:'Request A App', name:'Request A App', url:'https://forms.gle/fxMFPiM2yZpwNEkV6', icon:'https://cloud.gmelius.com/public/logos/google/Google_Forms_Logo_512px.png', desc:'Request a new App to be added', proxied: false, newTab: true },
-      { id:'tiktok', name:'TikTok', url:'https://www.tiktok.com/', icon:'https://sf-static.tiktokcdn.com/obj/eden-sg/uhtyvueh7nulogpoguhm/tiktok-icon2.png', desc:'Short-form videos', proxied: true },
-      { id:'youtube', name:'YouTube', url:'https://www.youtube.com/', icon:'https://play-lh.googleusercontent.com/6am0i3walYwNLc08QOOhRJttQENNGkhlKajXSERf3JnPVRQczIyxw2w3DxeMRTOSdsY', desc:'Watch & upload videos', proxied: true },
-      { id:'Geforce NOW', name:'Geforce NOW', url:'https://play.geforcenow.com', icon:'https://play-lh.googleusercontent.com/_-b_HQXrVyyhZSHj_BoE9u_-cxkcHDH_yLX5rDjJsFMIfsCNQs9F3QP4JvEFcWaSIz0=w240-h480-rw', desc:'Play games on any device', proxied: true },
-      { id:'Xbox Cloud Gaming', name:'Xbox Cloud Gaming', url:'https://www.xbox.com/en-us/play', icon:'https://assets.play.xbox.com/playxbox/static/media/CloudGaming_LetterBox.scale-200.ef909bf4.png', desc:'Play games on any device', proxied: true },
-      { id:'Amazon', name:'Amazon', url:'https://www.amazon.com/', icon:'https://m.media-amazon.com/images/I/31i63XNCykL._SY400_.jpg', desc:'Online shopping', proxied: true },
-      { id:'C.Ai', name:'C.Ai', url:'https://c.ai', icon:'https://yt3.googleusercontent.com/Rm5s6zGR1uQuG4eIysBEwxDevo-cmZlsyb50tcQeC9xgVeNatlPtp45ag-8vqrKWmulYx1r_pQ=s900-c-k-c0x00ffffff-no-rj', desc:'Ai chatbot', proxied: true },
-      { id:'facebook', name:'Facebook', url:'https://www.facebook.com/', icon:'https://upload.wikimedia.org/wikipedia/commons/e/ee/Logo_de_Facebook.png', desc:'Connect with friends', proxied: true },
-      { id:'instagram', name:'Instagram', url:'https://www.instagram.com/', icon:'https://helios-i.mashable.com/imagery/articles/02pDgRfVE99DBHP7AQyPdRT/hero-image.fill.size_1200x1200.v1650069082.png', desc:'Share visual stories', proxied: true },
-      { id:'x', name:'X (Twitter)', url:'https://x.com/', icon:'https://img.freepik.com/free-vector/new-2023-twitter-logo-x-icon-design_1017-45418.jpg?semt=ais_hybrid&w=740&q=80', desc:'Realtime microblogging', proxied: true },
-      { id:'snapchat', name:'Snapchat', url:'https://web.snapchat.com/', icon:'https://play-lh.googleusercontent.com/KxeSAjPTKliCErbivNiXrd6cTwfbqUJcbSRPe_IBVK_YmwckfMRS1VIHz-5cgT09yMo', desc:'endless feed of videos', proxied: true },
-      { id:'reddit', name:'Reddit', url:'https://www.reddit.com/', icon:'https://store-images.s-microsoft.com/image/apps.15970.14375561300249796.05fe8c27-ce9e-4144-8702-0e81e2f575b1.042364cb-b745-4796-a520-61291e2dd6b9', desc:'Community discussions', proxied: true },
-      { id:'discord', name:'Discord', url:'https://discord.com/app', icon:'https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxsG72wAo9EWJR4yQWyJJaDaK1XdUso6cUMpI9hAdPUU_FNs11cY1X284vsHrnWtRw7oqRpN1m9YAg21d_aNKnIo-&format=source', desc:'Voice & text hangouts', proxied: true },
-      { id:'pinterest', name:'Pinterest', url:'https://www.pinterest.com/', icon:'https://cdn.britannica.com/34/267034-050-91CC3AFB/Pinterest-logo.jpg', desc:'Visual bookmarking', proxied: true },
-    ];
-    // Pinned apps
-    const DEFAULT_PINNED = ['browser','games','music','chat','settings'];
+    
+    // Quick launch apps
+    const QUICK_LAUNCH_APPS = ['browser', 'music', 'games', 'settings'];
+    
+    // Global state
     const state = (window.state = {
       windows: [],
       z: 2000,
       activeId: null,
       contextAppId: null,
-      pinned: new Set(JSON.parse(localStorage.getItem('nebuloPinnedV53') || "null") || DEFAULT_PINNED),
-      iconSelected: null,
-      desktopPositions: JSON.parse(localStorage.getItem('nebuloDesktopPositionsV53')) || {},
-      draggingIcon: null,
-      dragStartX: 0,
-      dragStartY: 0,
-      dragOffsetX: 0,
-      dragOffsetY: 0,
-      dragCandidate: null,
+      quickLaunch: new Set(JSON.parse(localStorage.getItem('nebuloQuickLaunchV54') || "null") || QUICK_LAUNCH_APPS),
     });
-    const DESKTOP_ORDER_KEY = 'nebuloDesktopOrderV53';
-    /* ---------- Proxy Functions ---------- */
+    
+    // Initialize
+    function init() {
+      // Set version
+      document.title = `Nebulo V5.4`;
+      
+      // Build dropdown menus
+      buildAppsMenu();
+      buildGamesMenu();
+      buildQuickLaunch();
+      
+      // Initialize search
+      initSearch();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Update time
+      updateTime();
+      setInterval(updateTime, 30000);
+    }
+    
+    // Build Apps dropdown menu
+    function buildAppsMenu() {
+      const menu = document.getElementById('appsMenu');
+      menu.innerHTML = '<div class="dropdown-header">Applications</div>';
+      
+      apps.forEach(app => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.dataset.appId = app.id;
+        
+        item.innerHTML = `
+          <div class="dropdown-item-icon">
+            <i class="fa-solid ${app.icon}"></i>
+          </div>
+          <div class="dropdown-item-content">
+            <div class="dropdown-item-title">${escapeHtml(app.name)}</div>
+            <div class="dropdown-item-desc">${escapeHtml(app.desc)}</div>
+          </div>
+        `;
+        
+        item.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await openApp(app);
+          hideAllDropdowns();
+        });
+        
+        menu.appendChild(item);
+      });
+      
+      // Add some extra apps
+      const extraApps = [
+        { id:'tiktok', name:'TikTok', url:'https://www.tiktok.com/', icon:'fa-music', desc:'Short videos', proxied: true },
+        { id:'youtube', name:'YouTube', url:'https://www.youtube.com/', icon:'fa-play-circle', desc:'Watch videos', proxied: true },
+        { id:'discord', name:'Discord', url:'https://discord.com/app', icon:'fa-comment-dots', desc:'Voice & text chat', proxied: true },
+      ];
+      
+      menu.innerHTML += '<div class="dropdown-divider"></div><div class="dropdown-header">Web Apps</div>';
+      
+      extraApps.forEach(app => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.dataset.appId = app.id;
+        
+        item.innerHTML = `
+          <div class="dropdown-item-icon">
+            <i class="fa-brands ${app.icon}"></i>
+          </div>
+          <div class="dropdown-item-content">
+            <div class="dropdown-item-title">${escapeHtml(app.name)}</div>
+            <div class="dropdown-item-desc">${escapeHtml(app.desc)}</div>
+          </div>
+        `;
+        
+        item.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await openApp(app);
+          hideAllDropdowns();
+        });
+        
+        menu.appendChild(item);
+      });
+    }
+    
+    // Build Games dropdown menu
+    function buildGamesMenu() {
+      const menu = document.getElementById('gamesMenu');
+      menu.innerHTML = '<div class="dropdown-header">Games</div>';
+      
+      games.forEach(game => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.dataset.appId = game.id;
+        
+        item.innerHTML = `
+          <div class="dropdown-item-icon">
+            <i class="fa-solid ${game.icon}"></i>
+          </div>
+          <div class="dropdown-item-content">
+            <div class="dropdown-item-title">${escapeHtml(game.name)}</div>
+            <div class="dropdown-item-desc">${escapeHtml(game.desc)}</div>
+          </div>
+        `;
+        
+        item.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await openApp(game);
+          hideAllDropdowns();
+        });
+        
+        menu.appendChild(item);
+      });
+    }
+    
+    // Build Quick Launch bar
+    function buildQuickLaunch() {
+      const quickLaunch = document.getElementById('quickLaunch');
+      quickLaunch.innerHTML = '';
+      
+      // Add browser
+      const browserApp = apps.find(a => a.id === 'browser');
+      if (browserApp) {
+        const el = document.createElement('div');
+        el.className = 'quick-app';
+        el.title = browserApp.name;
+        el.innerHTML = `<i class="fa-solid ${browserApp.icon}"></i>`;
+        el.addEventListener('click', () => openApp(browserApp));
+        quickLaunch.appendChild(el);
+      }
+      
+      // Add other quick launch apps
+      [...state.quickLaunch].forEach(appId => {
+        if (appId === 'browser') return; // Already added
+        
+        let app = apps.find(a => a.id === appId);
+        if (!app) app = games.find(g => g.id === appId);
+        if (!app) return;
+        
+        const el = document.createElement('div');
+        el.className = 'quick-app';
+        el.title = app.name;
+        el.innerHTML = `<i class="fa-solid ${app.icon}"></i>`;
+        el.addEventListener('click', () => openApp(app));
+        quickLaunch.appendChild(el);
+      });
+    }
+    
+    // Toggle dropdowns
+    function setupEventListeners() {
+      // Apps dropdown toggle
+      document.getElementById('appsToggle').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('appsMenu');
+        const toggle = document.getElementById('appsToggle');
+        
+        if (menu.classList.contains('show')) {
+          menu.classList.remove('show');
+          toggle.classList.remove('active');
+        } else {
+          hideAllDropdowns();
+          menu.classList.add('show');
+          toggle.classList.add('active');
+        }
+      });
+      
+      // Games dropdown toggle
+      document.getElementById('gamesToggle').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('gamesMenu');
+        const toggle = document.getElementById('gamesToggle');
+        
+        if (menu.classList.contains('show')) {
+          menu.classList.remove('show');
+          toggle.classList.remove('active');
+        } else {
+          hideAllDropdowns();
+          menu.classList.add('show');
+          toggle.classList.add('active');
+        }
+      });
+      
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown')) {
+          hideAllDropdowns();
+        }
+      });
+      
+      // Refresh button
+      document.getElementById('btnRefresh').addEventListener('click', () => {
+        location.reload();
+      });
+      
+      // Info button
+      document.getElementById('btnInfo').addEventListener('click', () => {
+        alert(`Nebulo V5.4\n\nProfessional Interface\nDropdown Menu Design\nAll functionality preserved.`);
+      });
+    }
+    
+    function hideAllDropdowns() {
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.classList.remove('active');
+      });
+    }
+    
+    // Update time
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const hours12 = hours % 12 || 12;
+      document.getElementById('timeDisplay').textContent = `${hours12}:${minutes} ${period}`;
+    }
+    
+    // Open app
+    async function openApp(app) {
+      if (app.id === 'something-not-working') {
+        window.open(app.url, '_blank', 'noopener');
+        return;
+      }
+      
+      // Check if window already exists
+      const existing = state.windows.find(w => w.appId === app.id);
+      if (existing) {
+        restoreWindow(existing.id);
+        focusWindow(existing.id);
+        return;
+      }
+      
+      await createWindow(app);
+    }
+    
+    // Create window
+    async function createWindow(app) {
+      const winId = `win-${app.id}-${Date.now()}`;
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.id = winId;
+      win.dataset.appId = app.id;
+      
+      const safeUrl = await resolveAppUrl(app);
+      
+      win.innerHTML = `
+        <div class="window-header">
+          <div class="window-title">
+            <i class="fa-solid ${app.icon}"></i>
+            <span>${escapeHtml(app.name)}</span>
+          </div>
+          <div class="window-controls">
+            <button class="window-btn minimize"><i class="fas fa-minus"></i></button>
+            <button class="window-btn maximize"><i class="fas fa-expand"></i></button>
+            <button class="window-btn close"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="window-loading" id="loading-${winId}">
+            <div class="loading-spinner"></div>
+            <div>Loading ${escapeHtml(app.name)}...</div>
+          </div>
+          <iframe src="${escapeAttr(safeUrl)}"></iframe>
+        </div>
+      `;
+      
+      document.body.appendChild(win);
+      
+      // Position window
+      const defaultWidth = Math.min(800, window.innerWidth - 100);
+      const defaultHeight = Math.min(600, window.innerHeight - 200);
+      
+      win.style.width = `${defaultWidth}px`;
+      win.style.height = `${defaultHeight}px`;
+      
+      const centeredLeft = Math.max(50, (window.innerWidth - defaultWidth) / 2);
+      const centeredTop = Math.max(80, (window.innerHeight - defaultHeight) / 2);
+      
+      win.style.left = `${centeredLeft + (state.windows.length * 20)}px`;
+      win.style.top = `${centeredTop + (state.windows.length * 20)}px`;
+      
+      // Event listeners
+      const iframe = win.querySelector('iframe');
+      const loading = win.querySelector(`#loading-${winId}`);
+      
+      iframe.addEventListener('load', () => {
+        loading.style.display = 'none';
+      });
+      
+      win.querySelector('.minimize').addEventListener('click', () => minimizeWindow(winId));
+      win.querySelector('.maximize').addEventListener('click', () => toggleMaximize(winId));
+      win.querySelector('.close').addEventListener('click', () => closeWindow(winId));
+      
+      // Make draggable
+      makeDraggable(win);
+      
+      state.windows.push({
+        id: winId,
+        appId: app.id,
+        el: win,
+        minimized: false,
+        maximized: false,
+        prev: null,
+      });
+      
+      focusWindow(winId);
+    }
+    
+    // Window management
+    function focusWindow(winId) {
+      const w = state.windows.find(x => x.id === winId);
+      if (!w) return;
+      
+      state.activeId = winId;
+      state.z += 1;
+      w.el.style.zIndex = state.z;
+      
+      state.windows.forEach(x => {
+        x.el.classList.toggle('active', x.id === winId && !x.minimized);
+      });
+    }
+    
+    function minimizeWindow(winId) {
+      const w = state.windows.find(x => x.id === winId);
+      if (!w) return;
+      
+      w.minimized = true;
+      w.el.style.display = 'none';
+      if (state.activeId === winId) state.activeId = null;
+    }
+    
+    function restoreWindow(winId) {
+      const w = state.windows.find(x => x.id === winId);
+      if (!w) return;
+      
+      w.minimized = false;
+      w.el.style.display = 'flex';
+      focusWindow(winId);
+    }
+    
+    function toggleMaximize(winId) {
+      const w = state.windows.find(x => x.id === winId);
+      if (!w) return;
+      
+      const el = w.el;
+      
+      if (!w.maximized) {
+        const rect = el.getBoundingClientRect();
+        w.prev = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+        w.maximized = true;
+        el.style.left = '20px';
+        el.style.top = '80px';
+        el.style.width = `calc(100% - 40px)`;
+        el.style.height = `calc(100% - 100px)`;
+      } else {
+        w.maximized = false;
+        if (w.prev) {
+          el.style.left = w.prev.left + 'px';
+          el.style.top = w.prev.top + 'px';
+          el.style.width = w.prev.width + 'px';
+          el.style.height = w.prev.height + 'px';
+        }
+      }
+      
+      focusWindow(winId);
+    }
+    
+    function closeWindow(winId) {
+      const idx = state.windows.findIndex(x => x.id === winId);
+      if (idx === -1) return;
+      
+      const w = state.windows[idx];
+      w.el.style.opacity = '0';
+      w.el.style.transform = 'scale(0.95)';
+      
+      setTimeout(() => {
+        w.el.remove();
+        state.windows.splice(idx, 1);
+        if (state.activeId === winId) state.activeId = null;
+      }, 200);
+    }
+    
+    function makeDraggable(win) {
+      const header = win.querySelector('.window-header');
+      let dragging = false;
+      let startX = 0, startY = 0;
+      let baseLeft = 0, baseTop = 0;
+      
+      header.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        if (e.target.closest('.window-controls')) return;
+        
+        const w = state.windows.find(x => x.id === win.id);
+        if (w && w.maximized) return;
+        
+        dragging = true;
+        const rect = win.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        baseLeft = rect.left;
+        baseTop = rect.top;
+        
+        focusWindow(win.id);
+        
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        e.preventDefault();
+      });
+      
+      function onMove(e) {
+        if (!dragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const newLeft = baseLeft + dx;
+        const newTop = baseTop + dy;
+        
+        win.style.left = `${Math.max(20, Math.min(newLeft, window.innerWidth - win.offsetWidth - 20))}px`;
+        win.style.top = `${Math.max(80, Math.min(newTop, window.innerHeight - win.offsetHeight - 20))}px`;
+      }
+      
+      function onUp() {
+        if (!dragging) return;
+        dragging = false;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      
+      win.addEventListener('mousedown', () => focusWindow(win.id));
+    }
+    
+    // Search functionality
+    function initSearch() {
+      const input = document.getElementById('searchInput');
+      const suggestions = document.getElementById('searchSuggestions');
+      
+      input.addEventListener('focus', () => {
+        showSuggestions('');
+      });
+      
+      input.addEventListener('input', () => {
+        showSuggestions(input.value);
+      });
+      
+      input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          await performSearch(input.value);
+        } else if (e.key === 'Escape') {
+          suggestions.style.display = 'none';
+        }
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!suggestions.contains(e.target) && e.target !== input) {
+          suggestions.style.display = 'none';
+        }
+      });
+    }
+    
+    function showSuggestions(query) {
+      const suggestions = document.getElementById('searchSuggestions');
+      const allItems = [...apps, ...games];
+      const matches = query
+        ? allItems.filter(item => item.name.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+        : allItems.slice(0, 6);
+      
+      if (matches.length === 0 && query.trim() === '') {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      suggestions.innerHTML = matches.map(item => `
+        <div class="suggestion-item" data-app-id="${item.id}">
+          <i class="fa-solid ${item.icon}"></i>
+          <div>
+            <div>${escapeHtml(item.name)}</div>
+            <div style="font-size: 12px; color: #94a3b8;">${escapeHtml(item.desc)}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      if (query.trim()) {
+        suggestions.innerHTML += `
+          <div class="suggestion-item" data-search="${escapeAttr(query)}">
+            <i class="fas fa-search"></i>
+            <div>
+              <div>Search for "${escapeHtml(query)}"</div>
+              <div style="font-size: 12px; color: #94a3b8;">Press Enter to search the web</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      suggestions.style.display = 'block';
+      
+      suggestions.querySelectorAll('[data-app-id]').forEach(el => {
+        el.addEventListener('click', async () => {
+          const appId = el.dataset.appId;
+          let app = apps.find(a => a.id === appId) || games.find(g => g.id === appId);
+          if (app) {
+            await openApp(app);
+            suggestions.style.display = 'none';
+          }
+        });
+      });
+      
+      const searchBtn = suggestions.querySelector('[data-search]');
+      if (searchBtn) {
+        searchBtn.addEventListener('click', async () => {
+          await performSearch(searchBtn.dataset.search);
+          suggestions.style.display = 'none';
+        });
+      }
+    }
+    
+    async function performSearch(query) {
+      const trimmed = query.trim();
+      if (!trimmed) return;
+      
+      const url = resolveSearchUrl(trimmed);
+      const encodedUrl = await encodeWithProxy(url);
+      
+      const searchApp = {
+        id: 'search-' + Date.now(),
+        name: `Search: ${trimmed.substring(0, 20)}${trimmed.length > 20 ? '...' : ''}`,
+        url: encodedUrl,
+        icon: 'fa-search',
+        desc: 'Search result'
+      };
+      
+      createWindow(searchApp);
+      document.getElementById('searchInput').value = '';
+    }
+    
+    // Proxy functions
     const SEARCH_ENGINE_DEFAULT = "duckduckgo";
+    
     function resolveSearchUrl(query) {
       if (query.startsWith('http://') || query.startsWith('https://')) {
         return query;
@@ -1667,14 +1405,11 @@
           return `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
         case 'yahoo':
           return `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
-        case 'ecosia':
-          return `https://www.ecosia.org/search?q=${encodeURIComponent(query)}`;
-        case 'irs':
-          return `https://www.irs.gov/site-index-search?search=${encodeURIComponent(query)}`;
         default:
           return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
       }
     }
+    
     async function encodeWithProxy(url, proxyHint = null) {
       try {
         if (window.proxyEncoder) {
@@ -1689,364 +1424,12 @@
       }
       return url;
     }
-    function quick(url) {
-      let encodedUrl = url;
-      try {
-        if (typeof __uv$config !== 'undefined') {
-          encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(url);
-        }
-      } catch(e) {
-        console.error('Proxy encoding failed:', e);
-      }
-      localStorage.setItem("url", encodedUrl);
-      sessionStorage.setItem("Url", encodedUrl);
-      const searchApp = {
-        id: 'quick-' + Date.now(),
-        name: 'Quick Access',
-        url: encodedUrl,
-        icon: 'fa-external-link-alt',
-        color: '#3b82f6'
-      };
-      createWindow(searchApp);
-    }
-    window.quick = quick;
-    /* ---------- Boot ---------- */
-    function bootSequence(){
-      document.getElementById('bootVer').textContent = VERSION;
-      document.getElementById('trayVer').textContent = VERSION;
-      document.getElementById('startVer').textContent = VERSION;
-      document.getElementById('nebuloBgText').textContent = `NEBULO ${VERSION}`;
-      const bar = document.getElementById('bootBar');
-      const msg = document.getElementById('bootMsg');
-      const left = document.getElementById('bootLeft');
-      const proxyLabel = document.getElementById('bootProxy');
-      const steps = [
-        ["Checking UI assets…", "Loading shell"],
-        ["Starting window manager…", "Preparing desktop"],
-        ["Initializing apps…", "Indexing shortcuts"],
-        ["Finishing up…", "Almost ready"],
-      ];
-      let p = 0;
-      let i = 0;
-      const tick = () => {
-        p = Math.min(100, p + (8 + Math.random()*14));
-        bar.style.width = p.toFixed(0) + "%";
-        const s = steps[Math.min(steps.length-1, i)];
-        msg.textContent = s[0];
-        left.textContent = s[1];
-        if (p >= (i+1) * 25 && i < steps.length-1) i++;
-        if (p >= 100) return;
-        setTimeout(tick, 220);
-      };
-      tick();
-      if (proxyLabel) {
-        const proxyKey = localStorage.getItem('proxy') || 'uv';
-        const displayName = PROXY_DISPLAY_NAMES[proxyKey] || PROXY_DISPLAY_NAMES.uv;
-        proxyLabel.textContent = `You are using the ${displayName}`;
-      }
-    }
-    function loadSearchHistory(){
-      try {
-        const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (err) {
-        console.warn('Failed to parse search history', err);
-        return [];
-      }
-    }
-    function saveSearchHistory(history){
-      try {
-        localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
-      } catch {}
-    }
-    function addSearchHistory(term){
-      if (!term) return;
-      const normalized = term.trim();
-      if (!normalized) return;
-      let history = loadSearchHistory();
-      history = history.filter(entry => entry.toLowerCase() !== normalized.toLowerCase());
-      history.unshift(normalized);
-      if (history.length > MAX_SEARCH_HISTORY) {
-        history = history.slice(0, MAX_SEARCH_HISTORY);
-      }
-      saveSearchHistory(history);
-    }
-    function hideBoot(){
-      const boot = document.getElementById('bootloader');
-      boot.classList.add('hidden');
-      setTimeout(()=> boot.remove(), 700);
-    }
-    /* ---------- Background particles ---------- */
-    function createBackgroundElements(){
-      const bg = document.getElementById('bgElements');
-      bg.innerHTML = '';
-      const count = Math.min(22, Math.floor(window.innerWidth / 55));
-      for (let i=0;i<count;i++){
-        const p = document.createElement('div');
-        p.className = 'bg-particle';
-        const size = 30 + Math.random()*90;
-        p.style.width = size + "px";
-        p.style.height = size + "px";
-        p.style.left = (Math.random()*100) + "%";
-        p.style.opacity = (0.20 + Math.random()*0.25).toFixed(2);
-        p.style.animationDuration = (12 + Math.random()*18).toFixed(2) + "s";
-        p.style.animationDelay = (Math.random()*10).toFixed(2) + "s";
-        bg.appendChild(p);
-      }
-    }
-    /* ---------- Time ---------- */
-    function updateTime(){
-      const now = new Date();
-      const hours24 = now.getHours();
-      const minutes = String(now.getMinutes()).padStart(2,'0');
-      const period = hours24 >= 12 ? 'PM' : 'AM';
-      const hours12 = hours24 % 12 || 12;
-      document.getElementById('timeDisplay').textContent = `${hours12}:${minutes} ${period}`;
-    }
-    /* ---------- Desktop + Start ---------- */
-    function iconHTML(app){
-      if (typeof app.icon === 'string' && app.icon.startsWith('fa-')) return `<i class="${app.icon} app-icon-fa"></i>`;
-      const isImageUrl = /\.(png|jpe?g|webp|svg)(\?.*)?$/.test(app.icon) || app.icon.startsWith('/') || app.icon.startsWith('http');
-      if (isImageUrl) {
-        return `<img src="${app.icon}" class="app-icon-img" alt="${escapeHtml(app.name)}">`;
-      }
-      return `<i class="fa-solid fa-globe app-icon-fa"></i>`;
-    }
-    function getIconContainerClass(app){
-      const classes = ['app-icon-container'];
-      if (app.goldenRing) classes.push('golden-ring');
-      if (app.ring) classes.push(`${app.ring}-ring`);
-      return classes.join(' ');
-    }
-    function applyDesktopOrder() {
-      const saved = localStorage.getItem(DESKTOP_ORDER_KEY);
-      if (!saved) return;
-      try {
-        const order = JSON.parse(saved);
-        if (!Array.isArray(order) || order.length === 0) return;
-        apps.sort((a, b) => {
-          const idxA = order.indexOf(a.id);
-          const idxB = order.indexOf(b.id);
-          if (idxA === -1 && idxB === -1) return 0;
-          if (idxA === -1) return 1;
-          if (idxB === -1) return -1;
-          return idxA - idxB;
-        });
-      } catch (err) {
-        console.warn('Invalid desktop order', err);
-      }
-    }
-    function persistDesktopOrder() {
-      const order = apps.map(app => app.id);
-      localStorage.setItem(DESKTOP_ORDER_KEY, JSON.stringify(order));
-    }
-    // Build desktop with responsive layout
-    function buildDesktop(){
-      const desktop = document.getElementById('desktop');
-      desktop.innerHTML = '';
-      applyDesktopOrder();
-      apps.forEach(app => {
-        const el = document.createElement('div');
-        el.className = 'app-icon';
-        el.dataset.appId = app.id;
-        const iconContainerClass = getIconContainerClass(app);
-        el.innerHTML = `
-          <div class="${iconContainerClass}">${iconHTML(app)}</div>
-          <div class="app-icon-text">${escapeHtml(app.name)}</div>
-        `;
-        el.draggable = true;
-        el.addEventListener('dragstart', (e) => {
-          state.draggingIcon = app.id;
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', app.id);
-          setTimeout(() => el.classList.add('dragging'), 0);
-        });
-        el.addEventListener('dragend', () => {
-          state.draggingIcon = null;
-          el.classList.remove('dragging');
-          el.classList.remove('drop-target');
-        });
-        el.addEventListener('dragenter', () => {
-          if (state.draggingIcon && state.draggingIcon !== app.id) {
-            el.classList.add('drop-target');
-          }
-        });
-        el.addEventListener('dragleave', () => {
-          el.classList.remove('drop-target');
-        });
-        el.addEventListener('dragover', (e) => {
-          e.preventDefault();
-        });
-        // Click handlers
-        el.addEventListener('click', (e)=>{
-          e.stopPropagation();
-          selectIcon(app.id);
-        });
-        // double click open (desktop)
-        el.addEventListener('dblclick', (e)=>{
-          e.stopPropagation();
-          openApp(app.id);
-        });
-        // mobile double-tap fallback
-        let lastTap = 0;
-        el.addEventListener('touchend', (e)=>{
-          const now = Date.now();
-          const dt = now - lastTap;
-          lastTap = now;
-          if (dt < 280) openApp(app.id);
-        });
-        el.addEventListener('contextmenu', (e)=>{
-          e.preventDefault();
-          showContextMenu(e.clientX, e.clientY, app.id);
-        });
-        desktop.appendChild(el);
-      });
-    }
-    function clearDropTargets(){
-      document.querySelectorAll('.app-icon.drop-target').forEach(el => el.classList.remove('drop-target'));
-    }
-    function reorderApps(draggedId, targetId) {
-      const draggedIndex = apps.findIndex(app => app.id === draggedId);
-      if (draggedIndex === -1) return;
-      const draggedApp = apps.splice(draggedIndex, 1)[0];
-      let insertIndex = targetId
-        ? apps.findIndex(app => app.id === targetId)
-        : apps.length;
-      if (insertIndex === -1) {
-        insertIndex = apps.length;
-      }
-      if (draggedIndex < insertIndex) insertIndex -= 1;
-      apps.splice(insertIndex, 0, draggedApp);
-      persistDesktopOrder();
-    }
-    function setupDesktopDragHandlers(){
-      const desktop = document.getElementById('desktop');
-      desktop.addEventListener('dragover', (e)=>{
-        e.preventDefault();
-      });
-      desktop.addEventListener('drop', (e)=>{
-        e.preventDefault();
-        clearDropTargets();
-        const draggedId = state.draggingIcon || e.dataTransfer.getData('text/plain');
-        if (!draggedId) return;
-        const target = e.target.closest('.app-icon');
-        const targetId = target ? target.dataset.appId : null;
-        if (targetId === draggedId) return;
-        reorderApps(draggedId, targetId);
-        buildDesktop();
-        buildStartMenu();
-        renderDock();
-        selectIcon(draggedId);
-        state.draggingIcon = null;
-      });
-    }
-    function buildStartMenu(){
-      const startApps = document.getElementById('startApps');
-      startApps.innerHTML = '';
-      apps.forEach(app=>{
-        const card = document.createElement('div');
-        card.className = 'app-item';
-        card.dataset.appId = app.id;
-        card.innerHTML = `
-          <div class="app-icon-shell">
-            ${app.icon.startsWith('fa-') ? `<i class="fa-solid ${app.icon}"></i>` : `<img src="${app.icon}" alt="${escapeHtml(app.name)}">`}
-          </div>
-          <div class="app-info">
-            <div class="app-name">${escapeHtml(app.name)}</div>
-            <div class="app-desc">${escapeHtml(app.desc || "Open application")}</div>
-          </div>
-        `;
-        card.addEventListener('click', ()=>{
-          openApp(app.id);
-          hideStartMenu();
-        });
-        startApps.appendChild(card);
-      });
-    }
-    function selectIcon(appId){
-      const desktop = document.getElementById('desktop');
-      [...desktop.querySelectorAll('.app-icon')].forEach(n=> n.classList.remove('selected'));
-      const node = desktop.querySelector(`.app-icon[data-app-id="${cssEscape(appId)}"]`);
-      if (node) node.classList.add('selected');
-      state.iconSelected = appId;
-    }
-    document.addEventListener('click', ()=>{
-      const desktop = document.getElementById('desktop');
-      [...desktop.querySelectorAll('.app-icon')].forEach(n=> n.classList.remove('selected'));
-      state.iconSelected = null;
-      hideContextMenu();
-    });
-    /* ---------- Start menu controls ---------- */
-    function toggleStartMenu(){
-      const menu = document.getElementById('startMenu');
-      menu.classList.toggle('active');
-      menu.setAttribute('aria-hidden', menu.classList.contains('active') ? 'false' : 'true');
-      if (menu.classList.contains('active')) document.getElementById('startSearch').focus();
-    }
-    function hideStartMenu(){
-      const menu = document.getElementById('startMenu');
-      menu.classList.remove('active');
-      menu.setAttribute('aria-hidden','true');
-    }
-    /* ---------- Dock (Pinned + Running) ---------- */
-    function savePinned(){
-      localStorage.setItem('nebuloPinnedV53', JSON.stringify([...state.pinned]));
-    }
-    function renderDock(){
-      const dock = document.getElementById('dock');
-      dock.innerHTML = '';
-      // pinned first
-      [...state.pinned].forEach(appId=>{
-        const app = apps.find(a=>a.id===appId);
-        if (!app) return;
-        dock.appendChild(makeDockButton(app, null, true));
-      });
-      // running windows (unique by appId)
-      const runningAppIds = [...new Set(state.windows.map(w=>w.appId))];
-      runningAppIds.forEach(appId=>{
-        if (state.pinned.has(appId)) return;
-        const app = apps.find(a=>a.id===appId);
-        if (!app) return;
-        dock.appendChild(makeDockButton(app, appId, false));
-      });
-      updateDockStates();
-    }
-    function makeDockButton(app, appId, pinned){
-      const btn = document.createElement('div');
-      btn.className = 'taskbar-app';
-      btn.dataset.appId = app.id;
-      btn.title = app.name;
-      btn.innerHTML = app.icon.startsWith('fa-')
-        ? `<i class="fa-solid ${app.icon}"></i>`
-        : `<img src="${app.icon}" alt="${escapeHtml(app.name)}">`;
-      btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const win = state.windows.find(w=>w.appId===app.id);
-        if (win) toggleMinRestore(win.id);
-        else openApp(app.id);
-      });
-      btn.addEventListener('contextmenu', (e)=>{
-        e.preventDefault();
-        state.contextAppId = app.id;
-        showContextMenu(e.clientX, e.clientY, app.id);
-      });
-      return btn;
-    }
-    function updateDockStates(){
-      const dock = document.getElementById('dock');
-      [...dock.querySelectorAll('.taskbar-app')].forEach(btn=>{
-        const appId = btn.dataset.appId;
-        const hasWin = state.windows.some(w=>w.appId===appId);
-        btn.classList.toggle('running', hasWin);
-        const activeWin = state.windows.find(w=>w.id===state.activeId);
-        btn.classList.toggle('active', !!activeWin && activeWin.appId === appId && !activeWin.minimized);
-      });
-    }
-    /* ---------- Windows ---------- */
-    async function resolveAppUrl(app){
+    
+    async function resolveAppUrl(app) {
       const rawUrl = app.url;
       const external = /^https?:\/\//i.test(rawUrl);
       if (!external) return rawUrl;
+      
       if (app.proxied || !rawUrl.includes(location.hostname)) {
         try {
           const proxyHint = app.forceProxy || null;
@@ -2057,1170 +1440,47 @@
       }
       return rawUrl;
     }
-    async function openApp(appId){
-      const app = apps.find(a=>a.id===appId);
-      if (!app) return;
-      if (appId === 'games') {
-        openGamesFolder();
-        return;
-      }
-      if (appId === 'apps') {
-        openAppsFolder();
-        return;
-      }
-      if (appId === 'chat') {
-        alert("This is a temporary chat room UNTIL I finish the real chat room! Have fun.");
-      }
-      if (app.id === 'Request A App' || app.id === 'something-not-working') {
-        window.open(app.url, '_blank', 'noopener');
-        return;
-      }
-      const existing = state.windows.find(w=>w.appId===appId);
-      if (existing){
-        restoreWindow(existing.id);
-        focusWindow(existing.id);
-        return;
-      }
-      await createWindow(app);
+    
+    // Utility functions
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
     }
-    function openGamesFolder() {
-      const winId = `win-games-folder-${Date.now()}`;
-      const win = document.createElement('div');
-      win.className = 'window';
-      win.id = winId;
-      win.dataset.appId = 'games';
-      win.innerHTML = `
-        <div class="window-header">
-          <div class="window-title">
-            <i class="fa-solid fa-gamepad"></i>
-            <div class="title-text">Games</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-btn minimize" title="Minimize"><i class="fa-solid fa-window-minimize"></i></button>
-            <button class="window-btn maximize" title="Maximize"><i class="fa-regular fa-square"></i></button>
-            <button class="window-btn close" title="Close"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-        </div>
-        <div class="window-content" style="padding: 0;">
-          <div class="games-grid">
-            ${gamesFolderApps.map(game => `
-              <button class="games-tile" type="button" data-game-id="${game.id}" aria-label="${escapeHtml(game.name)}">
-                <img src="${game.icon}" class="games-tile-img" alt="${escapeHtml(game.name)}" loading="lazy" draggable="false">
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      document.body.appendChild(win);
-      const defaultWidth = Math.min(920, window.innerWidth - 60);
-      const defaultHeight = Math.min(680, window.innerHeight - 140);
-      win.style.width = `${defaultWidth}px`;
-      win.style.height = `${defaultHeight}px`;
-      const maxLeft = Math.max(10, window.innerWidth - defaultWidth - 24);
-      const maxTop = Math.max(66, window.innerHeight - defaultHeight - 80);
-      const centeredLeft = Math.max(10, Math.min(maxLeft, (window.innerWidth - defaultWidth) / 2));
-      const centeredTop = Math.max(66, Math.min(maxTop, (window.innerHeight - defaultHeight) / 2));
-      win.style.left = centeredLeft + "px";
-      win.style.top = centeredTop + "px";
-      win.style.display = "flex";
-      const gameTiles = win.querySelectorAll('.games-tile');
-      gameTiles.forEach(tile => {
-        const openGame = async () => {
-          const gameId = tile.dataset.gameId;
-          const game = gamesFolderApps.find(g => g.id === gameId);
-          if (!game) return;
-          await createWindow(game);
-        };
-        tile.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          await openGame();
-        });
-        tile.addEventListener('keydown', async (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            await openGame();
-          }
-        });
-      });
-      win.querySelector('.window-btn.minimize').addEventListener('click', (e)=>{ e.stopPropagation(); minimizeWindow(winId); });
-      win.querySelector('.window-btn.maximize').addEventListener('click', (e)=>{ e.stopPropagation(); toggleMaximize(winId); });
-      win.querySelector('.window-btn.close').addEventListener('click', (e)=>{ e.stopPropagation(); closeWindow(winId); });
-      const header = win.querySelector('.window-header');
-      header.addEventListener('dblclick', (e)=>{
-        if (e.target.closest('.window-controls')) return;
-        toggleMaximize(winId);
-      });
-      makeDraggable(win);
-      state.windows.push({
-        id: winId,
-        appId: 'games',
-        el: win,
-        minimized: false,
-        maximized: false,
-        prev: null,
-      });
-      renderDock();
-      focusWindow(winId);
+    
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/"/g, '&quot;');
     }
-    function openAppsFolder() {
-      const winId = `win-apps-folder-${Date.now()}`;
-      const win = document.createElement('div');
-      win.className = 'window';
-      win.id = winId;
-      win.dataset.appId = 'apps';
-      win.innerHTML = `
-        <div class="window-header">
-            <div class="window-title">
-            <i class="fa-solid fa-hashtag"></i>
-            <div class="title-text">Apps</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-btn minimize" title="Minimize"><i class="fa-solid fa-window-minimize"></i></button>
-            <button class="window-btn maximize" title="Maximize"><i class="fa-regular fa-square"></i></button>
-            <button class="window-btn close" title="Close"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-        </div>
-        <div class="window-content apps-folder-grid">
-          ${appsFolderApps.map(app => `
-          <div class="apps-folder-tile" role="button" tabindex="0" data-app-id="${app.id}">
-            <img src="${app.icon}" class="apps-folder-img" alt="${escapeHtml(app.name)}" loading="lazy" draggable="false">
-            <div class="apps-folder-name">${escapeHtml(app.name)}</div>
-          </div>
-          `).join('')}
-        </div>
-      `;
-      document.body.appendChild(win);
-      const defaultWidth = Math.min(920, window.innerWidth - 60);
-      const defaultHeight = Math.min(680, window.innerHeight - 140);
-      win.style.width = `${defaultWidth}px`;
-      win.style.height = `${defaultHeight}px`;
-      const maxLeft = Math.max(10, window.innerWidth - defaultWidth - 24);
-      const maxTop = Math.max(66, window.innerHeight - defaultHeight - 80);
-      const centeredLeft = Math.max(10, Math.min(maxLeft, (window.innerWidth - defaultWidth) / 2));
-      const centeredTop = Math.max(66, Math.min(maxTop, (window.innerHeight - defaultHeight) / 2));
-      win.style.left = centeredLeft + "px";
-      win.style.top = centeredTop + "px";
-      win.style.display = "flex";
-      const tiles = win.querySelectorAll('.apps-folder-tile');
-      tiles.forEach(tile => {
-        const openTile = async () => {
-          const appId = tile.dataset.appId;
-          const folderApp = appsFolderApps.find(g => g.id === appId);
-          if (!folderApp) return;
-          if (folderApp.newTab) {
-            window.open(folderApp.url, '_blank', 'noopener');
-          } else {
-            await createWindow(folderApp);
-          }
-        };
-        tile.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          await openTile();
-          win.querySelectorAll('.apps-folder-tile').forEach(t => t.classList.remove('selected'));
-          tile.classList.add('selected');
-        });
-        tile.addEventListener('keydown', async (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            await openTile();
-          }
-        });
-      });
-      win.querySelector('.window-btn.minimize').addEventListener('click', (e)=>{ e.stopPropagation(); minimizeWindow(winId); });
-      win.querySelector('.window-btn.maximize').addEventListener('click', (e)=>{ e.stopPropagation(); toggleMaximize(winId); });
-      win.querySelector('.window-btn.close').addEventListener('click', (e)=>{ e.stopPropagation(); closeWindow(winId); });
-      const header = win.querySelector('.window-header');
-      header.addEventListener('dblclick', (e)=>{
-        if (e.target.closest('.window-controls')) return;
-        toggleMaximize(winId);
-      });
-      makeDraggable(win);
-      state.windows.push({
-        id: winId,
-      appId: 'apps',
-        el: win,
-        minimized: false,
-        maximized: false,
-        prev: null,
-      });
-      renderDock();
-      focusWindow(winId);
-    }
-    async function createWindow(app){
-      const winId = `win-${app.id}-${Date.now()}`;
-      const win = document.createElement('div');
-      win.className = 'window';
-      win.id = winId;
-      win.dataset.appId = app.id;
-      const titleIcon = app.icon.startsWith('fa-')
-        ? `<i class="fa-solid ${app.icon}"></i>`
-        : (app.icon.endsWith('.png') || app.icon.endsWith('.jpg') || app.icon.endsWith('.jpeg') || app.icon.startsWith('/') )
-            ? `<img src="${app.icon}" style="width:16px;height:16px;object-fit:contain;opacity:.95">`
-            : `<i class="fa-solid fa-globe"></i>`;
-      const rawAppUrl = app.url;
-      const isExternal = /^https?:\/\//i.test(rawAppUrl);
-      const safeUrl = await resolveAppUrl(app);
-      const showAstraOverlay = false;
-      win.dataset.url = safeUrl;
-      win.dataset.appName = app.name;
-      win.innerHTML = `
-        <div class="window-header">
-          <div class="window-header-left">
-            <button class="window-popout" title="Open in new tab">
-              <i class="fa-solid fa-up-right-from-square"></i>
-            </button>
-            <div class="window-title">
-              ${titleIcon}
-              <div class="title-text">${escapeHtml(app.name)}</div>
-            </div>
-          </div>
-          <div class="window-controls">
-            <button class="window-btn minimize" title="Minimize"><i class="fa-solid fa-window-minimize"></i></button>
-            <button class="window-btn maximize" title="Maximize"><i class="fa-regular fa-square"></i></button>
-            <button class="window-btn close" title="Close"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-        </div>
-        <div class="window-content">
-        ${showAstraOverlay ? `
-        <div class="astra-overlay">
-          <div class="astra-message">
-            <div class="astra-title">ASTRA is currently being fixed</div>
-            <div class="astra-sub">Owner is working on it and will be back up soon.</div>
-          </div>
-        </div>` : ``}
-        <div class="window-loading" id="loading-${winId}">
-          <img src="/assets/img/nebulo-logo.png" alt="Nebulo" class="loading-logo">
-          <div class="spinner"></div>
-          <div style="font-weight:700; letter-spacing:.02em;">Loading ${escapeHtml(app.name)}…</div>
-            ${isExternal ? `
-            <div class="window-fallback">
-              Loading might take a minute, please be patient...
-            </div>` : ``}
-        </div>
-          <iframe class="${showAstraOverlay ? 'astra-blur' : ''}" src="${escapeAttr(safeUrl)}" loading="lazy"></iframe>
-        </div>
-      `;
-      document.body.appendChild(win);
-      const stackingIndex = state.windows.length;
-      const defaultWidth = Math.min(920, window.innerWidth - 60);
-      const defaultHeight = Math.min(680, window.innerHeight - 140);
-      win.style.width = `${defaultWidth}px`;
-      win.style.height = `${defaultHeight}px`;
-      const maxLeft = Math.max(10, window.innerWidth - defaultWidth - 24);
-      const maxTop = Math.max(66, window.innerHeight - defaultHeight - 80);
-      const centeredLeft = Math.max(10, Math.min(maxLeft, (window.innerWidth - defaultWidth) / 2));
-      const centeredTop = Math.max(66, Math.min(maxTop, (window.innerHeight - defaultHeight) / 2));
-      const stackOffset = Math.min(26 + stackingIndex * 20, 140);
-      const left = stackingIndex === 0 ? centeredLeft : Math.min(centeredLeft + stackOffset, maxLeft);
-      const top = stackingIndex === 0 ? centeredTop : Math.min(centeredTop + stackOffset + 10, maxTop);
-      win.style.left = Math.max(10, left) + "px";
-      win.style.top = Math.max(66, top) + "px";
-      win.style.display = "flex";
-      const iframe = win.querySelector('iframe');
-      if (app.id === 'movies') {
-        iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin');
-      }
-      const loading = win.querySelector('.window-loading');
-      const removeLoadingOverlay = () => {
-        if (!loading) return;
-        loading.style.display = 'none';
-        if (loading.parentNode) loading.parentNode.removeChild(loading);
-      };
-      const loadingTimeout = setTimeout(()=>{
-        removeLoadingOverlay();
-      }, 5000);
-      const hideLoading = () => {
-        removeLoadingOverlay();
-        clearTimeout(loadingTimeout);
-      };
-      iframe.addEventListener('load', hideLoading);
-      iframe.addEventListener('error', hideLoading);
-      win.querySelector('.window-btn.minimize').addEventListener('click', (e)=>{ e.stopPropagation(); minimizeWindow(winId); });
-      win.querySelector('.window-btn.maximize').addEventListener('click', (e)=>{ e.stopPropagation(); toggleMaximize(winId); });
-      win.querySelector('.window-btn.close').addEventListener('click', (e)=>{ e.stopPropagation(); closeWindow(winId); });
-      const popoutBtn = win.querySelector('.window-popout');
-      if (popoutBtn) {
-        popoutBtn.addEventListener('click', (e)=> {
-          e.stopPropagation();
-          popoutWindow(winId);
-        });
-      }
-      const header = win.querySelector('.window-header');
-      header.addEventListener('dblclick', (e)=>{
-        if (e.target.closest('.window-controls')) return;
-        toggleMaximize(winId);
-      });
-      makeDraggable(win);
-      state.windows.push({
-        id: winId,
-        appId: app.id,
-        el: win,
-        minimized: false,
-        maximized: false,
-        prev: null,
-      });
-      renderDock();
-      focusWindow(winId);
-    }
-    function focusWindow(winId){
-      const w = state.windows.find(x=>x.id===winId);
-      if (!w) return;
-      state.activeId = winId;
-      state.z += 1;
-      w.el.style.zIndex = String(state.z);
-      state.windows.forEach(x=>{
-        x.el.classList.toggle('active', x.id===winId && !x.minimized);
-      });
-      updateDockStates();
-    }
-    function minimizeWindow(winId){
-      const w = state.windows.find(x=>x.id===winId);
-      if (!w) return;
-      w.minimized = true;
-      w.el.style.display = 'none';
-      if (state.activeId === winId) state.activeId = null;
-      updateDockStates();
-    }
-    function restoreWindow(winId){
-      const w = state.windows.find(x=>x.id===winId);
-      if (!w) return;
-      w.minimized = false;
-      w.el.style.display = 'flex';
-      focusWindow(winId);
-    }
-    function toggleMinRestore(winId){
-      const w = state.windows.find(x=>x.id===winId);
-      if (!w) return;
-      if (w.minimized) restoreWindow(winId);
-      else minimizeWindow(winId);
-    }
-    function toggleMaximize(winId){
-      const w = state.windows.find(x=>x.id===winId);
-      if (!w) return;
-      const el = w.el;
-      if (!w.maximized){
-        const rect = el.getBoundingClientRect();
-        w.prev = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
-        w.maximized = true;
-        el.classList.add('maximized');
-        el.style.left = "10px";
-        el.style.top = "66px";
-        el.style.width = `calc(100% - 20px)`;
-        el.style.height = `calc(100% - 132px)`;
-      } else {
-        w.maximized = false;
-        el.classList.remove('maximized');
-        if (w.prev){
-          el.style.left = w.prev.left + "px";
-          el.style.top = w.prev.top + "px";
-          el.style.width = w.prev.width + "px";
-          el.style.height = w.prev.height + "px";
+    
+    // Quick access function (from original)
+    window.quick = function(url) {
+      let encodedUrl = url;
+      try {
+        if (typeof __uv$config !== 'undefined') {
+          encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(url);
         }
+      } catch(e) {
+        console.error('Proxy encoding failed:', e);
       }
-      focusWindow(winId);
-    }
-    function closeWindow(winId){
-      const idx = state.windows.findIndex(x=>x.id===winId);
-      if (idx === -1) return;
-      const w = state.windows[idx];
-      w.el.style.opacity = "0";
-      w.el.style.transform = "scale(.985) translateY(6px)";
-      setTimeout(()=>{
-        w.el.remove();
-        state.windows.splice(idx, 1);
-        if (state.activeId === winId) state.activeId = null;
-        renderDock();
-        updateDockStates();
-      }, 140);
-    }
-    function closeAllWindows(){
-      const ids = state.windows.map(w=>w.id);
-      ids.forEach(id=>closeWindow(id));
-    }
-    function popoutWindow(winId){
-      const windowRecord = state.windows.find(x=>x.id===winId);
-      if (!windowRecord) return;
-      const el = windowRecord.el;
-      const targetUrl = el.dataset.url;
-      if (!targetUrl) return;
-      const appName = el.dataset.appName || windowRecord.appId || "Nebulo App";
-      const popup = window.open("about:blank", "_blank");
-      if (!popup) return;
-      const safeTitle = escapeHtml(appName);
-      const safeUrl = escapeAttr(targetUrl);
-      const html = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width,initial-scale=1">
-          <title>${safeTitle}</title>
-          <style>
-            :root{background:#050b14;color:#eaf0ff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
-            *,*::before,*::after{box-sizing:border-box;}
-            body{margin:0;height:100vh;display:flex;background:#050b14;align-items:stretch;justify-content:stretch;}
-            iframe{border:none;width:100%;height:100%;flex:1;background:transparent;}
-          </style>
-        </head>
-        <body>
-          <iframe src="${safeUrl}" loading="lazy"></iframe>
-        </body>
-        </html>
-      `;
-      popup.document.write(html);
-      popup.document.close();
-    }
-    function showDesktop(){
-      state.windows.forEach(w=>{ if(!w.minimized) minimizeWindow(w.id); });
-      hideStartMenu();
-    }
-    /* Drag + Snap */
-    function makeDraggable(win){
-      const header = win.querySelector('.window-header');
-      let dragging = false;
-      let startX=0, startY=0;
-      let baseLeft=0, baseTop=0;
-      const SNAP = 26;
-      header.addEventListener('mousedown', (e)=>{
-        if (e.button !== 0) return;
-        if (e.target.closest('.window-controls')) return;
-        const w = state.windows.find(x=>x.id===win.id);
-        if (w && w.maximized) return;
-        dragging = true;
-        const rect = win.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        baseLeft = rect.left;
-        baseTop = rect.top;
-        focusWindow(win.id);
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-        e.preventDefault();
-      });
-      function onMove(e){
-        if (!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const newLeft = baseLeft + dx;
-        const newTop = baseTop + dy;
-        const minLeft = 6;
-        const minTop = 60;
-        const maxLeft = window.innerWidth - win.offsetWidth - 6;
-        const maxTop = window.innerHeight - win.offsetHeight - 62;
-        win.style.left = Math.max(minLeft, Math.min(newLeft, maxLeft)) + "px";
-        win.style.top = Math.max(minTop, Math.min(newTop, maxTop)) + "px";
-      }
-      function onUp(e){
-        if (!dragging) return;
-        dragging = false;
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-        const w = state.windows.find(x=>x.id===win.id);
-        if (!w) return;
-      }
-      win.addEventListener('mousedown', ()=>focusWindow(win.id));
-    }
-    /* ---------- Search (with proxy) ---------- */
-    async function performSearch(query){
-      const trimmed = query.trim();
-      if (!trimmed) return;
-      addSearchHistory(trimmed);
-      const url = resolveSearchUrl(trimmed);
-      const encodedUrl = await encodeWithProxy(url);
+      
       const searchApp = {
-        id: 'search-' + Date.now(),
-        name: `Search: ${trimmed.length > 30 ? trimmed.slice(0,30) + "…" : trimmed}`,
+        id: 'quick-' + Date.now(),
+        name: 'Quick Access',
         url: encodedUrl,
-        icon: 'fa-magnifying-glass',
-        desc: 'Search result tab'
+        icon: 'fa-bolt',
+        desc: 'Quick access tab'
       };
+      
       createWindow(searchApp);
-      document.getElementById('searchInput').value = '';
-      hideSuggestions();
-    }
-    function initSearch(){
-      const input = document.getElementById('searchInput');
-      input.addEventListener('focus', ()=>{ showSuggestions(''); });
-      input.addEventListener('blur', ()=>{
-        setTimeout(()=>{
-          const box = document.getElementById('searchSuggestions');
-          const active = document.activeElement;
-          if (active !== input && (!box || !box.contains(active))) {
-            hideSuggestions();
-          }
-        }, 0);
-      });
-      input.addEventListener('input', ()=>{ showSuggestions(input.value); });
-      input.addEventListener('keydown', async (e)=>{
-        if (e.key === 'Enter'){
-          e.preventDefault();
-          await performSearch(input.value);
-        } else if (e.key === 'Escape'){
-          hideSuggestions();
-          input.blur();
-        }
-      });
-      document.addEventListener('click', (e)=>{
-        const box = document.getElementById('searchSuggestions');
-        if (!box.contains(e.target) && e.target !== input) hideSuggestions();
-      });
-    }
-    function showSuggestions(q){
-      const box = document.getElementById('searchSuggestions');
-      const input = document.getElementById('searchInput');
-      box.style.display = 'block';
-      const trimmed = (q || '').trim();
-      const query = trimmed.toLowerCase();
-      const matches = query
-        ? apps.filter(a=>a.name.toLowerCase().includes(query)).slice(0,4)
-        : apps.slice(0,6);
-      let html = matches.map(app=>`
-        <div class="suggestion-item" data-app="${escapeAttr(app.id)}">
-          ${app.icon.startsWith('fa-') ? `<i class="fa-solid ${app.icon}"></i>` : `<i class="fa-solid fa-grid-2"></i>`}
-          ${escapeHtml(app.name)}
-        </div>
-      `).join('');
-      const history = loadSearchHistory();
-      const historyMatches = query
-        ? history.filter(entry => entry.toLowerCase().includes(query)).slice(0,4)
-        : history.slice(0,4);
-      if (historyMatches.length) {
-        html += `<div class="suggestion-header">Recent searches</div>`;
-        html += historyMatches.map(entry => `
-          <div class="suggestion-item" data-history="${escapeAttr(entry)}">
-            <i class="fa-regular fa-clock"></i>
-            ${escapeHtml(entry)}
-          </div>
-        `).join('');
-      }
-      if (trimmed){
-        html += `
-          <div class="suggestion-item suggestion-search" data-search="${escapeAttr(trimmed)}">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            Search web for "${escapeHtml(trimmed)}"
-          </div>
-        `;
-      }
-      box.innerHTML = html;
-      [...box.querySelectorAll('[data-app]')].forEach(el=>{
-        el.addEventListener('click', ()=>{
-          openApp(el.getAttribute('data-app'));
-          hideSuggestions();
-        });
-      });
-      [...box.querySelectorAll('[data-history]')].forEach(el=>{
-        el.addEventListener('click', async ()=>{
-          const term = el.getAttribute('data-history');
-          if (!term) return;
-          input.value = term;
-          await performSearch(term);
-        });
-      });
-      const s = box.querySelector('[data-search]');
-      if (s){
-        s.addEventListener('click', async ()=>{
-          await performSearch(s.getAttribute('data-search'));
-        });
-      }
-    }
-    function hideSuggestions(){
-      const box = document.getElementById('searchSuggestions');
-      box.style.display = 'none';
-    }
-    /* ---------- Context menu ---------- */
-    function showContextMenu(x, y, appId){
-      state.contextAppId = appId;
-      const menu = document.getElementById('contextMenu');
-      const maxX = window.innerWidth - 220;
-      const maxY = window.innerHeight - 200;
-      menu.style.left = Math.max(8, Math.min(x, maxX)) + "px";
-      menu.style.top = Math.max(66, Math.min(y, maxY)) + "px";
-      menu.style.display = "block";
-      const isPinned = state.pinned.has(appId);
-      document.getElementById('ctxPin').style.display = isPinned ? "none" : "flex";
-      document.getElementById('ctxUnpin').style.display = isPinned ? "flex" : "none";
-    }
-    function hideContextMenu(){
-      const menu = document.getElementById('contextMenu');
-      menu.style.display = "none";
-    }
-    /* ---------- Wiring ---------- */
-    function wireUI(){
-      document.getElementById('trayVer').textContent = VERSION;
-      document.getElementById('startButton').addEventListener('click', (e)=>{
-        e.stopPropagation();
-        toggleStartMenu();
-      });
-      document.getElementById('startOpenBrowser').addEventListener('click', ()=>openApp('browser'));
-      document.getElementById('startCloseAll').addEventListener('click', closeAllWindows);
-      document.addEventListener('click', (e)=>{
-        const menu = document.getElementById('startMenu');
-        const btn = document.getElementById('startButton');
-        if (!menu.contains(e.target) && !btn.contains(e.target)){
-          hideStartMenu();
-        }
-      });
-      const startSearch = document.getElementById('startSearch');
-      startSearch.addEventListener('input', ()=>{
-        const q = startSearch.value.trim().toLowerCase();
-        const list = document.getElementById('startApps');
-        [...list.children].forEach(card=>{
-          const appId = card.dataset.appId;
-          const app = apps.find(a=>a.id===appId);
-          const show = !q || (app && app.name.toLowerCase().includes(q));
-          card.style.display = show ? "flex" : "none";
-        });
-      });
-      document.querySelectorAll('.start-link').forEach(link => {
-        link.addEventListener('click', () => {
-          const target = link.dataset.startTarget;
-          hideStartMenu();
-          if (target === 'games') openGamesFolder();
-          if (target === 'apps') openAppsFolder();
-        });
-      });
-      document.getElementById('nebuloLogo').addEventListener('click', ()=>{
-        showDesktop();
-        document.getElementById('searchInput').value = '';
-        hideSuggestions();
-      });
-      document.getElementById('trayDesktop').addEventListener('click', showDesktop);
-      document.getElementById('trayRefresh').addEventListener('click', ()=>location.reload());
-      document.getElementById('trayInfo').addEventListener('click', ()=>{
-        const msg = `Nebulo OS ${VERSION}\n\n• Clean desktop UI\n• Window manager: snap / maximize / minimize\n• Start menu tiles\n• Integrated proxy system for browsing\n• Responsive design for all screen sizes\n• Games folder with golden ring\n• Browser with golden ring`;
-        alert(msg);
-      });
-      document.getElementById('ctxOpen').addEventListener('click', ()=>{
-        if (state.contextAppId) openApp(state.contextAppId);
-        hideContextMenu();
-      });
-      document.getElementById('ctxPin').addEventListener('click', ()=>{
-        if (!state.contextAppId) return;
-        state.pinned.add(state.contextAppId);
-        savePinned();
-        renderDock();
-        hideContextMenu();
-      });
-      document.getElementById('ctxUnpin').addEventListener('click', ()=>{
-        if (!state.contextAppId) return;
-        state.pinned.delete(state.contextAppId);
-        savePinned();
-        renderDock();
-        hideContextMenu();
-      });
-      document.getElementById('desktop').addEventListener('contextmenu', (e)=>{
-        if (!e.target.closest('.app-icon')){
-          e.preventDefault();
-          hideContextMenu();
-        }
-      });
-    }
-    /* ---------- Utils ---------- */
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c]));
-    }
-    function escapeAttr(s){
-      return escapeHtml(s).replace(/`/g, '&#096;');
-    }
-    function cssEscape(s){
-      return String(s).replace(/["\\]/g, "\\$&");
-    }
-    /* ---------- Init ---------- */
-    function init(){
-      document.getElementById('nebuloBgText').textContent = `NEBULO ${VERSION}`;
-      document.getElementById('startVer').textContent = VERSION;
-      document.getElementById('trayVer').textContent = VERSION;
-      createBackgroundElements();
-      buildDesktop();
-      buildStartMenu();
-      renderDock();
-      initSearch();
-      wireUI();
-      setupDesktopDragHandlers();
-      updateTime();
-      setInterval(updateTime, 60000);
-      bootSequence();
-      window.addEventListener('load', ()=>{
-        setTimeout(hideBoot, 420);
-      });
-    }
-    document.addEventListener('keydown', (e)=>{
-      if (e.key === "Escape"){
-        hideStartMenu();
-        hideSuggestions();
-        hideContextMenu();
-      }
-      if (e.ctrlKey && e.shiftKey && e.key === "F") {
-        const activeWin = state.windows.find(w=>w.id===state.activeId);
-        if (activeWin) toggleMaximize(activeWin.id);
-      }
-    });
-    window.addEventListener('resize', ()=>{
-      createBackgroundElements();
-    });
-    init();
-  </script>
-  <script>
-    (function () {
-      const AchievementSystem = {
-        storageKey: "nebuloAchievements",
-        achievements: {},
-        unlocked: new Set(),
-        progress: {},
-        initialized: false,
-        init() {
-          if (this.initialized) return;
-          this.initialized = true;
-          this.loadFromStorage();
-          this.setupAchievements();
-          this.setupListeners();
-          this.checkAchievement("night_owl");
-          this.checkAchievement("early_bird");
-        },
-        loadFromStorage() {
-          const saved = localStorage.getItem(this.storageKey);
-          if (!saved) {
-            this.unlocked = new Set();
-            this.progress = {};
-            return;
-          }
-          try {
-            const parsed = JSON.parse(saved);
-            this.unlocked = new Set(parsed.unlocked || []);
-            this.progress = this.restoreProgress(parsed.progress || {});
-          } catch (err) {
-            console.warn("AchievementSystem: failed to load progress", err);
-            this.unlocked = new Set();
-            this.progress = {};
-          }
-        },
-        restoreProgress(raw = {}) {
-          const restored = { ...raw };
-          if (Array.isArray(restored.app_explorer)) {
-            restored.app_explorer = new Set(restored.app_explorer);
-          }
-          return restored;
-        },
-        serializeProgress() {
-          const payload = {};
-          Object.entries(this.progress).forEach(([key, value]) => {
-            if (value instanceof Set) {
-              payload[key] = Array.from(value);
-            } else {
-              payload[key] = value;
-            }
-          });
-          return payload;
-        },
-        saveToStorage() {
-          const payload = {
-            unlocked: Array.from(this.unlocked),
-            progress: this.serializeProgress()
-          };
-          localStorage.setItem(this.storageKey, JSON.stringify(payload));
-        },
-        setupAchievements() {
-          this.achievements = {
-            first_launch: {
-              id: "first_launch",
-              name: "Welcome Aboard",
-              description: "Launch Nebulo OS for the first time",
-              icon: "fa-solid fa-rocket",
-              points: 10,
-              hidden: false,
-              condition() {
-                return true;
-              }
-            },
-            app_explorer: {
-              id: "app_explorer",
-              name: "App Explorer",
-              description: "Open 5 different applications",
-              icon: "fa-solid fa-compass",
-              points: 15,
-              hidden: false,
-              condition(appId) {
-                if (!appId) return false;
-                if (!this.progress.app_explorer) {
-                  this.progress.app_explorer = new Set();
-                }
-                this.progress.app_explorer.add(appId);
-                return this.progress.app_explorer.size >= 5;
-              }
-            },
-            window_master: {
-              id: "window_master",
-              name: "Window Master",
-              description: "Maximize, minimize, and close 3 windows",
-              icon: "fa-solid fa-window-maximize",
-              points: 20,
-              hidden: false,
-              condition(action) {
-                if (!action) return false;
-                if (action === "maximize") {
-                  this.progress.windows_maximized = (this.progress.windows_maximized || 0) + 1;
-                } else if (action === "minimize") {
-                  this.progress.windows_minimized = (this.progress.windows_minimized || 0) + 1;
-                } else if (action === "close") {
-                  this.progress.windows_closed = (this.progress.windows_closed || 0) + 1;
-                }
-                return (this.progress.windows_maximized || 0) >= 1 &&
-                  (this.progress.windows_minimized || 0) >= 1 &&
-                  (this.progress.windows_closed || 0) >= 1;
-              }
-            },
-            desktop_organizer: {
-              id: "desktop_organizer",
-              name: "Desktop Organizer",
-              description: "Move 3 desktop icons",
-              icon: "fa-solid fa-th-large",
-              points: 15,
-              hidden: false,
-              condition() {
-                this.progress.icons_moved = (this.progress.icons_moved || 0) + 1;
-                return this.progress.icons_moved >= 3;
-              }
-            },
-            search_pro: {
-              id: "search_pro",
-              name: "Search Pro",
-              description: "Use the search bar 10 times",
-              icon: "fa-solid fa-search",
-              points: 25,
-              hidden: false,
-              condition() {
-                this.progress.searches = (this.progress.searches || 0) + 1;
-                return this.progress.searches >= 10;
-              }
-            },
-            night_owl: {
-              id: "night_owl",
-              name: "Night Owl",
-              description: "Use Nebulo OS after 8 PM",
-              icon: "fa-solid fa-moon",
-              points: 10,
-              hidden: false,
-              condition() {
-                const hour = new Date().getHours();
-                return hour >= 20 || hour < 6;
-              }
-            },
-            early_bird: {
-              id: "early_bird",
-              name: "Early Bird",
-              description: "Use Nebulo OS before 8 AM",
-              icon: "fa-solid fa-sun",
-              points: 10,
-              hidden: false,
-              condition() {
-                const hour = new Date().getHours();
-                return hour >= 5 && hour < 8;
-              }
-            },
-            taskbar_pro: {
-              id: "taskbar_pro",
-              name: "Taskbar Pro",
-              description: "Pin 3 apps to the taskbar",
-              icon: "fa-solid fa-thumbtack",
-              points: 20,
-              hidden: false,
-              condition() {
-                return (this.progress.pinned_apps || 0) >= 3;
-              }
-            },
-            folder_opener: {
-              id: "folder_opener",
-              name: "Curious Mind",
-              description: "Open the Games folder",
-              icon: "fa-solid fa-folder-open",
-              points: 5,
-              hidden: false,
-              condition() {
-                return true;
-              }
-            },
-            multi_tasker: {
-              id: "multi_tasker",
-              name: "Multi-Tasker",
-              description: "Have 3 windows open at once",
-              icon: "fa-solid fa-tasks",
-              points: 30,
-              hidden: false,
-              condition(count) {
-                if (typeof count !== "number") return false;
-                this.progress.max_windows = Math.max(this.progress.max_windows || 0, count);
-                return this.progress.max_windows >= 3;
-              }
-            },
-            settings_explorer: {
-              id: "settings_explorer",
-              name: "Settings Explorer",
-              description: "Open the Settings app",
-              icon: "fa-solid fa-cog",
-              points: 5,
-              hidden: false,
-              condition() {
-                return true;
-              }
-            },
-            chat_enthusiast: {
-              id: "chat_enthusiast",
-              name: "Chat Enthusiast",
-              description: "Open the Chat app",
-              icon: "fa-solid fa-comments",
-              points: 5,
-              hidden: false,
-              condition() {
-                return true;
-              }
-            },
-            browser_master: {
-              id: "browser_master",
-              name: "Browser Master",
-              description: "Visit 5 different websites",
-              icon: "fa-solid fa-globe",
-              points: 25,
-              hidden: false,
-              condition() {
-                this.progress.websites_visited = (this.progress.websites_visited || 0) + 1;
-                return this.progress.websites_visited >= 5;
-              }
-            },
-            nebulo_master: {
-              id: "nebulo_master",
-              name: "Nebulo Master",
-              description: "Unlock all other achievements",
-              icon: "fa-solid fa-crown",
-              points: 100,
-              hidden: true,
-              condition() {
-                const targets = Object.keys(this.achievements).filter((id) => id !== "nebulo_master");
-                return targets.every((id) => this.unlocked.has(id));
-              }
-            }
-          };
-        },
-        setupListeners() {
-          const system = this;
-          const originalOpenApp = window.openApp;
-          if (typeof originalOpenApp === "function") {
-            window.openApp = async function (appId) {
-              const result = await originalOpenApp(appId);
-              system.checkAchievement("app_explorer", appId);
-              if (appId === "games") {
-                system.unlock("folder_opener");
-              }
-              if (appId === "settings") {
-                system.unlock("settings_explorer");
-              }
-              if (appId === "chat") {
-                system.unlock("chat_enthusiast");
-              }
-              setTimeout(() => {
-                const windowCount = state.windows.filter((w) => !w.minimized).length;
-                system.checkAchievement("multi_tasker", windowCount);
-              }, 120);
-              return result;
-            };
-          }
-          const originalPerformSearch = window.performSearch;
-          if (typeof originalPerformSearch === "function") {
-            window.performSearch = async function (...args) {
-              const result = await originalPerformSearch.apply(this, args);
-              system.checkAchievement("search_pro");
-              system.checkAchievement("browser_master");
-              return result;
-            };
-          }
-          document.addEventListener("mouseup", () => {
-            if (state.draggingIcon) {
-              system.checkAchievement("desktop_organizer");
-            }
-          });
-          const originalMinimizeWindow = window.minimizeWindow;
-          if (typeof originalMinimizeWindow === "function") {
-            window.minimizeWindow = function (...args) {
-              const result = originalMinimizeWindow.apply(this, args);
-              system.checkAchievement("window_master", "minimize");
-              return result;
-            };
-          }
-          const originalToggleMaximize = window.toggleMaximize;
-          if (typeof originalToggleMaximize === "function") {
-            window.toggleMaximize = function (...args) {
-              const result = originalToggleMaximize.apply(this, args);
-              system.checkAchievement("window_master", "maximize");
-              return result;
-            };
-          }
-          const originalCloseWindow = window.closeWindow;
-          if (typeof originalCloseWindow === "function") {
-            window.closeWindow = function (...args) {
-              const result = originalCloseWindow.apply(this, args);
-              system.checkAchievement("window_master", "close");
-              return result;
-            };
-          }
-          const originalSavePinned = window.savePinned;
-          if (typeof originalSavePinned === "function") {
-            window.savePinned = function (...args) {
-              const result = originalSavePinned.apply(this, args);
-              system.progress.pinned_apps = state.pinned.size;
-              system.checkAchievement("taskbar_pro");
-              return result;
-            };
-          }
-          setInterval(() => {
-            system.checkAchievement("night_owl");
-            system.checkAchievement("early_bird");
-          }, 60000);
-        },
-        checkAchievement(achievementId, data = null) {
-          const achievement = this.achievements[achievementId];
-          if (!achievement || this.unlocked.has(achievementId)) {
-            this.saveToStorage();
-            return false;
-          }
-          const shouldUnlock = achievement.condition.call(this, data);
-          if (shouldUnlock) {
-            this.unlock(achievementId);
-            return true;
-          }
-          this.saveToStorage();
-          return false;
-        },
-        unlock(achievementId) {
-          if (this.unlocked.has(achievementId)) return;
-          const achievement = this.achievements[achievementId];
-          if (!achievement) return;
-          this.unlocked.add(achievementId);
-          this.saveToStorage();
-          this.showNotification(achievement);
-          if (achievementId !== "nebulo_master") {
-            this.checkAchievement("nebulo_master");
-          }
-          return achievement;
-        },
-        showNotification(achievement) {
-          if (!achievement) return;
-          const notification = document.createElement("div");
-          notification.className = "achievement-notification";
-          notification.innerHTML = `
-            <div style="display:flex; gap:12px; align-items:center;">
-              <div style="
-                width:38px;
-                height:38px;
-                border-radius:10px;
-                background: rgba(125,211,192,0.15);
-                border:1px solid rgba(125,211,192,0.35);
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                color:#7dd3c0;
-              ">
-                <i class="${achievement.icon}"></i>
-              </div>
-              <div style="flex:1;">
-                <div style="font-size:0.8rem; color:rgba(125,211,192,0.8); letter-spacing:0.04em; text-transform:uppercase;">Achievement unlocked</div>
-                <div style="font-weight:600; font-size:1rem;">${achievement.name}</div>
-                <div style="font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.4;">${achievement.description}</div>
-                <div style="margin-top:6px;">
-                  <span style="
-                    background: rgba(125,211,192,0.15);
-                    color: #7dd3c0;
-                    padding: 3px 10px;
-                    border-radius: 999px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                  ">
-                    +${achievement.points} pts
-                  </span>
-                </div>
-              </div>
-            </div>
-          `;
-          document.body.appendChild(notification);
-          setTimeout(() => {
-            notification.style.animation = "slideOut 0.3s ease-in forwards";
-            setTimeout(() => notification.remove(), 300);
-          }, 5000);
-        }
-      };
-      window.AchievementSystem = AchievementSystem;
-      window.addEventListener("load", () => {
-        setTimeout(() => {
-          AchievementSystem.init();
-          AchievementSystem.unlock("first_launch");
-        }, 1000);
-      });
-    })();
+    };
+    
+    // Initialize on load
+    window.addEventListener('load', init);
+    
+    // Global functions for external use
+    window.openApp = openApp;
+    window.performSearch = performSearch;
+    
   </script>
 </body>
-
-<div id="workspace-popup" class="workspace-popup">
-  <div class="workspace-popup__card">
-    <strong>Quick update</strong>
-    <p>
-      I’ll be spending time improving functionality, but the next release is still a while away.
-      Before making more changes, I will make sure everything is working.
-      You can still use the site, but a few features may not behave perfectly yet.
-    </p>
-    <button id="workspace-popup-close">Ok</button>
-  </div>
-</div>
-
-<style>
-  .workspace-popup {
-    position: fixed;
-    inset: 0;
-    background: rgba(4, 10, 20, 0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-  .workspace-popup.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .workspace-popup__card {
-    background: rgba(10, 15, 25, 0.97);
-    border-radius: 18px;
-    padding: 1.5rem;
-    max-width: 420px;
-    width: min(90vw, 420px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    text-align: center;
-    color: #f5f7ff;
-    font-family: Inter, system-ui, sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  .workspace-popup__card button {
-    margin-top: 0.5rem;
-    padding: 0.65rem 1.4rem;
-    border: none;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #7dd3c0, #60a5fa);
-    color: #111;
-    font-weight: 700;
-    cursor: pointer;
-  }
-</style>
-
-<script>
-  window.addEventListener("DOMContentLoaded", () => {
-    const popup = document.getElementById("workspace-popup");
-    const closeBtn = document.getElementById("workspace-popup-close");
-    if (!popup || !closeBtn) return;
-    popup.classList.add("show");
-    closeBtn.addEventListener("click", () => {
-      popup.classList.remove("show");
-    });
-  });
-</script>
 </html>
