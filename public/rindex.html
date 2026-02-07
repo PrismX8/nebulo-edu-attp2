@@ -875,12 +875,12 @@
     
     <div class="search-container">
       <div class="search-wrapper">
-        <input type="text" class="search-input" id="searchInput" placeholder="Search or enter URL..." />
+        <input type="text" class="search-input" id="searchInput" placeholder="Enter URL (e.g., google.com, youtube.com)..." />
         <i class="fas fa-search search-icon"></i>
         <div class="search-suggestions" id="searchSuggestions"></div>
       </div>
       <div class="search-hint">
-        <i class="fas fa-lightbulb"></i> Press Enter to search, or type a URL to browse
+        <i class="fas fa-lightbulb"></i> Press Enter to browse any website through the proxy
       </div>
     </div>
   </main>
@@ -890,14 +890,11 @@
     <!-- Browser windows will be added here -->
   </div>
 
-  <!-- Hidden iframe -->
-  <iframe id="frame" src="/search" style="display:none;"></iframe>
-
   <!-- Main Application Script -->
   <script>
     // ======================
     // NEBULO OS V5.4
-    // Clean Homepage + Hamburger Menu + Tab System
+    // Direct Proxy Navigation - No Search Engine Redirects
     // ======================
     
     const VERSION = "V5.4";
@@ -940,19 +937,7 @@
       tabs: [],
       activeTabId: null,
       tabCounter: 0,
-      sidebarOpen: false,
-      searchEngines: [
-        { id: 'duckduckgo', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
-        { id: 'google', name: 'Google', url: 'https://www.google.com/search?q=' },
-        { id: 'brave', name: 'Brave', url: 'https://search.brave.com/search?q=' },
-        { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=' },
-        { id: 'yahoo', name: 'Yahoo', url: 'https://search.yahoo.com/search?p=' },
-        { id: 'startpage', name: 'StartPage', url: 'https://www.startpage.com/do/dsearch?query=' },
-        { id: 'ecosia', name: 'Ecosia', url: 'https://www.ecosia.org/search?q=' }
-      ],
-      currentSearchEngineIndex: 0,
-      retryCount: 0,
-      maxRetries: 3
+      sidebarOpen: false
     });
     
     // Initialize
@@ -968,25 +953,6 @@
       
       // Set up event listeners
       setupEventListeners();
-      
-      // Load search engine preference
-      loadSearchEnginePreference();
-    }
-    
-    // Load search engine preference from localStorage
-    function loadSearchEnginePreference() {
-      const savedEngine = localStorage.getItem('nebuloSearchEngine');
-      if (savedEngine) {
-        const index = state.searchEngines.findIndex(engine => engine.id === savedEngine);
-        if (index !== -1) {
-          state.currentSearchEngineIndex = index;
-        }
-      }
-    }
-    
-    // Save search engine preference to localStorage
-    function saveSearchEnginePreference(engineId) {
-      localStorage.setItem('nebuloSearchEngine', engineId);
     }
     
     // Create background particles
@@ -1253,15 +1219,28 @@
       const loading = document.getElementById(`loading-${tabId}`);
       
       try {
-        const safeUrl = await resolveAppUrl(tab.app || { url: url });
-        iframe.src = safeUrl;
+        // For external URLs, always use the proxy
+        let finalUrl = url;
+        
+        // Check if it's an external URL (starts with http:// or https://)
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          // Use the proxy for this URL
+          finalUrl = await encodeWithProxy(url);
+        }
+        // If it's a domain-like string (google.com, youtube.com), add https:// and proxy it
+        else if (url.includes('.') && !url.includes(' ') && !url.startsWith('/')) {
+          const fullUrl = 'https://' + url;
+          finalUrl = await encodeWithProxy(fullUrl);
+        }
+        
+        iframe.src = finalUrl;
         
         // Set a timeout for loading
         const loadTimeout = setTimeout(() => {
           if (tab.loading) {
             handleTabError(tabId, 'Loading timeout. The site may be slow or blocked.');
           }
-        }, 10000); // 10 second timeout
+        }, 15000); // 15 second timeout
         
         iframe.onload = () => {
           clearTimeout(loadTimeout);
@@ -1286,7 +1265,7 @@
         };
       } catch (error) {
         console.error('Failed to load tab content:', error);
-        handleTabError(tabId, 'Proxy error. Try a different search engine or site.');
+        handleTabError(tabId, 'Proxy error. Please try a different site.');
       }
     }
     
@@ -1304,9 +1283,8 @@
             <div class="loading-spinner" style="border-color: #e74c3c; border-top-color: #c0392b;"></div>
             <div style="margin-top: 20px; color: #e74c3c; font-weight: 600;">Error Loading Page</div>
             <div style="margin-top: 10px; color: #b0b7c7; font-size: 14px; line-height: 1.4;">${escapeHtml(message)}</div>
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-              <button class="retry-btn" style="padding: 8px 16px; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 6px; color: var(--accent-blue-light); cursor: pointer; font-size: 14px;">Retry</button>
-              <button class="change-engine-btn" style="padding: 8px 16px; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.3); border-radius: 6px; color: #2ecc71; cursor: pointer; font-size: 14px;">Try Different Search</button>
+            <div style="margin-top: 20px;">
+              <button class="retry-btn" style="padding: 10px 20px; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 6px; color: var(--accent-blue-light); cursor: pointer; font-size: 14px;">Retry Loading</button>
             </div>
           </div>
         `;
@@ -1318,72 +1296,7 @@
             loadTabContent(tabId, tab.url);
           });
         }
-        
-        // Add change engine button event
-        const changeEngineBtn = loading.querySelector('.change-engine-btn');
-        if (changeEngineBtn) {
-          changeEngineBtn.addEventListener('click', () => {
-            showSearchEngineSelector(tabId);
-          });
-        }
       }
-    }
-    
-    function showSearchEngineSelector(tabId) {
-      const tab = state.tabs.find(t => t.id === tabId);
-      if (!tab) return;
-      
-      const loading = document.getElementById(`loading-${tabId}`);
-      if (!loading) return;
-      
-      loading.innerHTML = `
-        <div style="text-align: center; padding: 20px; max-width: 400px;">
-          <div style="color: var(--accent-blue-light); font-weight: 600; margin-bottom: 20px; font-size: 18px;">Select Search Engine</div>
-          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-            ${state.searchEngines.map((engine, index) => `
-              <button class="engine-option" data-engine-index="${index}" style="padding: 12px; background: rgba(40, 45, 58, 0.7); border: 1px solid ${state.currentSearchEngineIndex === index ? 'var(--accent-blue)' : 'var(--border-color)'}; border-radius: 8px; color: ${state.currentSearchEngineIndex === index ? 'var(--accent-blue-light)' : 'var(--text-primary)'}; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-search" style="color: ${state.currentSearchEngineIndex === index ? 'var(--accent-blue)' : 'var(--text-secondary)'};"></i>
-                <div>
-                  <div style="font-weight: 600;">${engine.name}</div>
-                  <div style="font-size: 12px; color: var(--text-secondary);">${engine.url}...</div>
-                </div>
-                ${state.currentSearchEngineIndex === index ? '<i class="fas fa-check" style="margin-left: auto; color: var(--accent-blue);"></i>' : ''}
-              </button>
-            `).join('')}
-          </div>
-          <button class="cancel-btn" style="padding: 10px 20px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 6px; color: #e74c3c; cursor: pointer; font-size: 14px;">Cancel</button>
-        </div>
-      `;
-      
-      // Add engine selection events
-      loading.querySelectorAll('.engine-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const engineIndex = parseInt(btn.dataset.engineIndex);
-          state.currentSearchEngineIndex = engineIndex;
-          saveSearchEnginePreference(state.searchEngines[engineIndex].id);
-          
-          // Update the tab URL with new search engine
-          if (tab.title.startsWith('Search:')) {
-            const searchQuery = tab.title.replace('Search:', '').trim();
-            const newUrl = getSearchUrl(searchQuery);
-            tab.url = newUrl;
-            loadTabContent(tabId, newUrl);
-          }
-        });
-      });
-      
-      // Add cancel button event
-      const cancelBtn = loading.querySelector('.cancel-btn');
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-          handleTabError(tabId, 'Failed to load page. The site may be blocked or unavailable.');
-        });
-      }
-    }
-    
-    function getSearchUrl(query) {
-      const engine = state.searchEngines[state.currentSearchEngineIndex];
-      return engine.url + encodeURIComponent(query);
     }
     
     function activateTab(tabId) {
@@ -1513,42 +1426,55 @@
       createNewTab(app, app.url, app.name);
     }
     
-    // Proxy functions
-    async function encodeWithProxy(url, proxyHint = null) {
+    // Simple proxy encoding - DIRECT PROXY USAGE
+    async function encodeWithProxy(url) {
       try {
-        // Try UV first
+        // Use Ultraviolet proxy if available
         if (typeof __uv$config !== 'undefined') {
           return __uv$config.prefix + __uv$config.encodeUrl(url);
         }
-        // Try other proxy methods if available
-        if (window.proxyEncoder) {
-          return await window.proxyEncoder.encode(url, proxyHint);
-        } else if (typeof window.encodeProxiedUrl === "function") {
-          return window.encodeProxiedUrl(url);
-        }
+        
+        // If UV is not available, try to use the proxy endpoint directly
+        // This assumes your proxy is set up at /uv/service/
+        return '/uv/service/' + encodeURIComponent(url);
+        
       } catch(e) {
         console.error('Proxy encoding failed:', e);
+        // If proxy fails, return the original URL (will likely fail but gives user feedback)
+        return url;
       }
-      return url;
     }
     
-    async function resolveAppUrl(app) {
-      const rawUrl = app.url;
-      const external = /^https?:\/\//i.test(rawUrl);
-      if (!external) return rawUrl;
+    // Parse user input to create proper URL
+    function parseUserInput(input) {
+      const trimmed = input.trim();
       
-      if (app.proxied || !rawUrl.includes(location.hostname)) {
-        try {
-          const proxyHint = app.forceProxy || null;
-          return await encodeWithProxy(rawUrl, proxyHint);
-        } catch (err) {
-          console.error('Proxy encoding failed for', rawUrl, err);
-        }
+      // If it's already a full URL, use it
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
       }
-      return rawUrl;
+      
+      // If it looks like a domain (has dots, no spaces)
+      if (trimmed.includes('.') && !trimmed.includes(' ')) {
+        // Check if it starts with www.
+        if (trimmed.startsWith('www.')) {
+          return 'https://' + trimmed;
+        }
+        // Add https:// by default
+        return 'https://' + trimmed;
+      }
+      
+      // If it's a local path (starts with /)
+      if (trimmed.startsWith('/')) {
+        return trimmed;
+      }
+      
+      // Otherwise, assume it's a search query and use a simple search
+      // But we're not using search engines, so we'll just try to navigate to it as a domain
+      return 'https://' + trimmed + '.com';
     }
     
-    // Search functionality
+    // Search functionality - SIMPLIFIED - Just goes directly to sites via proxy
     function initSearch() {
       const input = document.getElementById('searchInput');
       const suggestions = document.getElementById('searchSuggestions');
@@ -1564,7 +1490,7 @@
       input.addEventListener('keydown', async (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          await performSearch(input.value);
+          await navigateToSite(input.value);
         } else if (e.key === 'Escape') {
           suggestions.style.display = 'none';
         }
@@ -1602,25 +1528,14 @@
       `).join('');
       
       if (query.trim()) {
-        // Show current search engine
-        const currentEngine = state.searchEngines[state.currentSearchEngineIndex];
         suggestions.innerHTML += `
-          <div class="suggestion-item" data-search="${escapeAttr(query)}">
+          <div class="suggestion-item" data-go="${escapeAttr(query)}">
             <div style="width: 32px; height: 32px; background: rgba(52, 152, 219, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--accent-blue);">
-              <i class="fas fa-search"></i>
+              <i class="fas fa-external-link-alt"></i>
             </div>
             <div>
-              <div>Search for "${escapeHtml(query)}"</div>
-              <div style="font-size: 12px; color: var(--text-secondary);">Using ${currentEngine.name} • Press Enter to search</div>
-            </div>
-          </div>
-          <div class="suggestion-item" data-change-engine="${escapeAttr(query)}">
-            <div style="width: 32px; height: 32px; background: rgba(46, 204, 113, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2ecc71;">
-              <i class="fas fa-exchange-alt"></i>
-            </div>
-            <div>
-              <div>Change Search Engine</div>
-              <div style="font-size: 12px; color: var(--text-secondary);">Switch to a different search provider</div>
+              <div>Go to "${escapeHtml(query)}"</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Press Enter to browse via proxy</div>
             </div>
           </div>
         `;
@@ -1640,123 +1555,32 @@
         });
       });
       
-      const searchBtn = suggestions.querySelector('[data-search]');
-      if (searchBtn) {
-        searchBtn.addEventListener('click', async () => {
-          await performSearch(searchBtn.dataset.search);
-          suggestions.style.display = 'none';
-        });
-      }
-      
-      const changeEngineBtn = suggestions.querySelector('[data-change-engine]');
-      if (changeEngineBtn) {
-        changeEngineBtn.addEventListener('click', async () => {
-          const query = changeEngineBtn.dataset.changeEngine;
-          showSearchEngineSelectorForSearch(query);
+      const goBtn = suggestions.querySelector('[data-go]');
+      if (goBtn) {
+        goBtn.addEventListener('click', async () => {
+          await navigateToSite(goBtn.dataset.go);
           suggestions.style.display = 'none';
         });
       }
     }
     
-    function showSearchEngineSelectorForSearch(query) {
-      const modal = document.createElement('div');
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-        padding: 20px;
-      `;
-      
-      modal.innerHTML = `
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 30px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">Select Search Engine</div>
-            <button class="close-modal" style="background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer;">×</button>
-          </div>
-          <div style="margin-bottom: 20px; color: var(--text-secondary);">
-            Choose a search engine for: "<span style="color: var(--accent-blue-light);">${escapeHtml(query)}</span>"
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
-            ${state.searchEngines.map((engine, index) => `
-              <button class="engine-select" data-engine-index="${index}" style="padding: 15px; background: ${state.currentSearchEngineIndex === index ? 'rgba(52, 152, 219, 0.2)' : 'rgba(40, 45, 58, 0.7)'}; border: 1px solid ${state.currentSearchEngineIndex === index ? 'var(--accent-blue)' : 'var(--border-color)'}; border-radius: var(--radius-sm); color: ${state.currentSearchEngineIndex === index ? 'var(--accent-blue-light)' : 'var(--text-primary)'}; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 15px; transition: all 0.2s ease;">
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: ${state.currentSearchEngineIndex === index ? 'var(--accent-blue)' : 'rgba(52, 152, 219, 0.1)'}; display: flex; align-items: center; justify-content: center; color: white;">
-                  <i class="fas fa-search"></i>
-                </div>
-                <div style="flex: 1;">
-                  <div style="font-weight: 600; margin-bottom: 4px;">${engine.name}</div>
-                  <div style="font-size: 12px; color: var(--text-secondary);">${engine.url}...</div>
-                </div>
-                ${state.currentSearchEngineIndex === index ? '<i class="fas fa-check" style="color: var(--accent-blue);"></i>' : ''}
-              </button>
-            `).join('')}
-          </div>
-          <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button class="cancel-btn" style="padding: 10px 20px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: var(--radius-sm); color: #e74c3c; cursor: pointer;">Cancel</button>
-            <button class="search-btn" style="padding: 10px 20px; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: var(--radius-sm); color: var(--accent-blue-light); cursor: pointer;">Search Now</button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      // Close modal
-      modal.querySelector('.close-modal').addEventListener('click', () => {
-        document.body.removeChild(modal);
-      });
-      
-      modal.querySelector('.cancel-btn').addEventListener('click', () => {
-        document.body.removeChild(modal);
-      });
-      
-      // Engine selection
-      modal.querySelectorAll('.engine-select').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const engineIndex = parseInt(btn.dataset.engineIndex);
-          state.currentSearchEngineIndex = engineIndex;
-          saveSearchEnginePreference(state.searchEngines[engineIndex].id);
-          
-          // Update all buttons
-          modal.querySelectorAll('.engine-select').forEach(b => {
-            const idx = parseInt(b.dataset.engineIndex);
-            b.style.background = idx === engineIndex ? 'rgba(52, 152, 219, 0.2)' : 'rgba(40, 45, 58, 0.7)';
-            b.style.borderColor = idx === engineIndex ? 'var(--accent-blue)' : 'var(--border-color)';
-            b.style.color = idx === engineIndex ? 'var(--accent-blue-light)' : 'var(--text-primary)';
-          });
-        });
-      });
-      
-      // Search button
-      modal.querySelector('.search-btn').addEventListener('click', async () => {
-        document.body.removeChild(modal);
-        await performSearch(query);
-      });
-    }
-    
-    async function performSearch(query) {
-      const trimmed = query.trim();
+    async function navigateToSite(input) {
+      const trimmed = input.trim();
       if (!trimmed) return;
       
-      const url = getSearchUrl(trimmed);
+      const url = parseUserInput(trimmed);
       const encodedUrl = await encodeWithProxy(url);
       
-      const searchApp = {
-        id: 'search-' + Date.now(),
-        name: `Search: ${trimmed.substring(0, 20)}${trimmed.length > 20 ? '...' : ''}`,
+      const siteApp = {
+        id: 'site-' + Date.now(),
+        name: `Site: ${trimmed.substring(0, 20)}${trimmed.length > 20 ? '...' : ''}`,
         url: encodedUrl,
-        icon: 'fa-search',
-        desc: `Search using ${state.searchEngines[state.currentSearchEngineIndex].name}`,
+        icon: 'fa-external-link-alt',
+        desc: 'External website',
         proxied: true
       };
       
-      createNewTab(searchApp, encodedUrl, `Search: ${trimmed}`);
+      createNewTab(siteApp, encodedUrl, `Site: ${trimmed}`);
       document.getElementById('searchInput').value = '';
       document.getElementById('searchSuggestions').style.display = 'none';
     }
@@ -1800,7 +1624,7 @@
     
     // Global functions for external use
     window.openApp = openApp;
-    window.performSearch = performSearch;
+    window.navigateToSite = navigateToSite;
     
   </script>
 </body>
