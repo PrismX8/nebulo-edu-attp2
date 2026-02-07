@@ -143,152 +143,98 @@
       }
     }
 
-    /* Top Navigation Bar */
-    .navbar {
+    /* Hamburger Menu Button */
+    .menu-button {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: rgba(21, 24, 33, 0.8);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border-color);
+      top: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      background: rgba(52, 152, 219, 0.15);
+      border: 1px solid rgba(52, 152, 219, 0.3);
+      border-radius: 12px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      z-index: 1000;
-    }
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--text-primary);
-    }
-
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-dark));
-      border-radius: 10px;
-      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: white;
-      transition: transform 0.3s ease;
-    }
-
-    .logo:hover .logo-icon {
-      transform: rotate(15deg);
-    }
-
-    /* Single Dropdown Menu */
-    .dropdown {
-      position: relative;
-    }
-
-    .dropdown-toggle {
-      background: rgba(52, 152, 219, 0.1);
-      border: 1px solid rgba(52, 152, 219, 0.2);
-      border-radius: var(--radius-sm);
-      padding: 10px 20px;
-      color: var(--accent-blue-light);
-      font-size: 14px;
-      font-weight: 600;
+      gap: 4px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      z-index: 1001;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .menu-button:hover {
+      background: rgba(52, 152, 219, 0.25);
+      transform: scale(1.05);
+    }
+
+    .menu-button span {
+      width: 20px;
+      height: 2px;
+      background: var(--accent-blue-light);
+      border-radius: 2px;
       transition: all 0.3s ease;
     }
 
-    .dropdown-toggle:hover {
-      background: rgba(52, 152, 219, 0.2);
-      border-color: rgba(52, 152, 219, 0.4);
-      transform: translateY(-1px);
+    .menu-button.active span:nth-child(1) {
+      transform: rotate(45deg) translate(4px, 4px);
     }
 
-    .dropdown-toggle.active {
-      background: rgba(52, 152, 219, 0.2);
-      border-color: var(--accent-blue);
+    .menu-button.active span:nth-child(2) {
+      opacity: 0;
     }
 
-    .dropdown-toggle i {
-      font-size: 12px;
-      transition: transform 0.3s ease;
+    .menu-button.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(4px, -4px);
     }
 
-    .dropdown-toggle.active i {
-      transform: rotate(180deg);
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      margin-top: 10px;
-      background: rgba(30, 35, 48, 0.95);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      width: 400px;
-      max-height: 600px;
-      overflow-y: auto;
-      display: none;
-      z-index: 1001;
-      box-shadow: var(--shadow);
+    /* Apps Sidebar */
+    .apps-sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 380px;
+      height: 100vh;
+      background: rgba(15, 17, 23, 0.95);
       backdrop-filter: blur(20px);
-      animation: fadeIn 0.3s ease;
+      border-left: 1px solid var(--border-color);
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -20px 0 60px rgba(0, 0, 0, 0.3);
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .apps-sidebar.active {
+      transform: translateX(-400px);
     }
 
-    .dropdown-menu.show {
-      display: block;
-    }
-
-    .menu-header {
-      padding: 20px;
+    .sidebar-header {
+      padding: 28px 24px;
       border-bottom: 1px solid var(--border-color);
     }
 
-    .menu-header h3 {
-      font-size: 16px;
-      font-weight: 600;
+    .sidebar-header h2 {
+      font-size: 24px;
+      font-weight: 700;
       color: var(--text-primary);
       margin-bottom: 8px;
     }
 
-    .menu-header p {
-      font-size: 13px;
+    .sidebar-header p {
+      font-size: 14px;
       color: var(--text-secondary);
     }
 
-    .menu-search {
-      padding: 16px 20px;
+    .sidebar-search {
+      padding: 20px 24px;
       border-bottom: 1px solid var(--border-color);
     }
 
-    .menu-search input {
+    .sidebar-search input {
       width: 100%;
-      padding: 12px 16px;
+      padding: 14px 16px;
       background: rgba(40, 45, 58, 0.7);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -298,19 +244,19 @@
       transition: all 0.3s ease;
     }
 
-    .menu-search input:focus {
+    .sidebar-search input:focus {
       border-color: var(--accent-blue);
       box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
 
-    .menu-categories {
+    .sidebar-tabs {
       display: flex;
       border-bottom: 1px solid var(--border-color);
     }
 
-    .category-tab {
+    .sidebar-tab {
       flex: 1;
-      padding: 14px 20px;
+      padding: 16px;
       background: transparent;
       border: none;
       color: var(--text-secondary);
@@ -319,36 +265,46 @@
       cursor: pointer;
       transition: all 0.3s ease;
       border-bottom: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .category-tab:hover {
+    .sidebar-tab:hover {
       background: rgba(52, 152, 219, 0.05);
       color: var(--accent-blue-light);
     }
 
-    .category-tab.active {
+    .sidebar-tab.active {
       color: var(--accent-blue-light);
       border-bottom: 2px solid var(--accent-blue);
       background: rgba(52, 152, 219, 0.1);
     }
 
-    .menu-content {
-      max-height: 400px;
+    .sidebar-content {
+      flex: 1;
       overflow-y: auto;
+      padding: 24px;
     }
 
     .category-content {
-      padding: 20px;
       display: none;
     }
 
     .category-content.active {
       display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .apps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 16px;
     }
 
@@ -398,44 +354,154 @@
       line-height: 1.4;
     }
 
-    /* Nav right - System tray */
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .nav-btn {
-      width: 40px;
-      height: 40px;
-      background: rgba(52, 152, 219, 0.1);
-      border: 1px solid rgba(52, 152, 219, 0.2);
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent-blue-light);
-      cursor: pointer;
+    /* Overlay for sidebar */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
       transition: all 0.3s ease;
     }
 
-    .nav-btn:hover {
-      background: rgba(52, 152, 219, 0.2);
-      border-color: rgba(52, 152, 219, 0.4);
-      transform: translateY(-1px);
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
     }
 
-    .clock {
-      font-size: 14px;
-      font-weight: 500;
-      padding: 10px 16px;
+    /* Tab System */
+    .tab-system {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: rgba(15, 17, 23, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      display: none;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 900;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .tab-system.active {
+      display: flex;
+    }
+
+    .tab-system::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tabs-container {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .tab {
+      height: 32px;
+      min-width: 120px;
+      max-width: 200px;
+      background: rgba(40, 45, 58, 0.5);
+      border: 1px solid rgba(52, 152, 219, 0.1);
+      border-radius: 6px 6px 0 0;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 12px;
+      color: var(--text-secondary);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .tab:hover {
+      background: rgba(52, 152, 219, 0.1);
+      border-color: rgba(52, 152, 219, 0.2);
+    }
+
+    .tab.active {
+      background: rgba(52, 152, 219, 0.15);
+      border-color: rgba(52, 152, 219, 0.3);
+      color: var(--accent-blue-light);
+      border-bottom: none;
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--bg-primary);
+    }
+
+    .tab-icon {
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+    }
+
+    .tab-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-close {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.5;
+      transition: all 0.2s ease;
+    }
+
+    .tab-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 1;
+    }
+
+    .new-tab {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
       background: rgba(52, 152, 219, 0.1);
       border: 1px solid rgba(52, 152, 219, 0.2);
-      border-radius: var(--radius-sm);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
       color: var(--accent-blue-light);
-      min-width: 100px;
-      text-align: center;
-      font-family: 'Inter', monospace;
+      margin-left: 5px;
+    }
+
+    .new-tab:hover {
+      background: rgba(52, 152, 219, 0.2);
+      transform: scale(1.05);
     }
 
     /* Main Content - Homepage */
@@ -445,14 +511,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 80px 20px 20px;
+      padding: 20px;
       text-align: center;
       position: relative;
       z-index: 1;
     }
 
     .hero-title {
-      font-size: clamp(3.5rem, 10vw, 6rem);
+      font-size: clamp(3.5rem, 10vw, 5rem);
       font-weight: 800;
       color: white;
       margin-bottom: 8px;
@@ -461,7 +527,7 @@
     }
 
     .hero-title .version {
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-size: clamp(1.5rem, 4vw, 2rem);
       font-weight: 300;
       color: var(--accent-blue-light);
       margin-left: 10px;
@@ -478,7 +544,7 @@
     /* Search Container */
     .search-container {
       width: 100%;
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
     }
 
@@ -522,85 +588,34 @@
       opacity: 0.8;
     }
 
-    /* Windows */
-    .window {
+    /* Browser Windows */
+    .browser-windows {
+      position: fixed;
+      top: 40px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      display: none;
+    }
+
+    .browser-windows.active {
+      display: block;
+    }
+
+    .browser-window {
       position: absolute;
-      min-width: 500px;
-      min-height: 400px;
-      background: rgba(30, 35, 48, 0.95);
-      border: 1px solid rgba(52, 152, 219, 0.3);
-      border-radius: var(--radius);
-      backdrop-filter: blur(20px);
-      box-shadow: var(--shadow);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       display: none;
       flex-direction: column;
-      overflow: hidden;
-      z-index: 100;
+      background: var(--bg-primary);
     }
 
-    .window.active {
+    .browser-window.active {
       display: flex;
-      animation: windowOpen 0.4s ease;
-    }
-
-    @keyframes windowOpen {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    .window-header {
-      height: 48px;
-      padding: 0 20px;
-      background: rgba(52, 152, 219, 0.15);
-      border-bottom: 1px solid rgba(52, 152, 219, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: move;
-    }
-
-    .window-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--accent-blue-light);
-    }
-
-    .window-controls {
-      display: flex;
-      gap: 8px;
-    }
-
-    .window-btn {
-      width: 32px;
-      height: 32px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 6px;
-      color: var(--text-primary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .window-btn:hover {
-      background: rgba(52, 152, 219, 0.3);
-      border-color: var(--accent-blue);
-    }
-
-    .window-btn.close:hover {
-      background: #e74c3c;
-      border-color: #c0392b;
     }
 
     .window-content {
@@ -619,7 +634,7 @@
     .window-loading {
       position: absolute;
       inset: 0;
-      background: rgba(30, 35, 48, 0.95);
+      background: var(--bg-primary);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -672,55 +687,19 @@
       background: rgba(52, 152, 219, 0.15);
     }
 
-    /* Quick Launch Bar */
-    .quick-launch {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 16px;
-      padding: 12px 24px;
-      background: rgba(30, 35, 48, 0.8);
-      border: 1px solid rgba(52, 152, 219, 0.2);
-      border-radius: var(--radius);
-      backdrop-filter: blur(20px);
-      box-shadow: var(--shadow);
-      z-index: 999;
-    }
-
-    .quick-app {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-dark));
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .quick-app:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
-    }
-
     /* Responsive Design */
     @media (max-width: 768px) {
-      .navbar {
-        padding: 0 16px;
+      .apps-sidebar {
+        width: 320px;
+        right: -320px;
       }
 
-      .dropdown-menu {
-        width: calc(100vw - 32px);
-        left: 50%;
-        transform: translateX(-50%);
+      .apps-sidebar.active {
+        transform: translateX(-320px);
       }
 
       .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       }
 
       .hero-title {
@@ -731,35 +710,31 @@
         padding: 0 20px;
       }
 
-      .window {
-        min-width: 300px;
-        min-height: 300px;
-        width: 90vw;
-        height: 70vh;
+      .tab {
+        min-width: 100px;
+        max-width: 150px;
       }
 
-      .quick-launch {
-        padding: 8px 16px;
-        gap: 12px;
-      }
-
-      .quick-app {
-        width: 40px;
-        height: 40px;
+      .menu-button {
+        top: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
       }
     }
 
     @media (max-width: 480px) {
-      .logo span {
-        display: none;
+      .apps-sidebar {
+        width: 280px;
+        right: -280px;
       }
 
-      .dropdown-toggle span {
-        display: none;
+      .apps-sidebar.active {
+        transform: translateX(-280px);
       }
 
-      .dropdown-toggle {
-        padding: 10px;
+      .apps-grid {
+        grid-template-columns: 1fr;
       }
 
       .hero-title {
@@ -770,16 +745,59 @@
         font-size: 1.2rem;
       }
 
-      .apps-grid {
-        grid-template-columns: 1fr;
-      }
-
       .search-input {
         padding: 14px 20px 14px 48px;
       }
 
       .search-icon {
         left: 16px;
+      }
+
+      .tab {
+        min-width: 80px;
+        max-width: 120px;
+        padding: 0 8px;
+      }
+
+      .tab-title {
+        font-size: 11px;
+      }
+
+      .sidebar-header {
+        padding: 24px 20px;
+      }
+
+      .sidebar-header h2 {
+        font-size: 20px;
+      }
+
+      .sidebar-content {
+        padding: 20px;
+      }
+
+      .menu-button {
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    @media (max-height: 700px) {
+      .hero-title {
+        margin-bottom: 4px;
+      }
+
+      .hero-subtitle {
+        margin-bottom: 30px;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+      }
+
+      .sidebar-content {
+        padding: 20px;
       }
     }
   </style>
@@ -789,74 +807,67 @@
   <div class="background-animation"></div>
   <div class="particles" id="particles"></div>
 
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="nav-left">
-      <div class="logo">
-        <div class="logo-icon">N</div>
-        <span>Nebulo</span>
+  <!-- Hamburger Menu Button -->
+  <div class="menu-button" id="menuButton">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Apps Sidebar -->
+  <div class="apps-sidebar" id="appsSidebar">
+    <div class="sidebar-header">
+      <h2>Nebulo Apps</h2>
+      <p>All your applications and games in one place</p>
+    </div>
+    
+    <div class="sidebar-search">
+      <input type="text" id="sidebarSearch" placeholder="Search apps and games..." />
+    </div>
+    
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-category="apps">
+        <i class="fas fa-th-large"></i>
+        <span>Apps</span>
+      </button>
+      <button class="sidebar-tab" data-category="games">
+        <i class="fas fa-gamepad"></i>
+        <span>Games</span>
+      </button>
+    </div>
+    
+    <div class="sidebar-content">
+      <!-- Apps Category -->
+      <div class="category-content active" id="appsContent">
+        <div class="apps-grid" id="appsGrid">
+          <!-- Apps will be dynamically added here -->
+        </div>
       </div>
       
-      <!-- Single Dropdown Menu -->
-      <div class="dropdown">
-        <button class="dropdown-toggle" id="menuToggle">
-          <i class="fas fa-th"></i>
-          <span>Apps & Games</span>
-          <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="dropdown-menu" id="menu">
-          <div class="menu-header">
-            <h3>Nebulo Applications</h3>
-            <p>All your apps and games in one place</p>
-          </div>
-          
-          <div class="menu-search">
-            <input type="text" id="menuSearch" placeholder="Search apps and games..." />
-          </div>
-          
-          <div class="menu-categories">
-            <button class="category-tab active" data-category="apps">
-              <i class="fas fa-th-large"></i>
-              <span>Apps</span>
-            </button>
-            <button class="category-tab" data-category="games">
-              <i class="fas fa-gamepad"></i>
-              <span>Games</span>
-            </button>
-          </div>
-          
-          <div class="menu-content">
-            <!-- Apps Category -->
-            <div class="category-content active" id="appsContent">
-              <div class="apps-grid" id="appsGrid">
-                <!-- Apps will be dynamically added here -->
-              </div>
-            </div>
-            
-            <!-- Games Category -->
-            <div class="category-content" id="gamesContent">
-              <div class="apps-grid" id="gamesGrid">
-                <!-- Games will be dynamically added here -->
-              </div>
-            </div>
-          </div>
+      <!-- Games Category -->
+      <div class="category-content" id="gamesContent">
+        <div class="apps-grid" id="gamesGrid">
+          <!-- Games will be dynamically added here -->
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="nav-right">
-      <div class="nav-btn" id="btnRefresh" title="Refresh">
-        <i class="fas fa-sync-alt"></i>
-      </div>
-      <div class="nav-btn" id="btnInfo" title="About">
-        <i class="fas fa-info-circle"></i>
-      </div>
-      <div class="clock" id="timeDisplay">00:00</div>
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Tab System -->
+  <div class="tab-system" id="tabSystem">
+    <div class="tabs-container" id="tabsContainer">
+      <!-- Tabs will be added here dynamically -->
     </div>
-  </nav>
+    <div class="new-tab" id="newTab">
+      <i class="fas fa-plus"></i>
+    </div>
+  </div>
 
-  <!-- Main Content -->
-  <main class="main-content">
+  <!-- Main Content - Homepage -->
+  <main class="main-content" id="mainContent">
     <h1 class="hero-title">
       Nebulo<span class="version">V5.4</span>
     </h1>
@@ -874,12 +885,10 @@
     </div>
   </main>
 
-  <!-- Quick Launch Bar -->
-  <div class="quick-launch" id="quickLaunch">
-    <!-- Quick launch apps will be added here -->
+  <!-- Browser Windows Container -->
+  <div class="browser-windows" id="browserWindows">
+    <!-- Browser windows will be added here -->
   </div>
-
-  <!-- Windows will be dynamically added here -->
 
   <!-- Hidden iframe -->
   <iframe id="frame" src="/search" style="display:none;"></iframe>
@@ -899,7 +908,7 @@
   <script>
     // ======================
     // NEBULO OS V5.4
-    // Single Dropdown Menu with Categories
+    // Clean Homepage + Hamburger Menu + Tab System
     // ======================
     
     const VERSION = "V5.4";
@@ -937,16 +946,12 @@
       { id:'xbox-cloud', name:'Xbox Cloud', url:'https://www.xbox.com/en-us/play', icon:'fa-xbox', desc:'Cloud gaming', category: 'games', proxied: true },
     ];
     
-    // Quick launch apps
-    const QUICK_LAUNCH_APPS = ['browser', 'music', 'roblox', 'settings'];
-    
     // Global state
     const state = (window.state = {
-      windows: [],
-      z: 2000,
-      activeId: null,
-      contextAppId: null,
-      quickLaunch: new Set(JSON.parse(localStorage.getItem('nebuloQuickLaunchV54') || "null") || QUICK_LAUNCH_APPS),
+      tabs: [],
+      activeTabId: null,
+      tabCounter: 0,
+      sidebarOpen: false
     });
     
     // Initialize
@@ -954,21 +959,14 @@
       // Create particles
       createParticles();
       
-      // Build menu
-      buildMenu();
-      
-      // Build quick launch
-      buildQuickLaunch();
+      // Build sidebar apps and games
+      buildSidebar();
       
       // Initialize search
       initSearch();
       
       // Set up event listeners
       setupEventListeners();
-      
-      // Update time
-      updateTime();
-      setInterval(updateTime, 30000);
     }
     
     // Create background particles
@@ -1001,8 +999,8 @@
       }
     }
     
-    // Build menu with categories
-    function buildMenu() {
+    // Build sidebar apps and games
+    function buildSidebar() {
       // Build apps grid
       const appsGrid = document.getElementById('appsGrid');
       appsGrid.innerHTML = '';
@@ -1022,7 +1020,7 @@
       });
     }
     
-    // Create app card for menu
+    // Create app card for sidebar
     function createAppCard(app) {
       const card = document.createElement('div');
       card.className = 'app-card';
@@ -1042,120 +1040,47 @@
       card.addEventListener('click', async (e) => {
         e.stopPropagation();
         await openApp(app);
-        hideMenu();
+        closeSidebar();
       });
       
       return card;
     }
     
-    // Build Quick Launch bar
-    function buildQuickLaunch() {
-      const quickLaunch = document.getElementById('quickLaunch');
-      quickLaunch.innerHTML = '';
+    // Sidebar Functions
+    function openSidebar() {
+      state.sidebarOpen = true;
+      document.getElementById('appsSidebar').classList.add('active');
+      document.getElementById('sidebarOverlay').classList.add('active');
+      document.getElementById('menuButton').classList.add('active');
       
-      // Add browser
-      const browserApp = apps.find(a => a.id === 'browser');
-      if (browserApp) {
-        const el = document.createElement('div');
-        el.className = 'quick-app';
-        el.title = browserApp.name;
-        el.innerHTML = `<i class="fas ${browserApp.icon}"></i>`;
-        el.addEventListener('click', () => openApp(browserApp));
-        quickLaunch.appendChild(el);
-      }
-      
-      // Add other quick launch apps
-      [...state.quickLaunch].forEach(appId => {
-        if (appId === 'browser') return; // Already added
-        
-        let app = apps.find(a => a.id === appId);
-        if (!app) app = games.find(g => g.id === appId);
-        if (!app) return;
-        
-        const el = document.createElement('div');
-        el.className = 'quick-app';
-        el.title = app.name;
-        el.innerHTML = `<i class="fa${app.icon.includes('fab') ? 'b' : 's'} ${app.icon}"></i>`;
-        el.addEventListener('click', () => openApp(app));
-        quickLaunch.appendChild(el);
-      });
-    }
-    
-    // Menu controls
-    function setupEventListeners() {
-      // Menu toggle
-      const menuToggle = document.getElementById('menuToggle');
-      const menu = document.getElementById('menu');
-      
-      menuToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (menu.classList.contains('show')) {
-          hideMenu();
-        } else {
-          showMenu();
-        }
-      });
-      
-      // Category tabs
-      document.querySelectorAll('.category-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          const category = tab.dataset.category;
-          switchCategory(category);
-        });
-      });
-      
-      // Menu search
-      const menuSearch = document.getElementById('menuSearch');
-      menuSearch.addEventListener('input', () => {
-        filterMenu(menuSearch.value);
-      });
-      
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.dropdown')) {
-          hideMenu();
-        }
-      });
-      
-      // Refresh button
-      document.getElementById('btnRefresh').addEventListener('click', () => {
-        location.reload();
-      });
-      
-      // Info button
-      document.getElementById('btnInfo').addEventListener('click', () => {
-        alert(`Nebulo V5.4\nProfessional Interface\nSingle Dropdown Menu with Categories\nSmooth Grey Background Animation\nBlue Transparent Design`);
-      });
-    }
-    
-    function showMenu() {
-      const menu = document.getElementById('menu');
-      const toggle = document.getElementById('menuToggle');
-      
-      menu.classList.add('show');
-      toggle.classList.add('active');
-      
-      // Focus search
+      // Focus search input
       setTimeout(() => {
-        document.getElementById('menuSearch').focus();
-      }, 100);
+        document.getElementById('sidebarSearch').focus();
+      }, 300);
     }
     
-    function hideMenu() {
-      const menu = document.getElementById('menu');
-      const toggle = document.getElementById('menuToggle');
-      
-      menu.classList.remove('show');
-      toggle.classList.remove('active');
+    function closeSidebar() {
+      state.sidebarOpen = false;
+      document.getElementById('appsSidebar').classList.remove('active');
+      document.getElementById('sidebarOverlay').classList.remove('active');
+      document.getElementById('menuButton').classList.remove('active');
       
       // Clear search
-      document.getElementById('menuSearch').value = '';
-      filterMenu('');
+      document.getElementById('sidebarSearch').value = '';
+      filterSidebar('');
+    }
+    
+    function toggleSidebar() {
+      if (state.sidebarOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
     }
     
     function switchCategory(category) {
       // Update active tab
-      document.querySelectorAll('.category-tab').forEach(tab => {
+      document.querySelectorAll('.sidebar-tab').forEach(tab => {
         tab.classList.remove('active');
         if (tab.dataset.category === category) {
           tab.classList.add('active');
@@ -1171,7 +1096,7 @@
       });
     }
     
-    function filterMenu(query) {
+    function filterSidebar(query) {
       const searchTerm = query.toLowerCase().trim();
       
       // Filter apps
@@ -1201,238 +1126,330 @@
       });
     }
     
-    // Update time
-    function updateTime() {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const hours12 = hours % 12 || 12;
-      document.getElementById('timeDisplay').textContent = `${hours12}:${minutes} ${period}`;
+    // Tab System Functions
+    function createNewTab(app = null, url = null, title = "New Tab") {
+      state.tabCounter++;
+      const tabId = `tab-${state.tabCounter}`;
+      
+      const tab = {
+        id: tabId,
+        app: app,
+        url: url || (app ? app.url : null),
+        title: title,
+        icon: app ? app.icon : 'fa-globe',
+        loading: false,
+        active: false
+      };
+      
+      state.tabs.push(tab);
+      
+      // Show tab system
+      document.getElementById('tabSystem').classList.add('active');
+      
+      // Create tab element
+      createTabElement(tab);
+      
+      // Create browser window
+      createBrowserWindow(tab);
+      
+      // Activate this tab
+      activateTab(tabId);
+      
+      // Show browser windows container
+      document.getElementById('browserWindows').classList.add('active');
+      
+      // Hide main content
+      document.getElementById('mainContent').style.display = 'none';
+      
+      return tabId;
     }
     
-    // Open app
+    function createTabElement(tab) {
+      const tabsContainer = document.getElementById('tabsContainer');
+      const tabEl = document.createElement('div');
+      tabEl.className = 'tab';
+      tabEl.id = `tab-el-${tab.id}`;
+      tabEl.dataset.tabId = tab.id;
+      
+      tabEl.innerHTML = `
+        <div class="tab-icon">
+          <i class="fa${tab.icon.includes('fab') ? 'b' : 's'} ${tab.icon}"></i>
+        </div>
+        <div class="tab-title">${escapeHtml(tab.title)}</div>
+        <div class="tab-close">
+          <i class="fas fa-times"></i>
+        </div>
+      `;
+      
+      // Click to activate tab
+      tabEl.addEventListener('click', (e) => {
+        if (!e.target.closest('.tab-close')) {
+          activateTab(tab.id);
+        }
+      });
+      
+      // Close tab
+      const closeBtn = tabEl.querySelector('.tab-close');
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeTab(tab.id);
+      });
+      
+      tabsContainer.appendChild(tabEl);
+    }
+    
+    function createBrowserWindow(tab) {
+      const windowsContainer = document.getElementById('browserWindows');
+      const windowEl = document.createElement('div');
+      windowEl.className = 'browser-window';
+      windowEl.id = `window-${tab.id}`;
+      
+      windowEl.innerHTML = `
+        <div class="window-content">
+          <div class="window-loading" id="loading-${tab.id}">
+            <div class="loading-spinner"></div>
+            <div>Loading ${escapeHtml(tab.title)}...</div>
+          </div>
+          <iframe src="about:blank" id="iframe-${tab.id}"></iframe>
+        </div>
+      `;
+      
+      windowsContainer.appendChild(windowEl);
+      
+      // Load content if URL is available
+      if (tab.url) {
+        loadTabContent(tab.id, tab.url);
+      }
+    }
+    
+    async function loadTabContent(tabId, url) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.loading = true;
+      const iframe = document.getElementById(`iframe-${tabId}`);
+      const loading = document.getElementById(`loading-${tabId}`);
+      
+      try {
+        const safeUrl = await resolveAppUrl(tab.app || { url: url });
+        iframe.src = safeUrl;
+        
+        iframe.onload = () => {
+          tab.loading = false;
+          if (loading) loading.style.display = 'none';
+          
+          // Try to get title from iframe
+          try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const iframeTitle = iframeDoc.title;
+            if (iframeTitle && iframeTitle !== '') {
+              updateTabTitle(tabId, iframeTitle);
+            }
+          } catch (e) {
+            // Cross-origin error, ignore
+          }
+        };
+        
+        iframe.onerror = () => {
+          tab.loading = false;
+          if (loading) {
+            loading.innerHTML = `
+              <div style="text-align: center; padding: 20px;">
+                <div class="loading-spinner" style="border-color: #e74c3c; border-top-color: #c0392b;"></div>
+                <div style="margin-top: 20px; color: #e74c3c; font-weight: 600;">Failed to load page</div>
+                <div style="margin-top: 10px; color: #b0b7c7; font-size: 14px;">Please check your connection or try again</div>
+              </div>
+            `;
+          }
+        };
+      } catch (error) {
+        console.error('Failed to load tab content:', error);
+        tab.loading = false;
+      }
+    }
+    
+    function activateTab(tabId) {
+      // Deactivate all tabs
+      state.tabs.forEach(tab => {
+        tab.active = false;
+        const tabEl = document.getElementById(`tab-el-${tab.id}`);
+        const windowEl = document.getElementById(`window-${tab.id}`);
+        
+        if (tabEl) tabEl.classList.remove('active');
+        if (windowEl) windowEl.classList.remove('active');
+      });
+      
+      // Activate selected tab
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (tab) {
+        tab.active = true;
+        state.activeTabId = tabId;
+        
+        const tabEl = document.getElementById(`tab-el-${tab.id}`);
+        const windowEl = document.getElementById(`window-${tab.id}`);
+        
+        if (tabEl) tabEl.classList.add('active');
+        if (windowEl) windowEl.classList.add('active');
+        
+        // Ensure tab is visible in tab system
+        if (tabEl) {
+          tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }
+    
+    function updateTabTitle(tabId, title) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.title = title;
+      const tabEl = document.getElementById(`tab-el-${tabId}`);
+      if (tabEl) {
+        const titleEl = tabEl.querySelector('.tab-title');
+        if (titleEl) {
+          titleEl.textContent = escapeHtml(title);
+        }
+      }
+    }
+    
+    function closeTab(tabId) {
+      const tabIndex = state.tabs.findIndex(t => t.id === tabId);
+      if (tabIndex === -1) return;
+      
+      // Remove tab element
+      const tabEl = document.getElementById(`tab-el-${tabId}`);
+      if (tabEl) tabEl.remove();
+      
+      // Remove browser window
+      const windowEl = document.getElementById(`window-${tabId}`);
+      if (windowEl) windowEl.remove();
+      
+      // Remove from state
+      state.tabs.splice(tabIndex, 1);
+      
+      // Update active tab
+      if (state.activeTabId === tabId) {
+        if (state.tabs.length > 0) {
+          // Activate the next tab, or the previous one if at the end
+          const nextTabIndex = Math.min(tabIndex, state.tabs.length - 1);
+          activateTab(state.tabs[nextTabIndex].id);
+        } else {
+          // No tabs left, show homepage
+          state.activeTabId = null;
+          document.getElementById('tabSystem').classList.remove('active');
+          document.getElementById('browserWindows').classList.remove('active');
+          document.getElementById('mainContent').style.display = 'flex';
+        }
+      }
+    }
+    
+    // Event listeners
+    function setupEventListeners() {
+      // Hamburger menu button
+      document.getElementById('menuButton').addEventListener('click', toggleSidebar);
+      
+      // Sidebar overlay (click to close)
+      document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+      
+      // Sidebar category tabs
+      document.querySelectorAll('.sidebar-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const category = tab.dataset.category;
+          switchCategory(category);
+        });
+      });
+      
+      // Sidebar search
+      const sidebarSearch = document.getElementById('sidebarSearch');
+      sidebarSearch.addEventListener('input', () => {
+        filterSidebar(sidebarSearch.value);
+      });
+      
+      // New tab button
+      document.getElementById('newTab').addEventListener('click', () => {
+        createNewTab();
+      });
+      
+      // Escape key closes sidebar
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.sidebarOpen) {
+          closeSidebar();
+        }
+      });
+    }
+    
+    // Open app in new tab
     async function openApp(app) {
       if (app.id === 'something-not-working') {
         window.open(app.url, '_blank', 'noopener');
         return;
       }
       
-      // Check if window already exists
-      const existing = state.windows.find(w => w.appId === app.id);
-      if (existing) {
-        restoreWindow(existing.id);
-        focusWindow(existing.id);
+      // Check if app is already open in a tab
+      const existingTab = state.tabs.find(tab => tab.app && tab.app.id === app.id);
+      if (existingTab) {
+        activateTab(existingTab.id);
         return;
       }
       
-      await createWindow(app);
+      createNewTab(app, app.url, app.name);
     }
     
-    // Create window
-    async function createWindow(app) {
-      const winId = `win-${app.id}-${Date.now()}`;
-      const win = document.createElement('div');
-      win.className = 'window';
-      win.id = winId;
-      win.dataset.appId = app.id;
-      
-      const safeUrl = await resolveAppUrl(app);
-      
-      win.innerHTML = `
-        <div class="window-header">
-          <div class="window-title">
-            <i class="fa${app.icon.includes('fab') ? 'b' : 's'} ${app.icon}"></i>
-            <span>${escapeHtml(app.name)}</span>
-          </div>
-          <div class="window-controls">
-            <button class="window-btn minimize"><i class="fas fa-minus"></i></button>
-            <button class="window-btn maximize"><i class="fas fa-expand"></i></button>
-            <button class="window-btn close"><i class="fas fa-times"></i></button>
-          </div>
-        </div>
-        <div class="window-content">
-          <div class="window-loading" id="loading-${winId}">
-            <div class="loading-spinner"></div>
-            <div>Loading ${escapeHtml(app.name)}...</div>
-          </div>
-          <iframe src="${escapeAttr(safeUrl)}"></iframe>
-        </div>
-      `;
-      
-      document.body.appendChild(win);
-      
-      // Position window
-      const defaultWidth = Math.min(800, window.innerWidth - 100);
-      const defaultHeight = Math.min(600, window.innerHeight - 200);
-      
-      win.style.width = `${defaultWidth}px`;
-      win.style.height = `${defaultHeight}px`;
-      
-      const centeredLeft = Math.max(50, (window.innerWidth - defaultWidth) / 2);
-      const centeredTop = Math.max(80, (window.innerHeight - defaultHeight) / 2);
-      
-      win.style.left = `${centeredLeft + (state.windows.length * 20)}px`;
-      win.style.top = `${centeredTop + (state.windows.length * 20)}px`;
-      
-      // Event listeners
-      const iframe = win.querySelector('iframe');
-      const loading = win.querySelector(`#loading-${winId}`);
-      
-      iframe.addEventListener('load', () => {
-        loading.style.display = 'none';
-      });
-      
-      iframe.addEventListener('error', () => {
-        loading.innerHTML = `
-          <div style="text-align: center; padding: 20px;">
-            <div class="loading-spinner" style="border-color: #e74c3c; border-top-color: #c0392b;"></div>
-            <div style="margin-top: 20px; color: #e74c3c; font-weight: 600;">Failed to load ${escapeHtml(app.name)}</div>
-            <div style="margin-top: 10px; color: #b0b7c7; font-size: 14px;">Please check your connection or try again</div>
-          </div>
-        `;
-      });
-      
-      win.querySelector('.minimize').addEventListener('click', () => minimizeWindow(winId));
-      win.querySelector('.maximize').addEventListener('click', () => toggleMaximize(winId));
-      win.querySelector('.close').addEventListener('click', () => closeWindow(winId));
-      
-      // Make draggable
-      makeDraggable(win);
-      
-      state.windows.push({
-        id: winId,
-        appId: app.id,
-        el: win,
-        minimized: false,
-        maximized: false,
-        prev: null,
-      });
-      
-      focusWindow(winId);
+    // Proxy functions
+    const SEARCH_ENGINE_DEFAULT = "duckduckgo";
+    
+    function resolveSearchUrl(query) {
+      if (query.startsWith('http://') || query.startsWith('https://')) {
+        return query;
+      } else if (query.includes('.') && !query.includes(' ')) {
+        return 'https://' + query;
+      }
+      const engine = (localStorage.getItem('searchEngine') || SEARCH_ENGINE_DEFAULT).toLowerCase();
+      switch (engine) {
+        case 'brave':
+          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+        case 'google':
+          return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        case 'duckduckgo':
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+        case 'bing':
+          return `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        case 'yahoo':
+          return `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
+        default:
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+      }
     }
     
-    // Window management
-    function focusWindow(winId) {
-      const w = state.windows.find(x => x.id === winId);
-      if (!w) return;
-      
-      state.activeId = winId;
-      state.z += 1;
-      w.el.style.zIndex = state.z;
-      
-      state.windows.forEach(x => {
-        x.el.classList.toggle('active', x.id === winId && !x.minimized);
-      });
+    async function encodeWithProxy(url, proxyHint = null) {
+      try {
+        if (window.proxyEncoder) {
+          return await window.proxyEncoder.encode(url, proxyHint);
+        } else if (typeof __uv$config !== 'undefined') {
+          return __uv$config.prefix + __uv$config.encodeUrl(url);
+        } else if (typeof window.encodeProxiedUrl === "function") {
+          return window.encodeProxiedUrl(url);
+        }
+      } catch(e) {
+        console.error('Proxy encoding failed:', e);
+      }
+      return url;
     }
     
-    function minimizeWindow(winId) {
-      const w = state.windows.find(x => x.id === winId);
-      if (!w) return;
+    async function resolveAppUrl(app) {
+      const rawUrl = app.url;
+      const external = /^https?:\/\//i.test(rawUrl);
+      if (!external) return rawUrl;
       
-      w.minimized = true;
-      w.el.style.display = 'none';
-      if (state.activeId === winId) state.activeId = null;
-    }
-    
-    function restoreWindow(winId) {
-      const w = state.windows.find(x => x.id === winId);
-      if (!w) return;
-      
-      w.minimized = false;
-      w.el.style.display = 'flex';
-      focusWindow(winId);
-    }
-    
-    function toggleMaximize(winId) {
-      const w = state.windows.find(x => x.id === winId);
-      if (!w) return;
-      
-      const el = w.el;
-      
-      if (!w.maximized) {
-        const rect = el.getBoundingClientRect();
-        w.prev = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
-        w.maximized = true;
-        el.style.left = '20px';
-        el.style.top = '80px';
-        el.style.width = `calc(100% - 40px)`;
-        el.style.height = `calc(100% - 100px)`;
-      } else {
-        w.maximized = false;
-        if (w.prev) {
-          el.style.left = w.prev.left + 'px';
-          el.style.top = w.prev.top + 'px';
-          el.style.width = w.prev.width + 'px';
-          el.style.height = w.prev.height + 'px';
+      if (app.proxied || !rawUrl.includes(location.hostname)) {
+        try {
+          const proxyHint = app.forceProxy || null;
+          return await encodeWithProxy(rawUrl, proxyHint);
+        } catch (err) {
+          console.error('Proxy encoding failed for', rawUrl, err);
         }
       }
-      
-      focusWindow(winId);
-    }
-    
-    function closeWindow(winId) {
-      const idx = state.windows.findIndex(x => x.id === winId);
-      if (idx === -1) return;
-      
-      const w = state.windows[idx];
-      w.el.style.opacity = '0';
-      w.el.style.transform = 'scale(0.95)';
-      
-      setTimeout(() => {
-        w.el.remove();
-        state.windows.splice(idx, 1);
-        if (state.activeId === winId) state.activeId = null;
-      }, 200);
-    }
-    
-    function makeDraggable(win) {
-      const header = win.querySelector('.window-header');
-      let dragging = false;
-      let startX = 0, startY = 0;
-      let baseLeft = 0, baseTop = 0;
-      
-      header.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        if (e.target.closest('.window-controls')) return;
-        
-        const w = state.windows.find(x => x.id === win.id);
-        if (w && w.maximized) return;
-        
-        dragging = true;
-        const rect = win.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        baseLeft = rect.left;
-        baseTop = rect.top;
-        
-        focusWindow(win.id);
-        
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-        e.preventDefault();
-      });
-      
-      function onMove(e) {
-        if (!dragging) return;
-        
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const newLeft = baseLeft + dx;
-        const newTop = baseTop + dy;
-        
-        win.style.left = `${Math.max(20, Math.min(newLeft, window.innerWidth - win.offsetWidth - 20))}px`;
-        win.style.top = `${Math.max(80, Math.min(newTop, window.innerHeight - win.offsetHeight - 20))}px`;
-      }
-      
-      function onUp() {
-        if (!dragging) return;
-        dragging = false;
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-      }
-      
-      win.addEventListener('mousedown', () => focusWindow(win.id));
+      return rawUrl;
     }
     
     // Search functionality
@@ -1511,6 +1528,7 @@
           if (app) {
             await openApp(app);
             suggestions.style.display = 'none';
+            input.value = '';
           }
         });
       });
@@ -1536,69 +1554,13 @@
         name: `Search: ${trimmed.substring(0, 20)}${trimmed.length > 20 ? '...' : ''}`,
         url: encodedUrl,
         icon: 'fa-search',
-        desc: 'Search result'
+        desc: 'Search result',
+        proxied: true
       };
       
-      createWindow(searchApp);
+      createNewTab(searchApp, encodedUrl, `Search: ${trimmed}`);
       document.getElementById('searchInput').value = '';
       document.getElementById('searchSuggestions').style.display = 'none';
-    }
-    
-    // Proxy functions
-    const SEARCH_ENGINE_DEFAULT = "duckduckgo";
-    
-    function resolveSearchUrl(query) {
-      if (query.startsWith('http://') || query.startsWith('https://')) {
-        return query;
-      } else if (query.includes('.') && !query.includes(' ')) {
-        return 'https://' + query;
-      }
-      const engine = (localStorage.getItem('searchEngine') || SEARCH_ENGINE_DEFAULT).toLowerCase();
-      switch (engine) {
-        case 'brave':
-          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
-        case 'google':
-          return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        case 'duckduckgo':
-          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
-        case 'bing':
-          return `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-        case 'yahoo':
-          return `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
-        default:
-          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
-      }
-    }
-    
-    async function encodeWithProxy(url, proxyHint = null) {
-      try {
-        if (window.proxyEncoder) {
-          return await window.proxyEncoder.encode(url, proxyHint);
-        } else if (typeof __uv$config !== 'undefined') {
-          return __uv$config.prefix + __uv$config.encodeUrl(url);
-        } else if (typeof window.encodeProxiedUrl === "function") {
-          return window.encodeProxiedUrl(url);
-        }
-      } catch(e) {
-        console.error('Proxy encoding failed:', e);
-      }
-      return url;
-    }
-    
-    async function resolveAppUrl(app) {
-      const rawUrl = app.url;
-      const external = /^https?:\/\//i.test(rawUrl);
-      if (!external) return rawUrl;
-      
-      if (app.proxied || !rawUrl.includes(location.hostname)) {
-        try {
-          const proxyHint = app.forceProxy || null;
-          return await encodeWithProxy(rawUrl, proxyHint);
-        } catch (err) {
-          console.error('Proxy encoding failed for', rawUrl, err);
-        }
-      }
-      return rawUrl;
     }
     
     // Utility functions
@@ -1623,15 +1585,16 @@
         console.error('Proxy encoding failed:', e);
       }
       
-      const searchApp = {
+      const quickApp = {
         id: 'quick-' + Date.now(),
         name: 'Quick Access',
         url: encodedUrl,
         icon: 'fa-bolt',
-        desc: 'Quick access tab'
+        desc: 'Quick access tab',
+        proxied: true
       };
       
-      createWindow(searchApp);
+      createNewTab(quickApp, encodedUrl, 'Quick Access');
     };
     
     // Initialize on load
