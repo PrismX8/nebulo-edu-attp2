@@ -389,41 +389,6 @@
       align-items: center;
     }
 
-    .alt-proxy-row {
-      width: 100%;
-      max-width: 600px;
-      margin-top: -8px;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .alt-proxy-btn {
-      border: 1px solid rgba(74, 108, 247, 0.35);
-      background: rgba(74, 108, 247, 0.14);
-      color: #d9e2ff;
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 6px 18px rgba(74, 108, 247, 0.14);
-    }
-
-    .alt-proxy-btn:hover {
-      background: rgba(74, 108, 247, 0.22);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 22px rgba(74, 108, 247, 0.22);
-    }
-
-    .alt-proxy-btn.active {
-      border-color: rgba(107, 138, 255, 0.95);
-      background: rgba(74, 108, 247, 0.3);
-      color: #ffffff;
-    }
-    
     .search-box {
       position: relative;
       width: 100%;
@@ -801,17 +766,6 @@
         margin: 30px auto;
       }
 
-      .alt-proxy-row {
-        margin-top: -6px;
-        margin-bottom: 10px;
-      }
-
-      .alt-proxy-btn {
-        width: 100%;
-        font-size: 11px;
-        padding: 9px 12px;
-      }
-      
       .search-input {
         padding: 13px 16px;
         font-size: 13px;
@@ -1018,9 +972,6 @@
 
   <!-- SEARCH - NOW DIRECTLY ON BACKGROUND -->
   <div class="search-section">
-    <div class="alt-proxy-row">
-      <button type="button" class="alt-proxy-btn" id="altProxyBtn">ALTERNATE Pr*0x!e (BEST with videos)</button>
-    </div>
     <div class="search-box">
       <form id="searchForm">
         <input type="text" class="search-input" id="searchInput" placeholder="search anything" autocomplete="off">
@@ -1187,7 +1138,6 @@
       const suggestions = document.getElementById('suggestions');
       const appsGrid = document.getElementById('appsGrid');
       const globalChatBtn = document.getElementById('globalChatBtn');
-      const altProxyBtn = document.getElementById('altProxyBtn');
       const rotatingTextEl = document.getElementById('loadingRotatingText');
       const headerRotatingTextEl = document.getElementById('rotatingText');
 
@@ -1196,22 +1146,6 @@
           // Open as a Nebulo in-site tab (handled by parent rindex.html tab system).
           if (!requestParentOpenTab(GLOBAL_CHAT_URL, { title: 'Global Chat', icon: 'fa-comments', forceProxy: 'sj' })) {
             navigate(GLOBAL_CHAT_URL);
-          }
-        });
-      }
-
-      if (altProxyBtn) {
-        const syncAltProxyState = () => {
-          const currentProxy = localStorage.getItem('proxy') || 'sj';
-          altProxyBtn.classList.toggle('active', currentProxy === 'uv');
-        };
-        syncAltProxyState();
-        altProxyBtn.addEventListener('click', () => {
-          localStorage.setItem('proxy', 'uv');
-          syncAltProxyState();
-          const altProxyPath = '/proxy-extra/';
-          if (!requestParentOpenTab(altProxyPath, { title: 'Alternate Proxy', icon: 'fa-shuffle', forceProxy: 'uv' })) {
-            window.location.href = altProxyPath;
           }
         });
       }
@@ -1543,38 +1477,6 @@
       }
     }
 
-    function buildDefaultProxyRoute(targetUrl) {
-      let raw = String(targetUrl || '').trim();
-      if (!raw) return '/default/';
-      if (!/^https?:\/\//i.test(raw)) raw = `https://${raw}`;
-
-      let u;
-      try {
-        u = new URL(raw);
-      } catch {
-        return '/default/';
-      }
-
-      const protocol = u.protocol.replace(':', '').toLowerCase();
-      const host = u.host;
-      const pathPart = u.pathname.startsWith('/') ? u.pathname.slice(1) : u.pathname;
-      let route = `/default/${protocol}/${host}/`;
-      if (pathPart) route += pathPart;
-      route += u.search || '';
-      route += u.hash || '';
-      return route;
-    }
-
-    function openDefaultProxy(targetUrl, meta = {}) {
-      const route = buildDefaultProxyRoute(targetUrl);
-      if (requestParentOpenTab(route, { title: meta.title || 'Alternate Proxy', icon: 'fa-shuffle', forceProxy: 'uv' })) {
-        return true;
-      }
-      const opened = window.open(route, '_blank', 'noopener,noreferrer');
-      if (!opened) window.location.href = route;
-      return true;
-    }
-
     async function navigate(url) {
       const raw = normalizeExistingProxyTarget(url);
       if (!raw) return;
@@ -1719,13 +1621,6 @@
         }
       }
 
-      const currentProxy = localStorage.getItem('proxy') || 'sj';
-      if (currentProxy === 'uv') {
-        openDefaultProxy(url, { title: query || 'Alternate Proxy Search' });
-        hideSuggestions();
-        return;
-      }
-      
       // Visual feedback
       const searchBtn = document.querySelector('.search-btn');
       searchBtn.style.transform = 'translateY(-50%) scale(1.1)';

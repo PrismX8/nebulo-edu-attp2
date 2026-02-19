@@ -33,10 +33,6 @@ if (cluster.isPrimary && WORKERS > 1) {
 } else {
   const publicPath = fileURLToPath(new URL("public/", import.meta.url));
   const pagesPath = fileURLToPath(new URL("pages/", import.meta.url));
-  const proxyExtraPath = fileURLToPath(new URL("../pr)0xy-extra/", import.meta.url));
-  const siteProxyOrigin = String(process.env.SITEPROXY_ORIGIN || "http://localhost:5006").replace(/\/+$/, "");
-  const rawTokenPrefix = String(process.env.SITEPROXY_TOKEN_PREFIX || "/user22334455/");
-  const siteProxyTokenPrefix = `/${rawTokenPrefix.replace(/^\/+|\/+$/g, "")}/`;
   const patchedBareMuxWorkerPath = fileURLToPath(
     new URL("public/assets/js/baremux-worker.js", import.meta.url)
   );
@@ -255,57 +251,6 @@ if (cluster.isPrimary && WORKERS > 1) {
     etag: true,
     maxAge: ONE_HOUR,
     setHeaders: (res) => res.setHeader("Cache-Control", "public, max-age=3600, immutable"),
-  });
-
-  fastify.register(fastifyStatic, {
-    root: proxyExtraPath,
-    prefix: "/proxy-extra/",
-    decorateReply: false,
-    etag: true,
-    maxAge: ONE_HOUR,
-    setHeaders: (res, pathName) => {
-      if (pathName.endsWith(".html")) {
-        res.setHeader("Cache-Control", "no-store");
-      } else {
-        res.setHeader("Cache-Control", "public, max-age=3600, immutable");
-      }
-    },
-  });
-
-  fastify.get("/proxy-extra", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return reply.redirect("/proxy-extra/index_www.netptop.com.html", 302);
-  });
-
-  fastify.get("/proxy-extra/default", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return reply.sendFile("proxy-extra-default.html");
-  });
-
-  fastify.get("/proxy-extra/default/*", (req, reply) => {
-    const raw = String(req.params["*"] || "").trim();
-    if (!raw) return reply.redirect("/proxy-extra", 302);
-    let target = raw;
-    try {
-      target = decodeURIComponent(raw);
-    } catch {}
-    return reply.redirect(`/proxy-extra/default?url=${encodeURIComponent(target)}`, 302);
-  });
-
-  fastify.get("/default", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return reply.redirect(`${siteProxyOrigin}${siteProxyTokenPrefix}`, 302);
-  });
-
-  fastify.all("/default/*", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    const rawUrl = String(req?.raw?.url || "/default/");
-    const qIndex = rawUrl.indexOf("?");
-    const pathname = qIndex === -1 ? rawUrl : rawUrl.slice(0, qIndex);
-    const search = qIndex === -1 ? "" : rawUrl.slice(qIndex);
-    const tail = pathname.startsWith("/default/") ? pathname.slice("/default/".length) : "";
-    const targetPath = `${siteProxyTokenPrefix}${tail}`.replace(/\/{2,}/g, "/");
-    return reply.redirect(`${siteProxyOrigin}${targetPath}${search}`, 302);
   });
 
   const pages = [
