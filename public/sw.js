@@ -23,6 +23,7 @@ let eclipse = null;
 let scramjetConfigLoaded = false;
 let scramjetRuntimeBroken = false;
 let scramjetBootstrapPromise = null;
+const clientUpstreamMap = new Map();
 
 function getScramjet() {
     if (scramjetRuntimeBroken) return null;
@@ -363,6 +364,20 @@ async function handleRequest(event) {
     const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
     const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/ec/service/";
     const scramPrefixCandidates = ['/scram/service/', '/service/scramjet/', '/scramjet/'];
+    // Track the active proxied upstream per tab/client so relative URLs without
+    // referer can still be resolved under the correct proxied origin.
+    try {
+        if (sameOrigin && requestUrl.pathname.startsWith(uvPrefix)) {
+            const encoded = normalizeUvPayloadSegment(requestUrl.pathname.slice(uvPrefix.length));
+            if (encoded) {
+                const upstream = decodeUvPayload(encoded);
+                const upstreamOrigin = new URL(upstream).origin;
+                if (event.clientId && upstreamOrigin) {
+                    clientUpstreamMap.set(event.clientId, upstreamOrigin);
+                }
+            }
+        }
+    } catch {}
 
     // Noise-block
     try {
@@ -599,15 +614,33 @@ async function rewriteRootRelativeAssetViaUv(event, requestUrl, path, uvPrefix) 
                 }
             } catch {}
         }
-        if (!ref) return null;
+        let upstreamOrigin = "";
 
-        const refUrl = new URL(ref);
-        if (refUrl.origin !== self.location.origin || !refUrl.pathname.startsWith(uvPrefix)) return null;
+        if (ref) {
+            const refUrl = new URL(ref);
+            if (refUrl.origin === self.location.origin && refUrl.pathname.startsWith(uvPrefix)) {
+                const refEncodedRaw = refUrl.pathname.slice(uvPrefix.length);
+                const refEncoded = normalizeUvPayloadSegment(refEncodedRaw);
+                const refUpstream = decodeUvPayload(refEncoded);
+                upstreamOrigin = new URL(refUpstream).origin;
+                if (event.clientId && upstreamOrigin) {
+                    clientUpstreamMap.set(event.clientId, upstreamOrigin);
+                }
+            }
+        }
 
-        const refEncodedRaw = refUrl.pathname.slice(uvPrefix.length);
-        const refEncoded = normalizeUvPayloadSegment(refEncodedRaw);
-        const refUpstream = decodeUvPayload(refEncoded);
-        const upstreamOrigin = new URL(refUpstream).origin;
+        // Fallback for requests with no/stripped referer (common on strict sites).
+        if (!upstreamOrigin && event.clientId && clientUpstreamMap.has(event.clientId)) {
+            try {
+                const client = await self.clients.get(event.clientId);
+                const clientUrl = client?.url ? new URL(client.url) : null;
+                if (clientUrl && clientUrl.origin === self.location.origin && clientUrl.pathname.startsWith(uvPrefix)) {
+                    upstreamOrigin = clientUpstreamMap.get(event.clientId) || "";
+                }
+            } catch {}
+        }
+        if (!upstreamOrigin) return null;
+
         const upstreamAsset = upstreamOrigin + path + requestUrl.search;
         const rewritten = uvPrefix + __uv$config.encodeUrl(upstreamAsset);
 
