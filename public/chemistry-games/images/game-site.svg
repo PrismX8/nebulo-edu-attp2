@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" role="img" aria-label="Game Site">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1d35"/>
+      <stop offset="100%" stop-color="#0b1320"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4aa3ff"/>
+      <stop offset="100%" stop-color="#69e4c9"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <rect x="140" y="105" width="520" height="240" rx="20" fill="#111b2d" stroke="#78abe8" stroke-opacity="0.35"/>
+  <rect x="180" y="245" width="440" height="58" rx="12" fill="url(#accent)"/>
+  <text x="400" y="190" text-anchor="middle" fill="#e9f2ff" font-family="Segoe UI, Tahoma, sans-serif" font-size="48" font-weight="800">GAME SITE</text>
+  <text x="400" y="282" text-anchor="middle" fill="#0a1d34" font-family="Segoe UI, Tahoma, sans-serif" font-size="26" font-weight="700">OPEN</text>
+</svg>

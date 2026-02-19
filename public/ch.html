@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chemistry Activities</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1320;
+      --panel: #111b2d;
+      --panel-2: #0e1727;
+      --text: #e9f1ff;
+      --muted: #98a8c4;
+      --accent: #4aa3ff;
+      --accent-2: #69e4c9;
+      --border: rgba(124, 169, 233, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at 10% 0%, #12213c, var(--bg) 50%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(1100px, 92vw);
+      margin: 28px auto 48px;
+    }
+
+    .hero {
+      background: linear-gradient(180deg, rgba(74, 163, 255, 0.12), rgba(105, 228, 201, 0.04));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: clamp(24px, 3.4vw, 36px);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .section-title {
+      margin: 26px 0 10px 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .category-block {
+      margin-top: 20px;
+      border: 1px solid rgba(124, 169, 233, 0.18);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(11, 18, 34, 0.45);
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .card h3 {
+      margin: 0 0 6px 0;
+      font-size: 14px;
+    }
+
+    .meta {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .game-card {
+      display: block;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      appearance: none;
+      border: 1px solid var(--border);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(124, 169, 233, 0.5);
+    }
+
+    .game-image {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #0f2037;
+      border: 1px solid rgba(124, 169, 233, 0.2);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+  <script src="/assets/js/proxy-runtime.js"></script>
+  <!-- Proxy runtime (UV) so external entries load through the proxy -->
+  <script src="/baremux/index.js" defer></script>
+  <script src="/epoxy/index.js" defer></script>
+  <script src="/uv/uv.bundle.js" defer></script>
+  <script src="/uv/uv.config.js" defer></script>
+  <script src="/scram/scramjet.all.js" defer></script>
+  <script src="/ec/eclipse.codecs.js" defer></script>
+  <script src="/ec/eclipse.config.js" defer></script>
+  <script src="/assets/js/proxy-host-rules.js" defer></script>
+  <script src="/assets/js/panic.js" defer></script>
+  <script src="/assets/js/appearance.js" defer></script>
+  <script src="/assets/js/cloaking.js" defer></script>
+<meta name="description" content="Nebulo Education Plus is a mathematics learning platform with algebra practice, geometry tools, chemistry lessons, and educational resources.">
+<meta name="keywords" content="math, mathematics, algebra, geometry, chemistry, educational games, study tools, learning platform">
+<meta name="classification" content="Mathematics Education">
+<meta name="subject" content="Mathematics">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<script type="application/ld+json" data-site-math-seo>
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Nebulo Education Plus",
+  "url": "https://nebulo.network",
+  "inLanguage": "en",
+  "about": ["Mathematics", "Algebra", "Geometry", "STEM Education"],
+  "educationalUse": "Practice",
+  "keywords": "mathematics, algebra, geometry, educational practice"
+}
+</script>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Chemistry Activities</h1>
+      <p>Organized list of school-friendly labeled activity pages.</p>
+      <p><strong>500+ activities</strong></p>
+    </section>
+
+    <section class="category-block">
+      <h2 class="section-title">Interactive Sites</h2>
+      <section class="grid" id="realGamesGrid"></section>
+    </section>
+
+    <section class="category-block">
+      <h2 class="section-title">Activity Libraries</h2>
+      <section class="grid" id="accessSitesGrid"></section>
+    </section>
+
+    <section class="category-block">
+      <h2 class="section-title">Offline Ports</h2>
+      <section class="grid" id="portsGrid"></section>
+    </section>
+
+    <p class="status" id="gamesStatus">Loading activities...</p>
+  </main>
+  <script>
+    const REAL_GAMES = [
+      { id: 'clash-royale', name: 'Clash Royale', description: 'Quick matches', url: 'https://astra.pxi-fusion.com/embed/clash-royale?web-socket-enabled=false', image: '/clash-royale.png' },
+      { id: 'minecraft', name: 'Minecraft', description: 'Build a world', url: 'https://eaglercraft1-8.github.io/', image: '/assets/imgs/minecraft.png' },
+      { id: 'roblox', name: 'Roblox', description: 'Launch Roblox', url: 'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', image: '/roblox.png' }
+    ];
+
+    const ACCESS_SITES = [
+       { id: 'crazygames', name: 'CrazyGames', description: 'Arcade activities', url: 'https://www.crazygames.com/', image: '/assets/img/icons/crazygames.jpeg' },
+       { id: 'geforce-now', name: 'GeForce Now', description: 'Cloud play', url: 'https://play.geforcenow.com', image: '/assets/img/icons/geforce-now.webp' },
+       { id: 'gn-math', name: 'GN Math', description: '500+ activities', url: 'https://gn-math.dev/', image: 'https://lh3.googleusercontent.com/Mxl8996vzcWWRU5RyKdTDA76GEPj9jQpuYc02nPgtwKgdqpWidM5YVqu8DHBd-D1sZ3sP1AOYB-DlNhMEpaLJxQcTQ=s128-rj-sc0x00ffffff' },
+       { id: 'nowgg', name: 'Now.gg', description: 'Cloud gaming', url: 'https://nowgg.fun/', image: '/assets/img/icons/now-gg.webp' }
+     ];
+
+    const PORTS = [
+      { id: 'gta-vice-city', name: 'GTA-Vice City', description: 'Classic port', url: '/chemistry-games/GTA_Vice_City.html', image: 'https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg' }
+    ];
+
+    const gameState = { loaded: false };
+
+    function sortAlphabetically(games) {
+      return [...games].sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }));
+    }
+
+    function renderCategory(gridId, entries) {
+      const grid = document.getElementById(gridId);
+      if (!grid) return 0;
+      grid.innerHTML = '';
+      const sorted = gridId === 'accessSitesGrid'
+        ? [
+            ...entries.filter((entry) => entry.id === 'gn-math'),
+            ...sortAlphabetically(entries.filter((entry) => entry.id !== 'gn-math'))
+          ]
+        : sortAlphabetically(entries);
+      sorted.forEach((game) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'card game-card';
+        card.addEventListener('click', () => openGameInTab(game));
+        card.innerHTML = `
+          <img class="game-image" src="${game.image || '/chemistry-games/images/game-site.svg'}" alt="${game.name}" loading="lazy" onerror="this.src='/chemistry-games/images/game-site.svg'">
+          <h3>${game.name}</h3>
+          <p class="meta">${game.description || 'No description yet.'}</p>
+        `;
+        grid.appendChild(card);
+      });
+      return sorted.length;
+    }
+
+    function renderAll() {
+      const status = document.getElementById('gamesStatus');
+      const realCount = renderCategory('realGamesGrid', REAL_GAMES);
+      const accessCount = renderCategory('accessSitesGrid', ACCESS_SITES);
+      const portsCount = renderCategory('portsGrid', PORTS);
+      const total = realCount + accessCount + portsCount;
+      if (status) {
+        status.textContent = `Loaded ${total} entries.`;
+      }
+    }
+
+    let proxyInitPromise = null;
+
+    function enforceScramjetProxyDefault() {
+      // Only set a default if the user hasn't chosen one.
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+    }
+    enforceScramjetProxyDefault();
+
+    async function waitFor(conditionFn, timeoutMs = 6000, stepMs = 50) {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        try { if (conditionFn()) return true; } catch {}
+        await new Promise((resolve) => setTimeout(resolve, stepMs));
+      }
+      return false;
+    }
+
+    async function initServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        if (!navigator.serviceWorker.controller) {
+          await new Promise((resolve) => {
+            const done = () => resolve();
+            navigator.serviceWorker.addEventListener('controllerchange', done, { once: true });
+            setTimeout(done, 1500);
+          });
+        }
+      } catch {}
+    }
+
+    async function initBareMuxTransport() {
+      const ready = await waitFor(() => typeof BareMux !== 'undefined' && typeof BareMux.BareMuxConnection === 'function', 4000);
+      if (!ready) throw new Error('BareMux runtime did not load in time');
+
+      const wispUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/wisp/';
+      const connection = new BareMux.BareMuxConnection('/baremux/worker.js?v=bw1');
+
+      const transport = localStorage.getItem('transport') || 'epoxy';
+      const expectedTransport = transport === 'libcurl' ? '/libcurl/index.mjs' : '/epoxy/index.mjs';
+      if ((await connection.getTransport()) !== expectedTransport) {
+        await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
+      }
+      const activeTransport = await connection.getTransport();
+      if (activeTransport !== expectedTransport) {
+        throw new Error(`BareMux transport verification failed. Expected ${expectedTransport}, got ${activeTransport || 'none'}.`);
+      }
+      localStorage.setItem('transport', transport);
+    }
+
+    async function ensureProxyRuntimeReady() {
+      if (proxyInitPromise) return proxyInitPromise;
+      proxyInitPromise = (async () => {
+        await initServiceWorker();
+        await initBareMuxTransport();
+      })().catch((err) => {
+        proxyInitPromise = null;
+        throw err;
+      });
+      return proxyInitPromise;
+    }
+
+    let scramjetControllerPromise = null;
+    async function ensureScramjetController() {
+      if (scramjetControllerPromise) return scramjetControllerPromise;
+      scramjetControllerPromise = (async () => {
+        if (typeof $scramjetLoadController !== 'function') return null;
+        const { ScramjetController } = $scramjetLoadController();
+        const controller = new ScramjetController({
+          files: {
+            wasm: '/scram/scramjet.wasm.wasm',
+            all: '/scram/scramjet.all.js',
+            sync: '/scram/scramjet.sync.js',
+          },
+        });
+        await controller.init();
+        return controller;
+      })().catch(() => null);
+      return scramjetControllerPromise;
+    }
+
+    function encodeViaUv(url) {
+      if (typeof __uv$config !== 'undefined' && __uv$config?.encodeUrl) {
+        return __uv$config.prefix + __uv$config.encodeUrl(url);
+      }
+      return url;
+    }
+
+    function shouldForceScramjetForUrl(inputUrl) {
+      const rules = window.NebuloProxyHostRules;
+      if (rules && typeof rules.shouldForceScramjetForUrl === 'function') {
+        return rules.shouldForceScramjetForUrl(inputUrl);
+      }
+
+      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+      if (!raw) return false;
+
+      let parsed = null;
+      try {
+        parsed = new URL(raw);
+      } catch {
+        if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) {
+          try {
+            parsed = new URL('https://' + raw);
+          } catch {
+            parsed = null;
+          }
+        }
+      }
+      if (!parsed) return false;
+
+      const host = (parsed.hostname || '').toLowerCase();
+      return (
+        host === 'crazygames.com' ||
+        host.endsWith('.crazygames.com') ||
+        host === 'play.geforcenow.com' ||
+        host.endsWith('.geforcenow.com') ||
+        host === 'tlk.io' ||
+        host.endsWith('.tlk.io')
+      );
+    }
+
+    function shouldAvoidScramjetForUrl(inputUrl) {
+      const rules = window.NebuloProxyHostRules;
+      if (rules && typeof rules.shouldAvoidScramjetForUrl === 'function') {
+        return rules.shouldAvoidScramjetForUrl(inputUrl);
+      }
+
+      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+      if (!raw) return false;
+
+      let parsed = null;
+      try {
+        parsed = new URL(raw);
+      } catch {
+        if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) {
+          try {
+            parsed = new URL('https://' + raw);
+          } catch {
+            parsed = null;
+          }
+        }
+      }
+      if (!parsed) return false;
+
+      const host = (parsed.hostname || '').toLowerCase();
+      return host === 'polybuzz.ai' || host.endsWith('.polybuzz.ai');
+    }
+
+    function encodeScramjetRoute(inputUrl) {
+      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+      if (!raw) return raw;
+      try {
+        const u = new URL(raw);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
+        const hash = u.hash ? u.hash.slice(1) : '';
+        u.hash = '';
+        return '/scramjet/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
+      } catch {
+        return '/scramjet/' + encodeURIComponent(raw);
+      }
+    }
+
+    async function encodeWithSelectedProxy(absoluteUrl) {
+      const forced = shouldForceScramjetForUrl(absoluteUrl) ? 'sj' : null;
+      let proxy = forced || localStorage.getItem('proxy') || 'sj';
+      if (proxy === 'sj' && shouldAvoidScramjetForUrl(absoluteUrl)) proxy = 'uv';
+      if (proxy === 'sj') {
+        const scram = await ensureScramjetController();
+        if (scram && typeof scram.encodeUrl === 'function') return scram.encodeUrl(absoluteUrl);
+        // For forced sites, don't fall back to UV if scramjet init fails.
+        if (forced === 'sj') return encodeScramjetRoute(absoluteUrl);
+        return encodeViaUv(absoluteUrl);
+      }
+      if (proxy === 'ec') {
+        if (typeof __eclipse$config !== 'undefined' && __eclipse$config?.codec?.encode) {
+          return __eclipse$config.prefix + __eclipse$config.codec.encode(absoluteUrl);
+        }
+        return encodeViaUv(absoluteUrl);
+      }
+      // default uv
+      return encodeViaUv(absoluteUrl);
+    }
+
+    function openInNebuloTab(url, game, forceProxy = null) {
+      try {
+        if (!window.parent || window.parent === window) return false;
+        window.parent.postMessage({
+          type: 'open-new-tab',
+          url: url,
+          title: game?.name || 'Activity',
+          icon: 'fa-gamepad',
+          forceProxy: forceProxy || null
+        }, '*');
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function openGameInTab(game) {
+      const isLocal = typeof game.url === 'string' && game.url.startsWith('/');
+      const absoluteUrl = new URL(game.url, window.location.origin).toString();
+      const forceProxy = !isLocal && shouldForceScramjetForUrl(absoluteUrl) ? 'sj' : null;
+
+      // Primary path: open inside Nebulo's internal tab system.
+      if (openInNebuloTab(isLocal ? game.url : absoluteUrl, game, forceProxy)) return;
+
+      // Fallback when chemistry is opened standalone (not inside rindex tab frame):
+      // navigate this same page/tab instead of opening external tabs.
+      if (isLocal) {
+        window.location.href = game.url;
+        return;
+      }
+      try {
+        await ensureProxyRuntimeReady();
+        const proxied = await encodeWithSelectedProxy(absoluteUrl);
+        window.location.href = proxied;
+      } catch {
+        window.location.href = absoluteUrl;
+      }
+    }
+
+    function unloadChemistryGames() {
+      const realGamesGrid = document.getElementById('realGamesGrid');
+      const accessSitesGrid = document.getElementById('accessSitesGrid');
+      const portsGrid = document.getElementById('portsGrid');
+      const status = document.getElementById('gamesStatus');
+      if (realGamesGrid) realGamesGrid.innerHTML = '';
+      if (accessSitesGrid) accessSitesGrid.innerHTML = '';
+      if (portsGrid) portsGrid.innerHTML = '';
+      gameState.loaded = false;
+      if (status) status.textContent = 'Paused to reduce lag. Re-open this page to load activities.';
+    }
+
+    async function loadChemistryGames() {
+      const status = document.getElementById('gamesStatus');
+      if (!status) return;
+      if (gameState.loaded) {
+        renderAll();
+        return;
+      }
+
+      gameState.loaded = true;
+      renderAll();
+    }
+
+    async function resetProxyDatabasesInWindow() {
+      if (!('indexedDB' in window)) return;
+      const names = new Set(['bare-mux', 'baremux', 'bare-mux-db', 'baremux-db']);
+      if (typeof indexedDB.databases === 'function') {
+        try {
+          const dbs = await indexedDB.databases();
+          dbs.forEach((db) => {
+            const n = db?.name || '';
+            const lower = n.toLowerCase();
+            if (lower.includes('bare') || lower.includes('mux') || lower.includes('uv') || lower.includes('scram') || lower.includes('idbmap')) {
+              names.add(n);
+            }
+          });
+        } catch {}
+      }
+      await Promise.allSettled(
+        Array.from(names).map((name) => new Promise((resolve) => {
+          if (!name) return resolve();
+          try {
+            const req = indexedDB.deleteDatabase(name);
+            req.onsuccess = () => resolve();
+            req.onerror = () => resolve();
+            req.onblocked = () => resolve();
+          } catch {
+            resolve();
+          }
+        }))
+      );
+    }
+
+    window.addEventListener('unhandledrejection', async (event) => {
+      const msg = String(event?.reason?.message || '');
+      if (!msg.includes('MessagePort') && !msg.includes('invalid MessagePort')) return;
+      if (sessionStorage.getItem('proxy_port_repair_attempted') === 'true') return;
+      sessionStorage.setItem('proxy_port_repair_attempted', 'true');
+      try { await resetProxyDatabasesInWindow(); } catch {}
+      try { localStorage.removeItem('transport'); } catch {}
+      // Don't override an explicit user choice; only set a default.
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      location.reload();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        unloadChemistryGames();
+      } else {
+        loadChemistryGames();
+      }
+    });
+
+    loadChemistryGames();
+  </script>
+
+<!-- hidden-math-essay -->
+<section hidden aria-hidden="true" data-hidden-math-essay>
+  <h2>Essay on Mathematics</h2>
+  <p>
+    Mathematics is a language of patterns, logic, and structure. It allows people to describe change,
+    measure uncertainty, and model real-world systems from finance to physics. Learning math develops
+    precise thinking, because every claim must be justified step by step. Algebra teaches abstraction,
+    geometry builds spatial reasoning, statistics improves decision-making, and calculus explains motion
+    and growth. Beyond school, math supports technology, engineering, medicine, economics, and computer
+    science. Strong mathematical habits, such as checking assumptions and testing solutions, help with
+    everyday problem-solving as well. In this way, mathematics is not only a subject, but also a practical
+    method for understanding the world.
+  </p>
+</section>
+
+</body>
+</html>

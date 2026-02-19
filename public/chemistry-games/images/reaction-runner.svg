@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" role="img" aria-label="Reaction Runner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#102444"/>
+      <stop offset="100%" stop-color="#0a1220"/>
+    </linearGradient>
+    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#69e4c9"/>
+      <stop offset="100%" stop-color="#4aa3ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="680" cy="80" r="90" fill="#60a5fa" opacity="0.12"/>
+  <circle cx="120" cy="360" r="120" fill="#34d399" opacity="0.09"/>
+  <rect x="180" y="130" width="440" height="190" rx="20" fill="#111b2d" stroke="#6ea2e8" stroke-opacity="0.35"/>
+  <rect x="220" y="220" width="360" height="62" rx="12" fill="url(#btn)"/>
+  <text x="400" y="177" text-anchor="middle" fill="#e6f0ff" font-family="Segoe UI, Tahoma, sans-serif" font-size="42" font-weight="700">Reaction Runner</text>
+  <text x="400" y="262" text-anchor="middle" fill="#08203d" font-family="Segoe UI, Tahoma, sans-serif" font-size="28" font-weight="700">CLICK FAST</text>
+</svg>

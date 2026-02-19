@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reaction Runner</title>
+  <style>
+    :root {
+      --bg: #08101d;
+      --panel: #101a2c;
+      --text: #eaf2ff;
+      --muted: #9fb2d2;
+      --ok: #69e4c9;
+      --danger: #ff7070;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #122444, var(--bg) 55%);
+      color: var(--text);
+    }
+
+    .panel {
+      width: min(460px, 92vw);
+      background: var(--panel);
+      border: 1px solid rgba(112, 152, 219, 0.28);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 26px;
+    }
+
+    p {
+      margin: 0 0 14px 0;
+      color: var(--muted);
+    }
+
+    .target {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #0b1a2f;
+      background: var(--ok);
+    }
+
+    .target.waiting {
+      background: var(--danger);
+      color: #fff;
+      cursor: not-allowed;
+    }
+
+    .stats {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+<meta name="description" content="Nebulo Education Plus is a mathematics learning platform with algebra practice, geometry tools, chemistry lessons, and educational resources.">
+<meta name="keywords" content="math, mathematics, algebra, geometry, chemistry, educational games, study tools, learning platform">
+<meta name="classification" content="Mathematics Education">
+<meta name="subject" content="Mathematics">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<script type="application/ld+json" data-site-math-seo>
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Nebulo Education Plus",
+  "url": "https://nebulo.network",
+  "inLanguage": "en",
+  "about": ["Mathematics", "Algebra", "Geometry", "STEM Education"],
+  "educationalUse": "Practice",
+  "keywords": "mathematics, algebra, geometry, educational practice"
+}
+</script>
+</head>
+<body>
+  <main class="panel">
+    <h1>Reaction Runner</h1>
+    <p>Wait for green, then click as fast as you can.</p>
+    <button class="target waiting" id="targetBtn" type="button">Wait for green...</button>
+    <div class="stats" id="stats">Best: -- ms</div>
+  </main>
+  <script>
+    const targetBtn = document.getElementById('targetBtn');
+    const stats = document.getElementById('stats');
+    let armedAt = 0;
+    let best = null;
+    let timeoutId;
+
+    function armRound() {
+      clearTimeout(timeoutId);
+      targetBtn.classList.add('waiting');
+      targetBtn.textContent = 'Wait for green...';
+      armedAt = 0;
+
+      timeoutId = setTimeout(() => {
+        targetBtn.classList.remove('waiting');
+        targetBtn.textContent = 'CLICK!';
+        armedAt = performance.now();
+      }, 900 + Math.random() * 1700);
+    }
+
+    targetBtn.addEventListener('click', () => {
+      if (!armedAt) {
+        targetBtn.textContent = 'Too early. Resetting...';
+        armRound();
+        return;
+      }
+
+      const reaction = Math.round(performance.now() - armedAt);
+      best = best === null ? reaction : Math.min(best, reaction);
+      stats.textContent = `Last: ${reaction} ms | Best: ${best} ms`;
+      armRound();
+    });
+
+    armRound();
+  </script>
+
+<!-- hidden-math-essay -->
+<section hidden aria-hidden="true" data-hidden-math-essay>
+  <h2>Essay on Mathematics</h2>
+  <p>
+    Mathematics is a language of patterns, logic, and structure. It allows people to describe change,
+    measure uncertainty, and model real-world systems from finance to physics. Learning math develops
+    precise thinking, because every claim must be justified step by step. Algebra teaches abstraction,
+    geometry builds spatial reasoning, statistics improves decision-making, and calculus explains motion
+    and growth. Beyond school, math supports technology, engineering, medicine, economics, and computer
+    science. Strong mathematical habits, such as checking assumptions and testing solutions, help with
+    everyday problem-solving as well. In this way, mathematics is not only a subject, but also a practical
+    method for understanding the world.
+  </p>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" role="img" aria-label="GTA Vice City">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b0f34"/>
+      <stop offset="55%" stop-color="#2a1452"/>
+      <stop offset="100%" stop-color="#0f1026"/>
+    </linearGradient>
+    <linearGradient id="sunset" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff6b9f"/>
+      <stop offset="100%" stop-color="#57e3ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="650" cy="90" r="92" fill="#ff5f9b" opacity="0.16"/>
+  <rect x="120" y="110" width="560" height="230" rx="20" fill="#121632" stroke="#ff7fb4" stroke-opacity="0.35"/>
+  <rect x="160" y="250" width="480" height="60" rx="12" fill="url(#sunset)"/>
+  <text x="400" y="190" text-anchor="middle" fill="#ffe9f4" font-family="Segoe UI, Tahoma, sans-serif" font-size="48" font-weight="800">GTA</text>
+  <text x="400" y="230" text-anchor="middle" fill="#ffd9ea" font-family="Segoe UI, Tahoma, sans-serif" font-size="34" font-weight="700">VICE CITY</text>
+  <text x="400" y="289" text-anchor="middle" fill="#151830" font-family="Segoe UI, Tahoma, sans-serif" font-size="28" font-weight="700">PLAY</text>
+</svg>

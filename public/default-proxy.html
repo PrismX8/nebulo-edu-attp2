@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Proxy...</title>
+  <script src="/uv/uv.bundle.js"></script>
+  <script src="/uv/uv.config.js"></script>
+</head>
+<body>
+  <p id="status">Opening through proxy...</p>
+  <script>
+    (async () => {
+      const prefix = "/default/";
+      let path = window.location.pathname || "";
+      if (!path.startsWith(prefix)) {
+        window.location.replace("/proxy-extra");
+        return;
+      }
+
+      let tail = path.slice(prefix.length);
+      if (!tail) {
+        window.location.replace("/proxy-extra");
+        return;
+      }
+
+      const parts = tail.split("/");
+      const protocol = (parts.shift() || "").toLowerCase();
+      if (protocol !== "http" && protocol !== "https") {
+        window.location.replace("/proxy-extra");
+        return;
+      }
+
+      const host = parts.shift() || "";
+      if (!host) {
+        window.location.replace("/proxy-extra");
+        return;
+      }
+
+      const restPath = parts.join("/");
+      let target = `${protocol}://${host}`;
+      target += restPath ? `/${restPath}` : "/";
+      target += window.location.search || "";
+      target += window.location.hash || "";
+
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("/sw.js");
+          await navigator.serviceWorker.ready;
+        } catch {}
+      }
+
+      if (typeof __uv$config !== "undefined" && __uv$config?.encodeUrl) {
+        const proxied = __uv$config.prefix + __uv$config.encodeUrl(target);
+
+        const frame = document.createElement("iframe");
+        frame.src = proxied;
+        frame.referrerPolicy = "no-referrer";
+        frame.style.position = "fixed";
+        frame.style.inset = "0";
+        frame.style.width = "100%";
+        frame.style.height = "100%";
+        frame.style.border = "0";
+        frame.style.background = "#fff";
+        document.body.innerHTML = "";
+        document.body.appendChild(frame);
+        return;
+      }
+
+      const status = document.getElementById("status");
+      if (status) status.textContent = "Proxy runtime not available.";
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,4029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://richinfo.co/richpartners/in-page/js/richads-ob.js?pubid=998500&siteid=387310" async></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Nebulo Education Plus is a math-focused experience offering educational algebra practice tests to strengthen advanced math skills.">
+  <meta name="keywords" content="math, algebra, advanced math practice test, educational exercises, study tools">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nebulo Education Plus - Educational Algebra Practice Tests">
+  <meta property="og:description" content="Step into a dedicated math site built around educational algebra practice tests designed to enhance advanced math skills.">
+<title>Nebulo Education Plus — Algebra Practice Tests</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Proxy runtimes (match search.js dependencies) -->
+  <script src="/assets/js/proxy-runtime.js"></script>
+  <script src="/baremux/index.js" defer></script>
+  <script src="/epoxy/index.js" defer></script>
+  <script src="/uv/uv.bundle.js" defer></script>
+  <script src="/uv/uv.config.js" defer></script>
+  <script src="/scram/scramjet.all.js" defer></script>
+  <script src="/ec/eclipse.codecs.js" defer></script>
+  <script src="/ec/eclipse.config.js" defer></script>
+  <script src="/assets/js/proxy-host-rules.js" defer></script>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="ac558ad5-a729-416f-846e-d59a418f77ac"></script>
+  <script src="/assets/js/loading-rotator.js" defer></script>
+  <style>
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #151821;
+      --bg-surface: rgba(30, 35, 48, 0.85);
+      --bg-surface-light: rgba(40, 45, 58, 0.7);
+      --border-color: rgba(100, 120, 160, 0.2);
+      --text-primary: #ffffff;
+      --text-secondary: #b0b7c7;
+      --accent-blue: #3498db;
+      --accent-blue-light: #5dade2;
+      --accent-blue-dark: #1c6ea4;
+      --accent-blue-transparent: rgba(52, 152, 219, 0.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.2);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color-scheme: dark;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    /* Smooth Grey Background Animation */
+    .background-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      overflow: hidden;
+    }
+
+    .background-animation::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(45deg, 
+          rgba(20, 22, 30, 0.8) 0%,
+          rgba(25, 28, 38, 0.8) 25%,
+          rgba(30, 33, 46, 0.8) 50%,
+          rgba(25, 28, 38, 0.8) 75%,
+          rgba(20, 22, 30, 0.8) 100%);
+      animation: gradientShift 20s ease infinite;
+      background-size: 400% 400%;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .background-animation::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(
+        circle at 30% 30%,
+        rgba(52, 152, 219, 0.05) 0%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 70% 70%,
+        rgba(52, 152, 219, 0.03) 0%,
+        transparent 40%
+      );
+      animation: float 40s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-2%, 2%) rotate(1deg); }
+      50% { transform: translate(0, 4%) rotate(0deg); }
+      75% { transform: translate(2%, 2%) rotate(-1deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    /* Subtle particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: particleFloat 20s linear infinite;
+    }
+
+    @keyframes particleFloat {
+      0% {
+        transform: translateY(100vh) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% {
+        transform: translateY(-100px) translateX(100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Apps Sidebar */
+    .apps-sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 380px;
+      height: 100vh;
+      background: rgba(15, 17, 23, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid var(--border-color);
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -20px 0 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .apps-sidebar.active {
+      transform: translateX(-400px);
+    }
+
+    .sidebar-header {
+      padding: 28px 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .sidebar-search {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(40, 45, 58, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-search input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-tab {
+      flex: 1;
+      padding: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-bottom: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .sidebar-tab:hover {
+      background: rgba(52, 152, 219, 0.05);
+      color: var(--accent-blue-light);
+    }
+
+    .sidebar-tab.active {
+      color: var(--accent-blue-light);
+      border-bottom: 2px solid var(--accent-blue);
+      background: rgba(52, 152, 219, 0.1);
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .category-content {
+      display: none;
+    }
+
+    .category-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .games-section-title {
+      margin: 0 0 12px 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .games-section-divider {
+      height: 1px;
+      margin: 18px 0 16px 0;
+      background: linear-gradient(90deg, rgba(52, 152, 219, 0.35), rgba(52, 152, 219, 0.08));
+      border-radius: 999px;
+    }
+
+    .all-games-button {
+      width: 100%;
+      border: 1px solid rgba(52, 152, 219, 0.35);
+      background: rgba(52, 152, 219, 0.08);
+      color: var(--text-primary);
+      border-radius: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .all-games-button:hover {
+      background: rgba(52, 152, 219, 0.14);
+      border-color: rgba(52, 152, 219, 0.5);
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+    }
+
+    .app-card {
+      --card-accent: var(--accent-blue);
+      --card-accent-soft: rgba(52, 152, 219, 0.18);
+      background: linear-gradient(160deg, rgba(34, 40, 58, 0.9), rgba(24, 30, 45, 0.82));
+      border: 1px solid rgba(116, 144, 186, 0.28);
+      border-radius: var(--radius);
+      padding: 16px 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+    }
+
+    .app-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.08) 48%, transparent 66%);
+      transform: translateX(-120%);
+      transition: transform 0.55s ease;
+      pointer-events: none;
+    }
+
+    .app-card[data-category="games"] {
+      --card-accent: #f59e0b;
+      --card-accent-soft: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.26);
+    }
+
+    .app-card:hover {
+      background: linear-gradient(160deg, rgba(42, 50, 72, 0.96), rgba(30, 36, 54, 0.9));
+      border-color: color-mix(in srgb, var(--card-accent) 55%, #ffffff 8%);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    }
+
+    .app-card:hover::before {
+      transform: translateX(120%);
+    }
+
+    .app-card.secret-unlocked {
+      border-color: rgba(255, 215, 100, 0.55);
+      box-shadow: 0 0 0 1px rgba(255, 215, 100, 0.25), 0 12px 30px rgba(255, 200, 90, 0.16);
+    }
+
+    .app-card.secret-unlocked:hover {
+      border-color: rgba(255, 225, 140, 0.8);
+      box-shadow: 0 0 0 1px rgba(255, 225, 140, 0.35), 0 16px 36px rgba(255, 200, 90, 0.26);
+    }
+
+    .app-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--card-accent), color-mix(in srgb, var(--card-accent) 60%, #0f172a 40%));
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      box-shadow: 0 10px 18px color-mix(in srgb, var(--card-accent) 35%, transparent);
+      flex-shrink: 0;
+    }
+
+    .app-card-content {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .app-meta {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: color-mix(in srgb, var(--card-accent) 72%, white 28%);
+      background: var(--card-accent-soft);
+      border: 1px solid color-mix(in srgb, var(--card-accent) 45%, transparent);
+      margin-bottom: 6px;
+    }
+
+    .app-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .app-info p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Overlay for sidebar */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Tab System */
+    .tab-system {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: rgba(15, 17, 23, 0.95);
+      backdrop-filter: blur(28px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 900;
+      overflow: hidden;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .tab-system::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tabs-container {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+      overflow-x: auto;
+    }
+
+    .tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .tab-nav-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(40, 45, 58, 0.55);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-nav-btn:hover {
+      background: rgba(52, 152, 219, 0.16);
+      color: var(--accent-blue-light);
+      border-color: rgba(52, 152, 219, 0.34);
+    }
+
+    .tab-nav-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .tab {
+      height: 32px;
+      min-width: 120px;
+      max-width: 200px;
+      background: rgba(40, 45, 58, 0.5);
+      border: 1px solid rgba(52, 152, 219, 0.1);
+      border-radius: 6px 6px 0 0;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 12px;
+      color: var(--text-secondary);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .tab:hover {
+      background: rgba(52, 152, 219, 0.1);
+      border-color: rgba(52, 152, 219, 0.2);
+    }
+
+    .tab.active {
+      background: rgba(52, 152, 219, 0.15);
+      border-color: rgba(52, 152, 219, 0.3);
+      color: var(--accent-blue-light);
+      border-bottom: none;
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--bg-primary);
+    }
+
+    .tab.dragging {
+      opacity: 0.45;
+    }
+
+    .tab.drag-over-before {
+      box-shadow: inset 2px 0 0 var(--accent-blue-light);
+    }
+
+    .tab.drag-over-after {
+      box-shadow: inset -2px 0 0 var(--accent-blue-light);
+    }
+
+    .tab-icon {
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+    }
+
+    .tab-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-close {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.5;
+      transition: all 0.2s ease;
+    }
+
+    .tab-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      opacity: 1;
+    }
+
+    .new-tab {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      background: rgba(52, 152, 219, 0.1);
+      border: 1px solid rgba(52, 152, 219, 0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--accent-blue-light);
+      margin-left: 5px;
+    }
+
+    .new-tab:hover {
+      background: rgba(52, 152, 219, 0.2);
+      transform: scale(1.05);
+    }
+
+    .tab-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: auto;
+    }
+
+    .tab-settings-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(13, 16, 24, 0.85);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-settings-btn:hover {
+      color: var(--accent-blue-light);
+      border-color: rgba(52, 152, 219, 0.35);
+      background: rgba(52, 152, 219, 0.14);
+    }
+
+    .tab-sessions-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(13, 16, 24, 0.85);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-sessions-btn:hover {
+      color: var(--accent-blue-light);
+      border-color: rgba(52, 152, 219, 0.35);
+      background: rgba(52, 152, 219, 0.14);
+    }
+
+    .tab-sessions-popover {
+      position: fixed;
+      width: min(420px, calc(100vw - 24px));
+      background: rgba(13, 16, 24, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(12px);
+      z-index: 999999;
+      padding: 12px;
+      color: var(--text-primary);
+    }
+
+    .tsp-header {
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tsp-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .tsp-input {
+      flex: 1;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid rgba(52, 152, 219, 0.25);
+      background: rgba(40, 45, 58, 0.55);
+      color: var(--text-primary);
+      outline: none;
+      padding: 0 12px;
+    }
+
+    .tsp-btn {
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid rgba(52, 152, 219, 0.25);
+      background: rgba(52, 152, 219, 0.12);
+      color: var(--accent-blue-light);
+      cursor: pointer;
+      padding: 0 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tsp-btn:hover {
+      background: rgba(52, 152, 219, 0.18);
+      border-color: rgba(52, 152, 219, 0.45);
+    }
+
+    .tsp-list {
+      max-height: min(320px, 45vh);
+      overflow: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 0;
+    }
+
+    .tsp-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 8px;
+      border-radius: 12px;
+    }
+
+    .tsp-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tsp-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .tsp-name {
+      font-weight: 700;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tsp-date {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .tsp-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tsp-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .menu-button {
+      width: 46px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(13, 16, 24, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 6px 4px;
+    }
+
+    .menu-button span {
+      width: 24px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .menu-button.active span:nth-child(1) {
+      transform: rotate(45deg) translate(2px, 3px);
+    }
+
+    .menu-button.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-button.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(2px, -3px);
+    }
+
+    /* Main Content - Homepage */
+    .main-content {
+      height: 100dvh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px 20px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title {
+      font-size: clamp(3.5rem, 10vw, 5rem);
+      font-weight: 800;
+      color: white;
+      margin-bottom: 8px;
+      line-height: 1;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-title .version {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 300;
+      color: var(--accent-blue-light);
+      margin-left: 10px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Search Container */
+    .search-container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 18px 24px 18px 56px;
+      background: rgba(40, 45, 58, 0.7);
+      border: 2px solid rgba(52, 152, 219, 0.3);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 8px 40px rgba(52, 152, 219, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent-blue);
+      font-size: 20px;
+    }
+
+    .search-hint {
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      opacity: 0.8;
+    }
+
+    /* Browser Windows */
+    .browser-windows {
+      position: absolute;
+      top: 52px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      display: none;
+    }
+
+    .browser-windows.active {
+      display: block;
+    }
+
+    .browser-window {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      background: var(--bg-primary);
+    }
+
+    .browser-window.active {
+      display: flex;
+    }
+
+    .window-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .window-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    .window-loading {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 5;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(52, 152, 219, 0.2);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-subtext {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .loading-rotating-text {
+      font-size: 12px;
+      color: var(--accent-blue-light);
+      text-align: center;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    .loading-rotating-text.fade-out {
+      opacity: 0.2;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Search Suggestions */
+    .search-suggestions {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      background: rgba(30, 35, 48, 0.95);
+      border: 1px solid rgba(52, 152, 219, 0.3);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 1001;
+      max-height: 400px;
+      overflow-y: auto;
+      backdrop-filter: blur(20px);
+    }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-bottom: 1px solid rgba(52, 152, 219, 0.1);
+    }
+
+    .suggestion-item:hover {
+      background: rgba(52, 152, 219, 0.15);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .tab-system {
+        height: 44px;
+        padding: 0 10px;
+        gap: 8px;
+      }
+
+      .browser-windows {
+        top: 44px;
+      }
+
+      .tabs-container {
+        gap: 1px;
+      }
+
+      .tab-nav {
+        gap: 4px;
+      }
+
+      .tab-nav-btn {
+        width: 25px;
+        height: 25px;
+        border-radius: 6px;
+        font-size: 11px;
+      }
+
+      .tab {
+        min-width: 86px;
+        max-width: 136px;
+        height: 28px;
+        padding: 0 8px;
+        font-size: 11px;
+        gap: 6px;
+      }
+
+      .tab-icon {
+        width: 12px;
+        height: 12px;
+      }
+
+      .tab-close {
+        width: 14px;
+        height: 14px;
+      }
+
+      .new-tab {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+      }
+
+      .tab-actions {
+        gap: 6px;
+      }
+
+      .tab-settings-btn {
+        width: 31px;
+        height: 31px;
+        border-radius: 8px;
+      }
+
+      .menu-button {
+        width: 36px;
+        height: 31px;
+        border-radius: 8px;
+      }
+
+      .menu-button span {
+        width: 18px;
+      }
+
+      .apps-sidebar {
+        width: 286px;
+        right: -286px;
+      }
+
+      .apps-sidebar.active {
+        transform: translateX(-286px);
+      }
+
+      .sidebar-header {
+        padding: 18px 16px;
+      }
+
+      .sidebar-header h2 {
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+
+      .sidebar-header p {
+        font-size: 12px;
+      }
+
+      .sidebar-search {
+        padding: 14px 16px;
+      }
+
+      .sidebar-search input {
+        padding: 11px 12px;
+        font-size: 12px;
+      }
+
+      .sidebar-tab {
+        padding: 12px;
+        font-size: 12px;
+      }
+
+      .sidebar-content {
+        padding: 14px;
+      }
+
+      .apps-grid {
+        grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+        gap: 10px;
+      }
+
+      .app-card {
+        padding: 12px;
+        gap: 8px;
+        border-radius: 10px;
+      }
+
+      .app-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 15px;
+      }
+
+      .app-info h4 {
+        font-size: 12px;
+      }
+
+      .app-info p {
+        font-size: 10px;
+      }
+
+      .hero-title {
+        font-size: clamp(2rem, 7vw, 3rem);
+      }
+
+      .hero-title .version {
+        font-size: clamp(1rem, 3.2vw, 1.35rem);
+      }
+
+      .search-container {
+        max-width: 560px;
+        padding: 0 14px;
+      }
+
+      .search-input {
+        padding: 14px 16px 14px 44px;
+        font-size: 13px;
+      }
+
+      .search-icon {
+        left: 15px;
+        font-size: 15px;
+      }
+
+      .search-hint {
+        font-size: 12px;
+        margin-top: 12px;
+      }
+
+      .window-loading {
+        gap: 14px;
+      }
+
+      .loading-spinner {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tab-system {
+        height: 40px;
+        padding: 0 7px;
+        gap: 6px;
+      }
+
+      .browser-windows {
+        top: 40px;
+      }
+
+      .tab-nav-btn {
+        width: 22px;
+        height: 22px;
+      }
+
+      .tab {
+        min-width: 74px;
+        max-width: 106px;
+        height: 24px;
+        padding: 0 6px;
+        gap: 5px;
+      }
+
+      .tab-title {
+        font-size: 10px;
+      }
+
+      .new-tab {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+      }
+
+      .tab-settings-btn {
+        width: 28px;
+        height: 28px;
+      }
+
+      .menu-button {
+        width: 32px;
+        height: 28px;
+      }
+
+      .menu-button span {
+        width: 15px;
+      }
+
+      .apps-sidebar {
+        width: 252px;
+        right: -252px;
+      }
+
+      .apps-sidebar.active {
+        transform: translateX(-252px);
+      }
+
+      .apps-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .app-card {
+        padding: 10px;
+      }
+
+      .app-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+      }
+
+      .app-info h4 {
+        font-size: 11px;
+      }
+
+      .app-info p {
+        font-size: 9px;
+      }
+
+      .hero-title {
+        font-size: 1.8rem;
+      }
+
+      .hero-title .version {
+        font-size: 0.92rem;
+        margin-left: 6px;
+      }
+
+      .hero-subtitle {
+        font-size: 0.86rem;
+        margin-bottom: 24px;
+      }
+
+      .search-input {
+        padding: 12px 12px 12px 38px;
+        font-size: 12px;
+      }
+
+      .search-icon {
+        left: 12px;
+        font-size: 13px;
+      }
+
+      .sidebar-header {
+        padding: 14px;
+      }
+
+      .sidebar-header h2 {
+        font-size: 16px;
+      }
+
+      .sidebar-content {
+        padding: 12px;
+      }
+
+    }
+
+    @media (max-height: 700px) {
+      .hero-title {
+        margin-bottom: 4px;
+      }
+
+      .hero-subtitle {
+        margin-bottom: 30px;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+      }
+
+      .sidebar-content {
+        padding: 20px;
+      }
+    }
+  </style>
+  <script src="/assets/js/panic.js" defer></script>
+  <script src="/assets/js/appearance.js" defer></script>
+  <script src="/assets/js/cloaking.js" defer></script>
+<meta name="classification" content="Mathematics Education">
+<meta name="subject" content="Mathematics">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<script type="application/ld+json" data-site-math-seo>
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Nebulo Education Plus",
+  "url": "https://nebulo.network",
+  "inLanguage": "en",
+  "about": ["Mathematics", "Algebra", "Geometry", "STEM Education"],
+  "educationalUse": "Practice",
+  "keywords": "mathematics, algebra, geometry, educational practice"
+}
+</script>
+</head>
+<body>
+  <!-- Background Animation -->
+  <div class="background-animation"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Apps Sidebar -->
+  <div class="apps-sidebar" id="appsSidebar">
+    <div class="sidebar-header">
+      <h2>Nebulo Dashboard</h2>
+      <p>All your apps and activities in one place</p>
+    </div>
+    
+    <div class="sidebar-search">
+      <input type="text" id="sidebarSearch" placeholder="search anything" />
+    </div>
+    
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-category="apps">
+        <i class="fas fa-th-large"></i>
+        <span>Apps</span>
+      </button>
+      <button class="sidebar-tab" data-category="games">
+        <i class="fas fa-gamepad"></i>
+        <span>Activities</span>
+      </button>
+    </div>
+    
+    <div class="sidebar-content">
+      <!-- Apps Category -->
+      <div class="category-content active" id="appsContent">
+        <div class="apps-grid" id="appsGrid">
+          <!-- Apps will be dynamically added here -->
+        </div>
+      </div>
+      
+      <!-- Games Category -->
+      <div class="category-content" id="gamesContent">
+        <h3 class="games-section-title">All Activities</h3>
+        <button type="button" class="all-games-button" id="allGamesBtn">All Activities</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Tab System -->
+  <div class="tab-system" id="tabSystem">
+    <div class="tab-nav">
+      <button class="tab-nav-btn" id="tabBackBtn" title="Back">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="tab-nav-btn" id="tabForwardBtn" title="Forward">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      <button class="tab-nav-btn" id="tabReloadBtn" title="Refresh">
+        <i class="fas fa-rotate-right"></i>
+      </button>
+    </div>
+    <div class="tabs-container" id="tabsContainer">
+      <!-- Tabs will be added here dynamically -->
+    </div>
+    <div class="tab-actions">
+      <div class="new-tab" id="newTab">
+        <i class="fas fa-plus"></i>
+      </div>
+      <button class="tab-sessions-btn" id="tabSessionsBtn" title="Tab Sessions" aria-label="Tab Sessions">
+        <i class="fas fa-layer-group"></i>
+      </button>
+      <button class="tab-settings-btn" id="tabSettingsBtn" aria-label="Open Settings">
+        <i class="fas fa-cog"></i>
+      </button>
+      <button class="menu-button" id="menuButton" aria-label="Open app sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="tab-sessions-popover" id="tabSessionsPopover" hidden>
+    <div class="tsp-header">
+      <div>Tab Sessions</div>
+      <button class="tsp-btn" id="tabSessionsCloseBtn" type="button">Close</button>
+    </div>
+    <div class="tsp-row">
+      <input class="tsp-input" id="tabSessionNameInput" type="text" placeholder="Session name" maxlength="64" />
+      <button class="tsp-btn" id="tabSessionSaveBtn" type="button">Save</button>
+    </div>
+    <div class="tsp-list" id="tabSessionsList"></div>
+    <div class="tsp-footer">
+      <button class="tsp-btn" id="tabSessionsClearAllBtn" type="button">Clear All</button>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="tsp-btn" id="tabSessionsSaveQuickBtn" type="button">Quick Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content - Homepage -->
+  <main class="main-content" id="mainContent">
+    <div class="window-loading" style="position: static; height: 100%; gap: 14px;">
+      <div class="loading-spinner"></div>
+      <div style="font-size: 16px; color: var(--text-secondary);">Loading...</div>
+    </div>
+  </main>
+
+  <!-- Browser Windows Container -->
+  <div class="browser-windows" id="browserWindows">
+    <!-- Browser windows will be added here -->
+  </div>
+
+  <!-- Main Application Script -->
+  <script>
+    // ======================
+    // NEBULO OS V5.4
+    // All search and URLs use proxy routes
+    // ======================
+    
+    const VERSION = "V5.4";
+    
+    // Main apps - ALL external URLs will be proxied
+    const apps = [
+      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'fa-user-secret', desc:'Open the bot tool', category: 'apps', proxied: true, iconGradient:'linear-gradient(135deg, #ef4444, #7f1d1d)' },
+      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'fa-headphones', desc:'Listen & chill', category: 'apps', proxied: true },
+      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'fa-film', desc:'Watch something', category: 'apps', proxied: true },
+      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-trophy', desc:'Track progress', category: 'apps', proxied: true },
+      { id:'links', name:'Links', url:'/links', icon:'fa-link', desc:'Useful shortcuts', category: 'apps', proxied: true },
+      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-star', desc:'Updates & notes', category: 'apps', proxied: true },
+      { id:'help', name:'Help', url:'/help', icon:'fa-circle-question', desc:'Get help', category: 'apps', proxied: true },
+      { id:'settings', name:'Settings', url:'/settings', icon:'fa-cog', desc:'System settings', category: 'apps', proxied: true },
+      { id:'something-not-working', name:'Report Issue', url:'https://forms.gle/GbmQTfsa8ta8oV8n8', icon:'fa-exclamation-triangle', desc:'Report an issue', category: 'apps', proxied: true },
+      { id:'tiktok', name:'TikTok', url:'https://www.tiktok.com/', icon:'fa-music', desc:'Short videos', category: 'apps', proxied: true },
+      { id:'Chat-GPT', name:'ChatGPT', url:'https://chatgpt.com/', icon:'fa-robot', desc:'educational chat', category: 'apps', proxied: true },
+    ];
+    const SECRET_APP = { id:'secret-unknown', name:'???', url:'/secret', icon:'fa-crown', desc:'Unlocked secret page', category:'apps', proxied:true, iconGradient:'linear-gradient(135deg, #facc15, #a16207)', secret:true };
+    
+    // Games - ALL external URLs will be proxied
+    const games = [
+      { id:'roblox', name:'Roblox', url:'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', icon:'fa-cube', desc:'Launch Roblox', category: 'games', proxied: true, forceProxy: 'uv' },
+      { id:'clash-royale', name:'Clash Royale', url:'https://astra.pxi-fusion.com/embed/clash-royale?web-socket-enabled=false', icon:'fa-crown', desc:'Quick matches', category: 'games', proxied: true, forceProxy: 'uv' },
+      { id:'minecraft', name:'Minecraft', url:'https://eaglercraft1-8.github.io/', icon:'fa-mountain', desc:'Build a world', category: 'games', proxied: true },
+      { id:'crazygames', name:'CrazyGames', url:'https://www.crazygames.com/', icon:'fa-dice', desc:'Arcade activities', category: 'games', proxied: true },
+      { id:'gn-math', name:'GN Math', url:'https://gn-math.dev/', icon:'fa-calculator', desc:'Math practice', category: 'games', proxied: true },
+      { id:'nowgg', name:'Now.gg', url:'https://nowgg.fun/', icon:'fa-cloud', desc:'Cloud gaming', category: 'games', proxied: true },
+      { id:'geforce-now', name:'GeForce Now', url:'https://play.geforcenow.com', icon:'fa-gamepad', desc:'Cloud play', category: 'games', proxied: true },
+      { id:'xbox-cloud', name:'Xbox Cloud', url:'https://www.xbox.com/en-us/play', icon:'fa-xbox', desc:'Cloud gaming', category: 'games', proxied: true },
+    ];
+    
+    // Global state
+    const state = (window.state = {
+      tabs: [],
+      activeTabId: null,
+      tabCounter: 0,
+      sidebarOpen: false
+    });
+    const loadingRotators = new Map();
+    const TAB_SESSION_STORAGE_KEY = 'nebulo_tab_session_v1';
+    const TAB_SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
+    const NAMED_TAB_SESSIONS_KEY = 'nebulo_named_tab_sessions_v1';
+    const NAMED_TAB_SESSIONS_LIMIT = 20;
+    let suppressTabSessionSave = false;
+    let tabSessionSaveTimer = null;
+    let draggedTabId = null;
+
+    function isProxiedPath(path) {
+      if (!path) return false;
+      const p = String(path);
+      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+      const eclipsePrefix = (typeof __eclipse$config !== 'undefined' && __eclipse$config?.prefix) ? __eclipse$config.prefix : '/ec/service/';
+      return (
+        p.startsWith(uvPrefix) ||
+        p.startsWith(eclipsePrefix) ||
+        p.startsWith('/scram/service/') ||
+        p.startsWith('/service/scramjet/') ||
+        p.startsWith('/scramjet/')
+      );
+    }
+
+    function isInternalNavPath(path) {
+      if (!path) return false;
+      const p = String(path);
+      if (!p.startsWith('/')) return false;
+      if (isProxiedPath(p)) return false;
+      // Runtime/static prefixes we never treat as "page" history targets.
+      if (p.startsWith('/assets/') || p.startsWith('/baremux/') || p.startsWith('/epoxy/') || p.startsWith('/uv/') || p.startsWith('/ec/') || p.startsWith('/eclipse/') || p.startsWith('/scram/')) return false;
+      return true;
+    }
+
+    function normalizeNavTarget(url) {
+      if (!url) return null;
+      const u = String(url).trim();
+      if (!u || u === 'about:blank') return null;
+
+      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+
+      // UV sometimes rewrites iframe.location.href to the *encoded payload* (ex: "hvtrs8/-...") which is not a real URL.
+      // If we ever see that, normalize it to a proper proxied path so it never gets re-encoded.
+      if (!u.startsWith('/') && u.startsWith('hvtrs')) {
+        let payload = u;
+        // If someone mistakenly percent-encoded the UV payload (ex: "hvtrs8%2F-..."), undo that.
+        if (payload.includes('%')) {
+          try {
+            payload = decodeURIComponent(payload);
+          } catch {}
+        }
+        return uvPrefix + payload;
+      }
+
+      // If we get an absolute same-origin URL, store it as a relative path so it round-trips cleanly.
+      try {
+        const parsed = new URL(u, location.origin);
+        if (parsed.origin === location.origin) {
+          return parsed.pathname + parsed.search + parsed.hash;
+        }
+      } catch {}
+
+      // Don't record arbitrary external absolute URLs into the tab stack (UV/SJ/Eclipse may rewrite location.href).
+      if (u.startsWith('http://') || u.startsWith('https://')) return null;
+
+      // Only keep same-origin paths (and proxied paths which are also same-origin).
+      if (!u.startsWith('/')) return null;
+      return u;
+    }
+
+    function recordTabNavigation(tabId, url, { replace = false } = {}) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+
+      const target = normalizeNavTarget(url);
+      if (!target) return;
+
+      if (!Array.isArray(tab.navStack)) tab.navStack = [];
+      if (typeof tab.navIndex !== 'number') tab.navIndex = -1;
+
+      // Don't record duplicate consecutive entries.
+      if (tab.navIndex >= 0 && tab.navStack[tab.navIndex] === target) return;
+
+      if (replace && tab.navIndex >= 0) {
+        tab.navStack[tab.navIndex] = target;
+        return;
+      }
+
+      // Drop any "forward" stack once a new navigation happens.
+      if (tab.navIndex < tab.navStack.length - 1) {
+        tab.navStack.splice(tab.navIndex + 1);
+      }
+
+      tab.navStack.push(target);
+      // Keep the stack bounded.
+      if (tab.navStack.length > 40) {
+        const overflow = tab.navStack.length - 40;
+        tab.navStack.splice(0, overflow);
+        tab.navIndex = Math.max(-1, tab.navIndex - overflow);
+      }
+      tab.navIndex = tab.navStack.length - 1;
+
+      if (state.activeTabId === tabId) {
+        syncBrowserHistory({ replace });
+      }
+      scheduleTabSessionSave();
+    }
+
+    let suppressBrowserHistorySync = false;
+    let lastBrowserHistorySig = '';
+
+    function browserHistorySig(obj) {
+      return `${obj.tabsCount}|${obj.activeTabId || ''}|${obj.navIndex}|${obj.navUrl || ''}`;
+    }
+
+    function syncBrowserHistory({ replace = false } = {}) {
+      if (suppressBrowserHistorySync) return;
+      const activeTab = state.activeTabId ? state.tabs.find(t => t.id === state.activeTabId) : null;
+      const navUrl = activeTab && activeTab.navIndex >= 0 ? activeTab.navStack[activeTab.navIndex] : null;
+      const st = {
+        nebulo: 1,
+        tabsCount: state.tabs.length,
+        activeTabId: state.activeTabId || null,
+        navIndex: activeTab ? activeTab.navIndex : -1,
+        navUrl: navUrl || null,
+      };
+
+      const sig = browserHistorySig(st);
+      if (sig === lastBrowserHistorySig && !replace) return;
+      lastBrowserHistorySig = sig;
+
+      const url = location.pathname + location.search + location.hash;
+      try {
+        if (replace) history.replaceState(st, '', url);
+        else history.pushState(st, '', url);
+      } catch {}
+    }
+
+    function copySerializableApp(app) {
+      if (!app || typeof app !== 'object') return null;
+      return {
+        id: typeof app.id === 'string' ? app.id : undefined,
+        name: typeof app.name === 'string' ? app.name : undefined,
+        url: typeof app.url === 'string' ? app.url : undefined,
+        icon: typeof app.icon === 'string' ? app.icon : undefined,
+        desc: typeof app.desc === 'string' ? app.desc : undefined,
+        category: typeof app.category === 'string' ? app.category : undefined,
+        proxied: !!app.proxied,
+        forceProxy: typeof app.forceProxy === 'string' ? app.forceProxy : undefined,
+        iconGradient: typeof app.iconGradient === 'string' ? app.iconGradient : undefined,
+        secret: !!app.secret,
+      };
+    }
+
+    function tabCurrentUrl(tab) {
+      if (!tab) return HOMEPAGE_PATH;
+      if (Array.isArray(tab.navStack) && typeof tab.navIndex === 'number' && tab.navIndex >= 0 && tab.navIndex < tab.navStack.length) {
+        return tab.navStack[tab.navIndex];
+      }
+      return tab.url || HOMEPAGE_PATH;
+    }
+
+    function buildTabSessionSnapshot() {
+      return {
+        version: 1,
+        savedAt: Date.now(),
+        activeTabId: state.activeTabId || null,
+        tabCounter: Number(state.tabCounter) || 0,
+        tabs: state.tabs.map((tab) => ({
+          id: tab.id,
+          title: tab.title || 'New Tab',
+          icon: tab.icon || 'fa-globe',
+          url: tabCurrentUrl(tab),
+          app: copySerializableApp(tab.app),
+          navStack: Array.isArray(tab.navStack) ? tab.navStack.slice(-40) : [],
+          navIndex: typeof tab.navIndex === 'number' ? tab.navIndex : -1,
+        })),
+      };
+    }
+
+    function saveTabSessionNow() {
+      if (suppressTabSessionSave) return;
+      try {
+        const snapshot = buildTabSessionSnapshot();
+        localStorage.setItem(TAB_SESSION_STORAGE_KEY, JSON.stringify(snapshot));
+      } catch {}
+    }
+
+    function scheduleTabSessionSave() {
+      if (suppressTabSessionSave) return;
+      if (tabSessionSaveTimer) clearTimeout(tabSessionSaveTimer);
+      tabSessionSaveTimer = setTimeout(() => {
+        tabSessionSaveTimer = null;
+        saveTabSessionNow();
+      }, 120);
+    }
+
+    function restoreTabSession() {
+      let raw = '';
+      try {
+        raw = localStorage.getItem(TAB_SESSION_STORAGE_KEY) || '';
+      } catch {
+        raw = '';
+      }
+      if (!raw) return false;
+
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        return false;
+      }
+      if (!data || !Array.isArray(data.tabs) || !data.tabs.length) return false;
+      if (typeof data.savedAt === 'number' && (Date.now() - data.savedAt) > TAB_SESSION_MAX_AGE_MS) return false;
+
+      suppressTabSessionSave = true;
+      suppressBrowserHistorySync = true;
+      try {
+        let maxCounter = 0;
+        data.tabs.forEach((savedTab, idx) => {
+          const tabId = typeof savedTab?.id === 'string' && savedTab.id ? savedTab.id : `tab-${idx + 1}`;
+          const m = /^tab-(\d+)$/.exec(tabId);
+          if (m) maxCounter = Math.max(maxCounter, Number(m[1]));
+          createNewTab(
+            savedTab?.app || null,
+            savedTab?.url || HOMEPAGE_PATH,
+            savedTab?.title || 'New Tab',
+            {
+              tabId,
+              icon: typeof savedTab?.icon === 'string' ? savedTab.icon : 'fa-globe',
+              insertIndex: state.tabs.length,
+              navStack: Array.isArray(savedTab?.navStack) ? savedTab.navStack : [],
+              navIndex: typeof savedTab?.navIndex === 'number' ? savedTab.navIndex : -1,
+              skipActivate: true,
+            }
+          );
+        });
+
+        state.tabCounter = Math.max(Number(data.tabCounter) || 0, maxCounter, state.tabCounter);
+        const restoreActiveId = (typeof data.activeTabId === 'string' && state.tabs.some(t => t.id === data.activeTabId))
+          ? data.activeTabId
+          : (state.tabs[0]?.id || null);
+        if (restoreActiveId) activateTab(restoreActiveId);
+      } finally {
+        suppressBrowserHistorySync = false;
+        suppressTabSessionSave = false;
+      }
+      scheduleTabSessionSave();
+      return true;
+    }
+
+    function readNamedTabSessions() {
+      let raw = '';
+      try {
+        raw = localStorage.getItem(NAMED_TAB_SESSIONS_KEY) || '';
+      } catch {
+        raw = '';
+      }
+      if (!raw) return [];
+      try {
+        const data = JSON.parse(raw);
+        if (!Array.isArray(data)) return [];
+        return data
+          .filter((s) => s && typeof s === 'object')
+          .map((s) => ({
+            id: typeof s.id === 'string' ? s.id : null,
+            name: typeof s.name === 'string' ? s.name : 'Session',
+            savedAt: typeof s.savedAt === 'number' ? s.savedAt : Date.now(),
+            snapshot: s.snapshot && typeof s.snapshot === 'object' ? s.snapshot : null,
+          }))
+          .filter((s) => s.id && s.snapshot && Array.isArray(s.snapshot.tabs) && s.snapshot.tabs.length);
+      } catch {
+        return [];
+      }
+    }
+
+    function writeNamedTabSessions(list) {
+      try {
+        localStorage.setItem(NAMED_TAB_SESSIONS_KEY, JSON.stringify(list.slice(0, NAMED_TAB_SESSIONS_LIMIT)));
+      } catch {}
+    }
+
+    function formatSessionDate(ms) {
+      try {
+        const d = new Date(ms);
+        return d.toLocaleString();
+      } catch {
+        return '';
+      }
+    }
+
+    function destroyAllTabsForRestore() {
+      try {
+        state.tabs.forEach((t) => {
+          try { stopLoadingRotator(t.id); } catch {}
+          const el = document.getElementById(`tab-el-${t.id}`);
+          if (el) el.remove();
+          const win = document.getElementById(`window-${t.id}`);
+          if (win) win.remove();
+        });
+      } catch {}
+
+      state.tabs = [];
+      state.activeTabId = null;
+      try {
+        const tabsContainer = document.getElementById('tabsContainer');
+        if (tabsContainer) tabsContainer.innerHTML = '';
+      } catch {}
+      try {
+        const windowsContainer = document.getElementById('browserWindows');
+        if (windowsContainer) windowsContainer.innerHTML = '';
+      } catch {}
+    }
+
+    function restoreTabSessionFromSnapshot(data) {
+      if (!data || !Array.isArray(data.tabs) || !data.tabs.length) return false;
+
+      suppressTabSessionSave = true;
+      suppressBrowserHistorySync = true;
+      try {
+        destroyAllTabsForRestore();
+
+        let maxCounter = 0;
+        data.tabs.forEach((savedTab, idx) => {
+          const tabId = typeof savedTab?.id === 'string' && savedTab.id ? savedTab.id : `tab-${idx + 1}`;
+          const m = /^tab-(\d+)$/.exec(tabId);
+          if (m) maxCounter = Math.max(maxCounter, Number(m[1]));
+          createNewTab(
+            savedTab?.app || null,
+            savedTab?.url || HOMEPAGE_PATH,
+            savedTab?.title || 'New Tab',
+            {
+              tabId,
+              icon: typeof savedTab?.icon === 'string' ? savedTab.icon : 'fa-globe',
+              insertIndex: state.tabs.length,
+              navStack: Array.isArray(savedTab?.navStack) ? savedTab.navStack : [],
+              navIndex: typeof savedTab?.navIndex === 'number' ? savedTab.navIndex : -1,
+              skipActivate: true,
+            }
+          );
+        });
+
+        state.tabCounter = Math.max(Number(data.tabCounter) || 0, maxCounter, state.tabCounter);
+        const restoreActiveId = (typeof data.activeTabId === 'string' && state.tabs.some(t => t.id === data.activeTabId))
+          ? data.activeTabId
+          : (state.tabs[0]?.id || null);
+        if (restoreActiveId) activateTab(restoreActiveId);
+      } finally {
+        suppressBrowserHistorySync = false;
+        suppressTabSessionSave = false;
+      }
+      scheduleTabSessionSave();
+      return true;
+    }
+
+    function saveNamedTabSession(name) {
+      const trimmed = String(name || '').trim();
+      if (!trimmed) return false;
+      const snapshot = buildTabSessionSnapshot();
+      const list = readNamedTabSessions();
+      const id = 'sess-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      list.unshift({ id, name: trimmed, savedAt: Date.now(), snapshot });
+      writeNamedTabSessions(list);
+      return true;
+    }
+
+    function deleteNamedTabSession(id) {
+      const list = readNamedTabSessions().filter((s) => s.id !== id);
+      writeNamedTabSessions(list);
+    }
+
+    function renderNamedTabSessionsUi() {
+      const mount = document.getElementById('tabSessionsList');
+      if (!mount) return;
+      const list = readNamedTabSessions();
+      if (!list.length) {
+        mount.innerHTML = `<div style="padding:10px 8px;color:var(--text-secondary);font-size:12px;">No saved sessions yet.</div>`;
+        return;
+      }
+      mount.innerHTML = list.map((s) => `
+        <div class="tsp-item" data-session-id="${escapeAttr(s.id)}">
+          <div class="tsp-meta">
+            <div class="tsp-name">${escapeHtml(s.name)}</div>
+            <div class="tsp-date">${escapeHtml(formatSessionDate(s.savedAt))}</div>
+          </div>
+          <div class="tsp-actions">
+            <button class="tsp-btn" data-action="load" type="button">Load</button>
+            <button class="tsp-btn" data-action="delete" type="button">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      mount.querySelectorAll('.tsp-item').forEach((row) => {
+        row.addEventListener('click', (e) => {
+          const id = row.getAttribute('data-session-id');
+          const actionBtn = e.target.closest('button[data-action]');
+          if (!id || !actionBtn) return;
+          const action = actionBtn.getAttribute('data-action');
+          if (action === 'delete') {
+            deleteNamedTabSession(id);
+            renderNamedTabSessionsUi();
+            return;
+          }
+          if (action === 'load') {
+            const session = readNamedTabSessions().find((s) => s.id === id);
+            if (!session || !session.snapshot) return;
+            restoreTabSessionFromSnapshot(session.snapshot);
+            closeTabSessionsPopover();
+          }
+        });
+      });
+    }
+
+    function positionTabSessionsPopover() {
+      const pop = document.getElementById('tabSessionsPopover');
+      const btn = document.getElementById('tabSessionsBtn');
+      if (!pop || !btn) return;
+      const rect = btn.getBoundingClientRect();
+      const margin = 10;
+      const w = pop.getBoundingClientRect().width || 360;
+      let left = Math.min(window.innerWidth - w - margin, Math.max(margin, rect.right - w));
+      let top = rect.bottom + margin;
+      const h = pop.getBoundingClientRect().height || 260;
+      if (top + h + margin > window.innerHeight) {
+        top = Math.max(margin, rect.top - h - margin);
+      }
+      pop.style.left = `${left}px`;
+      pop.style.top = `${top}px`;
+    }
+
+    function openTabSessionsPopover() {
+      const pop = document.getElementById('tabSessionsPopover');
+      if (!pop) return;
+      pop.hidden = false;
+      renderNamedTabSessionsUi();
+      // Defer positioning until after layout.
+      requestAnimationFrame(() => positionTabSessionsPopover());
+    }
+
+    function closeTabSessionsPopover() {
+      const pop = document.getElementById('tabSessionsPopover');
+      if (!pop) return;
+      pop.hidden = true;
+    }
+
+    function toggleTabSessionsPopover() {
+      const pop = document.getElementById('tabSessionsPopover');
+      if (!pop) return;
+      if (pop.hidden) openTabSessionsPopover();
+      else closeTabSessionsPopover();
+    }
+
+    function clearTabDropIndicators() {
+      document.querySelectorAll('#tabsContainer .tab.drag-over-before, #tabsContainer .tab.drag-over-after').forEach((el) => {
+        el.classList.remove('drag-over-before', 'drag-over-after');
+      });
+    }
+
+    function reorderTabInState(tabId, targetIndex) {
+      const fromIndex = state.tabs.findIndex((t) => t.id === tabId);
+      if (fromIndex < 0) return;
+      let toIndex = Math.max(0, Math.min(targetIndex, state.tabs.length));
+      if (fromIndex === toIndex) return;
+
+      const [tab] = state.tabs.splice(fromIndex, 1);
+      if (fromIndex < toIndex) toIndex -= 1;
+      state.tabs.splice(toIndex, 0, tab);
+
+      const container = document.getElementById('tabsContainer');
+      if (container) {
+        state.tabs.forEach((t) => {
+          const el = document.getElementById(`tab-el-${t.id}`);
+          if (el) container.appendChild(el);
+        });
+      }
+
+      scheduleTabSessionSave();
+      syncBrowserHistory({ replace: true });
+    }
+
+    function setupTabsContainerDnD() {
+      const container = document.getElementById('tabsContainer');
+      if (!container || container.dataset.dndBound === '1') return;
+      container.dataset.dndBound = '1';
+
+      container.addEventListener('dragover', (event) => {
+        if (!draggedTabId) return;
+        event.preventDefault();
+      });
+
+      container.addEventListener('drop', (event) => {
+        if (!draggedTabId) return;
+        event.preventDefault();
+        const targetTab = event.target.closest('.tab');
+        if (!targetTab) {
+          reorderTabInState(draggedTabId, state.tabs.length);
+        }
+      });
+    }
+
+    window.addEventListener('popstate', (event) => {
+      const st = event?.state;
+      if (!st || st.nebulo !== 1) return;
+
+      suppressBrowserHistorySync = true;
+      try {
+        if (!state.tabs.length) {
+          showHomeView();
+          return;
+        }
+
+        if (st.activeTabId && state.tabs.some(t => t.id === st.activeTabId)) {
+          activateTab(st.activeTabId);
+        }
+
+        const activeTab = state.activeTabId ? state.tabs.find(t => t.id === state.activeTabId) : null;
+        if (!activeTab) return;
+
+        const iframe = document.getElementById(`iframe-${activeTab.id}`);
+        if (!iframe) return;
+
+        if (typeof st.navIndex === 'number' && st.navIndex >= 0 && st.navIndex < activeTab.navStack.length) {
+          activeTab.navIndex = st.navIndex;
+          const target = activeTab.navStack[activeTab.navIndex];
+          if (target && getIframeHref(iframe) !== target) iframe.src = target;
+        } else if (typeof st.navUrl === 'string' && st.navUrl) {
+          if (getIframeHref(iframe) !== st.navUrl) iframe.src = st.navUrl;
+        }
+        updateTabNavButtons();
+      } finally {
+        suppressBrowserHistorySync = false;
+      }
+    });
+    window.addEventListener('beforeunload', saveTabSessionNow);
+
+    function getCookieValue(name) {
+      const prefix = `${name}=`;
+      const parts = document.cookie.split(';');
+      for (const part of parts) {
+        const item = part.trim();
+        if (item.startsWith(prefix)) return item.slice(prefix.length);
+      }
+      return '';
+    }
+
+    function isSecretUnlocked() {
+      const local = localStorage.getItem('secretUnlocked') === 'true';
+      const cookie = getCookieValue('secretUnlocked') === 'true';
+      if (!local && cookie) {
+        localStorage.setItem('secretUnlocked', 'true');
+        return true;
+      }
+      return local || cookie;
+    }
+
+    function stopLoadingRotator(tabId) {
+      const stop = loadingRotators.get(tabId);
+      if (typeof stop === 'function') stop();
+      loadingRotators.delete(tabId);
+    }
+
+    function particlesEnabled(value) {
+      if (typeof value === 'string') return value !== 'false';
+      if (typeof value === 'boolean') return value;
+      return localStorage.getItem('particles') !== 'false';
+    }
+
+    function startLoadingRotator(tabId) {
+      stopLoadingRotator(tabId);
+      const loading = document.getElementById(`loading-${tabId}`);
+      const rotatingEl = loading?.querySelector('.loading-rotating-text');
+      if (!rotatingEl || typeof window.attachLoadingTextRotator !== 'function') return;
+      const stop = window.attachLoadingTextRotator(rotatingEl, { intervalMs: 2000, fadeMs: 250 });
+      loadingRotators.set(tabId, stop);
+    }
+    
+    // Search + proxy defaults
+    const SEARCH_ENGINE_DEFAULT = "duckduckgo";
+    const PROXY_DEFAULT = "sj";
+    const HOMEPAGE_PATH = "/search";
+    let proxyRuntimeInitPromise = null;
+    let scramjetControllerPromise = null;
+
+    function enforceScramjetProxyDefault() {
+      // Only set a default if the user hasn't chosen one.
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+    }
+    enforceScramjetProxyDefault();
+
+    async function initServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      if (!navigator.serviceWorker.controller) {
+        await new Promise((resolve) => {
+          const done = () => resolve();
+          navigator.serviceWorker.addEventListener('controllerchange', done, { once: true });
+          setTimeout(done, 1500);
+        });
+      }
+    }
+
+    async function initBareMuxTransport() {
+      if (typeof BareMux === 'undefined' || typeof BareMux.BareMuxConnection !== 'function') return;
+      const wispUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/wisp/';
+
+      const configureTransport = async (transport) => {
+        const connection = new BareMux.BareMuxConnection('/baremux/worker.js?v=bw1');
+        const expectedTransport = transport === 'libcurl' ? '/libcurl/index.mjs' : '/epoxy/index.mjs';
+        if ((await connection.getTransport()) !== expectedTransport) {
+          await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
+        }
+        const activeTransport = await connection.getTransport();
+        if (activeTransport !== expectedTransport) {
+          throw new Error(`BareMux transport verification failed. Expected ${expectedTransport}, got ${activeTransport || 'none'}.`);
+        }
+        localStorage.setItem('transport', transport);
+      };
+
+      const resetBareMuxIndexedDb = async () => {
+        if (!('indexedDB' in window)) return;
+        const names = new Set(['bare-mux', 'baremux', 'bare-mux-db', 'baremux-db']);
+        if (typeof indexedDB.databases === 'function') {
+          try {
+            const dbs = await indexedDB.databases();
+            dbs.forEach((db) => {
+              const n = db?.name || '';
+              const lower = n.toLowerCase();
+              if (lower.includes('bare') || lower.includes('mux')) names.add(n);
+            });
+          } catch {}
+        }
+        await Promise.allSettled(
+          Array.from(names).map((name) => new Promise((resolve) => {
+            if (!name) return resolve();
+            try {
+              const req = indexedDB.deleteDatabase(name);
+              req.onsuccess = () => resolve();
+              req.onerror = () => resolve();
+              req.onblocked = () => resolve();
+            } catch {
+              resolve();
+            }
+          }))
+        );
+      };
+
+      const tryTransportOrder = async () => {
+        const savedTransport = localStorage.getItem('transport') || 'epoxy';
+        await configureTransport(savedTransport);
+      };
+
+      try {
+        await tryTransportOrder();
+      } catch (err) {
+        const name = String(err?.name || '');
+        const msg = String(err?.message || '');
+        const recoverable = name.includes('NotFoundError')
+          || msg.includes('MessagePort')
+          || msg.includes('SharedWorker')
+          || msg.includes('invalid MessagePort');
+        if (recoverable) {
+          await resetBareMuxIndexedDb();
+          localStorage.setItem('transport', 'epoxy');
+          // Don't override an explicit user choice; only set a default.
+          if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj');
+          await tryTransportOrder();
+          return;
+        }
+        throw err;
+      }
+    }
+
+    async function ensureScramjetController() {
+      if (scramjetControllerPromise) return scramjetControllerPromise;
+      scramjetControllerPromise = (async () => {
+        if (typeof $scramjetLoadController !== 'function') return null;
+        const { ScramjetController } = $scramjetLoadController();
+        const controller = new ScramjetController({
+          files: {
+            wasm: '/scram/scramjet.wasm.wasm',
+            all: '/scram/scramjet.all.js',
+            sync: '/scram/scramjet.sync.js',
+          },
+        });
+        await controller.init();
+        return controller;
+      })().catch((err) => {
+        console.warn('Scramjet init failed:', err);
+        return null;
+      });
+      return scramjetControllerPromise;
+    }
+
+    async function ensureProxyRuntimeReady() {
+      if (proxyRuntimeInitPromise) return proxyRuntimeInitPromise;
+      proxyRuntimeInitPromise = Promise.allSettled([
+        initBareMuxTransport(),
+        initServiceWorker()
+      ]);
+      return proxyRuntimeInitPromise;
+    }
+
+    function withTimeout(promise, timeoutMs = 2500) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Operation timed out')), timeoutMs))
+      ]);
+    }
+
+    // One-time recovery for broken proxy IndexedDB state on first-time/old users.
+    window.addEventListener('unhandledrejection', async (event) => {
+      const reason = event?.reason;
+      const name = String(reason?.name || '');
+      const msg = String(reason?.message || '');
+      const isProxyDbError = name.includes('NotFoundError') || msg.includes('object stores');
+      const isInvalidPortError = msg.includes('MessagePort') || msg.includes('invalid MessagePort');
+      if (!isProxyDbError && !isInvalidPortError) return;
+      if (sessionStorage.getItem('idb_repair_attempted') === 'true') return;
+      sessionStorage.setItem('idb_repair_attempted', 'true');
+
+      try {
+        if (typeof indexedDB?.databases === 'function') {
+          const dbs = await indexedDB.databases();
+          await Promise.allSettled(
+            (dbs || []).map((db) => new Promise((resolve) => {
+              const n = db?.name;
+              if (!n) return resolve();
+              const lower = String(n).toLowerCase();
+              // Some proxy components use IDBMap/<name> DBs which can get into a bad schema state.
+              if (!lower.includes('bare') && !lower.includes('mux') && !lower.includes('eclipse') && !lower.includes('scram') && !lower.includes('uv') && !lower.includes('ultra') && !lower.includes('idbmap')) {
+                return resolve();
+              }
+              try {
+                const req = indexedDB.deleteDatabase(n);
+                req.onsuccess = () => resolve();
+                req.onerror = () => resolve();
+                req.onblocked = () => resolve();
+              } catch {
+                resolve();
+              }
+            }))
+          );
+        }
+      } catch {}
+
+      // Force safe defaults and reload once.
+      // Don't override an explicit user choice; only set a default.
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { localStorage.setItem('transport', 'epoxy'); } catch {}
+      location.reload();
+    });
+
+    function applySettingChange(key, value) {
+      if (!key) return;
+      if (typeof value === 'string') {
+        localStorage.setItem(key, value);
+      }
+      if (key === 'transport') {
+        proxyRuntimeInitPromise = null;
+        ensureProxyRuntimeReady().catch((err) => {
+          console.warn('Transport change reinit failed:', err);
+        });
+      } else if (key === 'particles') {
+        applyParticlesSetting(value);
+      } else if (key === 'secretUnlocked') {
+        if (value === 'true') {
+          const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+          document.cookie = `secretUnlocked=true; expires=${expires}; path=/; SameSite=Lax`;
+        }
+        buildSidebar();
+      }
+    }
+    
+    // Initialize
+    function init() {
+      // Warm runtime early (non-blocking) to reduce first-navigation latency.
+      ensureProxyRuntimeReady().catch(() => {});
+
+      // Create particles (respect settings toggle)
+      applyParticlesSetting();
+      
+      // Build sidebar apps and games
+      buildSidebar();
+      
+      // Initialize search
+      initSearch();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Restore last session, otherwise create default homepage tab.
+      suppressBrowserHistorySync = true;
+      const restored = restoreTabSession();
+      if (!restored) createInitialTab();
+      suppressBrowserHistorySync = false;
+      syncBrowserHistory({ replace: true });
+    }
+    
+    // Create initial homepage tab
+    function createInitialTab() {
+      createNewTab(null, HOMEPAGE_PATH, "Home");
+    }
+
+    function getTabHeaderHeight() {
+      const tabSystem = document.getElementById('tabSystem');
+      if (!tabSystem) return 52;
+      const h = Number(tabSystem.getBoundingClientRect().height || 0);
+      return h > 0 ? h : 52;
+    }
+
+    function setTabsUiVisible(visible) {
+      const tabSystem = document.getElementById('tabSystem');
+      const browserWindows = document.getElementById('browserWindows');
+      const mainContent = document.getElementById('mainContent');
+
+      if (visible) {
+        if (tabSystem) {
+          tabSystem.classList.add('active');
+          tabSystem.style.display = 'flex';
+        }
+        if (browserWindows) browserWindows.classList.add('active');
+        if (mainContent) {
+          mainContent.style.display = 'none';
+          mainContent.style.padding = '60px 20px 20px';
+          mainContent.style.alignItems = '';
+          mainContent.style.justifyContent = '';
+          mainContent.style.textAlign = '';
+          mainContent.style.overflow = '';
+          mainContent.style.marginTop = '';
+          mainContent.style.height = '';
+          mainContent.style.minHeight = '';
+        }
+        return;
+      }
+
+      if (tabSystem) {
+        // Keep header visible even when there are zero tabs.
+        tabSystem.classList.add('active');
+        tabSystem.style.display = 'flex';
+      }
+      if (browserWindows) browserWindows.classList.remove('active');
+      if (mainContent) {
+        const headerH = getTabHeaderHeight();
+        mainContent.style.display = '';
+        mainContent.style.padding = '0';
+        mainContent.style.overflow = 'hidden';
+        mainContent.style.marginTop = `${headerH}px`;
+        mainContent.style.height = `calc(100dvh - ${headerH}px)`;
+        mainContent.style.minHeight = `calc(100dvh - ${headerH}px)`;
+      }
+    }
+
+    function showHomeView() {
+      setTabsUiVisible(false);
+      const mainContent = document.getElementById('mainContent');
+      if (!mainContent) return;
+
+      // Single homepage view when there are zero internal tabs.
+      mainContent.innerHTML = '';
+      mainContent.style.position = 'relative';
+      mainContent.style.alignItems = 'stretch';
+      mainContent.style.justifyContent = 'stretch';
+      mainContent.style.textAlign = 'left';
+
+      const wrap = document.createElement('div');
+      wrap.id = 'homeView';
+      wrap.style.cssText = 'position:relative; width:100%; height:100%; min-height:100%; background: transparent;';
+
+      const iframe = document.createElement('iframe');
+      iframe.id = 'homeIframe';
+      iframe.src = `${HOMEPAGE_PATH}?mode=home`;
+      iframe.style.cssText = 'width:100%; height:100%; border:0; display:block; background: transparent;';
+
+      wrap.appendChild(iframe);
+      mainContent.appendChild(wrap);
+    }
+    
+    // Create background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      if (!particlesContainer) return;
+      particlesContainer.innerHTML = '';
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random position
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        particle.style.left = `${left}%`;
+        particle.style.top = `${top}%`;
+        
+        // Random size
+        const size = 1 + Math.random() * 3;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random animation
+        const duration = 15 + Math.random() * 25;
+        const delay = Math.random() * 20;
+        particle.style.animationDuration = `${duration}s`;
+        particle.style.animationDelay = `${delay}s`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    function applyParticlesSetting(value) {
+      const container = document.getElementById('particles');
+      if (!container) return;
+      if (!particlesEnabled(value)) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = '';
+      if (!container.childElementCount) {
+        createParticles();
+      }
+    }
+    
+    // Build sidebar apps and games
+    function getSidebarApps() {
+      const unlocked = isSecretUnlocked();
+      if (!unlocked) return apps;
+      return [SECRET_APP, ...apps];
+    }
+
+    function buildSidebar() {
+      // Build apps grid
+      const appsGrid = document.getElementById('appsGrid');
+      appsGrid.innerHTML = '';
+      const visibleApps = getSidebarApps();
+
+      visibleApps.forEach(app => {
+        const card = createAppCard(app);
+        appsGrid.appendChild(card);
+      });
+      
+      // Build games grid (optional container)
+      const gamesGrid = document.getElementById('gamesGrid');
+      if (gamesGrid) {
+        gamesGrid.innerHTML = '';
+        games.forEach(game => {
+          const card = createAppCard(game);
+          gamesGrid.appendChild(card);
+        });
+      }
+    }
+    
+    // Create app card for sidebar
+    function getIconGradient(app) {
+      return app?.iconGradient || 'linear-gradient(135deg, var(--accent-blue), var(--accent-blue-dark))';
+    }
+
+    function createAppCard(app) {
+      const card = document.createElement('div');
+      card.className = 'app-card';
+      card.dataset.appId = app.id;
+      card.dataset.category = app.category;
+      if (app.secret) card.classList.add('secret-unlocked');
+      
+      card.innerHTML = `
+        <div class="app-icon" style="background:${getIconGradient(app)};">
+          <i class="fa${app.icon.includes('fab') ? 'b' : 's'} ${app.icon}"></i>
+        </div>
+        <div class="app-card-content">
+          <span class="app-meta">${app.category === 'games' ? 'Activity' : 'App'}</span>
+          <div class="app-info">
+            <h4>${escapeHtml(app.name)}</h4>
+            <p>${escapeHtml(app.desc)}</p>
+          </div>
+        </div>
+      `;
+      
+      card.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await openApp(app);
+        closeSidebar();
+      });
+      
+      return card;
+    }
+    
+    // Sidebar Functions
+    function openSidebar() {
+      buildSidebar();
+      state.sidebarOpen = true;
+      document.getElementById('appsSidebar').classList.add('active');
+      document.getElementById('sidebarOverlay').classList.add('active');
+      document.getElementById('menuButton').classList.add('active');
+      
+      // Focus search input
+      setTimeout(() => {
+        document.getElementById('sidebarSearch').focus();
+      }, 300);
+      filterSidebar(document.getElementById('sidebarSearch').value || '');
+    }
+    
+    function closeSidebar() {
+      state.sidebarOpen = false;
+      document.getElementById('appsSidebar').classList.remove('active');
+      document.getElementById('sidebarOverlay').classList.remove('active');
+      document.getElementById('menuButton').classList.remove('active');
+      
+      // Clear search
+      document.getElementById('sidebarSearch').value = '';
+      filterSidebar('');
+    }
+    
+    function toggleSidebar() {
+      if (state.sidebarOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    }
+    
+    function switchCategory(category) {
+      // Update active tab
+      document.querySelectorAll('.sidebar-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.category === category) {
+          tab.classList.add('active');
+        }
+      });
+      
+      // Show active content
+      document.querySelectorAll('.category-content').forEach(content => {
+        content.classList.remove('active');
+        if (content.id === `${category}Content`) {
+          content.classList.add('active');
+        }
+      });
+    }
+    
+    function filterSidebar(query) {
+      const searchTerm = query.toLowerCase().trim();
+      
+      // Filter apps
+      const visibleApps = getSidebarApps();
+      document.querySelectorAll('#appsGrid .app-card').forEach(card => {
+        const appId = card.dataset.appId;
+        const app = visibleApps.find(a => a.id === appId);
+        if (!app) return;
+        
+        const matches = searchTerm === '' || 
+          app.name.toLowerCase().includes(searchTerm) || 
+          app.desc.toLowerCase().includes(searchTerm);
+        
+        card.style.display = matches ? 'flex' : 'none';
+      });
+      
+      // Filter games
+      document.querySelectorAll('#gamesGrid .app-card').forEach(card => {
+        const appId = card.dataset.appId;
+        const app = games.find(a => a.id === appId);
+        if (!app) return;
+        
+        const matches = searchTerm === '' || 
+          app.name.toLowerCase().includes(searchTerm) || 
+          app.desc.toLowerCase().includes(searchTerm);
+        
+        card.style.display = matches ? 'flex' : 'none';
+      });
+    }
+    
+    // Tab System Functions
+    function createNewTab(app = null, url = null, title = "New Tab", options = {}) {
+      const requestedId = typeof options.tabId === 'string' ? options.tabId : null;
+      if (requestedId) {
+        const m = /^tab-(\d+)$/.exec(requestedId);
+        if (m) state.tabCounter = Math.max(state.tabCounter, Number(m[1]));
+      } else {
+        state.tabCounter++;
+      }
+      const tabId = requestedId || `tab-${state.tabCounter}`;
+      
+      const tab = {
+        id: tabId,
+        app: app,
+        url: url || (app ? app.url : null),
+        title: title,
+        icon: options.icon || (app ? app.icon : 'fa-globe'),
+        loading: false,
+        active: false,
+        error: false,
+        navStack: Array.isArray(options.navStack) ? options.navStack.slice(-40) : [],
+        navIndex: typeof options.navIndex === 'number' ? options.navIndex : -1
+      };
+      if (!tab.navStack.length && tab.url) {
+        const normalized = normalizeNavTarget(tab.url);
+        if (normalized) {
+          tab.navStack = [normalized];
+          tab.navIndex = 0;
+        }
+      }
+      
+      const activeIndex = state.tabs.findIndex(t => t.active);
+      const insertIndex = typeof options.insertIndex === 'number'
+        ? Math.max(0, Math.min(options.insertIndex, state.tabs.length))
+        : (activeIndex >= 0 ? activeIndex + 1 : state.tabs.length);
+      state.tabs.splice(insertIndex, 0, tab);
+      
+      // Show tab UI
+      setTabsUiVisible(true);
+      
+      // Create tab element
+      createTabElement(tab, insertIndex);
+     
+      // Create browser window
+      createBrowserWindow(tab);
+      
+      // Activate this tab
+      if (!options.skipActivate) activateTab(tabId);
+      scheduleTabSessionSave();
+      
+      return tabId;
+    }
+    
+    function createTabElement(tab, insertIndex = state.tabs.length - 1) {
+      const tabsContainer = document.getElementById('tabsContainer');
+      const tabEl = document.createElement('div');
+      tabEl.className = 'tab';
+      tabEl.id = `tab-el-${tab.id}`;
+      tabEl.dataset.tabId = tab.id;
+      tabEl.draggable = true;
+      
+      tabEl.innerHTML = `
+        <div class="tab-icon">
+          <i class="fa${tab.icon.includes('fab') ? 'b' : 's'} ${tab.icon}"></i>
+        </div>
+        <div class="tab-title">${escapeHtml(tab.title)}</div>
+        <div class="tab-close">
+          <i class="fas fa-times"></i>
+        </div>
+      `;
+      
+      // Click to activate tab
+      tabEl.addEventListener('click', (e) => {
+        if (!e.target.closest('.tab-close')) {
+          activateTab(tab.id);
+        }
+      });
+      
+      // Close tab
+      const closeBtn = tabEl.querySelector('.tab-close');
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeTab(tab.id);
+      });
+
+      tabEl.addEventListener('dragstart', (e) => {
+        draggedTabId = tab.id;
+        tabEl.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        try {
+          e.dataTransfer.setData('text/plain', tab.id);
+        } catch {}
+      });
+
+      tabEl.addEventListener('dragend', () => {
+        tabEl.classList.remove('dragging');
+        draggedTabId = null;
+        clearTabDropIndicators();
+      });
+
+      tabEl.addEventListener('dragover', (e) => {
+        if (!draggedTabId || draggedTabId === tab.id) return;
+        e.preventDefault();
+        clearTabDropIndicators();
+        const rect = tabEl.getBoundingClientRect();
+        const before = (e.clientX - rect.left) < (rect.width / 2);
+        tabEl.classList.add(before ? 'drag-over-before' : 'drag-over-after');
+      });
+
+      tabEl.addEventListener('dragleave', () => {
+        tabEl.classList.remove('drag-over-before', 'drag-over-after');
+      });
+
+      tabEl.addEventListener('drop', (e) => {
+        if (!draggedTabId || draggedTabId === tab.id) return;
+        e.preventDefault();
+        const rect = tabEl.getBoundingClientRect();
+        const before = (e.clientX - rect.left) < (rect.width / 2);
+        const targetIndex = state.tabs.findIndex((t) => t.id === tab.id);
+        if (targetIndex >= 0) {
+          reorderTabInState(draggedTabId, before ? targetIndex : targetIndex + 1);
+        }
+        clearTabDropIndicators();
+      });
+      
+      const referenceEl = tabsContainer.children[insertIndex - 1];
+      if (referenceEl && referenceEl.id !== tabEl.id) {
+        if (referenceEl.nextSibling) {
+          tabsContainer.insertBefore(tabEl, referenceEl.nextSibling);
+        } else {
+          tabsContainer.appendChild(tabEl);
+        }
+      } else {
+        tabsContainer.appendChild(tabEl);
+      }
+    }
+    
+    function createBrowserWindow(tab) {
+      const windowsContainer = document.getElementById('browserWindows');
+      const windowEl = document.createElement('div');
+      windowEl.className = 'browser-window';
+      windowEl.id = `window-${tab.id}`;
+      
+      windowEl.innerHTML = `
+        <div class="window-content">
+          <div class="window-loading" id="loading-${tab.id}">
+            <div class="loading-spinner"></div>
+            <div>Loading ${escapeHtml(tab.title)}...</div>
+            <div class="loading-subtext">(If site takes long to load, change search engine in settings.).</div>
+            <div class="loading-rotating-text"></div>
+          </div>
+          <iframe src="about:blank" id="iframe-${tab.id}"></iframe>
+        </div>
+      `;
+      
+      windowsContainer.appendChild(windowEl);
+      startLoadingRotator(tab.id);
+      
+      // Load content if URL is available
+      if (tab.url) {
+        loadTabContent(tab.id, tab.url, tab.app);
+      }
+    }
+    
+    async function loadTabContent(tabId, url, app = null) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.loading = true;
+      tab.error = false;
+      const iframe = document.getElementById(`iframe-${tabId}`);
+      const loading = document.getElementById(`loading-${tabId}`);
+
+      if (loading) {
+        const loadingLabel = app?.name ? `Loading ${escapeHtml(app.name)}...` : `Loading ${escapeHtml(tab.title)}...`;
+        loading.innerHTML = `
+          <div class="loading-spinner"></div>
+          <div>${loadingLabel}</div>
+          <div class="loading-subtext">(If site takes long to load, change search engine in settings.).</div>
+          <div class="loading-rotating-text"></div>
+        `;
+        loading.style.display = 'flex';
+        startLoadingRotator(tabId);
+      }
+      
+      try {
+        let finalUrl = url;
+        const rawUrl = (typeof url === 'string' ? url.trim() : '');
+        const shouldWarmProxy =
+          !!rawUrl &&
+          (
+            isProxiedPath(rawUrl) ||
+            rawUrl.startsWith('hvtrs') ||
+            rawUrl.startsWith('http://') ||
+            rawUrl.startsWith('https://') ||
+            (rawUrl.includes('.') && !rawUrl.includes(' ') && !rawUrl.startsWith('/'))
+          );
+        if (shouldWarmProxy) {
+          await withTimeout(ensureProxyRuntimeReady(), 900).catch(() => {});
+        }
+
+        const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+        
+        // Blank URLs should open the real homepage route, not the synthetic new-tab page.
+        if (!url || url === 'about:blank') {
+          finalUrl = HOMEPAGE_PATH;
+        }
+        // If we somehow got a raw UV payload (ex: "hvtrs8/-..."), don't re-encode it.
+        else if (typeof url === 'string' && !url.startsWith('/') && url.startsWith('hvtrs')) {
+          let payload = url;
+          if (payload.includes('%')) {
+            try {
+              payload = decodeURIComponent(payload);
+            } catch {}
+          }
+          finalUrl = uvPrefix + payload;
+        }
+        
+        // Already-routed/local paths should load directly (no double-encoding).
+        if (url && url.startsWith('/')) {
+          finalUrl = url;
+        }
+        // For ALL external URLs, use the proxy
+        else if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+          // Use the proxy for this URL - ALWAYS use proxy for external URLs
+          finalUrl = await encodeWithProxy(url, app?.forceProxy);
+        }
+        // If it's a domain-like string (google.com, youtube.com), add https:// and proxy it
+        else if (url && url.includes('.') && !url.includes(' ') && !url.startsWith('/')) {
+          const fullUrl = 'https://' + url;
+          finalUrl = await encodeWithProxy(fullUrl);
+        }
+        else if (url) {
+          // If we have a URL but it doesn't match above patterns, still try to proxy it
+          finalUrl = await encodeWithProxy(url);
+        }
+        
+        // Record top-level navigation target (used for reliable back/forward across SPAs).
+        recordTabNavigation(tabId, finalUrl);
+
+        // Set iframe source
+        tab.url = finalUrl;
+        scheduleTabSessionSave();
+        iframe.src = finalUrl;
+        
+        // Set a timeout for loading
+        const loadTimeout = setTimeout(() => {
+          if (tab.loading) {
+            handleTabError(tabId, 'Loading timeout. The site may be slow or blocked.');
+          }
+        }, 15000); // 15 second timeout
+        
+        iframe.onload = () => {
+          clearTimeout(loadTimeout);
+          tab.loading = false;
+          stopLoadingRotator(tabId);
+          if (loading) loading.style.display = 'none';
+
+          // Record navigations triggered *inside* the iframe (ex: quick access on /search).
+          try {
+            recordTabNavigation(tabId, getIframeHref(iframe), { replace: false });
+          } catch {}
+          scheduleTabSessionSave();
+          updateTabNavButtons();
+          
+          // Try to get title from iframe
+          try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const iframeTitle = iframeDoc.title;
+            if (iframeTitle && iframeTitle !== '') {
+              updateTabTitle(tabId, iframeTitle);
+            }
+          } catch (e) {
+            // Cross-origin error, ignore
+          }
+        };
+        
+        iframe.onerror = () => {
+          clearTimeout(loadTimeout);
+          stopLoadingRotator(tabId);
+          handleTabError(tabId, 'Failed to load page. The site may be blocked or unavailable.');
+        };
+      } catch (error) {
+        console.error('Failed to load tab content:', error);
+        handleTabError(tabId, 'Proxy error. Please try a different site.');
+      }
+    }
+    
+    // Create a new tab page (homepage in tab)
+    function createNewTabPage(tabId) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      const iframe = document.getElementById(`iframe-${tabId}`);
+      const loading = document.getElementById(`loading-${tabId}`);
+      
+      if (!iframe) return;
+      
+      // Create a simple new tab page with search functionality
+      const newTabHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Nebulo Home</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            body {
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: #0f1117;
+              color: white;
+              height: 100vh;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+              text-align: center;
+            }
+            
+            .newtab-content {
+              max-width: 700px;
+              width: 100%;
+            }
+            
+            .newtab-title {
+              font-size: clamp(2.5rem, 8vw, 4rem);
+              font-weight: 800;
+              margin-bottom: 8px;
+              line-height: 1;
+              color: white;
+            }
+            
+            .newtab-title .version {
+              font-size: clamp(1.2rem, 3vw, 1.5rem);
+              font-weight: 300;
+              color: #5dade2;
+              margin-left: 8px;
+            }
+            
+            .newtab-subtitle {
+              font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+              font-weight: 400;
+              color: #b0b7c7;
+              margin-bottom: 40px;
+              letter-spacing: 0.5px;
+            }
+            
+            .newtab-search-container {
+              width: 100%;
+              margin: 0 auto;
+            }
+            
+            .newtab-search-wrapper {
+              position: relative;
+            }
+            
+            .newtab-search-input {
+              width: 100%;
+              padding: 18px 24px 18px 56px;
+              background: rgba(40, 45, 58, 0.7);
+              border: 2px solid rgba(52, 152, 219, 0.3);
+              border-radius: 12px;
+              color: white;
+              font-size: 16px;
+              outline: none;
+              transition: all 0.3s ease;
+            }
+            
+            .newtab-search-input:focus {
+              border-color: #3498db;
+              box-shadow: 0 8px 40px rgba(52, 152, 219, 0.3);
+            }
+            
+            .newtab-search-icon {
+              position: absolute;
+              left: 20px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #3498db;
+              font-size: 20px;
+            }
+            
+            .newtab-search-hint {
+              margin-top: 16px;
+              font-size: 14px;
+              color: #b0b7c7;
+              opacity: 0.8;
+            }
+            
+            .newtab-quick-links {
+              margin-top: 40px;
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+              gap: 16px;
+            }
+            
+            .newtab-link {
+              background: rgba(40, 45, 58, 0.7);
+              border: 1px solid rgba(100, 120, 160, 0.2);
+              border-radius: 12px;
+              padding: 20px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 12px;
+              text-align: center;
+            }
+            
+            .newtab-link:hover {
+              background: rgba(52, 152, 219, 0.15);
+              border-color: rgba(52, 152, 219, 0.4);
+              transform: translateY(-4px);
+            }
+            
+            .newtab-link-icon {
+              width: 48px;
+              height: 48px;
+              background: linear-gradient(135deg, #3498db, #1c6ea4);
+              border-radius: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: 20px;
+            }
+            
+            .newtab-link-title {
+              font-size: 14px;
+              font-weight: 600;
+              color: white;
+            }
+          </style>
+</head>
+        <body>
+          <div class="newtab-content">
+            <h1 class="newtab-title">
+              Nebulo<span class="version">V5.4</span>
+            </h1>
+            <div class="newtab-subtitle">Start browsing or search the web</div>
+            
+            <div class="newtab-search-container">
+              <div class="newtab-search-wrapper">
+                <input type="text" class="newtab-search-input" id="newtabSearchInput" placeholder="search anything" />
+                <div class="newtab-search-icon">🔍</div>
+              </div>
+              <div class="newtab-search-hint">
+                Press Enter to search, or type a URL to browse
+              </div>
+            </div>
+            
+            <div class="newtab-quick-links">
+              <div class="newtab-link" data-url="https://www.google.com">
+                <div class="newtab-link-icon">G</div>
+                <div class="newtab-link-title">Google</div>
+              </div>
+              <div class="newtab-link" data-url="https://www.youtube.com">
+                <div class="newtab-link-icon">YT</div>
+                <div class="newtab-link-title">YouTube</div>
+              </div>
+              <div class="newtab-link" data-url="https://github.com">
+                <div class="newtab-link-icon">GH</div>
+                <div class="newtab-link-title">GitHub</div>
+              </div>
+              <div class="newtab-link" data-url="https://www.wikipedia.org">
+                <div class="newtab-link-icon">W</div>
+                <div class="newtab-link-title">Wikipedia</div>
+              </div>
+            </div>
+          </div>
+          
+          <script>
+            // Search functionality for new tab page
+            const searchInput = document.getElementById('newtabSearchInput');
+            
+            searchInput.addEventListener('keydown', async function(e) {
+              if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                  // Send message to parent window to handle the search
+                  window.parent.postMessage({
+                    type: 'newtab-search',
+                    query: query
+                  }, '*');
+                }
+              }
+            });
+            
+            // Quick links
+            document.querySelectorAll('.newtab-link').forEach(link => {
+              link.addEventListener('click', function() {
+                const url = this.dataset.url;
+                window.parent.postMessage({
+                  type: 'newtab-navigate',
+                  url: url
+                }, '*');
+              });
+            });
+            
+            // Focus search input on load
+            searchInput.focus();
+          <\/script>
+        </body>
+        </html>
+      `;
+      
+      // Write the HTML to the iframe
+      iframe.onload = function() {
+        const iframeDoc = iframe.contentDocument;
+        iframeDoc.open();
+        iframeDoc.write(newTabHTML);
+        iframeDoc.close();
+        
+        // Hide loading indicator
+        if (loading) {
+          loading.style.display = 'none';
+        }
+        
+        tab.loading = false;
+      };
+      
+      // Set the iframe source to about:blank first
+      iframe.src = 'about:blank';
+    }
+    
+    function handleTabError(tabId, message) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.loading = false;
+      tab.error = true;
+      stopLoadingRotator(tabId);
+      const loading = document.getElementById(`loading-${tabId}`);
+      
+      if (loading) {
+        loading.innerHTML = `
+          <div style="text-align: center; padding: 20px; max-width: 400px;">
+            <div class="loading-spinner" style="border-color: #e74c3c; border-top-color: #c0392b;"></div>
+            <div style="margin-top: 20px; color: #e74c3c; font-weight: 600;">Error Loading Page</div>
+            <div style="margin-top: 10px; color: #b0b7c7; font-size: 14px; line-height: 1.4;">${escapeHtml(message)}</div>
+            <div style="margin-top: 20px;">
+              <button class="retry-btn" style="padding: 10px 20px; background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 6px; color: var(--accent-blue-light); cursor: pointer; font-size: 14px;">Retry Loading</button>
+            </div>
+          </div>
+        `;
+        
+        // Add retry button event
+        const retryBtn = loading.querySelector('.retry-btn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            loadTabContent(tabId, tab.url, tab.app);
+          });
+        }
+      }
+    }
+    
+    function activateTab(tabId) {
+      // Deactivate all tabs
+      state.tabs.forEach(tab => {
+        tab.active = false;
+        const tabEl = document.getElementById(`tab-el-${tab.id}`);
+        const windowEl = document.getElementById(`window-${tab.id}`);
+        
+        if (tabEl) tabEl.classList.remove('active');
+        if (windowEl) windowEl.classList.remove('active');
+      });
+      
+      // Activate selected tab
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (tab) {
+        tab.active = true;
+        state.activeTabId = tabId;
+        
+        const tabEl = document.getElementById(`tab-el-${tab.id}`);
+        const windowEl = document.getElementById(`window-${tab.id}`);
+        
+        if (tabEl) tabEl.classList.add('active');
+        if (windowEl) windowEl.classList.add('active');
+        
+        // Ensure tab is visible in tab system
+        if (tabEl) {
+          tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+      updateTabNavButtons();
+      scheduleTabSessionSave();
+    }
+    
+    function updateTabTitle(tabId, title) {
+      const tab = state.tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.title = title;
+      const tabEl = document.getElementById(`tab-el-${tabId}`);
+      if (tabEl) {
+        const titleEl = tabEl.querySelector('.tab-title');
+        if (titleEl) {
+          titleEl.textContent = escapeHtml(title);
+        }
+      }
+      scheduleTabSessionSave();
+    }
+    
+    function closeTab(tabId) {
+      const tabIndex = state.tabs.findIndex(t => t.id === tabId);
+      if (tabIndex === -1) return;
+      stopLoadingRotator(tabId);
+      
+      // Remove tab element
+      const tabEl = document.getElementById(`tab-el-${tabId}`);
+      if (tabEl) tabEl.remove();
+      
+      // Remove browser window
+      const windowEl = document.getElementById(`window-${tabId}`);
+      if (windowEl) windowEl.remove();
+      
+      // Remove from state
+      state.tabs.splice(tabIndex, 1);
+      
+      // Update active tab
+      if (state.activeTabId === tabId) {
+        if (state.tabs.length > 0) {
+          // Activate the next tab, or the previous one if at the end
+          const nextTabIndex = Math.min(tabIndex, state.tabs.length - 1);
+          activateTab(state.tabs[nextTabIndex].id);
+        } else {
+          state.activeTabId = null;
+          showHomeView();
+        }
+      }
+      updateTabNavButtons();
+      syncBrowserHistory();
+      scheduleTabSessionSave();
+    }
+
+    function updateTabNavButtons() {
+      const backBtn = document.getElementById('tabBackBtn');
+      const forwardBtn = document.getElementById('tabForwardBtn');
+      const reloadBtn = document.getElementById('tabReloadBtn');
+      const hasActiveTab = !!state.activeTabId;
+      const tab = hasActiveTab ? state.tabs.find(t => t.id === state.activeTabId) : null;
+      const canBack = !!tab && typeof tab.navIndex === 'number' && tab.navIndex > 0;
+      const canForward = !!tab && Array.isArray(tab.navStack) && typeof tab.navIndex === 'number' && tab.navIndex >= 0 && tab.navIndex < tab.navStack.length - 1;
+      if (backBtn) backBtn.disabled = !hasActiveTab || !canBack;
+      if (forwardBtn) forwardBtn.disabled = !hasActiveTab || !canForward;
+      if (reloadBtn) reloadBtn.disabled = !hasActiveTab;
+    }
+
+    function getIframeHref(iframe) {
+      if (!iframe) return '';
+
+      let src = '';
+      try {
+        src = String(iframe.src || '');
+      } catch {}
+      const srcNorm = normalizeNavTarget(src) || '';
+
+      // For proxied frames, the most reliable "current location" is the iframe src (same-origin),
+      // because the proxy runtime may rewrite contentWindow.location.href to external URLs or UV payloads.
+      if (srcNorm && isProxiedPath(srcNorm)) return srcNorm;
+
+      try {
+        const href = iframe.contentWindow?.location?.href;
+        const hrefNorm = normalizeNavTarget(href);
+        if (hrefNorm) return hrefNorm;
+      } catch {}
+
+      return srcNorm;
+    }
+
+    function navigateActiveTabHistory(direction) {
+      if (!state.activeTabId) return;
+      const iframe = document.getElementById(`iframe-${state.activeTabId}`);
+      if (!iframe || !iframe.contentWindow) return;
+      const tab = state.tabs.find(t => t.id === state.activeTabId);
+      const beforeHref = getIframeHref(iframe);
+      try {
+        if (direction === 'back') {
+          iframe.contentWindow.history.back();
+        } else {
+          iframe.contentWindow.history.forward();
+        }
+      } catch (err) {
+        console.warn(`Tab ${direction} navigation failed:`, err);
+      }
+
+      setTimeout(() => {
+        if (!tab || !Array.isArray(tab.navStack) || typeof tab.navIndex !== 'number') return;
+        if (getIframeHref(iframe) !== beforeHref) return;
+        if (direction === 'back') {
+          if (tab.navIndex <= 0) return;
+          tab.navIndex = Math.max(0, tab.navIndex - 1);
+          iframe.src = tab.navStack[tab.navIndex];
+        } else {
+          if (tab.navIndex >= tab.navStack.length - 1) return;
+          tab.navIndex = Math.min(tab.navStack.length - 1, tab.navIndex + 1);
+          iframe.src = tab.navStack[tab.navIndex];
+        }
+        updateTabNavButtons();
+      }, 350);
+    }
+
+    function reloadActiveTab() {
+      if (!state.activeTabId) return;
+      const iframe = document.getElementById(`iframe-${state.activeTabId}`);
+      if (!iframe) return;
+      try {
+        if (iframe.contentWindow?.location) {
+          iframe.contentWindow.location.reload();
+        } else if (iframe.src) {
+          iframe.src = iframe.src;
+        }
+      } catch (err) {
+        // Cross-origin-safe fallback
+        if (iframe.src) iframe.src = iframe.src;
+      }
+    }
+    
+    // ======================
+    // SEARCH & PROXY FUNCTIONS
+    // ======================
+    
+    // Resolve search URL (based on what user typed)
+    function resolveSearchUrl(query) {
+      // If it's already a full URL
+      if (query.startsWith('http://') || query.startsWith('https://')) {
+        return query;
+      }
+      
+      // If it's a local route
+      if (query.startsWith('/')) {
+        return query;
+      }
+      
+      // If it looks like a domain (contains dot, no spaces)
+      if (query.includes('.') && !query.includes(' ')) {
+        return 'https://' + query;
+      }
+      
+      // Otherwise, it's a search query - use configured search engine
+      const engine = (localStorage.getItem('searchEngine') || SEARCH_ENGINE_DEFAULT).toLowerCase();
+      switch (engine) {
+        case 'brave':
+          return `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+        case 'google':
+          return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        case 'duckduckgo':
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+        case 'bing':
+          return `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        case 'yahoo':
+          return `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
+        default:
+          return `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(query)}`;
+      }
+    }
+    
+    // Encode URL with proxy
+    async function encodeWithProxy(url, proxyHint = null) {
+      try {
+        // Try to use window.proxyEncoder if available
+        if (window.proxyEncoder) {
+          return await window.proxyEncoder.encode(url, proxyHint);
+        } 
+        // Try to use UV config
+        else if (typeof __uv$config !== 'undefined') {
+          return __uv$config.prefix + __uv$config.encodeUrl(url);
+        }
+        // Try to use global encodeProxiedUrl function
+        else if (typeof window.encodeProxiedUrl === "function") {
+          return window.encodeProxiedUrl(url);
+        }
+      } catch(e) {
+        console.error('Proxy encoding failed:', e);
+      }
+      
+      // Fallback to direct URL if proxy not available
+      return url;
+    }
+
+    function normalizeExistingProxyTarget(inputUrl) {
+      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+      if (!raw) return raw;
+
+      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+
+      if (raw.startsWith('/') && isProxiedPath(raw)) return raw;
+
+      if (!raw.startsWith('/') && raw.startsWith('hvtrs')) {
+        let payload = raw;
+        if (payload.includes('%')) {
+          try {
+            payload = decodeURIComponent(payload);
+          } catch {}
+        }
+        return uvPrefix + payload;
+      }
+
+      try {
+        const u = new URL(raw, location.origin);
+        if (u.origin === location.origin && isProxiedPath(u.pathname)) {
+          return u.pathname + u.search + u.hash;
+        }
+      } catch {}
+
+      return raw;
+    }
+
+    function shouldForceScramjetForUrl(inputUrl) {
+      const rules = window.NebuloProxyHostRules;
+      if (rules && typeof rules.shouldForceScramjetForUrl === 'function') {
+        return rules.shouldForceScramjetForUrl(inputUrl);
+      }
+
+      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+      if (!raw) return false;
+
+      let parsed = null;
+      try {
+        parsed = new URL(raw);
+      } catch {
+        if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) {
+          try {
+            parsed = new URL('https://' + raw);
+          } catch {
+            parsed = null;
+          }
+        }
+      }
+      if (!parsed) return false;
+
+      const host = (parsed.hostname || '').toLowerCase();
+      return (
+        host === 'crazygames.com' ||
+        host.endsWith('.crazygames.com') ||
+        host === 'play.geforcenow.com' ||
+        host.endsWith('.geforcenow.com') ||
+        host === 'poki.com' ||
+        host.endsWith('.poki.com')
+      );
+    }
+
+    // Browser-compatible proxy selector with UV fallback (mirrors search.js intent)
+    async function encodeUrlWithProxy(url, overrideProxy) {
+      url = normalizeExistingProxyTarget(url);
+
+        function shouldAvoidScramjetForUrl(inputUrl) {
+          const rules = window.NebuloProxyHostRules;
+          if (rules && typeof rules.shouldAvoidScramjetForUrl === 'function') {
+            return rules.shouldAvoidScramjetForUrl(inputUrl);
+          }
+
+          const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+          if (!raw) return false;
+
+          let parsed = null;
+          try {
+            parsed = new URL(raw);
+          } catch {
+            if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) {
+              try {
+                parsed = new URL('https://' + raw);
+              } catch {
+                parsed = null;
+              }
+            }
+          }
+          if (!parsed) return false;
+
+          const host = (parsed.hostname || '').toLowerCase();
+          return host === 'polybuzz.ai' || host.endsWith('.polybuzz.ai');
+        }
+
+        const savedProxy = localStorage.getItem('proxy');
+        const forced = (!overrideProxy && (!savedProxy || savedProxy === 'sj') && shouldForceScramjetForUrl(url)) ? 'sj' : null;
+        const isForcedSj = forced === 'sj';
+        let proxy = overrideProxy || savedProxy || PROXY_DEFAULT;
+        if (forced) proxy = forced;
+        if (proxy === 'sj' && shouldAvoidScramjetForUrl(url)) proxy = 'uv';
+
+      function encodeScramjetRoute(inputUrl) {
+        const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+        if (!raw) return raw;
+        try {
+          const u = new URL(raw);
+          if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
+          const hash = u.hash ? u.hash.slice(1) : '';
+          u.hash = '';
+          return '/scramjet/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
+        } catch {
+          return '/scramjet/' + encodeURIComponent(raw);
+        }
+      }
+
+      const uvEncode = () => {
+        if (typeof __uv$config !== 'undefined' && __uv$config?.encodeUrl) {
+          return __uv$config.prefix + __uv$config.encodeUrl(url);
+        }
+        return null;
+      };
+
+      try {
+        switch (proxy) {
+          case 'sj':
+            {
+              const scramjet = await withTimeout(ensureScramjetController(), 2000).catch(() => null);
+              if (scramjet && typeof scramjet.encodeUrl === 'function') {
+                return scramjet.encodeUrl(url);
+              }
+              // For forced sites, don't fall back to UV if scramjet isn't ready.
+              if (isForcedSj) return encodeScramjetRoute(url);
+            }
+            break;
+          case 'ec':
+            if (typeof __eclipse$config !== 'undefined' && __eclipse$config?.codec?.encode) {
+              return __eclipse$config.prefix + __eclipse$config.codec.encode(url);
+            }
+            break;
+          case 'rh':
+            if (typeof RammerheadEncode === 'function') {
+              return await RammerheadEncode(url);
+            }
+            break;
+          case 'uv':
+          default: {
+            const encoded = uvEncode();
+            if (encoded) return encoded;
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn(`Preferred proxy "${proxy}" failed, falling back to UV if available.`, err);
+      }
+
+      // If selected proxy is unavailable, force UV fallback before giving up.
+      const uvFallback = uvEncode();
+      if (uvFallback) return uvFallback;
+
+      return url;
+    }
+
+    window.proxyEncoder = {
+      encode: encodeUrlWithProxy
+    };
+    
+    // Event listeners
+    function setupEventListeners() {
+      setupTabsContainerDnD();
+      // Hamburger menu button
+      document.getElementById('menuButton').addEventListener('click', toggleSidebar);
+      
+      // Sidebar overlay (click to close)
+      document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+      const allGamesBtn = document.getElementById('allGamesBtn');
+      if (allGamesBtn) {
+        allGamesBtn.addEventListener('click', async () => {
+          await openApp({
+            id: 'all-games-page',
+            name: 'All Activities',
+            url: '/chemistry',
+            icon: 'fa-flask',
+            category: 'apps',
+          });
+        });
+      }
+      
+      // Sidebar category tabs
+      document.querySelectorAll('.sidebar-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const category = tab.dataset.category;
+          switchCategory(category);
+        });
+      });
+      
+      // Sidebar search
+      const sidebarSearch = document.getElementById('sidebarSearch');
+      sidebarSearch.addEventListener('input', () => {
+        filterSidebar(sidebarSearch.value);
+      });
+      
+      // New tab button
+      document.getElementById('newTab').addEventListener('click', () => {
+        createNewTab(null, HOMEPAGE_PATH, "Home");
+      });
+
+      const tabSessionsBtn = document.getElementById('tabSessionsBtn');
+      const tabSessionsCloseBtn = document.getElementById('tabSessionsCloseBtn');
+      const tabSessionsSaveBtn = document.getElementById('tabSessionSaveBtn');
+      const tabSessionsSaveQuickBtn = document.getElementById('tabSessionsSaveQuickBtn');
+      const tabSessionsClearAllBtn = document.getElementById('tabSessionsClearAllBtn');
+      const tabSessionsNameInput = document.getElementById('tabSessionNameInput');
+      const tabSessionsPopover = document.getElementById('tabSessionsPopover');
+
+      if (tabSessionsBtn) {
+        tabSessionsBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleTabSessionsPopover();
+        });
+      }
+      if (tabSessionsCloseBtn) {
+        tabSessionsCloseBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeTabSessionsPopover();
+        });
+      }
+      if (tabSessionsSaveBtn) {
+        tabSessionsSaveBtn.addEventListener('click', () => {
+          const name = tabSessionsNameInput ? tabSessionsNameInput.value : '';
+          if (!saveNamedTabSession(name)) return;
+          if (tabSessionsNameInput) tabSessionsNameInput.value = '';
+          renderNamedTabSessionsUi();
+        });
+      }
+      if (tabSessionsSaveQuickBtn) {
+        tabSessionsSaveQuickBtn.addEventListener('click', () => {
+          const name = `Session ${new Date().toLocaleString()}`;
+          if (!saveNamedTabSession(name)) return;
+          renderNamedTabSessionsUi();
+        });
+      }
+      if (tabSessionsClearAllBtn) {
+        tabSessionsClearAllBtn.addEventListener('click', () => {
+          writeNamedTabSessions([]);
+          renderNamedTabSessionsUi();
+        });
+      }
+
+      // Click outside closes the popover.
+      document.addEventListener('click', (e) => {
+        try {
+          if (!tabSessionsPopover || tabSessionsPopover.hidden) return;
+          const within = e.target && (tabSessionsPopover.contains(e.target) || (tabSessionsBtn && tabSessionsBtn.contains(e.target)));
+          if (!within) closeTabSessionsPopover();
+        } catch {}
+      });
+
+      const tabSettingsBtn = document.getElementById('tabSettingsBtn');
+      if (tabSettingsBtn) {
+        tabSettingsBtn.addEventListener('click', () => {
+          const settingsApp = {
+            id: 'settings-shortcut',
+            name: 'Settings',
+            url: '/settings',
+            icon: 'fa-cog',
+            desc: 'System settings',
+            proxied: true
+          };
+          createNewTab(settingsApp, '/settings', 'Settings');
+        });
+      }
+
+      const tabBackBtn = document.getElementById('tabBackBtn');
+      const tabForwardBtn = document.getElementById('tabForwardBtn');
+      const tabReloadBtn = document.getElementById('tabReloadBtn');
+      if (tabBackBtn) {
+        tabBackBtn.addEventListener('click', () => navigateActiveTabHistory('back'));
+      }
+      if (tabForwardBtn) {
+        tabForwardBtn.addEventListener('click', () => navigateActiveTabHistory('forward'));
+      }
+      if (tabReloadBtn) {
+        tabReloadBtn.addEventListener('click', () => reloadActiveTab());
+      }
+      
+      // Escape key closes sidebar
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.sidebarOpen) {
+          closeSidebar();
+        }
+        if (e.key === 'Escape') {
+          closeTabSessionsPopover();
+        }
+        
+        // Ctrl/Cmd + T for new tab
+        if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+          e.preventDefault();
+          createNewTab(null, HOMEPAGE_PATH, "Home");
+        }
+      });
+      
+      function isKnownIframeSource(source) {
+        if (!source) return false;
+        try {
+          const frames = document.querySelectorAll('#browserWindows iframe, #homeView iframe');
+          for (const f of frames) {
+            try {
+              if (f.contentWindow === source) return true;
+            } catch {}
+          }
+        } catch {}
+        return false;
+      }
+
+      // Listen for messages from iframes (new tab page + search homepage)
+      window.addEventListener('message', async function(event) {
+        if (!event) return;
+        const t = event?.data?.type;
+        const isNullOriginNewTab =
+          event.origin === 'null' &&
+          (t === 'newtab-search' || t === 'newtab-navigate');
+        if (event.origin !== location.origin && !isNullOriginNewTab) return;
+        if (!isKnownIframeSource(event.source)) return;
+
+        if (event.data.type === 'newtab-search') {
+          // Handle search from new tab page
+          await performSearch(event.data.query);
+        } else if (event.data.type === 'newtab-navigate') {
+          // Handle navigation from new tab page
+          if (state.activeTabId) {
+            const tab = state.tabs.find(t => t.id === state.activeTabId);
+            if (tab) {
+              loadTabContent(tab.id, event.data.url);
+            }
+          }
+      } else if (event.data.type === 'open-new-tab') {
+          const raw = (typeof event.data.url === 'string' ? event.data.url : String(event.data.url || '')).trim();
+          if (!raw) return;
+          const title = (typeof event.data.title === 'string' && event.data.title.trim()) ? event.data.title.trim() : 'New Tab';
+          const icon = (typeof event.data.icon === 'string' && event.data.icon.trim()) ? event.data.icon.trim() : 'fa-globe';
+          let forceProxy = (typeof event.data.forceProxy === 'string' && event.data.forceProxy.trim()) ? event.data.forceProxy.trim() : null;
+          if (shouldForceScramjetForUrl(raw)) forceProxy = 'sj';
+          const app = {
+            id: `msg-${Date.now()}`,
+            name: title,
+            url: raw,
+            icon: icon,
+            desc: 'Opened from homepage',
+            category: 'apps',
+            proxied: true,
+            forceProxy: forceProxy || undefined
+          };
+          createNewTab(app, raw, title);
+        } else if (event.data.type === 'setting-changed') {
+          applySettingChange(event.data.key, event.data.value);
+        }
+      });
+
+      window.addEventListener('storage', (event) => {
+        if (!event?.key) return;
+        applySettingChange(event.key, event.newValue);
+      });
+
+      window.addEventListener('resize', () => {
+        if (!state.tabs.length) {
+          setTabsUiVisible(false);
+        }
+        try {
+          const pop = document.getElementById('tabSessionsPopover');
+          if (pop && !pop.hidden) positionTabSessionsPopover();
+        } catch {}
+      });
+    }
+    
+    // Open app in CURRENT active tab (not new tab)
+    function loadChatAdScriptOnce() {
+      const id = 'chat-ad-script';
+      if (document.getElementById(id)) return;
+      const script = document.createElement('script');
+      script.id = id;
+      script.src = 'https://richinfo.co/richpartners/in-page/js/richads-ob.js?pubid=998500&siteid=387293';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    async function openApp(app) {
+      if (app?.id === 'chat') {
+        loadChatAdScriptOnce();
+      }
+      if (shouldForceScramjetForUrl(String(app?.url || ''))) app.forceProxy = 'sj';
+      
+      // If we have an active tab, load the app in that tab
+      if (state.activeTabId) {
+        const activeTab = state.tabs.find(t => t.id === state.activeTabId);
+        if (activeTab) {
+          // Update tab info
+          activeTab.app = app;
+          activeTab.url = app.url;
+          activeTab.icon = app.icon;
+          activeTab.title = app.name;
+          
+          // Update tab element
+          const tabEl = document.getElementById(`tab-el-${state.activeTabId}`);
+          if (tabEl) {
+            const iconEl = tabEl.querySelector('.tab-icon i');
+            const titleEl = tabEl.querySelector('.tab-title');
+            if (iconEl) iconEl.className = `fa${app.icon.includes('fab') ? 'b' : 's'} ${app.icon}`;
+            if (titleEl) titleEl.textContent = app.name;
+          }
+          
+          // Load the app content in the current tab
+          loadTabContent(state.activeTabId, app.url, app);
+          closeSidebar();
+          return;
+        }
+      }
+      
+      // If no active tab, create new tab
+      createNewTab(app, app.url, app.name);
+      closeSidebar();
+    }
+    
+    // ======================
+    // MAIN SEARCH FUNCTIONALITY
+    // ======================
+    
+    function initSearch() {
+      const input = document.getElementById('searchInput');
+      const suggestions = document.getElementById('searchSuggestions');
+      if (!input || !suggestions) return;
+      
+      input.addEventListener('focus', () => {
+        showSuggestions(input.value);
+      });
+      
+      input.addEventListener('input', () => {
+        showSuggestions(input.value);
+      });
+      
+      input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          await performSearch(input.value);
+        } else if (e.key === 'Escape') {
+          suggestions.style.display = 'none';
+        }
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!suggestions.contains(e.target) && e.target !== input) {
+          suggestions.style.display = 'none';
+        }
+      });
+    }
+    
+    function showSuggestions(query) {
+      const suggestions = document.getElementById('searchSuggestions');
+      const allItems = [...apps, ...games];
+      const matches = query
+        ? allItems.filter(item => item.name.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+        : allItems.slice(0, 6);
+      
+      if (matches.length === 0 && query.trim() === '') {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      suggestions.innerHTML = matches.map(item => `
+        <div class="suggestion-item" data-app-id="${item.id}">
+          <div style="width: 32px; height: 32px; background: ${getIconGradient(item)}; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+            <i class="fa${item.icon.includes('fab') ? 'b' : 's'} ${item.icon}"></i>
+          </div>
+          <div>
+            <div>${escapeHtml(item.name)}</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">${escapeHtml(item.desc)}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      if (query.trim()) {
+        suggestions.innerHTML += `
+          <div class="suggestion-item" data-search="${escapeAttr(query)}">
+            <div style="width: 32px; height: 32px; background: rgba(52, 152, 219, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--accent-blue);">
+              <i class="fas fa-search"></i>
+            </div>
+            <div>
+              <div>Search for "${escapeHtml(query)}"</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Press Enter to search the web</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      suggestions.style.display = 'block';
+      
+      suggestions.querySelectorAll('[data-app-id]').forEach(el => {
+        el.addEventListener('click', async () => {
+          const appId = el.dataset.appId;
+          let app = apps.find(a => a.id === appId) || games.find(g => g.id === appId);
+          if (app) {
+            await openApp(app);
+            suggestions.style.display = 'none';
+            input.value = '';
+          }
+        });
+      });
+      
+      const searchBtn = suggestions.querySelector('[data-search]');
+      if (searchBtn) {
+        searchBtn.addEventListener('click', async () => {
+          await performSearch(searchBtn.dataset.search);
+          suggestions.style.display = 'none';
+        });
+      }
+    }
+    
+    async function performSearch(query) {
+      const trimmed = query.trim();
+      if (!trimmed) return;
+
+      await withTimeout(ensureProxyRuntimeReady(), 900).catch(() => {});
+      
+      // First, check if it's an app or game
+      const allItems = [...apps, ...games];
+      const matchedApp = allItems.find(item => 
+        item.name.toLowerCase() === trimmed.toLowerCase() ||
+        item.url === trimmed ||
+        item.id === trimmed.toLowerCase()
+      );
+      
+      if (matchedApp) {
+        // It's an app/game, open it
+        await openApp(matchedApp);
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchSuggestions').style.display = 'none';
+        return;
+      }
+      
+      // Not an app, resolve to URL and proxy it
+      const url = resolveSearchUrl(trimmed);
+      const encodedUrl = await encodeWithProxy(url);
+      
+      // Store in localStorage/sessionStorage like rindex.html does
+      localStorage.setItem("url", encodedUrl);
+      sessionStorage.setItem("Url", encodedUrl);
+      
+      // If we have an active tab, load search in that tab
+      if (state.activeTabId) {
+        const activeTab = state.tabs.find(t => t.id === state.activeTabId);
+        if (activeTab) {
+          // Update tab info
+          const searchTitle = trimmed.length > 20 ? trimmed.substring(0, 20) + '...' : trimmed;
+          activeTab.app = {
+            id: 'search-' + Date.now(),
+            name: `Search: ${searchTitle}`,
+            url: encodedUrl,
+            icon: 'fa-search',
+            desc: 'Search result',
+            proxied: true
+          };
+          activeTab.url = encodedUrl;
+          activeTab.icon = 'fa-search';
+          activeTab.title = `Search: ${searchTitle}`;
+          
+          // Update tab element
+          const tabEl = document.getElementById(`tab-el-${state.activeTabId}`);
+          if (tabEl) {
+            const iconEl = tabEl.querySelector('.tab-icon i');
+            const titleEl = tabEl.querySelector('.tab-title');
+            if (iconEl) iconEl.className = `fas fa-search`;
+            if (titleEl) titleEl.textContent = `Search: ${searchTitle}`;
+          }
+          
+          // Load the search in the current tab
+          loadTabContent(state.activeTabId, encodedUrl, activeTab.app);
+          document.getElementById('searchInput').value = '';
+          document.getElementById('searchSuggestions').style.display = 'none';
+          return;
+        }
+      }
+      
+      // If no active tab, create new tab
+      const searchTitle = trimmed.length > 20 ? trimmed.substring(0, 20) + '...' : trimmed;
+      const searchApp = {
+        id: 'search-' + Date.now(),
+        name: `Search: ${searchTitle}`,
+        url: encodedUrl,
+        icon: 'fa-search',
+        desc: 'Search result',
+        proxied: true
+      };
+      
+      createNewTab(searchApp, encodedUrl, `Search: ${searchTitle}`);
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchSuggestions').style.display = 'none';
+    }
+    
+    // Utility functions
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+    
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/"/g, '&quot;');
+    }
+    
+    // Quick access function - ALWAYS uses proxy (like rindex.html)
+    window.quick = async function(url) {
+      let encodedUrl = url;
+      try {
+        await withTimeout(ensureProxyRuntimeReady(), 900).catch(() => {});
+        encodedUrl = await encodeWithProxy(url);
+      } catch(e) {
+        console.error('Proxy encoding failed:', e);
+      }
+      
+      // Store in localStorage/sessionStorage
+      localStorage.setItem("url", encodedUrl);
+      sessionStorage.setItem("Url", encodedUrl);
+      
+      const quickApp = {
+        id: 'quick-' + Date.now(),
+        name: 'Quick Access',
+        url: encodedUrl,
+        icon: 'fa-bolt',
+        desc: 'Quick access tab',
+        proxied: true
+      };
+      
+      // Load in current active tab if exists
+      if (state.activeTabId) {
+        const activeTab = state.tabs.find(t => t.id === state.activeTabId);
+        if (activeTab) {
+          loadTabContent(state.activeTabId, encodedUrl, quickApp);
+          return;
+        }
+      }
+      
+      createNewTab(quickApp, encodedUrl, 'Quick Access');
+    };
+    
+    // Initialize on load
+    window.addEventListener('load', init);
+    
+    // Global functions for external use
+    window.openApp = openApp;
+    window.performSearch = performSearch;
+    
+  </script>
+
+<!-- hidden-math-essay -->
+<section hidden aria-hidden="true" data-hidden-math-essay>
+  <h2>Essay on Mathematics</h2>
+  <p>
+    Mathematics is a language of patterns, logic, and structure. It allows people to describe change,
+    measure uncertainty, and model real-world systems from finance to physics. Learning math develops
+    precise thinking, because every claim must be justified step by step. Algebra teaches abstraction,
+    geometry builds spatial reasoning, statistics improves decision-making, and calculus explains motion
+    and growth. Beyond school, math supports technology, engineering, medicine, economics, and computer
+    science. Strong mathematical habits, such as checking assumptions and testing solutions, help with
+    everyday problem-solving as well. In this way, mathematics is not only a subject, but also a practical
+    method for understanding the world.
+  </p>
+</section>
+
+</body>
+</html>

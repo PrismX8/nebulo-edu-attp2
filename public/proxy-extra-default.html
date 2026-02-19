@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Proxy...</title>
+  <script src="/uv/uv.bundle.js"></script>
+  <script src="/uv/uv.config.js"></script>
+</head>
+<body>
+  <p>Opening through proxy...</p>
+  <script>
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      let target = params.get("url") || "";
+      if (!target) {
+        window.location.replace("/proxy-extra");
+        return;
+      }
+
+      target = target.trim();
+      if (!/^https?:\/\//i.test(target)) target = "https://" + target;
+
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("/sw.js");
+          await navigator.serviceWorker.ready;
+        } catch {}
+      }
+
+      if (typeof __uv$config !== "undefined" && __uv$config?.encodeUrl) {
+        const proxied = __uv$config.prefix + __uv$config.encodeUrl(target);
+        window.location.replace(proxied);
+        return;
+      }
+
+      window.location.replace("/search");
+    })();
+  </script>
+</body>
+</html>

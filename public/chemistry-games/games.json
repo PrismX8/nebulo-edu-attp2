@@ -1,0 +1,16 @@
+[
+  {
+    "id": "gta-vice-city",
+    "name": "GTA-Vice City",
+    "description": "Local GTA Vice City page.",
+    "url": "/chemistry-games/GTA_Vice_City.html",
+    "image": "https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg"
+  },
+  {
+    "id": "reaction-runner",
+    "name": "Reaction Runner",
+    "description": "Simple local click-speed mini game.",
+    "url": "/chemistry-games/reaction-runner.html",
+    "image": "/chemistry-games/images/reaction-runner.svg"
+  }
+]

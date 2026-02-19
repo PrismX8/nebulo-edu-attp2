@@ -1,0 +1,97 @@
+:root {
+  --primary: #030714;
+  --secondary: #040c25;
+  --accent: #8b5cf6;
+  --accent-soft: #22d3ee;
+  --searchbar: rgba(255, 255, 255, 0.05);
+  --iconbg: rgba(124, 58, 237, 0.25);
+  --sidebar-bg: rgba(3, 6, 20, 0.9);
+  --font: #e8ecff;
+  --border: rgba(255, 255, 255, 0.08);
+  --shadow: 0 30px 80px rgba(1, 5, 25, 0.65);
+  --glass: rgba(255, 255, 255, 0.05);
+}
+
+body {
+  background-color: var(--primary);
+  color: var(--font);
+  background-image:
+    radial-gradient(circle at 15% -10%, rgba(34, 211, 238, 0.3), transparent 55%),
+    radial-gradient(circle at 85% 0%, rgba(124, 58, 237, 0.25), transparent 50%),
+    linear-gradient(180deg, rgba(3, 6, 20, 0.95), rgba(3, 6, 20, 1) 45%, rgba(6, 10, 25, 1));
+  background-size: cover;
+  background-attachment: fixed;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03), transparent 55%);
+  pointer-events: none;
+  opacity: 0.8;
+  z-index: -1;
+}
+
+:root.theme-default,
+html.theme-default {
+  --primary: #030714;
+  --secondary: #040c25;
+  --accent: #8b5cf6;
+  --accent-soft: #22d3ee;
+  --searchbar: rgba(255, 255, 255, 0.05);
+  --iconbg: rgba(124, 58, 237, 0.25);
+  --sidebar-bg: rgba(3, 6, 20, 0.92);
+  --font: #e8ecff;
+}
+
+:root.theme-ocean,
+html.theme-ocean {
+  --primary: #04132b;
+  --secondary: #082040;
+  --accent: #22d3ee;
+  --accent-soft: #38bdf8;
+  --searchbar: rgba(14, 165, 233, 0.08);
+  --iconbg: rgba(14, 165, 233, 0.15);
+  --sidebar-bg: rgba(5, 12, 29, 0.95);
+  --font: #f0f9ff;
+}
+
+:root.theme-teal,
+html.theme-teal {
+  --primary: #02101f;
+  --secondary: #052032;
+  --accent: #34d399;
+  --accent-soft: #22d3ee;
+  --searchbar: rgba(52, 211, 153, 0.08);
+  --iconbg: rgba(52, 211, 153, 0.15);
+  --sidebar-bg: rgba(3, 7, 21, 0.95);
+  --font: #e6fffa;
+}
+
+:root.theme-ember,
+html.theme-ember {
+  --primary: #140c15;
+  --secondary: #2a0c11;
+  --accent: #fb923c;
+  --accent-soft: #f97316;
+  --searchbar: rgba(251, 146, 60, 0.08);
+  --iconbg: rgba(251, 146, 60, 0.25);
+  --sidebar-bg: rgba(20, 8, 13, 0.95);
+  --font: #ffe5d9;
+}
+
+:root.theme-slate,
+html.theme-slate {
+  --primary: #020617;
+  --secondary: #081327;
+  --accent: #60a5fa;
+  --accent-soft: #cbd5f5;
+  --searchbar: rgba(148, 163, 184, 0.12);
+  --iconbg: rgba(148, 163, 184, 0.2);
+  --sidebar-bg: rgba(8, 12, 23, 0.95);
+  --font: #e2e8f0;
+}
