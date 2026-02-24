@@ -7,7 +7,7 @@ fetch('/assets/data/classtools.json')
   .then(apps => {
     // Create the pinned entry
     const requestApp = {
-      url: "https://docs.google.com/forms/d/e/1FAIpQLScXqdq2bDl4sxBiv5TJFOG0oX2j_1hx0CWU8so-vckwYwDtXg/viewform?usp=dialog",
+      url: "https://forms.gle/mBVmhjfWjppPiWYK8",
       image: "/assets/img/embed.png",
       name: "Request App"
     };
@@ -174,6 +174,23 @@ function normalizeExistingProxyTarget(inputUrl) {
 
   const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
   const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/eclipse/";
+  const normalizeLegacyUvPayload = (payload) => {
+    let out = String(payload || "");
+    for (let i = 0; i < 3; i++) {
+      if (!/%[0-9a-f]{2}/i.test(out)) break;
+      try {
+        const decoded = decodeURIComponent(out);
+        if (decoded === out) break;
+        out = decoded;
+      } catch {
+        break;
+      }
+    }
+    return out
+      .replace(/%2f/ig, "/")
+      .replace(/%3a/ig, ":")
+      .replace(/%2c/ig, ",");
+  };
   const isAlreadyProxiedPath = (p) =>
     p.startsWith(uvPrefix) ||
     p.startsWith(eclipsePrefix) ||
@@ -181,21 +198,30 @@ function normalizeExistingProxyTarget(inputUrl) {
     p.startsWith("/service/scramjet/") ||
     p.startsWith("/scramjet/");
 
-  if (raw.startsWith("/") && isAlreadyProxiedPath(raw)) return raw;
+  if (raw.startsWith("/") && isAlreadyProxiedPath(raw)) {
+    if (raw.startsWith(uvPrefix)) {
+      const payload = raw.slice(uvPrefix.length);
+      if (/^hvt(?:rs|tr)/i.test(payload)) {
+        return uvPrefix + normalizeLegacyUvPayload(payload);
+      }
+    }
+    return raw;
+  }
 
   if (!raw.startsWith("/") && raw.startsWith("hvtrs")) {
-    let payload = raw;
-    if (payload.includes("%")) {
-      try {
-        payload = decodeURIComponent(payload);
-      } catch {}
-    }
+    const payload = normalizeLegacyUvPayload(raw);
     return uvPrefix + payload;
   }
 
   try {
     const u = new URL(raw, location.origin);
     if (u.origin === location.origin && isAlreadyProxiedPath(u.pathname)) {
+      if (u.pathname.startsWith(uvPrefix)) {
+        const payload = u.pathname.slice(uvPrefix.length);
+        if (/^hvt(?:rs|tr)/i.test(payload)) {
+          return uvPrefix + normalizeLegacyUvPayload(payload) + u.search + u.hash;
+        }
+      }
       return u.pathname + u.search + u.hash;
     }
   } catch {}

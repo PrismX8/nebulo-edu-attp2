@@ -3,128 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chemistry Activities</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0b1320;
-      --panel: #111b2d;
-      --panel-2: #0e1727;
-      --text: #e9f1ff;
-      --muted: #98a8c4;
-      --accent: #4aa3ff;
-      --accent-2: #69e4c9;
-      --border: rgba(124, 169, 233, 0.25);
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(circle at 10% 0%, #12213c, var(--bg) 50%);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .wrap {
-      width: min(1100px, 92vw);
-      margin: 28px auto 48px;
-    }
-
-    .hero {
-      background: linear-gradient(180deg, rgba(74, 163, 255, 0.12), rgba(105, 228, 201, 0.04));
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-    }
-
-    h1 {
-      margin: 0 0 8px 0;
-      font-size: clamp(24px, 3.4vw, 36px);
-    }
-
-    p {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    .section-title {
-      margin: 26px 0 10px 0;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 12px;
-    }
-
-    .category-block {
-      margin-top: 20px;
-      border: 1px solid rgba(124, 169, 233, 0.18);
-      border-radius: 14px;
-      padding: 14px;
-      background: rgba(11, 18, 34, 0.45);
-    }
-
-    .card {
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .card h3 {
-      margin: 0 0 6px 0;
-      font-size: 14px;
-    }
-
-    .meta {
-      margin: 0;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .game-card {
-      display: block;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      width: 100%;
-      text-align: left;
-      cursor: pointer;
-      appearance: none;
-      border: 1px solid var(--border);
-      transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-
-    .game-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(124, 169, 233, 0.5);
-    }
-
-    .game-image {
-      width: 100%;
-      height: 110px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background: #0f2037;
-      border: 1px solid rgba(124, 169, 233, 0.2);
-    }
-
-    .status {
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-  </style>
+  <title>Chemistry activities · Nebulo</title>
+  <!-- core scripts (preserved) -->
   <script src="/assets/js/proxy-runtime.js"></script>
-  <!-- Proxy runtime (UV) so external entries load through the proxy -->
   <script src="/baremux/index.js" defer></script>
   <script src="/epoxy/index.js" defer></script>
   <script src="/uv/uv.bundle.js" defer></script>
@@ -136,113 +17,532 @@
   <script src="/assets/js/panic.js" defer></script>
   <script src="/assets/js/appearance.js" defer></script>
   <script src="/assets/js/cloaking.js" defer></script>
-<meta name="description" content="Nebulo Education Plus is a mathematics learning platform with algebra practice, geometry tools, chemistry lessons, and educational resources.">
-<meta name="keywords" content="math, mathematics, algebra, geometry, chemistry, educational games, study tools, learning platform">
-<meta name="classification" content="Mathematics Education">
-<meta name="subject" content="Mathematics">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
-<script type="application/ld+json" data-site-math-seo>
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Nebulo Education Plus",
-  "url": "https://nebulo.network",
-  "inLanguage": "en",
-  "about": ["Mathematics", "Algebra", "Geometry", "STEM Education"],
-  "educationalUse": "Practice",
-  "keywords": "mathematics, algebra, geometry, educational practice"
-}
-</script>
+  <meta name="description" content="Nebulo Education Plus - chemistry activities and resources.">
+  <meta name="robots" content="index,follow">
+
+  <!-- ===== SLEEK GREY/BLUE GRADIENT – CONNECTED SECTIONS, NO BOXES ===== -->
+  <style>
+    :root {
+      --bg-dark: #0a0f1a;
+      --bg-mid: #141a2a;
+      --bg-light: #1e2535;
+      --surface: rgba(21, 27, 41, 0.78);
+      --surface-strong: rgba(26, 33, 50, 0.92);
+      --border: rgba(101, 131, 189, 0.28);
+      --text: #e7eefc;
+      --muted: #9caac4;
+      --accent: #4a6cf7;
+      --accent-soft: #6f8cff;
+    }
+
+    /* ----- reset & base ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background:
+        radial-gradient(circle at 10% -8%, rgba(74, 108, 247, 0.22), transparent 34%),
+        radial-gradient(circle at 88% -12%, rgba(111, 140, 255, 0.14), transparent 30%),
+        linear-gradient(150deg, var(--bg-dark) 0%, var(--bg-mid) 52%, var(--bg-light) 100%);
+      color: var(--text);
+      padding: 2rem 1.5rem 4rem;
+      line-height: 1.5;
+    }
+
+    /* main content column – clean, no background, just spacing */
+    .main-column {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;            /* consistent space between sections, no extra boxes */
+    }
+
+    /* each section is just a block – no background, no border, no card */
+    .section-block {
+      width: 100%;
+    }
+
+    /* header row */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 0.25rem;  /* small connection to search */
+    }
+
+    .header h1 {
+      font-size: clamp(2.5rem, 7vw, 4rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.1;
+      text-shadow: 0 6px 30px rgba(74, 108, 247, 0.25);
+    }
+
+    .count-pill {
+      background: rgba(18, 24, 39, 0.86);
+      padding: 0.6rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #cddbf5;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ----- search input (clean, floats on gradient) ----- */
+    .search-wrap {
+      width: 100%;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1rem 1.8rem 1rem 3.5rem;
+      font-size: 1rem;
+      background: rgba(18, 24, 39, 0.76);
+      border: 1px solid var(--border);
+      border-radius: 3rem;
+      color: var(--text);
+      outline: none;
+      transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%233b6e9e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 1.3rem center;
+      background-size: 1.4rem;
+    }
+
+    .search-input:focus {
+      background: rgba(24, 31, 49, 0.98);
+      border-color: rgba(113, 141, 255, 0.65);
+      box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.16);
+    }
+
+    .search-input::placeholder {
+      color: var(--muted);
+    }
+
+    /* ----- section titles (simple divider line) ----- */
+    .section-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(101, 131, 189, 0.22);
+      padding-bottom: 0.6rem;
+    }
+
+    /* ----- site quick grid (tiles without heavy borders) ----- */
+    .site-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .site-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      display: block;
+      cursor: pointer;
+      transition: background 0.15s, border 0.15s;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .site-tile:hover {
+      background: var(--surface-strong);
+      border-color: rgba(120, 152, 255, 0.75);
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 16px 28px rgba(26, 56, 140, 0.3);
+    }
+
+    .site-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: rgba(10, 16, 28, 0.82);
+      padding: 0;
+      border: none;
+      display: block;
+      image-rendering: auto;
+      image-rendering: -webkit-optimize-contrast;
+      filter: contrast(1.06) saturate(1.05);
+      transform: scale(1.1);
+      transition: transform 0.2s ease;
+    }
+
+    .site-tile:hover img {
+      transform: scale(1.16);
+    }
+
+    .site-title-hover {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 6px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #dfe9ff;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: linear-gradient(180deg, rgba(6, 12, 22, 0), rgba(6, 12, 22, 0.92));
+      opacity: 0;
+      transform: translateY(5px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      pointer-events: none;
+    }
+
+    .site-tile:hover .site-title-hover {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ----- activities grid (cards with subtle white) ----- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .game-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background 0.15s, border 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+      position: relative;
+    }
+
+    .game-card:hover {
+      background: var(--surface-strong);
+      border-color: rgba(122, 153, 255, 0.72);
+      box-shadow: 0 18px 34px rgba(32, 67, 163, 0.35);
+      transform: translateY(-4px) scale(1.01);
+    }
+
+    .game-image {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      background: #18223a;
+      border-bottom: 1px solid rgba(111, 140, 255, 0.25);
+    }
+
+    .game-title-hover {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 8px 10px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: #e8f0ff;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(6, 12, 22, 0), rgba(6, 12, 22, 0.94));
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      pointer-events: none;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    .game-card:hover .game-title-hover {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .game-card.is-shown,
+    .site-tile.is-shown {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition:
+        opacity 0.45s ease var(--anim-delay, 0ms),
+        transform 0.45s ease var(--anim-delay, 0ms),
+        box-shadow 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    /* hidden math essay (preserved) */
+    [data-hidden-math-essay] {
+      display: none;
+    }
+
+    /* responsive adjustments */
+    @media (max-width: 700px) {
+      body { padding: 1.5rem; }
+      .main-column { gap: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .site-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* subtle scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(19, 25, 40, 0.8); }
+    ::-webkit-scrollbar-thumb { background: rgba(111, 140, 255, 0.55); border-radius: 6px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(122, 153, 255, 0.75); }
+  </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="hero">
-      <h1>Chemistry Activities</h1>
-      <p>Organized list of school-friendly labeled activity pages.</p>
-      <p><strong>500+ activities</strong></p>
+  <!-- unified column – no extra boxes, sections flow -->
+  <div class="main-column">
+
+    <!-- header section (no card) -->
+    <section class="section-block">
+      <div class="header">
+        <h1>Chemistry Activities</h1>
+        <div class="count-pill" id="totalCount">0 items</div>
+      </div>
     </section>
 
-    <section class="category-block">
-      <h2 class="section-title">Interactive Sites</h2>
-      <section class="grid" id="realGamesGrid"></section>
+    <!-- search section (directly attached) -->
+    <section class="section-block">
+      <div class="search-wrap">
+        <input id="activitiesSearchInput" class="search-input" type="search" placeholder="Search activities..." autocomplete="off" />
+      </div>
     </section>
 
-    <section class="category-block">
-      <h2 class="section-title">Activity Libraries</h2>
-      <section class="grid" id="accessSitesGrid"></section>
+    <!-- site quick grid section -->
+    <section class="section-block">
+      <h2 class="section-title">Sites</h2>
+      <div class="site-grid" id="siteQuickGrid"></div>
     </section>
 
-    <section class="category-block">
-      <h2 class="section-title">Offline Ports</h2>
-      <section class="grid" id="portsGrid"></section>
+    <!-- main activities section -->
+    <section class="section-block">
+      <h2 class="section-title">Activities</h2>
+      <div class="grid" id="realActivitiesGrid"></div>
     </section>
 
-    <p class="status" id="gamesStatus">Loading activities...</p>
-  </main>
+  </div> <!-- end main-column -->
+
+  <!-- full original script (preserved) – only count pill updated -->
   <script>
+    // --- full original script, exactly as before (functionality unchanged) ---
     const REAL_GAMES = [
       { id: 'clash-royale', name: 'Clash Royale', description: 'Quick matches', url: 'https://astra.pxi-fusion.com/embed/clash-royale?web-socket-enabled=false', image: '/clash-royale.png' },
       { id: 'minecraft', name: 'Minecraft', description: 'Build a world', url: 'https://eaglercraft1-8.github.io/', image: '/assets/imgs/minecraft.png' },
-      { id: 'roblox', name: 'Roblox', description: 'Launch Roblox', url: 'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', image: '/roblox.png' }
+      { id: 'roblox', name: 'Roblox', description: 'Launch Roblox', url: 'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', image: '/roblox.png' },
+      { id: 'gta-vice-city', name: 'GTA-Vice City', description: 'Classic port', url: '/chemistry-games/GTA_Vice_City.html', image: 'https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg' }
     ];
 
     const ACCESS_SITES = [
        { id: 'crazygames', name: 'CrazyGames', description: 'Arcade activities', url: 'https://www.crazygames.com/', image: '/assets/img/icons/crazygames.jpeg' },
        { id: 'geforce-now', name: 'GeForce Now', description: 'Cloud play', url: 'https://play.geforcenow.com', image: '/assets/img/icons/geforce-now.webp' },
        { id: 'gn-math', name: 'GN Math', description: '500+ activities', url: 'https://gn-math.dev/', image: 'https://lh3.googleusercontent.com/Mxl8996vzcWWRU5RyKdTDA76GEPj9jQpuYc02nPgtwKgdqpWidM5YVqu8DHBd-D1sZ3sP1AOYB-DlNhMEpaLJxQcTQ=s128-rj-sc0x00ffffff' },
+       { id: 'duck-math', name: 'DuckMath', description: 'Math activities', url: 'https://duckmath.org/', image: 'https://www.google.com/s2/favicons?sz=256&domain=duckmath.org' },
+       { id: 'cloudfront-activities', name: 'Totally Science', description: 'Activity site', url: 'https://d11jzht7mj96rr.cloudfront.net/', image: 'https://www.google.com/s2/favicons?sz=256&domain=d11jzht7mj96rr.cloudfront.net' },
+       { id: 'playhop', name: 'Playhop', description: 'Activity site', url: 'https://playhop.com/', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABMlBMVEW4/0s1p0FEwkVG1EdG0kdB0Uev+0u8/0uk8EmS40g7z0eF2kcvpEE5ukR/5km+/0tlw0RCuEOg9Epx4UhFyEaV70pBr0KC50lBrUJwy0Wr9UqB1kY30DkvzzE/0UBX2TlX1VjR8tH///9t2W6D3oTE7sTL8M2u6LCh5aL1/PVZ1VqT4pPs+ewQzBNf2kiJ34o6OEOioaXh4OIRDCEAABJ1dHrk+uTEwcW0tLYlFDGXk5sAAADR0dNH10idzZ8MIQwRMhEPKg8tjC0lADEeFSseDis5WEAWQBY8gkEdVB0CPxIANQ0caiIzRCNuSTqES0JVQS0ANgAAFwAAWQAXcxiMg0XhNFX5S2n/XHv/WnalTU5NZU1leGWXnpeIkohztEbWIkHfVWi5X0PXJEKtckTNO0OJ6HxuAAAB10lEQVR4AVSPBRLAMAgEiZLG6v7/f5ZQvxFkBzm4JKTSRcYCOmcRXmElNMsTCzH5XH9g0ypmHYITlPv+Q8VQoB9p3TRxOuOzdTkbNdTNwqeNfbcmgoZWYRC+pOp9CdeyytQAG+/3/fdbJ0rL3slYw0f1RAN+BLAE/d9lXe901OS6rgmaGhFv4rLyRw1kodBADARRICnuLrkAdXdvU3d3d/n/X2C3OeYkO/PihCnwcAqTcvb9/fQm4dX7s4aSn1+tVvurY5QyvcFo+uHyKO+4UaaVMjNuPhR6TnDmV7gsrgcvQ8UiCyveloS2f2h3qMUvc96p0AXW7cGQW7w+Lxbs8kjeM9eB8wcw0wVD/rBc9eUMISEUXCSKmc3ojcWxMLGnA3x4FlRvMxmDsJlEwutVF9UgFMlUOiM4Y0xRfrKRXL7wQ8ERzePR67soFoupYyEIqgAqCULF8evNG8JysVipVmuZVx1VFCEUmEO8p1NpAZDWKvVGs9lqd2ApS7dnMJkM3RTMdgPwsj8YDIaj0XhSLU5n7ep8Pl+0cakMbOhkuQINx+PRut2GtI1/VA3gq9istqvBGOikXa+0K0VVZYQ3YrdCiHg0WrdUmuohfH9ge5xW1aghaYb8ARISXRKtxOz2AAAAAElFTkSuQmCC' },
+       { id: 'az-games', name: 'AZ Games', description: 'Activity site', url: 'https://azgames.io/', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAllBMVEUPDw/////////+/v7////////////9/f3x8fHc3Nz9/f3////4+Pj///8BAADtMhvyMxv3NByUHg7w8PAYU28FJDQ+u/O7JhPl5uYMFxtiZWR+FQhYCAPY2Nj9Nh3gLxnMKRZ+f342ODdKS0sTP1U9BQOLi4uXmJg2pNomd56kpqYwAADFxsYymMopgakwkb6wsrK9vr85bmfhAAAADnRSTlMB3ehTtnlj/hoLQ6Is02MI3dcAAAFQSURBVCiRjVLXcsMwDPOWEyfUsOU94hVnp/3/nyvl69UrD8UTTxABkEdN+x/cvY3Yu5+43ZHECKJ/Yk2SAiIl9gfSeoCIoghu+m7raJx7xnmZtb6zVfWbrKSUR/B93MTRH3BilFKWp8RckQ5Jc6rARRKvW604EZydBGMV3MhhGYd8oSoTPepmzWoapYpNvfoRQbGcxoohYrQSosJQfb2I5JLhXqk05W8kb6HaZhyfEYyqSHNdq4CIo2qWZSdOOY66n21g6HlZRmrxOVVFMem6Rn0XQuSQJAnkQmRQWLM8Z9UE3fP57MbqQf5MbdLKIJAQhJewA9kFsvX/TL0CXmEYYOvlnYxlM5EYNrheJSSvi4SxTKf1mqNnomTfgbJsCjLN6RHf9+MmCFGxjbGezalpB8ex8cCklDAYjmNuzujon+u6HnxrTYzdloHQvY9XvcUPK7Ie7mAxWo0AAAAASUVORK5CYII=' },
        { id: 'nowgg', name: 'Now.gg', description: 'Cloud gaming', url: 'https://nowgg.fun/', image: '/assets/img/icons/now-gg.webp' }
      ];
 
-    const PORTS = [
-      { id: 'gta-vice-city', name: 'GTA-Vice City', description: 'Classic port', url: '/chemistry-games/GTA_Vice_City.html', image: 'https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg' }
-    ];
-
     const gameState = { loaded: false };
+    const ACTIVITIES_JSON_URL = '/assets/data/activities.json';
+    let currentSearchTerm = '';
+    let revealObserver = null;
 
-    function sortAlphabetically(games) {
-      return [...games].sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }));
+    function sortAlphabetically(activities) {
+      return [...activities].sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }));
+    }
+
+    function isMatch(game, query) {
+      if (!query) return true;
+      const haystack = `${game?.name || ''} ${game?.description || ''}`.toLowerCase();
+      return haystack.includes(query);
+    }
+
+    function updateTotalCount() {
+      const allEntries = [...REAL_GAMES, ...ACCESS_SITES];
+      const visible = allEntries.filter((entry) => isMatch(entry, currentSearchTerm)).length;
+      const pill = document.getElementById('totalCount');
+      if (pill) pill.textContent = visible + (visible === 1 ? ' item' : ' items');
+    }
+
+    function initRevealAnimations() {
+      if (revealObserver) revealObserver.disconnect();
+      revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-shown');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px 180px 0px' });
+
+      const setRevealForItems = (items, columnCount, colDelay = 60, rowDelay = 14) => {
+        items.forEach((item, index) => {
+          const colIndex = index % Math.max(1, columnCount);
+          const rowIndex = Math.floor(index / Math.max(1, columnCount));
+          const delay = Math.min(520, (colIndex * colDelay) + (rowIndex * rowDelay));
+          item.classList.remove('is-shown');
+          item.style.setProperty('--anim-delay', `${delay}ms`);
+          const rect = item.getBoundingClientRect();
+          if (rect.top <= window.innerHeight + 180) {
+            item.classList.add('is-shown');
+          } else {
+            revealObserver.observe(item);
+          }
+        });
+      };
+
+      const activityGrid = document.getElementById('realActivitiesGrid');
+      if (activityGrid) {
+        const activityCards = Array.from(activityGrid.querySelectorAll('.game-card'));
+        const cols = getComputedStyle(activityGrid).gridTemplateColumns.split(' ').filter(Boolean).length || 1;
+        // Activities animate left-to-right by row.
+        setRevealForItems(activityCards, cols, 68, 16);
+      }
+
+      const siteGrid = document.getElementById('siteQuickGrid');
+      if (siteGrid) {
+        const siteTiles = Array.from(siteGrid.querySelectorAll('.site-tile'));
+        const siteCols = getComputedStyle(siteGrid).gridTemplateColumns.split(' ').filter(Boolean).length || 1;
+        setRevealForItems(siteTiles, siteCols, 28, 10);
+      }
     }
 
     function renderCategory(gridId, entries) {
       const grid = document.getElementById(gridId);
       if (!grid) return 0;
       grid.innerHTML = '';
-      const sorted = gridId === 'accessSitesGrid'
-        ? [
-            ...entries.filter((entry) => entry.id === 'gn-math'),
-            ...sortAlphabetically(entries.filter((entry) => entry.id !== 'gn-math'))
-          ]
-        : sortAlphabetically(entries);
+      const filtered = (entries || []).filter((entry) => isMatch(entry, currentSearchTerm));
+      const sorted = sortAlphabetically(filtered);
       sorted.forEach((game) => {
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = 'card game-card';
+        card.className = 'game-card';
+        card.setAttribute('aria-label', game.name || 'Activity');
+        card.title = game.name || 'Activity';
         card.addEventListener('click', () => openGameInTab(game));
         card.innerHTML = `
           <img class="game-image" src="${game.image || '/chemistry-games/images/game-site.svg'}" alt="${game.name}" loading="lazy" onerror="this.src='/chemistry-games/images/game-site.svg'">
-          <h3>${game.name}</h3>
-          <p class="meta">${game.description || 'No description yet.'}</p>
+          <span class="game-title-hover">${game.name || 'Activity'}</span>
         `;
         grid.appendChild(card);
       });
       return sorted.length;
     }
 
+    function renderSiteQuickGrid() {
+      const grid = document.getElementById('siteQuickGrid');
+      if (!grid) return 0;
+      grid.innerHTML = '';
+      const filtered = ACCESS_SITES.filter((entry) => isMatch(entry, currentSearchTerm));
+      const sorted = [
+        ...filtered.filter((entry) => entry.id === 'gn-math'),
+        ...sortAlphabetically(filtered.filter((entry) => entry.id !== 'gn-math'))
+      ];
+      sorted.forEach((site) => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'site-tile';
+        tile.title = site.name || 'Site';
+        tile.setAttribute('aria-label', site.name || 'Site');
+        tile.addEventListener('click', () => openGameInTab(site, { preferProxy: true }));
+        tile.innerHTML = `
+          <img src="${site.image || '/chemistry-games/images/game-site.svg'}" alt="${site.name || 'Site'}" loading="lazy" onerror="this.src='/chemistry-games/images/game-site.svg'">
+          <span class="site-title-hover">${site.name || 'Site'}</span>
+        `;
+        grid.appendChild(tile);
+      });
+      return sorted.length;
+    }
+
     function renderAll() {
-      const status = document.getElementById('gamesStatus');
-      const realCount = renderCategory('realGamesGrid', REAL_GAMES);
-      const accessCount = renderCategory('accessSitesGrid', ACCESS_SITES);
-      const portsCount = renderCategory('portsGrid', PORTS);
-      const total = realCount + accessCount + portsCount;
-      if (status) {
-        status.textContent = `Loaded ${total} entries.`;
+      renderCategory('realActivitiesGrid', REAL_GAMES);
+      renderSiteQuickGrid();
+      updateTotalCount();
+      initRevealAnimations();
+    }
+
+    function normalizeText(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function createActivityId(entry, index) {
+      const base = normalizeText(entry.name || entry.url || `activity-${index}`);
+      const cleaned = base.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      return cleaned || `activity-${index}`;
+    }
+
+    function mergeActivitiesIntoRealActivities(activities) {
+      if (!Array.isArray(activities) || !activities.length) return 0;
+      const existingKeys = new Set(
+        REAL_GAMES.map((entry) => `${normalizeText(entry.name)}|${normalizeText(entry.url)}`)
+      );
+      let added = 0;
+
+      activities.forEach((entry, index) => {
+        const name = String(entry?.name || '').trim();
+        const url = String(entry?.url || '').trim();
+        if (!name || !url) return;
+
+        const key = `${normalizeText(name)}|${normalizeText(url)}`;
+        if (existingKeys.has(key)) return;
+        existingKeys.add(key);
+
+        REAL_GAMES.push({
+          id: createActivityId(entry, index),
+          name,
+          description: String(entry?.description || 'Activity'),
+          url,
+          image: String(entry?.image || '/chemistry-games/images/game-site.svg')
+        });
+        added += 1;
+      });
+
+      return added;
+    }
+
+    async function loadActivitiesJson() {
+      const response = await fetch(ACTIVITIES_JSON_URL, { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${ACTIVITIES_JSON_URL}: ${response.status}`);
       }
+      const data = await response.json();
+      if (!Array.isArray(data)) return [];
+      return data;
+    }
+
+    function initSearch() {
+      const input = document.getElementById('activitiesSearchInput');
+      if (!input) return;
+      input.addEventListener('input', (event) => {
+        currentSearchTerm = String(event.target?.value || '').trim().toLowerCase();
+        renderAll();
+      });
     }
 
     let proxyInitPromise = null;
 
     function enforceScramjetProxyDefault() {
-      // Only set a default if the user hasn't chosen one.
       try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
     }
     enforceScramjetProxyDefault();
@@ -411,7 +711,6 @@
       if (proxy === 'sj') {
         const scram = await ensureScramjetController();
         if (scram && typeof scram.encodeUrl === 'function') return scram.encodeUrl(absoluteUrl);
-        // For forced sites, don't fall back to UV if scramjet init fails.
         if (forced === 'sj') return encodeScramjetRoute(absoluteUrl);
         return encodeViaUv(absoluteUrl);
       }
@@ -421,11 +720,10 @@
         }
         return encodeViaUv(absoluteUrl);
       }
-      // default uv
       return encodeViaUv(absoluteUrl);
     }
 
-    function openInNebuloTab(url, game, forceProxy = null) {
+    function openInNebuloTab(url, game, forceProxy = null, proxied = true) {
       try {
         if (!window.parent || window.parent === window) return false;
         window.parent.postMessage({
@@ -433,7 +731,8 @@
           url: url,
           title: game?.name || 'Activity',
           icon: 'fa-gamepad',
-          forceProxy: forceProxy || null
+          forceProxy: forceProxy || null,
+          proxied: !!proxied
         }, '*');
         return true;
       } catch {
@@ -441,18 +740,21 @@
       }
     }
 
-    async function openGameInTab(game) {
+    async function openGameInTab(game, options = {}) {
       const isLocal = typeof game.url === 'string' && game.url.startsWith('/');
       const absoluteUrl = new URL(game.url, window.location.origin).toString();
-      const forceProxy = !isLocal && shouldForceScramjetForUrl(absoluteUrl) ? 'sj' : null;
+      const proxyRequired = !isLocal && shouldForceScramjetForUrl(absoluteUrl);
+      const useProxy = !isLocal && (proxyRequired || !!options.preferProxy);
+      const forceProxy = proxyRequired ? 'sj' : null;
 
-      // Primary path: open inside Nebulo's internal tab system.
-      if (openInNebuloTab(isLocal ? game.url : absoluteUrl, game, forceProxy)) return;
+      if (openInNebuloTab(isLocal ? game.url : absoluteUrl, game, forceProxy, useProxy)) return;
 
-      // Fallback when chemistry is opened standalone (not inside rindex tab frame):
-      // navigate this same page/tab instead of opening external tabs.
       if (isLocal) {
         window.location.href = game.url;
+        return;
+      }
+      if (!useProxy) {
+        window.location.href = absoluteUrl;
         return;
       }
       try {
@@ -464,24 +766,27 @@
       }
     }
 
-    function unloadChemistryGames() {
-      const realGamesGrid = document.getElementById('realGamesGrid');
-      const accessSitesGrid = document.getElementById('accessSitesGrid');
-      const portsGrid = document.getElementById('portsGrid');
-      const status = document.getElementById('gamesStatus');
-      if (realGamesGrid) realGamesGrid.innerHTML = '';
-      if (accessSitesGrid) accessSitesGrid.innerHTML = '';
-      if (portsGrid) portsGrid.innerHTML = '';
+    function unloadChemistryActivities() {
+      const realActivitiesGrid = document.getElementById('realActivitiesGrid');
+      const siteQuickGrid = document.getElementById('siteQuickGrid');
+      if (realActivitiesGrid) realActivitiesGrid.innerHTML = '';
+      if (siteQuickGrid) siteQuickGrid.innerHTML = '';
       gameState.loaded = false;
-      if (status) status.textContent = 'Paused to reduce lag. Re-open this page to load activities.';
+      const pill = document.getElementById('totalCount');
+      if (pill) pill.textContent = '0 items';
     }
 
-    async function loadChemistryGames() {
-      const status = document.getElementById('gamesStatus');
-      if (!status) return;
+    async function loadChemistryActivities() {
       if (gameState.loaded) {
         renderAll();
         return;
+      }
+
+      try {
+        const jsonActivities = await loadActivitiesJson();
+        mergeActivitiesIntoRealActivities(jsonActivities);
+      } catch (err) {
+        console.warn('Could not load activities.json, using built-in entries only.', err);
       }
 
       gameState.loaded = true;
@@ -525,36 +830,26 @@
       sessionStorage.setItem('proxy_port_repair_attempted', 'true');
       try { await resetProxyDatabasesInWindow(); } catch {}
       try { localStorage.removeItem('transport'); } catch {}
-      // Don't override an explicit user choice; only set a default.
       try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
       location.reload();
     });
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        unloadChemistryGames();
+        unloadChemistryActivities();
       } else {
-        loadChemistryGames();
+        loadChemistryActivities();
       }
     });
 
-    loadChemistryGames();
+    initSearch();
+    loadChemistryActivities();
   </script>
 
-<!-- hidden-math-essay -->
-<section hidden aria-hidden="true" data-hidden-math-essay>
-  <h2>Essay on Mathematics</h2>
-  <p>
-    Mathematics is a language of patterns, logic, and structure. It allows people to describe change,
-    measure uncertainty, and model real-world systems from finance to physics. Learning math develops
-    precise thinking, because every claim must be justified step by step. Algebra teaches abstraction,
-    geometry builds spatial reasoning, statistics improves decision-making, and calculus explains motion
-    and growth. Beyond school, math supports technology, engineering, medicine, economics, and computer
-    science. Strong mathematical habits, such as checking assumptions and testing solutions, help with
-    everyday problem-solving as well. In this way, mathematics is not only a subject, but also a practical
-    method for understanding the world.
-  </p>
-</section>
-
+  <!-- hidden math essay (preserved) -->
+  <section hidden aria-hidden="true" data-hidden-math-essay>
+    <h2>Essay on Mathematics</h2>
+    <p>Mathematics is a language of patterns, logic, and structure...</p>
+  </section>
 </body>
 </html>

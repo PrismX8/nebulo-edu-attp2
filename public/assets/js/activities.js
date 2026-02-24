@@ -7,7 +7,7 @@ fetch('/assets/data/activities.json')
   .then(games => {
     // Create the pinned entry
     const requestGame = {
-      url: "https://docs.google.com/forms/d/e/1FAIpQLSduzLmokWfYSNJ5TXz75BFk5689T21DHke9mNgvomM19VsNDQ/viewform?usp=header",
+      url: "https://forms.gle/KA7QofRcKpv1NxY56",
       image: "/assets/img/embed.png",
       name: "Request Game"
     };

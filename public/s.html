@@ -565,6 +565,52 @@
     .app-card:hover .app-name {
       color: var(--accent-light);
     }
+
+    .app-card.app-card-danger {
+      border-color: rgba(239, 68, 68, 0.16);
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.045), rgba(239, 68, 68, 0.025));
+    }
+
+    .app-card.app-card-danger .app-icon {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.18);
+      color: #fca5a5;
+    }
+
+    .app-card.app-card-danger:hover {
+      border-color: rgba(248, 113, 113, 0.25);
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.22),
+        0 0 16px rgba(239, 68, 68, 0.09);
+    }
+
+    .app-card.app-card-danger:hover .app-icon {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fecaca;
+    }
+
+    .app-card.app-card-spotify {
+      border-color: rgba(34, 197, 94, 0.16);
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.045), rgba(34, 197, 94, 0.025));
+    }
+
+    .app-card.app-card-spotify .app-icon {
+      background: rgba(34, 197, 94, 0.08);
+      border-color: rgba(34, 197, 94, 0.18);
+      color: #86efac;
+    }
+
+    .app-card.app-card-spotify:hover {
+      border-color: rgba(74, 222, 128, 0.25);
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.22),
+        0 0 16px rgba(34, 197, 94, 0.09);
+    }
+
+    .app-card.app-card-spotify:hover .app-icon {
+      background: rgba(34, 197, 94, 0.12);
+      color: #bbf7d0;
+    }
     
     /* FOOTER */
     .footer {
@@ -780,18 +826,25 @@
       }
       
       .apps-container {
-        padding: 24px 16px;
+        padding: 22px 14px;
         margin: 40px auto 30px;
         border-radius: 18px;
+        max-width: 620px;
+      }
+
+      .section-label {
+        font-size: 0.78rem;
+        margin-bottom: 18px;
       }
       
       .apps-grid {
-        grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
       }
       
       .app-card {
-        padding: 15px 8px;
+        min-height: 104px;
+        padding: 13px 8px;
         border-radius: 12px;
       }
       
@@ -804,6 +857,7 @@
 
       .app-name {
         font-size: 12px;
+        line-height: 1.25;
       }
 
       .footer {
@@ -872,18 +926,19 @@
       }
       
       .apps-container {
-        padding: 20px 15px;
+        padding: 16px 12px;
         margin: 30px auto 20px;
         border-radius: 16px;
       }
       
       .apps-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
       }
       
       .app-card {
-        padding: 12px 6px;
+        min-height: 106px;
+        padding: 12px 10px;
       }
 
       .app-icon {
@@ -893,7 +948,8 @@
       }
 
       .app-name {
-        font-size: 11px;
+        font-size: 12px;
+        line-height: 1.25;
       }
 
       .chat-cta-btn {
@@ -1118,8 +1174,9 @@
     const GLOBAL_CHAT_URL = 'https://tlk.io/nebulo5_4';
 
     const APPS = [
-      { name: "Blooket Bot", icon: "fas fa-user-secret", url: "https://blooketbot.schoolcheats.net/" },
+      { name: "Blooket Bot", icon: "fas fa-user-secret", url: "https://blooketbot.schoolcheats.net/", cardClass: "app-card-danger" },
       { name: "Music", icon: "fas fa-headphones", url: "https://vapor.onl/page/music/index.html" },
+      { name: "Spotify", icon: "fab fa-spotify", url: "https://open.spotify.com/", cardClass: "app-card-spotify" },
       { name: "Movies", icon: "fas fa-film", url: "https://www.cineby.gd" },
       { name: "Achievements", icon: "fas fa-trophy", url: "/achievements" },
       { name: "Links", icon: "fas fa-link", url: "/links" },
@@ -1154,7 +1211,7 @@
       APPS.forEach(app => {
         const card = document.createElement('a');
         card.href = '#';
-        card.className = 'app-card';
+        card.className = `app-card${app.cardClass ? ` ${app.cardClass}` : ''}`;
         card.onclick = (e) => {
           e.preventDefault();
           navigate(app.url);
@@ -1718,7 +1775,7 @@
     // Lazy-init proxy runtime only when navigating; avoids startup errors for non-proxy usage.
   </script>
 
-<!-- hidden-math-essay -->
+<!-- math-essay -->
 <section hidden aria-hidden="true" data-hidden-math-essay>
   <h2>Essay on Mathematics</h2>
   <p>

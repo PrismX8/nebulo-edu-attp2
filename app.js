@@ -253,8 +253,14 @@ if (cluster.isPrimary && WORKERS > 1) {
     setHeaders: (res) => res.setHeader("Cache-Control", "public, max-age=3600, immutable"),
   });
 
+  // Serve the interstitial at the root
+  fastify.get("/", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile("error.html");
+  });
+
   const pages = [
-    { path: "/", file: "ri.html" },
+    //{ path: "/", file: "ri.html" },
     { path: "/@", file: "ri.html" },
     { path: "/lessons", file: "gs.html" },
     { path: "/tools", file: "ap.html" },
@@ -400,7 +406,12 @@ if (cluster.isPrimary && WORKERS > 1) {
   function normalizeLegacyHvtrsPayload(payload) {
     let out = String(payload || "");
     if (!/^hvt(?:rs|tr)/i.test(out)) return out;
-    // Keep normal UV XOR payloads intact (e.g. hvtrs8%2F-...).
+    // Canonicalize encoded legacy separators in the hvtrs prefix segment.
+    // Example: hvtrs8%2F-... -> hvtrs8/-...
+    out = out
+      .replace(/^(hvt(?:rs|tr)\d*)%2F-/i, "$1/-")
+      .replace(/^(hvt(?:rs|tr)\d*)%3A%2F%2F/i, "$1://");
+    // Keep normal UV XOR payloads intact after canonicalizing the leading separator.
     //
     // IMPORTANT: XOR payloads can legitimately contain "%25xx" sequences inside query params.
     // Decoding on "any %25xx" can corrupt valid payloads and lead to UV decodeUrl() errors.

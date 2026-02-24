@@ -216,37 +216,46 @@
       box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
 
-    .sidebar-tabs {
-      display: flex;
+    .sidebar-options {
+      padding: 18px 24px;
       border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .sidebar-tab {
-      flex: 1;
-      padding: 16px;
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
+    .sidebar-option-btn {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(52, 152, 219, 0.08);
+      border: 1px solid rgba(52, 152, 219, 0.25);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
       font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border-bottom: 2px solid transparent;
+      font-weight: 600;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .sidebar-tab:hover {
-      background: rgba(52, 152, 219, 0.05);
-      color: var(--accent-blue-light);
+    .sidebar-option-btn:hover {
+      background: rgba(52, 152, 219, 0.16);
+      border-color: rgba(93, 173, 226, 0.45);
+      transform: translateY(-1px);
     }
 
-    .sidebar-tab.active {
-      color: var(--accent-blue-light);
-      border-bottom: 2px solid var(--accent-blue);
-      background: rgba(52, 152, 219, 0.1);
+    .sidebar-option-btn.secret-option {
+      background: linear-gradient(135deg, rgba(250, 204, 21, 0.26), rgba(161, 98, 7, 0.24));
+      border-color: rgba(250, 204, 21, 0.5);
+      color: #fef3c7;
+    }
+
+    .sidebar-option-btn.secret-option:hover {
+      background: linear-gradient(135deg, rgba(250, 204, 21, 0.35), rgba(161, 98, 7, 0.32));
+      border-color: rgba(250, 204, 21, 0.7);
+      box-shadow: 0 6px 18px rgba(250, 204, 21, 0.15);
     }
 
     .sidebar-content {
@@ -256,10 +265,6 @@
     }
 
     .category-content {
-      display: none;
-    }
-
-    .category-content.active {
       display: block;
       animation: fadeIn 0.3s ease;
     }
@@ -1117,8 +1122,8 @@
         font-size: 12px;
       }
 
-      .sidebar-tab {
-        padding: 12px;
+      .sidebar-option-btn {
+        padding: 10px 11px;
         font-size: 12px;
       }
 
@@ -1361,29 +1366,15 @@
       <input type="text" id="sidebarSearch" placeholder="search anything" />
     </div>
     
-    <div class="sidebar-tabs">
-      <button class="sidebar-tab active" data-category="apps">
-        <i class="fas fa-th-large"></i>
-        <span>Apps</span>
-      </button>
-      <button class="sidebar-tab" data-category="games">
-        <i class="fas fa-gamepad"></i>
-        <span>Activities</span>
-      </button>
+    <div class="sidebar-options" id="sidebarOptions">
+      <!-- Options are dynamically added here -->
     </div>
     
     <div class="sidebar-content">
-      <!-- Apps Category -->
-      <div class="category-content active" id="appsContent">
+      <div class="category-content" id="appsContent">
         <div class="apps-grid" id="appsGrid">
           <!-- Apps will be dynamically added here -->
         </div>
-      </div>
-      
-      <!-- Games Category -->
-      <div class="category-content" id="gamesContent">
-        <h3 class="games-section-title">All Activities</h3>
-        <button type="button" class="all-games-button" id="allGamesBtn">All Activities</button>
       </div>
     </div>
   </div>
@@ -1466,21 +1457,7 @@
     const VERSION = "V5.4";
     
     // Main apps - ALL external URLs will be proxied
-    const apps = [
-      { id:'blooket-bot', name:'Blooket Bot', url:'https://blooketbot.schoolcheats.net/', icon:'fa-user-secret', desc:'Open the bot tool', category: 'apps', proxied: true, iconGradient:'linear-gradient(135deg, #ef4444, #7f1d1d)' },
-      { id:'music', name:'Music', url:'https://vapor.onl/page/music/index.html', icon:'fa-headphones', desc:'Listen & chill', category: 'apps', proxied: true },
-      { id:'movies', name:'Movies', url:'https://www.cineby.gd', icon:'fa-film', desc:'Watch something', category: 'apps', proxied: true },
-      { id:'achievements', name:'Achievements', url:'/achievements', icon:'fa-trophy', desc:'Track progress', category: 'apps', proxied: true },
-      { id:'links', name:'Links', url:'/links', icon:'fa-link', desc:'Useful shortcuts', category: 'apps', proxied: true },
-      { id:'whatsnew', name:"What's New", url:'/whatsnew', icon:'fa-star', desc:'Updates & notes', category: 'apps', proxied: true },
-      { id:'help', name:'Help', url:'/help', icon:'fa-circle-question', desc:'Get help', category: 'apps', proxied: true },
-      { id:'settings', name:'Settings', url:'/settings', icon:'fa-cog', desc:'System settings', category: 'apps', proxied: true },
-      { id:'something-not-working', name:'Report Issue', url:'https://forms.gle/GbmQTfsa8ta8oV8n8', icon:'fa-exclamation-triangle', desc:'Report an issue', category: 'apps', proxied: true },
-      { id:'tiktok', name:'TikTok', url:'https://www.tiktok.com/', icon:'fa-music', desc:'Short videos', category: 'apps', proxied: true },
-      { id:'Chat-GPT', name:'ChatGPT', url:'https://chatgpt.com/', icon:'fa-robot', desc:'educational chat', category: 'apps', proxied: true },
-    ];
-    const SECRET_APP = { id:'secret-unknown', name:'???', url:'/secret', icon:'fa-crown', desc:'Unlocked secret page', category:'apps', proxied:true, iconGradient:'linear-gradient(135deg, #facc15, #a16207)', secret:true };
-    
+    const apps = [];
     // Games - ALL external URLs will be proxied
     const games = [
       { id:'roblox', name:'Roblox', url:'https://astra.pxi-fusion.com/embed/roblox?web-socket-enabled=false', icon:'fa-cube', desc:'Launch Roblox', category: 'games', proxied: true, forceProxy: 'uv' },
@@ -2423,31 +2400,62 @@
       }
     }
     
-    // Build sidebar apps and games
+    // Build sidebar apps and options
     function getSidebarApps() {
-      const unlocked = isSecretUnlocked();
-      if (!unlocked) return apps;
-      return [SECRET_APP, ...apps];
+      return apps;
+    }
+
+    function getSidebarOptions() {
+      const options = [
+        { id: 'apps-page-option', name: 'Apps Page', url: '/tools', icon: 'fa-th-large' },
+        { id: 'activities-page-option', name: 'Activities Page', url: '/chemistry', icon: 'fa-flask' }
+      ];
+      if (isSecretUnlocked()) {
+        options.push({ id: 'secret-page-option', name: 'Secret App', url: '/secret', icon: 'fa-crown' });
+      }
+      return options;
     }
 
     function buildSidebar() {
+      const optionsContainer = document.getElementById('sidebarOptions');
+      if (optionsContainer) {
+        optionsContainer.innerHTML = '';
+        getSidebarOptions().forEach((option) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'sidebar-option-btn';
+          if (option.id === 'secret-page-option') btn.classList.add('secret-option');
+          btn.innerHTML = `<i class="fas ${option.icon}"></i><span>${escapeHtml(option.name)}</span>`;
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await openApp({
+              id: option.id,
+              name: option.name,
+              url: option.url,
+              icon: option.icon,
+              category: 'apps',
+              proxied: true
+            });
+            closeSidebar();
+          });
+          optionsContainer.appendChild(btn);
+        });
+      }
+
       // Build apps grid
       const appsGrid = document.getElementById('appsGrid');
       appsGrid.innerHTML = '';
       const visibleApps = getSidebarApps();
 
-      visibleApps.forEach(app => {
-        const card = createAppCard(app);
-        appsGrid.appendChild(card);
-      });
-      
-      // Build games grid (optional container)
-      const gamesGrid = document.getElementById('gamesGrid');
-      if (gamesGrid) {
-        gamesGrid.innerHTML = '';
-        games.forEach(game => {
-          const card = createAppCard(game);
-          gamesGrid.appendChild(card);
+      if (!visibleApps.length) {
+        const empty = document.createElement('div');
+        empty.className = 'games-section-title';
+        empty.textContent = 'App shortcuts moved to Apps Page.';
+        appsGrid.appendChild(empty);
+      } else {
+        visibleApps.forEach(app => {
+          const card = createAppCard(app);
+          appsGrid.appendChild(card);
         });
       }
     }
@@ -2520,24 +2528,6 @@
       }
     }
     
-    function switchCategory(category) {
-      // Update active tab
-      document.querySelectorAll('.sidebar-tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.dataset.category === category) {
-          tab.classList.add('active');
-        }
-      });
-      
-      // Show active content
-      document.querySelectorAll('.category-content').forEach(content => {
-        content.classList.remove('active');
-        if (content.id === `${category}Content`) {
-          content.classList.add('active');
-        }
-      });
-    }
-    
     function filterSidebar(query) {
       const searchTerm = query.toLowerCase().trim();
       
@@ -2546,19 +2536,6 @@
       document.querySelectorAll('#appsGrid .app-card').forEach(card => {
         const appId = card.dataset.appId;
         const app = visibleApps.find(a => a.id === appId);
-        if (!app) return;
-        
-        const matches = searchTerm === '' || 
-          app.name.toLowerCase().includes(searchTerm) || 
-          app.desc.toLowerCase().includes(searchTerm);
-        
-        card.style.display = matches ? 'flex' : 'none';
-      });
-      
-      // Filter games
-      document.querySelectorAll('#gamesGrid .app-card').forEach(card => {
-        const appId = card.dataset.appId;
-        const app = games.find(a => a.id === appId);
         if (!app) return;
         
         const matches = searchTerm === '' || 
@@ -3531,27 +3508,6 @@
       // Sidebar overlay (click to close)
       document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
 
-      const allGamesBtn = document.getElementById('allGamesBtn');
-      if (allGamesBtn) {
-        allGamesBtn.addEventListener('click', async () => {
-          await openApp({
-            id: 'all-games-page',
-            name: 'All Activities',
-            url: '/chemistry',
-            icon: 'fa-flask',
-            category: 'apps',
-          });
-        });
-      }
-      
-      // Sidebar category tabs
-      document.querySelectorAll('.sidebar-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          const category = tab.dataset.category;
-          switchCategory(category);
-        });
-      });
-      
       // Sidebar search
       const sidebarSearch = document.getElementById('sidebarSearch');
       sidebarSearch.addEventListener('input', () => {
@@ -3698,8 +3654,9 @@
           if (!raw) return;
           const title = (typeof event.data.title === 'string' && event.data.title.trim()) ? event.data.title.trim() : 'New Tab';
           const icon = (typeof event.data.icon === 'string' && event.data.icon.trim()) ? event.data.icon.trim() : 'fa-globe';
+          const proxied = typeof event.data.proxied === 'boolean' ? event.data.proxied : true;
           let forceProxy = (typeof event.data.forceProxy === 'string' && event.data.forceProxy.trim()) ? event.data.forceProxy.trim() : null;
-          if (shouldForceScramjetForUrl(raw)) forceProxy = 'sj';
+          if (proxied && shouldForceScramjetForUrl(raw)) forceProxy = 'sj';
           const app = {
             id: `msg-${Date.now()}`,
             name: title,
@@ -3707,7 +3664,7 @@
             icon: icon,
             desc: 'Opened from homepage',
             category: 'apps',
-            proxied: true,
+            proxied: proxied,
             forceProxy: forceProxy || undefined
           };
           createNewTab(app, raw, title);
