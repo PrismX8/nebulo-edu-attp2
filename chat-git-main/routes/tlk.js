@@ -407,13 +407,19 @@ router.post('/rooms/:room/join', async (req, res) => {
   const clientId = getClientId(req);
   if (!clientId) return res.status(400).json({ msg: 'Missing x-tlk-client-id' });
 
-  const requestedNickname = String(req.body?.nickname || '').trim();
-  if (!requestedNickname) return res.status(400).json({ msg: 'Nickname is required' });
+  const authUser = getAuthenticatedUser(req);
+  const requestedNickname = String(
+    req.body?.nickname ||
+    req.query?.nickname ||
+    req.header('x-chat-nickname') ||
+    authUser?.name ||
+    authUser?.username ||
+    'guest'
+  ).trim();
   const nameDecision = netState.moderateDisplayName(requestedNickname);
   const nickname = nameDecision.sanitized;
 
   try {
-    const authUser = getAuthenticatedUser(req);
     const deviceId = getDeviceId(req);
     const identity = { userId: authUser?._id, deviceId, userToken: null };
     if (netState.isIdentityBanned(identity) || netState.isIdentityBannedInRoom(identity, req.params.room)) {

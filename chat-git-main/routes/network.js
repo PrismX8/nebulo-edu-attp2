@@ -252,15 +252,22 @@ router.post("/mod/actions", auth, (req, res) => {
   return res.status(400).json({ msg: "Invalid action" });
 });
 
-router.get("/alerts", auth, (req, res) => {
-  const caller = userStore.findById(req.user.id);
-  if (!caller) return res.status(401).json({ msg: "User not found" });
-
+router.get("/alerts", (req, res) => {
+  const token = String(req.header("x-auth-token") || "").trim();
+  let caller = null;
+  if (token) {
+    try {
+      const decoded = require("jsonwebtoken").verify(token, require("../config/config").jwtSecret || process.env.JWT_SECRET || "secret");
+      caller = userStore.findById(decoded?.user?.id) || null;
+    } catch (_err) {
+      caller = null;
+    }
+  }
   const userToken = String(req.header("x-tlk-participant-token") || "").trim();
   const deviceId = String(req.header("x-chat-device-id") || "").trim();
   const alerts = netState.consumeAlerts({
     userToken,
-    userId: caller._id,
+    userId: caller?._id || null,
     deviceId
   });
   return res.json({ alerts });

@@ -214,6 +214,8 @@ if (cluster.isPrimary && WORKERS > 1) {
   // handle TLK rooms, presence, moderation, and persisted room metadata.
   await fastify.register(fastifyExpress);
   fastify.use(cors());
+  fastify.use(express.json({ limit: "1mb" }));
+  fastify.use(express.urlencoded({ extended: true, limit: "1mb" }));
   fastify.use("/api/network", require("./chat-git-main/routes/network"));
   fastify.use("/api/tlk", require("./chat-git-main/routes/tlk"));
 
