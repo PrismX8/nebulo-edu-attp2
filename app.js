@@ -209,9 +209,8 @@ if (cluster.isPrimary && WORKERS > 1) {
     },
   });
 
-  // Chat paths (chat-git-main)
-  const chatGitRoot = fileURLToPath(new URL("chat-git-main/chat-git-main/", import.meta.url));
-  const chatGitClientPath = fileURLToPath(new URL("chat-git-main/chat-git-main/client/public", import.meta.url));
+   // Chat paths (chat-git-main)
+   const chatGitClientPath = fileURLToPath(new URL("chat-git-main/client/public", import.meta.url));
 
   // Debug route
   fastify.get("/debug", async (req, reply) => {
