@@ -18,6 +18,7 @@ import Ably from "ably";
 
 const require = createRequire(import.meta.url);
 const argonPlugin = require("./argon/argon-module.js");
+const fastifyExpress = require("@fastify/express");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const express = require("express");
@@ -58,7 +59,7 @@ if (cluster.isPrimary && WORKERS > 1) {
     new URL("public/assets/js/scramjet.all.js", import.meta.url)
   );
   const serviceWorkerPath = fileURLToPath(new URL("public/sw.js", import.meta.url));
-  const JWT_SECRET = process.env.JWT_SECRET || "your_secure_jwt_secret_key_replace_this";
+  const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
   const readChatUsers = () => {
     try {
@@ -209,9 +210,12 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   const ONE_HOUR = 60 * 60;
 
-  // Create native Fastify routes for chat API instead of Express adapter
-  await fastify.register(import("@fastify/middie"));
+  // Mount the original K-Chat Express routers for the chat APIs that already
+  // handle TLK rooms, presence, moderation, and persisted room metadata.
+  await fastify.register(fastifyExpress);
   fastify.use(cors());
+  fastify.use("/api/network", require("./chat-git-main/routes/network"));
+  fastify.use("/api/tlk", require("./chat-git-main/routes/tlk"));
 
   // Now register static after API routes
   fastify.register(fastifyStatic, {
@@ -332,15 +336,6 @@ if (cluster.isPrimary && WORKERS > 1) {
     return { token: signAuthToken(user), user: sanitizeUser(user) };
   });
 
-  // Network stubs for chat
-  fastify.get("/api/network/sites", async (req, reply) => {
-    return { sites: [], globalRoom: "nebulo5_4" };
-  });
-
-  fastify.get("/api/network/presence", async (req, reply) => {
-    return { rooms: {} };
-  });
-
   fastify.get("/api/channels", async (req, reply) => {
     return [
       { _id: "global", room: "nebulo5_4", name: "#global", type: "public", isGlobal: true, onlineCount: 0 }
@@ -349,32 +344,6 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   fastify.get("/api/messages/:channel", async (req, reply) => {
     return { messages: [] };
-  });
-
-  // Chat room API stubs
-  fastify.post("/api/tlk/rooms/:room/join", async (req, reply) => {
-    return { participant: { id: "guest", token: "guest-token" } };
-  });
-
-  fastify.get("/api/tlk/rooms/:room/messages", async (req, reply) => {
-    return { messages: [] };
-  });
-
-  fastify.post("/api/tlk/rooms/:room/messages", async (req, reply) => {
-    return { ok: true };
-  });
-
-  fastify.get("/api/tlk/rooms/:room/members", async (req, reply) => {
-    return [];
-  });
-
-  // Network alerts
-  fastify.get("/api/network/alerts", async (req, reply) => {
-    return { alerts: [] };
-  });
-
-  fastify.get("/api/network/moderation", async (req, reply) => {
-    return { flags: [], bans: [] };
   });
 
   // Users list
