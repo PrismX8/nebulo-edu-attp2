@@ -221,7 +221,14 @@
     autoFollow: true,
     showJumpToLatest: false,
     lastMessagesSignature: '',
-    composerNoticeTimer: null
+    composerNoticeTimer: null,
+    joinPromise: null,
+    joinRoomKey: '',
+    messagesPromise: null,
+    messagesRoomKey: '',
+    presencePromise: null,
+    alertsPromise: null,
+    routeNonce: 0
   };
 
   const slashCommands = [
@@ -424,23 +431,31 @@
   };
 
   const refreshPresence = async () => {
+    if (state.presencePromise) return state.presencePromise;
+    state.presencePromise = (async () => {
+      try {
+        const data   = await api('/api/network/presence');
+        const counts = data?.rooms || {};
+        state.channels = state.channels.map((c) => ({ ...c, onlineCount: Number(counts[c.room] || 0) }));
+        const current  = state.currentChannel;
+        if (current) state.currentChannel = state.channels.find((c) => c._id === current._id) || current;
+        
+        // Update online count in header if we're in a channel
+        const headerCount = document.getElementById('header-online-count');
+        if (headerCount && state.currentChannel) {
+          const count = Number(state.currentChannel.onlineCount || 0);
+          headerCount.textContent = `${count} online`;
+          headerCount.className = count > 0 ? 'header-online has-users' : 'header-online';
+        }
+        
+        renderSidebar();
+      } catch {}
+    })();
     try {
-      const data   = await api('/api/network/presence');
-      const counts = data?.rooms || {};
-      state.channels = state.channels.map((c) => ({ ...c, onlineCount: Number(counts[c.room] || 0) }));
-      const current  = state.currentChannel;
-      if (current) state.currentChannel = state.channels.find((c) => c._id === current._id) || current;
-      
-      // Update online count in header if we're in a channel
-      const headerCount = document.getElementById('header-online-count');
-      if (headerCount && state.currentChannel) {
-        const count = Number(state.currentChannel.onlineCount || 0);
-        headerCount.textContent = `${count} online`;
-        headerCount.className = count > 0 ? 'header-online has-users' : 'header-online';
-      }
-      
-      renderSidebar();
-    } catch {}
+      await state.presencePromise;
+    } finally {
+      state.presencePromise = null;
+    }
   };
 
   const loadChannels = async () => {
@@ -455,12 +470,21 @@
 
   const joinRoom = async (channel) => {
     if (!channel) return;
+    const roomKey = String(channel.room || '').trim();
+    if (state.joinPromise && state.joinRoomKey === roomKey) return state.joinPromise;
     let nickname = String(localStorage.getItem('tlkNickname') || state.user?.name || state.user?.username || '').trim();
     if (!nickname) nickname = 'guest';
-    const data = await api(`/api/tlk/rooms/${encodeURIComponent(channel.room)}/join`, {
+    state.joinRoomKey = roomKey;
+    state.joinPromise = api(`/api/tlk/rooms/${encodeURIComponent(channel.room)}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-tlk-client-id': getTlkClientId(), 'x-chat-device-id': getChatDeviceId() },
       body: { nickname }
+    });
+    const data = await state.joinPromise.finally(() => {
+      if (state.joinRoomKey === roomKey) {
+        state.joinPromise = null;
+        state.joinRoomKey = '';
+      }
     });
     if (data?.nickname) localStorage.setItem('tlkNickname', String(data.nickname));
     if (data?.token)    localStorage.setItem('tlkParticipantToken', String(data.token));
@@ -506,45 +530,65 @@
 
   const getMessages = async (channel) => {
     if (!channel) return [];
-    const headers   = { 'x-tlk-client-id': getTlkClientId(), 'x-chat-device-id': getChatDeviceId() };
-    const messages  = await api(`/api/tlk/rooms/${encodeURIComponent(channel.room)}/messages?limit=250`, { headers });
-    if (state.currentChannel?._id !== channel._id) return [];
-    const nextMessages  = Array.isArray(messages) ? messages : [];
-    const nextSignature = getMessagesSignature(nextMessages);
-    const changed       = nextSignature !== state.lastMessagesSignature;
-    
-    if (changed && nextMessages.length > 0) {
-      // Find new messages that weren't in the previous list
-      const oldIds = new Set(state.messages.map(m => String(m.id || m._id || '')));
-      const isInitialLoad = state.messages.length === 0;
+    const roomKey = String(channel.room || '').trim();
+    if (state.messagesPromise && state.messagesRoomKey === roomKey) return state.messagesPromise;
+    state.messagesRoomKey = roomKey;
+    state.messagesPromise = (async () => {
+      const headers   = { 'x-tlk-client-id': getTlkClientId(), 'x-chat-device-id': getChatDeviceId() };
+      const messages  = await api(`/api/tlk/rooms/${encodeURIComponent(channel.room)}/messages?limit=250`, { headers });
+      if (state.currentChannel?._id !== channel._id) return [];
+      const nextMessages  = Array.isArray(messages) ? messages : [];
+      const nextSignature = getMessagesSignature(nextMessages);
+      const changed       = nextSignature !== state.lastMessagesSignature;
+      
+      if (changed && nextMessages.length > 0) {
+        const oldIds = new Set(state.messages.map(m => String(m.id || m._id || '')));
+        const isInitialLoad = state.messages.length === 0;
 
-      if (!isInitialLoad) {
-        const newMessages = nextMessages.filter(m => {
-          const id = String(m.id || m._id || '');
-          return id && !oldIds.has(id);
-        });
+        if (!isInitialLoad) {
+          const newMessages = nextMessages.filter(m => {
+            const id = String(m.id || m._id || '');
+            return id && !oldIds.has(id);
+          });
 
-        for (const msg of newMessages) {
-          notifyMentions(msg, channel);
+          for (const msg of newMessages) {
+            notifyMentions(msg, channel);
+          }
         }
       }
+      
+      state.messages = nextMessages;
+      state.lastMessagesSignature = nextSignature;
+      state.bannedMessage = '';
+      if (changed) renderMessages();
+      return state.messages;
+    })();
+    try {
+      return await state.messagesPromise;
+    } finally {
+      if (state.messagesRoomKey === roomKey) {
+        state.messagesPromise = null;
+        state.messagesRoomKey = '';
+      }
     }
-    
-    state.messages    = nextMessages;
-    state.lastMessagesSignature = nextSignature;
-    state.bannedMessage = '';
-    if (changed) renderMessages();
-    return state.messages;
   };
 
   const fetchAlerts = async () => {
+    if (state.alertsPromise) return state.alertsPromise;
+    state.alertsPromise = (async () => {
+      try {
+        const alerts = await api('/api/network/alerts', {
+          headers: { 'x-chat-device-id': getChatDeviceId(), 'x-tlk-participant-token': String(localStorage.getItem('tlkParticipantToken') || '') }
+        });
+        const list = alerts?.alerts;
+        if (Array.isArray(list) && list.length > 0) showToast(list[list.length - 1]?.message || 'Moderation notice');
+      } catch {}
+    })();
     try {
-      const alerts = await api('/api/network/alerts', {
-        headers: { 'x-chat-device-id': getChatDeviceId(), 'x-tlk-participant-token': String(localStorage.getItem('tlkParticipantToken') || '') }
-      });
-      const list = alerts?.alerts;
-      if (Array.isArray(list) && list.length > 0) showToast(list[list.length - 1]?.message || 'Moderation notice');
-    } catch {}
+      await state.alertsPromise;
+    } finally {
+      state.alertsPromise = null;
+    }
   };
 
   const isMine = (msg) => {
@@ -617,8 +661,10 @@
     return `@${username}`;
   };
 
+  const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   const highlightMention = (text, username) => {
-    return text.replace(new RegExp(`@${username}\\b`, 'gi'), `<span class="mention">@${username}</span>`);
+    return text.replace(new RegExp(`@${escapeRegex(username)}\\b`, 'gi'), `<span class="mention">@${username}</span>`);
   };
 
   const detectMentions = (text) => {
@@ -1107,6 +1153,8 @@
     if (!state.channels.length) await loadChannels();
     state.currentChannel        = getCurrentChannel(channelId);
     state.lastMessagesSignature = '';
+    state.routeNonce += 1;
+    const routeNonce = state.routeNonce;
 
     const channelName = esc(state.currentChannel?.name?.replace(/^#/, '') || 'general');
 
@@ -1151,17 +1199,7 @@
         '<div class="msg-state" style="color:var(--danger)">No channels available.</div>';
       return;
     }
-
-    try {
-      await joinRoom(state.currentChannel);
-      await getMessages(state.currentChannel);
-    } catch (err) {
-      if (err.status === 403) { state.bannedMessage = err.message; renderMessages(); }
-      else {
-        document.getElementById('chat-messages').innerHTML =
-          `<div class="msg-state" style="color:var(--danger)">${esc(err.message)}</div>`;
-      }
-    }
+    document.getElementById('chat-messages').innerHTML = '<div class="msg-state">Loading messages…</div>';
 
     document.getElementById('chat-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1276,17 +1314,32 @@
 
     setupEmojiPicker();
 
+    (async () => {
+      try {
+        await joinRoom(state.currentChannel);
+        if (routeNonce !== state.routeNonce) return;
+        await getMessages(state.currentChannel);
+      } catch (err) {
+        if (routeNonce !== state.routeNonce) return;
+        if (err.status === 403) { state.bannedMessage = err.message; renderMessages(); }
+        else {
+          document.getElementById('chat-messages').innerHTML =
+            `<div class="msg-state" style="color:var(--danger)">${esc(err.message)}</div>`;
+        }
+      }
+    })();
+
     cleanupChatTimers();
     state.pollTimer = setInterval(async () => {
       if (!state.currentChannel) return;
       try { await getMessages(state.currentChannel); }
       catch (err) { if (err.status === 403) { state.bannedMessage = err.message; renderMessages(); } }
-    }, 1500);
+    }, 4000);
 
     state.metaTimer = setInterval(async () => {
       await refreshPresence();
       await fetchAlerts();
-    }, 5000);
+    }, 10000);
   };
 
   /* ═══════════════════════════════════════════════════════════════
@@ -1761,5 +1814,11 @@
   };
 
   window.addEventListener('hashchange', () => router().catch(onRouteError));
+  window.addEventListener('error', (event) => {
+    console.error(event.error || event.message || event);
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error(event.reason || event);
+  });
   router().catch(onRouteError);
 })();
