@@ -1,4 +1,4 @@
-const SW_VERSION = "2026-02-16-6"; // bump version
+const SW_VERSION = "2026-04-15-13"; // bump version
 
 if (navigator.userAgent.includes('Firefox')) {
     Object.defineProperty(globalThis, 'crossOriginIsolated', {
@@ -68,6 +68,8 @@ function isProxyPortError(err) {
 // Block popunder/ad-redirect navigations commonly triggered by Flixer clones.
 const FLIXER_REF_HOST_RE = /(^|\\.)the?flixer(\\.|$)|flixer/i;
 const BLOCKED_AD_REDIRECT_SUFFIXES = [
+    "traff.world",
+    "spacefree.space",
     "onclickalgo.com",
     "onclickmega.com",
     "onclickgenius.com",
@@ -82,6 +84,16 @@ const BLOCKED_AD_REDIRECT_SUFFIXES = [
 ];
 const FLIXER_BLOCKED_RESOURCE_SUFFIXES = [
     "bvtpk.com",
+];
+const BLOCKED_THIRD_PARTY_RESOURCE_SUFFIXES = [
+    "traff.world",
+    "spacefree.space",
+    "pebblepilot.com",
+    "fundingchoicesmessages.google.com",
+    "googlesyndication.com",
+    "googletagservices.com",
+    "googleadservices.com",
+    "doubleclick.net",
 ];
 
 // Minimal noise block – only known annoying domains
@@ -110,7 +122,28 @@ function isDocumentNavigationRequest(req) {
     }
 }
 
-function tryDecodeUpstreamUrlFromProxiedUrl(url, uvPrefix) {
+function extractArgonContextFromProxyUrl(url, argonPrefix = "/ag/") {
+    try {
+        const u = (url instanceof URL) ? url : new URL(String(url));
+        if (u.origin !== self.location.origin) return null;
+        if (!u.pathname.startsWith(argonPrefix)) return null;
+        const rest = u.pathname.slice(argonPrefix.length);
+        const match = /^(https?)\/([^/]+)(\/.*)?$/i.exec(rest);
+        if (!match) return null;
+        const protocol = match[1].toLowerCase();
+        const host = match[2];
+        const resourcePath = match[3] || "/";
+        return {
+            protocol,
+            host,
+            resourcePath,
+            origin: `${protocol}://${host}`,
+        };
+    } catch {}
+    return null;
+}
+
+function tryDecodeUpstreamUrlFromProxiedUrl(url, uvPrefix, argonPrefix = "/ag/") {
     try {
         const u = (url instanceof URL) ? url : new URL(String(url));
         if (u.origin !== self.location.origin) return null;
@@ -119,10 +152,16 @@ function tryDecodeUpstreamUrlFromProxiedUrl(url, uvPrefix) {
             const normalized = normalizeUvPayloadSegment(encoded);
             return decodeUvPayload(normalized);
         }
-        if (u.pathname.startsWith("/scramjet/")) {
-            const encoded = u.pathname.slice("/scramjet/".length);
-            if (!encoded) return null;
-            return new URL(decodeURIComponent(encoded)).href;
+        const argonContext = extractArgonContextFromProxyUrl(u, argonPrefix);
+        if (argonContext) {
+            return argonContext.origin + argonContext.resourcePath + u.search;
+        }
+        for (const prefix of ["/scram/service/", "/service/scramjet/", "/scramjet/"]) {
+            if (u.pathname.startsWith(prefix)) {
+                const encoded = u.pathname.slice(prefix.length);
+                if (!encoded) return null;
+                return new URL(decodeURIComponent(encoded)).href;
+            }
         }
     } catch {}
     return null;
@@ -149,10 +188,32 @@ function emptyJsResponse() {
     });
 }
 
+function blockedThirdPartyResourceResponse(req, upstreamUrl) {
+    if (isDocumentNavigationRequest(req)) {
+        return blockedNavigationResponse(upstreamUrl);
+    }
+    const dest = String(req?.destination || "");
+    if (
+        dest === "script" ||
+        dest === "worker" ||
+        dest === "sharedworker" ||
+        dest === "serviceworker"
+    ) {
+        return emptyJsResponse();
+    }
+    return new Response(null, { status: 204, statusText: "No Content" });
+}
+
 function isBlockedFlixerResource(targetHost) {
     const h = String(targetHost || "").toLowerCase();
     if (!h) return false;
     return FLIXER_BLOCKED_RESOURCE_SUFFIXES.some((s) => hostMatchesSuffix(h, s));
+}
+
+function isBlockedThirdPartyResourceHost(host) {
+    const h = String(host || "").toLowerCase();
+    if (!h) return false;
+    return BLOCKED_THIRD_PARTY_RESOURCE_SUFFIXES.some((s) => hostMatchesSuffix(h, s));
 }
 
 function isNoiseBlockedHost(host) {
@@ -345,23 +406,63 @@ async function handleRequest(event) {
     const normalizedPath = normalizePathForLegacyRouting(path);
     const extractedLegacyPayload = extractLegacyHvtrsPayload(normalizedPath);
 
-    const isScramjetWasm = sameOrigin && (path === "/scram/scramjet.wasm.wasm" || path === "/scramjet.wasm.wasm");
+    // Intercept top-level navigations (type=navigate)
+    if (request.mode === 'navigate' && sameOrigin) {
+        try {
+            const clientId = event.clientId;
+            if (clientId) {
+                const clients = await self.clients.matchAll({ includeUncontrolled: true });
+                const requestingClient = clients.find(c => c.id === clientId);
+                const clientUrl = requestingClient?.url || '';
+                
+                // If the client was viewing an /ag/ proxied page
+                if (clientUrl.includes('/ag/')) {
+                    const argonPrefix = '/ag/';
+                    
+                    // If this is NOT an /ag/ path, rewrite it back under /ag/
+                    if (!path.startsWith(argonPrefix) && path !== '/' && path !== '' && 
+                        !path.startsWith('/assets') && !path.startsWith('/public')) {
+                        const newUrl = argonPrefix + 'https' + path + requestUrl.search + requestUrl.hash;
+                        return Response.redirect(newUrl, 307);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Navigation interception error:', e);
+        }
+    }
+
+    const isScramjetWasm = sameOrigin && (
+        path === "/scram/scramjet.wasm.wasm" || 
+        path === "/scramjet.wasm.wasm" ||
+        path === "/scram/mathjet.wasm.wasm" ||
+        path === "/mathjet.wasm.wasm"
+    );
     if (
         sameOrigin && (
             requestUrl.pathname.startsWith('/baremux/') ||
             (path.startsWith('/uv/') && !path.startsWith('/uv/service/')) ||
             (path.startsWith('/ec/') && !path.startsWith('/ec/service/')) ||
+            requestUrl.pathname.startsWith('/ag/') ||
             requestUrl.pathname.startsWith('/eclipse/eclipse.') ||
             ((path.startsWith('/scram/') && !path.startsWith('/scram/service/')) && !isScramjetWasm) ||
             requestUrl.pathname.startsWith('/epoxy/') ||
+            requestUrl.pathname.startsWith('/_next/') ||
+            requestUrl.pathname.startsWith('/images/') ||
+            requestUrl.pathname.startsWith('/unified/') ||
             requestUrl.pathname.startsWith('/assets/') ||
-            requestUrl.pathname === '/sw.js'
+            requestUrl.pathname.startsWith('/api/') ||
+            requestUrl.pathname === '/sw.js' ||
+            requestUrl.pathname === '/argon_service_worker.js' ||
+            requestUrl.pathname === '/argon-response-injected.js' ||
+            requestUrl.pathname === '/service-worker.js'
         )
     ) {
         return fetch(request);
     }
 
     const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
+    const argonPrefix = "/ag/";
     const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/ec/service/";
     const scramPrefixCandidates = ['/scram/service/', '/service/scramjet/', '/scramjet/'];
     // Track the active proxied upstream per tab/client so relative URLs without
@@ -376,13 +477,31 @@ async function handleRequest(event) {
                     clientUpstreamMap.set(event.clientId, upstreamOrigin);
                 }
             }
+        } else if (sameOrigin && requestUrl.pathname.startsWith(argonPrefix)) {
+            const context = extractArgonContextFromProxyUrl(requestUrl, argonPrefix);
+            if (context?.origin && event.clientId) {
+                clientUpstreamMap.set(event.clientId, context.origin);
+            }
+        }
+    } catch {}
+
+    // Block known ad / consent endpoints before they hit the proxy transport.
+    try {
+        if (sameOrigin) {
+            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix, argonPrefix);
+            if (upstream) {
+                const u = new URL(upstream);
+                if (isBlockedThirdPartyResourceHost(u.hostname)) {
+                    return blockedThirdPartyResourceResponse(request, upstream);
+                }
+            }
         }
     } catch {}
 
     // Noise-block
     try {
         if (sameOrigin) {
-            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix);
+            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix, argonPrefix);
             if (upstream) {
                 const u = new URL(upstream);
                 if (isNoiseBlockedHost(u.hostname)) {
@@ -397,10 +516,10 @@ async function handleRequest(event) {
     // Flixer ad redirect blocking (unchanged)
     try {
         if (sameOrigin && isDocumentNavigationRequest(request)) {
-            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix);
+            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix, argonPrefix);
             if (upstream) {
                 let ref = request.headers.get("referer") || request.referrer;
-                const upstreamRef = ref ? tryDecodeUpstreamUrlFromProxiedUrl(ref, uvPrefix) : null;
+                const upstreamRef = ref ? tryDecodeUpstreamUrlFromProxiedUrl(ref, uvPrefix, argonPrefix) : null;
                 const refHost = upstreamRef ? (new URL(upstreamRef)).hostname : "";
                 const targetHost = (new URL(upstream)).hostname;
                 if (FLIXER_REF_HOST_RE.test(refHost) && isBlockedAdRedirectHost(targetHost)) {
@@ -413,10 +532,10 @@ async function handleRequest(event) {
     // Flixer resource blocking
     try {
         if (sameOrigin) {
-            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix);
+            const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix, argonPrefix);
             if (upstream) {
                 let ref = request.headers.get("referer") || request.referrer;
-                const upstreamRef = ref ? tryDecodeUpstreamUrlFromProxiedUrl(ref, uvPrefix) : null;
+                const upstreamRef = ref ? tryDecodeUpstreamUrlFromProxiedUrl(ref, uvPrefix, argonPrefix) : null;
                 const refHost = upstreamRef ? (new URL(upstreamRef)).hostname : "";
                 if (FLIXER_REF_HOST_RE.test(refHost)) {
                     const u = new URL(upstream);
@@ -431,6 +550,8 @@ async function handleRequest(event) {
 
     // Root-relative asset rewriting
     if (sameOrigin && shouldRewriteRootRelativeAsset(path)) {
+        const rewrittenViaArgon = await rewriteRootRelativeAssetViaArgon(event, requestUrl, path, argonPrefix);
+        if (rewrittenViaArgon) return rewrittenViaArgon;
         const rewritten = await rewriteRootRelativeAssetViaUv(event, requestUrl, path, uvPrefix);
         if (rewritten) return rewritten;
     }
@@ -528,9 +649,6 @@ async function handleFetchEvent(event) {
 }
 
 self.addEventListener("fetch", (event) => {
-    if (event.request.method !== "GET" && event.request.method !== "HEAD") {
-        return;
-    }
     event.respondWith(handleFetchEvent(event));
 });
 
@@ -549,11 +667,15 @@ function shouldRewriteRootRelativeAsset(path) {
     if (path.startsWith("/api/") || path.startsWith("/filters/")) return false;
     if (path === "/themes.css" || path === "/themes.js") return false;
     if (path.startsWith("/uv/") || path.startsWith("/ec/") || path.startsWith("/eclipse/")) return false;
+    if (path.startsWith("/ag/") || path === "/argon_service_worker.js" || path === "/argon-response-injected.js" || path === "/service-worker.js") return false;
     if (path.startsWith("/scram/") || path.startsWith("/scramjet/")) return false;
+    if (path.startsWith("/_next/") || path.startsWith("/images/") || path.startsWith("/unified/")) return false;
     if (path.startsWith("/baremux/") || path.startsWith("/epoxy/") || path.startsWith("/assets/")) return false;
     if (path === "/search" || path === "/rindex" || path === "/settings" || path === "/apps" || path === "/games") return false;
     if (path === "/help" || path === "/tools" || path === "/links" || path === "/report" || path === "/watch" || path === "/secret") return false;
     if (path === "/chatonly" || path === "/chat-only" || path === "/chemistry" || path === "/geometry") return false;
+    if (path === "/fan-made-activities" || path === "/fan-made-activities.html") return false;
+    if (path === "/fan-game-player" || path === "/fan-game-player.html") return false;
     if (path === "/blocked" || path === "/achievements" || path === "/whatsnew") return false;
     return true;
 }
@@ -646,6 +768,51 @@ async function rewriteRootRelativeAssetViaUv(event, requestUrl, path, uvPrefix) 
 
         const modifiedEvent = createModifiedFetchEvent(event, new Request(rewritten, event.request));
         return await fetchWithRetry(() => getUv().fetch(modifiedEvent));
+    } catch {
+        return null;
+    }
+}
+
+async function rewriteRootRelativeAssetViaArgon(event, requestUrl, path, argonPrefix) {
+    try {
+        let ref = event.request.headers.get("referer") || event.request.referrer;
+        let context = ref ? extractArgonContextFromProxyUrl(ref, argonPrefix) : null;
+
+        if (!context) {
+            try {
+                const id = event.clientId;
+                if (id) {
+                    const client = await self.clients.get(id);
+                    if (client?.url) {
+                        context = extractArgonContextFromProxyUrl(client.url, argonPrefix);
+                    }
+                }
+            } catch {}
+        }
+
+        if (!context && event.clientId && clientUpstreamMap.has(event.clientId)) {
+            try {
+                const client = await self.clients.get(event.clientId);
+                const clientUrl = client?.url ? new URL(client.url) : null;
+                if (clientUrl && clientUrl.origin === self.location.origin && clientUrl.pathname.startsWith(argonPrefix)) {
+                    const upstreamOrigin = clientUpstreamMap.get(event.clientId) || "";
+                    if (upstreamOrigin) {
+                        const u = new URL(upstreamOrigin);
+                        context = {
+                            protocol: u.protocol.replace(":", ""),
+                            host: u.host,
+                            resourcePath: "/",
+                            origin: u.origin,
+                        };
+                    }
+                }
+            } catch {}
+        }
+
+        if (!context) return null;
+
+        const rewritten = `${argonPrefix}${context.protocol}/${context.host}${path}${requestUrl.search}`;
+        return await fetch(new Request(rewritten, event.request));
     } catch {
         return null;
     }

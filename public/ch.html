@@ -542,10 +542,10 @@
 
     let proxyInitPromise = null;
 
-    function enforceScramjetProxyDefault() {
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+    function enforceArgonProxyDefault() {
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
     }
-    enforceScramjetProxyDefault();
+    enforceArgonProxyDefault();
 
     async function waitFor(conditionFn, timeoutMs = 6000, stepMs = 50) {
       const start = Date.now();
@@ -706,7 +706,7 @@
 
     async function encodeWithSelectedProxy(absoluteUrl) {
       const forced = shouldForceScramjetForUrl(absoluteUrl) ? 'sj' : null;
-      let proxy = forced || localStorage.getItem('proxy') || 'sj';
+      let proxy = forced || localStorage.getItem('proxy') || 'ag';
       if (proxy === 'sj' && shouldAvoidScramjetForUrl(absoluteUrl)) proxy = 'uv';
       if (proxy === 'sj') {
         const scram = await ensureScramjetController();
@@ -830,7 +830,7 @@
       sessionStorage.setItem('proxy_port_repair_attempted', 'true');
       try { await resetProxyDatabasesInWindow(); } catch {}
       try { localStorage.removeItem('transport'); } catch {}
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
       location.reload();
     });
 

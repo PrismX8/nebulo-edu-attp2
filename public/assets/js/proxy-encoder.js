@@ -6,6 +6,86 @@
   let scramjetControllerPromise = null;
   let baremuxInitPromise = null;
   let swInitPromise = null;
+  let argonSwInitPromise = null;
+
+  function normalizeProxyChoice(value) {
+    return value === "argon" || value === "sj" ? "ag" : value;
+  }
+
+  function buildSearchEngineUrl(query) {
+    const encodedQuery = encodeURIComponent(String(query || "").trim());
+    const engine = (localStorage.getItem("searchEngine") || "duckduckgo").toLowerCase();
+    switch (engine) {
+      case "google":
+        return `https://www.google.com/search?q=${encodedQuery}`;
+      case "bing":
+        return `https://www.bing.com/search?q=${encodedQuery}`;
+      case "yahoo":
+        return `https://search.yahoo.com/search?p=${encodedQuery}`;
+      case "ecosia":
+        return `https://www.ecosia.org/search?q=${encodedQuery}`;
+      case "brave":
+        return `https://search.brave.com/search?q=${encodedQuery}`;
+      case "irs":
+        return `https://www.irs.gov/site-index-search?search=${encodedQuery}`;
+      case "duckduckgo":
+      default:
+        return `https://duckduckgo.com/?t=h_&q=${encodedQuery}`;
+    }
+  }
+
+  function encodeArgonRoute(inputUrl) {
+    const normalized = normalizeUrlLike(inputUrl);
+    if (!normalized || normalized.startsWith("/")) return normalized;
+
+    try {
+      const u = new URL(normalized);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return normalized;
+      return "/ag/" + u.protocol.replace(":", "") + "/" + u.host + (u.pathname || "/") + (u.search || "") + (u.hash || "");
+    } catch {
+      return normalized;
+    }
+  }
+
+  async function ensureArgonServiceWorker() {
+    if (argonSwInitPromise) return argonSwInitPromise;
+    argonSwInitPromise = (async () => {
+      if (!("serviceWorker" in navigator)) return false;
+      const scriptUrl =
+        "/argon_service_worker.js?proxy_real_protocol=" +
+        encodeURIComponent(location.protocol.replace(":", "")) +
+        "&proxy_real_host=" +
+        encodeURIComponent(location.host);
+
+      try {
+        const registration = await navigator.serviceWorker.register(scriptUrl, {
+          scope: "/ag/",
+          updateViaCache: "none",
+        });
+        if (!registration.active && (registration.installing || registration.waiting)) {
+          const worker = registration.installing || registration.waiting;
+          await new Promise((resolve) => {
+            const done = () => resolve();
+            const timer = setTimeout(done, 4000);
+            worker.addEventListener("statechange", () => {
+              if (worker.state === "activated" || worker.state === "redundant") {
+                clearTimeout(timer);
+                done();
+              }
+            });
+          });
+        }
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setTimeout(() => {
+          argonSwInitPromise = null;
+        }, 0);
+      }
+    })();
+    return argonSwInitPromise;
+  }
 
   function normalizeExistingProxyTarget(rawInput) {
     const raw = (typeof rawInput === "string" ? rawInput : String(rawInput || "")).trim();
@@ -16,6 +96,7 @@
     const isAlreadyProxiedPath = (p) =>
       p.startsWith(uvPrefix) ||
       p.startsWith(eclipsePrefix) ||
+      p.startsWith("/ag/") ||
       p.startsWith("/scram/service/") ||
       p.startsWith("/service/scramjet/") ||
       p.startsWith("/scramjet/");
@@ -51,16 +132,18 @@
     if (existingProxyTarget) return existingProxyTarget;
     if (raw.startsWith("/")) return raw;
     try {
-      return new URL(raw).toString();
+      const parsed = new URL(raw);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.toString();
+      return raw;
     } catch {
       if (raw.includes(".") && !raw.includes(" ")) {
         try {
           return new URL("https://" + raw).toString();
         } catch {
-          return raw;
+          return buildSearchEngineUrl(raw);
         }
       }
-      return raw;
+      return buildSearchEngineUrl(raw);
     }
   }
 
@@ -226,6 +309,7 @@
     const isAlreadyProxied =
       normalized.startsWith(uvPrefix) ||
       normalized.startsWith(eclipsePrefix) ||
+      normalized.startsWith("/ag/") ||
       normalized.startsWith("/scram/service/") ||
       normalized.startsWith("/service/scramjet/") ||
       normalized.startsWith("/scramjet/");
@@ -235,11 +319,16 @@
     // Warm up runtime (non-blocking if parts fail).
     await ensureProxyRuntimeReady();
 
-    const savedProxy = localStorage.getItem("proxy");
+    const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
     const forced = (!overrideProxy && (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(normalized)) ? "sj" : null;
-    let proxy = overrideProxy || savedProxy || "uv";
+    let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || "uv";
     if (forced) proxy = forced;
     if (proxy === "sj" && shouldAvoidScramjetForUrl(normalized)) proxy = "uv";
+
+    if (proxy === "ag") {
+      await ensureArgonServiceWorker();
+      return encodeArgonRoute(normalized);
+    }
 
     if (proxy === "sj") {
       const scram = await ensureScramjetController();

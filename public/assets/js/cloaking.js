@@ -65,14 +65,26 @@
     const title = getValue("CustomName", DEFAULT_TITLE);
     const icon = getValue("CustomIcon", DEFAULT_ICON);
     const iframeSrc = location.href;
+    const escapeHtml = (value) =>
+      String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[char]);
+
+    const safeTitle = escapeHtml(title);
+    const safeIcon = escapeHtml(icon);
+    const safeIframeSrc = escapeHtml(iframeSrc);
 
     try {
       const doc = pop.document;
       doc.open();
-      doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title.replace(/</g, "&lt;")}</title><link rel="icon" href="${icon}"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#fff}</style></head><body><iframe src="${iframeSrc}"></iframe></body></html>`);
+      doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title><link id="favicon" rel="icon" href="${safeIcon}"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#fff}</style></head><body><iframe src="${safeIframeSrc}"></iframe><script>(function(){const DEFAULT_TITLE=${JSON.stringify(DEFAULT_TITLE)};const DEFAULT_ICON=${JSON.stringify(DEFAULT_ICON)};const CLICKOFF_TITLE=${JSON.stringify(CLICKOFF_TITLE)};const CLICKOFF_ICON=${JSON.stringify(CLICKOFF_ICON)};function getValue(key,fallback){try{const raw=localStorage.getItem(key);return raw==null||raw===""?fallback:raw;}catch{return fallback;}}function getBool(key,fallback){try{const raw=localStorage.getItem(key);if(raw===null)return fallback;return raw==="true";}catch{return fallback;}}function setFavicon(href){const iconHref=href||DEFAULT_ICON;let link=document.querySelector("link#favicon[rel='icon']");if(!link){link=document.createElement("link");link.id="favicon";link.rel="icon";document.head.appendChild(link);}link.href=iconHref;}function applyCustom(){document.title=getValue("CustomName",DEFAULT_TITLE);setFavicon(getValue("CustomIcon",DEFAULT_ICON));}function applyClickoff(){document.title=CLICKOFF_TITLE;setFavicon(CLICKOFF_ICON);}function refresh(){if(getBool("clickoff",true)&&document.visibilityState==="hidden"){applyClickoff();return;}applyCustom();}refresh();document.addEventListener("visibilitychange",refresh);window.addEventListener("storage",refresh);window.addEventListener("message",(event)=>{if(event&&event.data&&event.data.type==="setting-changed"){refresh();}});setInterval(refresh,1500);})();<\/script></body></html>`);
       doc.close();
-      const target = getValue("pLink", CLOAK_REDIRECT);
-      location.replace(target);
+      // Keep the decoy tab consistent: always use Google Docs for AB cloak.
+      location.replace(CLOAK_REDIRECT);
       return true;
     } catch {
       // If popup writing fails, keep current page intact.

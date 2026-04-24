@@ -1,10 +1,12 @@
 import cluster from "node:cluster";
 import { hostname as osHostname } from "node:os";
 import { createServer } from "node:http";
+import { createRequire } from "node:module";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { performance } from "node:perf_hooks";
 import Fastify from "fastify";
+import { Server } from "socket.io";
 import fastifyStatic from "@fastify/static";
 import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
 import { scramjetPath } from "@mercuryworkshop/scramjet/path";
@@ -12,6 +14,12 @@ import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import "dotenv/config";
 import Ably from "ably";
+
+const require = createRequire(import.meta.url);
+const argonPlugin = require("./argon/argon-module.js");
+const cors = require("cors");
+const express = require("express");
+const path = require("path");
 
 const libcurlPath = fileURLToPath(
   new URL("node_modules/@mercuryworkshop/libcurl-transport/dist/", import.meta.url)
@@ -98,6 +106,32 @@ if (cluster.isPrimary && WORKERS > 1) {
     },
   });
 
+  const io = new Server(fastify.server, {
+    path: "/socket.io/",
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  io.on("connection", (socket) => {
+    socket.on("join_room", (roomId) => {
+      socket.join(roomId);
+    });
+
+    socket.on("leave_room", (roomId) => {
+      socket.leave(roomId);
+    });
+
+    socket.on("send_message", (data) => {
+      io.to(data.roomId).emit("receive_message", data);
+    });
+
+    socket.on("typing", (data) => {
+      socket.to(data.roomId).emit("user_typing", data);
+    });
+  });
+
   // libcurl-transport and some proxy stacks benefit from cross-origin isolation (SharedArrayBuffer).
   // Apply globally so both app pages and proxied content can opt into it consistently.
   fastify.addHook("onSend", async (req, reply, payload) => {
@@ -109,6 +143,11 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   const ONE_HOUR = 60 * 60;
 
+  // Create native Fastify routes for chat API instead of Express adapter
+  await fastify.register(import("@fastify/middie"));
+  fastify.use(cors());
+
+  // Now register static after API routes
   fastify.register(fastifyStatic, {
     root: pagesPath,
     prefix: "/pages/",
@@ -133,6 +172,8 @@ if (cluster.isPrimary && WORKERS > 1) {
         const p = String(pathName || "").replace(/\\/g, "/");
         if (
           p.endsWith("/assets/js/proxy-runtime.js") ||
+          p.endsWith("/assets/js/proxy-encoder.js") ||
+          p.endsWith("/assets/js/search.js") ||
           p.endsWith("/assets/js/baremux-port-bridge.js") ||
           p.endsWith("/uv/uv.config.js") ||
           p.endsWith("/uv/uv.bundle.js") ||
@@ -166,6 +207,161 @@ if (cluster.isPrimary && WORKERS > 1) {
         res.setHeader("Cache-Control", "public, max-age=300");
       }
     },
+  });
+
+  // Chat paths (chat-git-main)
+  const chatGitRoot = fileURLToPath(new URL("chat-git-main/chat-git-main/", import.meta.url));
+  const chatGitClientPath = fileURLToPath(new URL("chat-git-main/chat-git-main/client/public", import.meta.url));
+
+  // Debug route
+  fastify.get("/debug", async (req, reply) => {
+    return { msg: "debug works" };
+  });
+
+  fastify.post("/api/auth", async (req, reply) => {
+    const { username, password } = req.body || {};
+    if (!username || !password) {
+      return reply.status(400).send({ msg: "Username and password required" });
+    }
+    // Stub: create mock user
+    if (!user) {
+      return reply.status(400).send({ msg: "Username not found" });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return reply.status(400).send({ msg: "Incorrect password" });
+    }
+    const token = jwt.sign({ user: { id: user._id } }, "your_secure_jwt_secret_key_replace_this", { expiresIn: "24h" });
+    return { token: "stub-token", user: { id: "1", username, name: username } };
+  });
+
+  fastify.get("/api/auth", async (req, reply) => {
+    const token = req.headers["x-auth-token"];
+    if (!token) {
+      return reply.status(401).send({ msg: "No token" });
+    }
+    try {
+      const decoded = jwt.verify(token, "your_secure_jwt_secret_key_replace_this");
+      return { id: decoded.user.id, username: "user" };
+      if (!user) {
+        return reply.status(401).send({ msg: "User not found" });
+      }
+      return { id: "1", username: username, name: username };
+    } catch (err) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+  });
+
+  // Registration
+  fastify.post("/api/users", async (req, reply) => {
+    const { username, password, name } = req.body || {};
+    if (!username || !password) {
+      return reply.status(400).send({ msg: "Username and password required" });
+    }
+    const existing = null; // Stub
+    if (existing) {
+      return reply.status(400).send({ msg: "Username already exists" });
+    }
+    const hash = await bcrypt.hash(password, 10);
+    const user = { id: "1", username, name: name || username }; // Stub
+    const token = jwt.sign({ user: { id: user._id } }, "your_secure_jwt_secret_key_replace_this", { expiresIn: "24h" });
+    return { token: "stub-token", user: { id: "1", username, name: username } };
+  });
+
+  // Network stubs for chat
+  fastify.get("/api/network/sites", async (req, reply) => {
+    return { sites: [], globalRoom: "nebulo5_4" };
+  });
+
+  fastify.get("/api/network/presence", async (req, reply) => {
+    return { rooms: {} };
+  });
+
+  fastify.get("/api/channels", async (req, reply) => {
+    return [
+      { _id: "global", room: "nebulo5_4", name: "#global", type: "public", isGlobal: true, onlineCount: 0 }
+    ];
+  });
+
+  fastify.get("/api/messages/:channel", async (req, reply) => {
+    return { messages: [] };
+  });
+
+  // Chat room API stubs
+  fastify.post("/api/tlk/rooms/:room/join", async (req, reply) => {
+    return { participant: { id: "guest", token: "guest-token" } };
+  });
+
+  fastify.get("/api/tlk/rooms/:room/messages", async (req, reply) => {
+    return { messages: [] };
+  });
+
+  fastify.post("/api/tlk/rooms/:room/messages", async (req, reply) => {
+    return { ok: true };
+  });
+
+  fastify.get("/api/tlk/rooms/:room/members", async (req, reply) => {
+    return [];
+  });
+
+  // Network alerts
+  fastify.get("/api/network/alerts", async (req, reply) => {
+    return { alerts: [] };
+  });
+
+  fastify.get("/api/network/moderation", async (req, reply) => {
+    return { flags: [], bans: [] };
+  });
+
+  // Users list
+  fastify.get("/api/users", async (req, reply) => {
+    return [];
+  });
+
+  // OpenBullet
+  fastify.get("/api/openbullet/status", async (req, reply) => {
+    return { status: "ok" };
+  });
+
+  fastify.get("/api/openbullet/automation/status", async (req, reply) => {
+    return { status: "ok" };
+  });
+
+  // Chat static files
+  fastify.get("/chat", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile("app.js", publicPath);
+  });
+
+  fastify.get("/chat/*", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile("app.js", publicPath);
+  });
+
+  fastify.get("/app.js", (req, reply) => {
+    return reply.sendFile("app.js", publicPath);
+  });
+
+  fastify.get("/chatonly", (req, reply) => reply.redirect("/chat", 302));
+  fastify.get("/chatonly.html", (req, reply) => reply.redirect("/chat", 302));
+
+  // K-Chat (chat-git-main) routes
+  fastify.get("/kchat", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile("index.html", chatGitClientPath);
+  });
+
+  fastify.get("/kchat/*", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile("index.html", chatGitClientPath);
+  });
+
+  fastify.get("/kchat/app.js", (req, reply) => {
+    return reply.sendFile("app.js", chatGitClientPath);
+  });
+
+  fastify.get("/kchat/app.css", (req, reply) => {
+    return reply.sendFile("app.css", chatGitClientPath);
   });
 
   // Override scramjet.all.js with our patched copy (no-store) so bare-mux changes
@@ -253,6 +449,11 @@ if (cluster.isPrimary && WORKERS > 1) {
     setHeaders: (res) => res.setHeader("Cache-Control", "public, max-age=3600, immutable"),
   });
 
+  fastify.register(argonPlugin, {
+    token_prefix: "/ag/",
+    use_not_found_fallback: false,
+  });
+
   // Serve the interstitial at the root
   fastify.get("/", (req, reply) => {
     reply.header("Cache-Control", "no-store");
@@ -279,6 +480,8 @@ if (cluster.isPrimary && WORKERS > 1) {
     { path: "/watch", file: "wt.html" },
     { path: "/geometry", file: "gm.html" },
     { path: "/chemistry", file: "ch.html" },
+    { path: "/fan-made-activities", file: "fan-made-activities.html" },
+    { path: "/fan-game-player", file: "fan-game-player.html" },
     { path: "/secret", file: "sc.html" },
   ];
 
@@ -306,6 +509,8 @@ if (cluster.isPrimary && WORKERS > 1) {
     ["/watch.html", "/watch"],
     ["/geometry.html", "/geometry"],
     ["/chemistry.html", "/chemistry"],
+    ["/fan-made-activities.html", "/fan-made-activities"],
+    ["/fan-game-player.html", "/fan-game-player"],
     ["/404.html", "/search"],
     ["/themes.css", "/assets/css/themes.css"],
     ["/themes.js", "/assets/js/themes.js"],
@@ -453,12 +658,18 @@ if (cluster.isPrimary && WORKERS > 1) {
     const proxyOrRuntimePath =
       path.startsWith("/uv/") ||
       path.startsWith("/ec/") ||
+      path.startsWith("/ag/") ||
       path.startsWith("/scram/") ||
       path.startsWith("/scramjet/") ||
       path.startsWith("/scram/service/") ||
       path.startsWith("/service/scramjet/") ||
       path.startsWith("/baremux/") ||
-      path.startsWith("/epoxy/");
+      path.startsWith("/epoxy/") ||
+      path.startsWith("/_next/") ||
+      path.startsWith("/images/") ||
+      path.startsWith("/unified/") ||
+      path === "/argon_service_worker.js" ||
+      path === "/service-worker.js";
 
     if (accept.includes("text/html") && userNav && !proxyOrRuntimePath) {
       return reply.redirect("/search");

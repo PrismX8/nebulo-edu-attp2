@@ -611,6 +611,29 @@
       background: rgba(34, 197, 94, 0.12);
       color: #bbf7d0;
     }
+
+    .app-card.app-card-youtube {
+      border-color: rgba(220, 38, 38, 0.16);
+      background: linear-gradient(180deg, rgba(220, 38, 38, 0.045), rgba(220, 38, 38, 0.025));
+    }
+
+    .app-card.app-card-youtube .app-icon {
+      background: rgba(220, 38, 38, 0.08);
+      border-color: rgba(220, 38, 38, 0.18);
+      color: #fca5a5;
+    }
+
+    .app-card.app-card-youtube:hover {
+      border-color: rgba(248, 113, 113, 0.25);
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.22),
+        0 0 16px rgba(220, 38, 38, 0.09);
+    }
+
+    .app-card.app-card-youtube:hover .app-icon {
+      background: rgba(220, 38, 38, 0.12);
+      color: #fecaca;
+    }
     
     /* FOOTER */
     .footer {
@@ -1091,6 +1114,48 @@
       cornerGlows.forEach((el) => { el.style.display = enabled ? '' : 'none'; });
     }
 
+    function updateSearchPlaceholder() {
+      try {
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.querySelector('.search-btn');
+        if (!searchInput) return;
+        
+        const currentProxy = (localStorage.getItem('proxy') || '').toLowerCase();
+        
+        if (currentProxy === 'ag') {
+          searchInput.placeholder = 'search MUST be a url EX: youtube.com';
+          updateSearchButtonState();
+        } else {
+          searchInput.placeholder = 'search anything';
+          if (searchBtn) searchBtn.disabled = false;
+        }
+      } catch (e) {
+        console.error('Error updating search placeholder:', e);
+      }
+    }
+
+    function updateSearchButtonState() {
+      try {
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.querySelector('.search-btn');
+        if (!searchBtn || !searchInput) return;
+        
+        const currentProxy = (localStorage.getItem('proxy') || '').toLowerCase();
+        if (currentProxy !== 'ag') {
+          searchBtn.disabled = false;
+          return;
+        }
+        
+        const query = searchInput.value.trim();
+        const isValidSearch = query.length > 0 && isValidUrl(query);
+        searchBtn.disabled = !isValidSearch;
+        searchBtn.style.opacity = isValidSearch ? '1' : '0.5';
+        searchBtn.style.cursor = isValidSearch ? 'pointer' : 'not-allowed';
+      } catch (e) {
+        console.error('Error updating search button state:', e);
+      }
+    }
+
     // Initialize floating dots
     function initFloatingDots() {
       const container = document.getElementById('floatingDots');
@@ -1120,11 +1185,11 @@
       }
     }
     
-    function enforceScramjetProxyDefault() {
+    function enforceArgonProxyDefault() {
       // Only set a default if the user hasn't chosen one.
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
     }
-    enforceScramjetProxyDefault();
+    enforceArgonProxyDefault();
 
     // Initialize when page loads
     window.addEventListener('load', () => {
@@ -1169,14 +1234,16 @@
 
     // Configuration
     let proxyRuntimeInitPromise = null;
-    let scramjetControllerPromise = null;
+  let scramjetControllerPromise = null;
+  let argonServiceWorkerPromise = null;
     const HOME_MODE = new URLSearchParams(location.search).get('mode') === 'home';
-    const GLOBAL_CHAT_URL = 'https://tlk.io/nebulo5_4';
+    const GLOBAL_CHAT_URL = '/kchat';
 
     const APPS = [
-      { name: "Blooket Bot", icon: "fas fa-user-secret", url: "https://blooketbot.schoolcheats.net/", cardClass: "app-card-danger" },
+      { name: "Blooket Bot", icon: "fas fa-user-secret", url: "https://blooketbot.x-network.lol/", cardClass: "app-card-danger" },
       { name: "Music", icon: "fas fa-headphones", url: "https://vapor.onl/page/music/index.html" },
       { name: "Spotify", icon: "fab fa-spotify", url: "https://open.spotify.com/", cardClass: "app-card-spotify" },
+      { name: "YouTube", icon: "fab fa-youtube", url: "https://www.youtube.com/", cardClass: "app-card-youtube" },
       { name: "Movies", icon: "fas fa-film", url: "https://www.cineby.gd" },
       { name: "Achievements", icon: "fas fa-trophy", url: "/achievements" },
       { name: "Links", icon: "fas fa-link", url: "/links" },
@@ -1231,14 +1298,27 @@
       searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const query = searchInput.value.trim();
+        const currentProxy = (localStorage.getItem('proxy') || '').toLowerCase();
+        
+        // Block search if Argon is selected and input is not a URL
+        if (currentProxy === 'ag') {
+          if (!isValidUrl(query)) {
+            if (query.length > 0) {
+              alert('❌ Argon proxy requires a real URL\n\nExamples:\n• youtube.com\n• https://google.com\n• reddit.com');
+            }
+            return;
+          }
+        }
+        
         if (query) {
           performSearch(query);
         }
       });
 
-      // Search suggestions
+      // Search suggestions and input validation
       searchInput.addEventListener('input', () => {
         const query = searchInput.value.trim();
+        updateSearchButtonState();
         if (query.length > 0) {
           showSuggestions(query);
         } else {
@@ -1252,6 +1332,9 @@
           hideSuggestions();
         }
       });
+
+      // Update placeholder when page loads
+      updateSearchPlaceholder();
 
       // Focus search input with animation
       setTimeout(() => {
@@ -1352,7 +1435,7 @@
 
       // Force safe defaults and reload once.
       // Don't override an explicit user choice; only set a default.
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
       try { localStorage.setItem('transport', 'epoxy'); } catch {}
       location.reload();
     });
@@ -1421,7 +1504,7 @@
           await resetBareMuxIndexedDb();
           localStorage.setItem('transport', 'epoxy');
           // Don't override an explicit user choice; only set a default.
-          if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj');
+          if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag');
           await configureTransport();
           return;
         }
@@ -1448,7 +1531,7 @@
       ]);
     }
 
-    async function ensureScramjetController() {
+  async function ensureScramjetController() {
       if (scramjetControllerPromise) return scramjetControllerPromise;
       scramjetControllerPromise = (async () => {
         if (typeof $scramjetLoadController !== 'function') return null;
@@ -1466,8 +1549,73 @@
         console.warn('Scramjet init failed:', err);
         return null;
       });
-      return scramjetControllerPromise;
+    return scramjetControllerPromise;
+  }
+
+  function normalizeProxyChoice(value) {
+    return value === 'argon' || value === 'sj' ? 'ag' : value;
+  }
+
+  function encodeArgonRoute(inputUrl) {
+    const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+    if (!raw) return raw;
+
+    try {
+      const u = new URL(raw);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
+      return '/ag/' + u.protocol.replace(':', '') + '/' + u.host + (u.pathname || '/') + (u.search || '') + (u.hash || '');
+    } catch {
+      return raw;
     }
+  }
+
+  async function ensureArgonServiceWorker() {
+    if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
+    argonServiceWorkerPromise = (async () => {
+      if (!('serviceWorker' in navigator)) return false;
+      const scriptUrl =
+        '/argon_service_worker.js?proxy_real_protocol=' +
+        encodeURIComponent(location.protocol.replace(':', '')) +
+        '&proxy_real_host=' +
+        encodeURIComponent(location.host);
+
+      try {
+        const registration = await navigator.serviceWorker.register(scriptUrl, {
+          scope: '/ag/',
+          updateViaCache: 'none'
+        });
+        if (!registration.active && (registration.installing || registration.waiting)) {
+          const worker = registration.installing || registration.waiting;
+          await new Promise((resolve) => {
+            const done = () => resolve();
+            const timer = setTimeout(done, 4000);
+            worker.addEventListener('statechange', () => {
+              if (worker.state === 'activated' || worker.state === 'redundant') {
+                clearTimeout(timer);
+                done();
+              }
+            });
+          });
+        }
+        // Wait for controller change to ensure the service worker is controlling the page
+        if (!navigator.serviceWorker.controller) {
+          await new Promise((resolve) => {
+            const done = () => resolve();
+            navigator.serviceWorker.addEventListener('controllerchange', done, { once: true });
+            setTimeout(done, 2000); // Shorter timeout for Argon SW
+          });
+        }
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setTimeout(() => {
+          argonServiceWorkerPromise = null;
+        }, 0);
+      }
+    })();
+    return argonServiceWorkerPromise;
+  }
 
     function showLoading(message = 'Loading...') {
       const overlay = document.getElementById('loadingOverlay');
@@ -1494,6 +1642,7 @@
       const isAlreadyProxiedPath = (p) =>
         p.startsWith(uvPrefix) ||
         p.startsWith(eclipsePrefix) ||
+        p.startsWith('/ag/') ||
         scramPrefixes.some((s) => p.startsWith(s));
 
       if (raw.startsWith('/') && isAlreadyProxiedPath(raw)) return raw;
@@ -1550,6 +1699,7 @@
       const isAlreadyProxiedPath = (p) =>
         p.startsWith(uvPrefix) ||
         p.startsWith(eclipsePrefix) ||
+        p.startsWith('/ag/') ||
         scramPrefixes.some((s) => p.startsWith(s));
 
       const isInternalPath = (p) =>
@@ -1560,7 +1710,10 @@
         !p.startsWith('/uv/') &&
         !p.startsWith('/ec/') &&
         !p.startsWith('/eclipse/') &&
-        !p.startsWith('/scram/');
+        !p.startsWith('/ag/') &&
+        !p.startsWith('/scram/') &&
+        p !== '/argon_service_worker.js' &&
+        p !== '/service-worker.js';
 
       // Never send local routes through the proxy. That produces broken URLs like /uv/service/assets/...
       if (raw === 'about:blank' || isInternalPath(raw)) {
@@ -1593,13 +1746,13 @@
 
         let encodedUrl;
         const rules = window.NebuloProxyHostRules;
-        const savedProxy = localStorage.getItem('proxy');
+        const savedProxy = normalizeProxyChoice(localStorage.getItem('proxy'));
         const forcedProxy =
           (!savedProxy || savedProxy === 'sj') &&
           (rules && typeof rules.shouldForceScramjetForUrl === 'function' && rules.shouldForceScramjetForUrl(raw))
             ? 'sj'
             : null;
-        let proxy = savedProxy || 'sj';
+        let proxy = savedProxy || 'ag';
         if (forcedProxy) proxy = forcedProxy;
         if (
           proxy === 'sj' &&
@@ -1612,6 +1765,11 @@
 
         if (proxy === 'uv' && typeof __uv$config !== 'undefined') {
           encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(raw);
+        } else if (proxy === 'ag') {
+          // For Argon proxy, ensure full proxy runtime is ready before proceeding
+          await ensureProxyRuntimeReady();
+          await ensureArgonServiceWorker();
+          encodedUrl = encodeArgonRoute(raw);
         } else if (proxy === 'sj') {
           const scramjet = await ensureScramjetController();
           if (scramjet && typeof scramjet.encodeUrl === 'function') {
@@ -1638,6 +1796,19 @@
       }
     }
 
+    function isValidUrl(str) {
+      try {
+        const urlStr = str.startsWith('http') ? str : `https://${str}`;
+        const url = new URL(urlStr);
+        // Must have a valid hostname with at least one dot (for domain.com format)
+        // or be localhost/IP address
+        const hostname = url.hostname;
+        return hostname.includes('.') || hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+      } catch {
+        return false;
+      }
+    }
+
     function performSearch(query) {
       if (!query.trim()) return;
       
@@ -1650,7 +1821,7 @@
         // Likely a URL
         url = query.startsWith('http') ? query : `https://${query}`;
       } else {
-        // Search query: honor configured search engine
+        // For non-Argon proxies, search query: honor configured search engine
         const engine = (localStorage.getItem('searchEngine') || 'duckduckgo').toLowerCase();
         switch (engine) {
           case 'google':
@@ -1742,17 +1913,26 @@
     }
 
     function applySettingChange(key, value) {
-      if (!key) return;
-      if (typeof value === 'string') {
-        localStorage.setItem(key, value);
-      }
-      if (key === 'transport') {
-        proxyRuntimeInitPromise = null;
-        ensureProxyRuntimeReady().catch((err) => {
-          console.warn('Transport change reinit failed:', err);
-        });
-      } else if (key === 'particles') {
-        applyParticlesSetting(value);
+      try {
+        if (!key) return;
+        if (typeof value === 'string') {
+          localStorage.setItem(key, value);
+        }
+        if (key === 'transport') {
+          proxyRuntimeInitPromise = null;
+          ensureProxyRuntimeReady().catch((err) => {
+            console.warn('Transport change reinit failed:', err);
+          });
+        } else if (key === 'particles') {
+          applyParticlesSetting(value);
+        } else if (key === 'proxy') {
+          // Update search placeholder when proxy changes
+          if (typeof updateSearchPlaceholder === 'function') {
+            updateSearchPlaceholder();
+          }
+        }
+      } catch (e) {
+        console.error('Error in applySettingChange:', e);
       }
     }
 

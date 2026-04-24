@@ -1,0 +1,5 @@
+{
+  "proxy_url": "http://localhost:3010",
+  "token_prefix": "/ag/",
+  "local_listen_port": 3010
+}

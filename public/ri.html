@@ -1494,6 +1494,7 @@
       return (
         p.startsWith(uvPrefix) ||
         p.startsWith(eclipsePrefix) ||
+        p.startsWith('/ag/') ||
         p.startsWith('/scram/service/') ||
         p.startsWith('/service/scramjet/') ||
         p.startsWith('/scramjet/')
@@ -1506,8 +1507,16 @@
       if (!p.startsWith('/')) return false;
       if (isProxiedPath(p)) return false;
       // Runtime/static prefixes we never treat as "page" history targets.
-      if (p.startsWith('/assets/') || p.startsWith('/baremux/') || p.startsWith('/epoxy/') || p.startsWith('/uv/') || p.startsWith('/ec/') || p.startsWith('/eclipse/') || p.startsWith('/scram/')) return false;
+      if (p.startsWith('/assets/') || p.startsWith('/baremux/') || p.startsWith('/epoxy/') || p.startsWith('/uv/') || p.startsWith('/ec/') || p.startsWith('/eclipse/') || p.startsWith('/ag/') || p.startsWith('/scram/') || p === '/argon_service_worker.js' || p === '/service-worker.js') return false;
       return true;
+    }
+
+    function isYouTubeUrl(url) {
+      return typeof url === 'string' && /(?:youtube\.com|youtu\.be)/i.test(url);
+    }
+
+    function isYouTubeWatchUrl(url) {
+      return typeof url === 'string' && /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/)/i.test(url);
     }
 
     function normalizeNavTarget(url) {
@@ -2054,16 +2063,17 @@
     
     // Search + proxy defaults
     const SEARCH_ENGINE_DEFAULT = "duckduckgo";
-    const PROXY_DEFAULT = "sj";
+    const PROXY_DEFAULT = "ag";
     const HOMEPAGE_PATH = "/search";
     let proxyRuntimeInitPromise = null;
     let scramjetControllerPromise = null;
+    let argonServiceWorkerPromise = null;
 
-    function enforceScramjetProxyDefault() {
+    function enforceArgonProxyDefault() {
       // Only set a default if the user hasn't chosen one.
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
     }
-    enforceScramjetProxyDefault();
+    enforceArgonProxyDefault();
 
     async function initServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
@@ -2141,7 +2151,7 @@
           await resetBareMuxIndexedDb();
           localStorage.setItem('transport', 'epoxy');
           // Don't override an explicit user choice; only set a default.
-          if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj');
+          if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag');
           await tryTransportOrder();
           return;
         }
@@ -2168,6 +2178,62 @@
         return null;
       });
       return scramjetControllerPromise;
+    }
+
+    function normalizeProxyChoice(value) {
+      return value === 'argon' || value === 'sj' ? 'ag' : value;
+    }
+
+    function encodeArgonRoute(inputUrl) {
+      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
+      if (!raw) return raw;
+      try {
+        const u = new URL(raw);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
+        return '/ag/' + u.protocol.replace(':', '') + '/' + u.host + (u.pathname || '/') + (u.search || '') + (u.hash || '');
+      } catch {
+        return raw;
+      }
+    }
+
+    async function ensureArgonServiceWorker() {
+      if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
+      argonServiceWorkerPromise = (async () => {
+        if (!('serviceWorker' in navigator)) return false;
+        const scriptUrl =
+          '/argon_service_worker.js?proxy_real_protocol=' +
+          encodeURIComponent(location.protocol.replace(':', '')) +
+          '&proxy_real_host=' +
+          encodeURIComponent(location.host);
+
+        try {
+          const registration = await navigator.serviceWorker.register(scriptUrl, {
+            scope: '/ag/',
+            updateViaCache: 'none'
+          });
+          if (!registration.active && (registration.installing || registration.waiting)) {
+            const worker = registration.installing || registration.waiting;
+            await new Promise((resolve) => {
+              const done = () => resolve();
+              const timer = setTimeout(done, 4000);
+              worker.addEventListener('statechange', () => {
+                if (worker.state === 'activated' || worker.state === 'redundant') {
+                  clearTimeout(timer);
+                  done();
+                }
+              });
+            });
+          }
+          return true;
+        } catch {
+          return false;
+        } finally {
+          setTimeout(() => {
+            argonServiceWorkerPromise = null;
+          }, 0);
+        }
+      })();
+      return argonServiceWorkerPromise;
     }
 
     async function ensureProxyRuntimeReady() {
@@ -2224,7 +2290,7 @@
 
       // Force safe defaults and reload once.
       // Don't override an explicit user choice; only set a default.
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
       try { localStorage.setItem('transport', 'epoxy'); } catch {}
       location.reload();
     });
@@ -2408,7 +2474,8 @@
     function getSidebarOptions() {
       const options = [
         { id: 'apps-page-option', name: 'Apps Page', url: '/tools', icon: 'fa-th-large' },
-        { id: 'activities-page-option', name: 'Activities Page', url: '/chemistry', icon: 'fa-flask' }
+        { id: 'activities-page-option', name: 'Activities Page', url: '/chemistry', icon: 'fa-flask' },
+        { id: 'fan-made-activities-option', name: 'Fan Made Activities', url: '/fan-made-activities.html', icon: 'fa-code' }
       ];
       if (isSecretUnlocked()) {
         options.push({ id: 'secret-page-option', name: 'Secret App', url: '/secret', icon: 'fa-crown' });
@@ -2697,7 +2764,7 @@
             <div class="loading-subtext">(If site takes long to load, change search engine in settings.).</div>
             <div class="loading-rotating-text"></div>
           </div>
-          <iframe src="about:blank" id="iframe-${tab.id}"></iframe>
+          <iframe src="about:blank" id="iframe-${tab.id}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-modals allow-top-navigation-by-user-activation"></iframe>
         </div>
       `;
       
@@ -2734,7 +2801,9 @@
       try {
         let finalUrl = url;
         const rawUrl = (typeof url === 'string' ? url.trim() : '');
+        const shouldProxy = app?.proxied !== false;
         const shouldWarmProxy =
+          shouldProxy &&
           !!rawUrl &&
           (
             isProxiedPath(rawUrl) ||
@@ -2770,23 +2839,31 @@
         }
         // For ALL external URLs, use the proxy
         else if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-          // Use the proxy for this URL - ALWAYS use proxy for external URLs
-          finalUrl = await encodeWithProxy(url, app?.forceProxy);
+          finalUrl = shouldProxy ? await encodeWithProxy(url, app?.forceProxy) : url;
         }
         // If it's a domain-like string (google.com, youtube.com), add https:// and proxy it
         else if (url && url.includes('.') && !url.includes(' ') && !url.startsWith('/')) {
           const fullUrl = 'https://' + url;
-          finalUrl = await encodeWithProxy(fullUrl);
+          finalUrl = shouldProxy ? await encodeWithProxy(fullUrl) : fullUrl;
         }
         else if (url) {
-          // If we have a URL but it doesn't match above patterns, still try to proxy it
-          finalUrl = await encodeWithProxy(url);
+          // If we have a URL but it doesn't match above patterns, still try to proxy it unless app requested direct load.
+          finalUrl = shouldProxy ? await encodeWithProxy(url) : url;
         }
         
         // Record top-level navigation target (used for reliable back/forward across SPAs).
         recordTabNavigation(tabId, finalUrl);
 
         // Set iframe source
+        const previousUrl = tab.url;
+        const previousAppUrl = tab.app?.url || '';
+        const previousWasYouTube = isYouTubeUrl(previousAppUrl) || isYouTubeUrl(previousUrl);
+
+        // If loading an Argon URL (/ag/), ensure Argon service worker is registered
+        if (typeof finalUrl === 'string' && finalUrl.startsWith('/ag/')) {
+          await ensureArgonServiceWorker().catch(() => {});
+        }
+
         tab.url = finalUrl;
         scheduleTabSessionSave();
         iframe.src = finalUrl;
@@ -2803,6 +2880,54 @@
           tab.loading = false;
           stopLoadingRotator(tabId);
           if (loading) loading.style.display = 'none';
+
+          // Auto-reload YouTube videos once to fix loading issues
+          if (isYouTubeUrl(finalUrl) && !tab._ytReloaded) {
+            tab._ytReloaded = true;
+            try {
+              iframe.contentWindow?.location.reload();
+            } catch (e) {
+              console.error('Failed to auto-reload YouTube:', e);
+            }
+            return;
+          }
+
+          // If a YouTube video page loaded inside a YouTube tab, open it in a new tab instead.
+          if (!tab._youtubeVideoRedirected && previousWasYouTube) {
+            try {
+              const iframeWindow = iframe.contentWindow;
+              let loadedHref = '';
+              if (iframeWindow) {
+                try {
+                  loadedHref = String(iframeWindow.location.href || '');
+                } catch {}
+              }
+              if (!loadedHref) {
+                loadedHref = String(iframe.src || '');
+              }
+              if (isYouTubeWatchUrl(loadedHref)) {
+                tab._youtubeVideoRedirected = true;
+                createNewTab(
+                  {
+                    name: 'YouTube',
+                    icon: 'fab fa-youtube',
+                    desc: 'Opened from YouTube click',
+                    category: 'apps',
+                    proxied: true
+                  },
+                  loadedHref,
+                  'YouTube Video'
+                );
+                if (previousUrl && previousUrl !== finalUrl) {
+                  tab.url = previousUrl;
+                  iframe.src = previousUrl;
+                }
+                return;
+              }
+            } catch (e) {
+              console.error('YouTube redirect check failed:', e);
+            }
+          }
 
           // Record navigations triggered *inside* the iframe (ex: quick access on /search).
           try {
@@ -3311,6 +3436,25 @@
       }
     }
     
+    // Warm up Argon service worker by fetching through /ag/ path
+    async function warmUpArgonServiceWorker() {
+      try {
+        // Make a simple fetch through the Argon proxy to activate the service worker
+        const warmupUrl = '/ag/https://www.youtube.com/';
+        const response = await fetch(warmupUrl, { 
+          method: 'HEAD',
+          mode: 'cors',
+          cache: 'no-cache'
+        }).catch(() => null);
+        // We don't care about the response, just that the fetch activated the SW
+        return true;
+      } catch (e) {
+        // Silently fail - this is just a warm-up
+        console.debug('Service worker warm-up attempt:', e);
+        return false;
+      }
+    }
+    
     // Encode URL with proxy
     async function encodeWithProxy(url, proxyHint = null) {
       try {
@@ -3427,10 +3571,10 @@
           return host === 'polybuzz.ai' || host.endsWith('.polybuzz.ai');
         }
 
-        const savedProxy = localStorage.getItem('proxy');
+        const savedProxy = normalizeProxyChoice(localStorage.getItem('proxy'));
         const forced = (!overrideProxy && (!savedProxy || savedProxy === 'sj') && shouldForceScramjetForUrl(url)) ? 'sj' : null;
         const isForcedSj = forced === 'sj';
-        let proxy = overrideProxy || savedProxy || PROXY_DEFAULT;
+        let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || PROXY_DEFAULT;
         if (forced) proxy = forced;
         if (proxy === 'sj' && shouldAvoidScramjetForUrl(url)) proxy = 'uv';
 
@@ -3472,6 +3616,9 @@
               return __eclipse$config.prefix + __eclipse$config.codec.encode(url);
             }
             break;
+          case 'ag':
+            await ensureArgonServiceWorker();
+            return encodeArgonRoute(url);
           case 'rh':
             if (typeof RammerheadEncode === 'function') {
               return await RammerheadEncode(url);

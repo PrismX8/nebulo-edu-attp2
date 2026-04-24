@@ -4,7 +4,7 @@
 //    even before any page constructs a BareMuxConnection.
 // 2) Auto-repair broken caches/IndexedDB state that causes "invalid MessagePort",
 //    "no bare clients", or missing object stores.
-// 3) Set sane defaults (epoxy transport + Scramjet proxy) when no user preference exists.
+// 3) Set sane defaults (epoxy transport + Argon proxy) when no user preference exists.
 
 (function () {
   "use strict";
@@ -30,7 +30,7 @@
       else if (!migrated && t === "libcurl") localStorage.setItem("transport", "epoxy");
 
       const p = localStorage.getItem("proxy");
-      if (!p) localStorage.setItem("proxy", "sj");
+      if (!p) localStorage.setItem("proxy", "ag");
 
       if (!migrated) localStorage.setItem(MIGRATION_KEY, "1");
     } catch {}
@@ -61,7 +61,12 @@
       try { warm.port.start(); } catch {}
       // Keep a reference so the worker isn't immediately GC'd.
       window.__baremuxWarmWorker = warm;
+      try { localStorage.setItem("bare-mux-path", "/baremux/worker.js?v=bw1"); } catch {}
     } catch {}
+
+    if (!(window.__baremuxActiveBridges instanceof Set)) {
+      window.__baremuxActiveBridges = new Set();
+    }
 
     // NOTE: We do NOT transfer the SharedWorker's port directly. Some environments treat it
     // as an "invalid MessagePort" once it crosses contexts. Instead we return a MessageChannel
@@ -76,6 +81,11 @@
         try { worker.port.start(); } catch {}
 
         const bridge = new MessageChannel();
+        try { bridge.port1.start(); } catch {}
+        try { bridge.port2.start(); } catch {}
+        try { reply.start && reply.start(); } catch {}
+        const bridgeState = { bridge, worker, reply };
+        window.__baremuxActiveBridges.add(bridgeState);
 
         bridge.port1.onmessage = (ev) => {
           try {
@@ -105,6 +115,7 @@
       text.includes("invalid messageport") ||
       text.includes("there are no bare clients") ||
       text.includes("no baretransport was set") ||
+      text.includes("failed to get a ping response from the worker") ||
       text.includes("object stores was not found") ||
       text.includes("failed to execute 'transaction' on 'idbdatabase'") ||
       text.includes("failed to get a bare-mux sharedworker messageport")
@@ -163,7 +174,7 @@
     // Re-apply desired defaults after cleanup.
     try {
       localStorage.setItem("transport", keepTransport || "epoxy");
-      localStorage.setItem("proxy", keepProxy || "sj");
+      localStorage.setItem("proxy", keepProxy || "ag");
     } catch {}
   }
 
@@ -208,7 +219,10 @@
     console.warn = function (...args) {
       try {
         const text = safeLower(args.join(" "));
-        if (text.includes("failed to get a bare-mux sharedworker messageport")) {
+        if (
+          text.includes("failed to get a bare-mux sharedworker messageport") ||
+          text.includes("failed to get a ping response from the worker")
+        ) {
           const now = Date.now();
           if (!burstStart || now - burstStart > BURST_WINDOW_MS) {
             burstStart = now;
@@ -224,7 +238,149 @@
     };
   }
 
+  function installInjectedAdCleanup() {
+    const BLOCKED_HOST_SNIPPETS = [
+      "spacefree.space",
+      "traff.world",
+      "pebblepilot.com",
+    ];
+    const TEXT_PATTERNS = [
+      /click to update now/i,
+      /antivirus update ready/i,
+      /mcafee/i,
+    ];
+    const observedDocs = new WeakSet();
+
+    function includesBlockedHost(value) {
+      const text = safeLower(value);
+      return BLOCKED_HOST_SNIPPETS.some((host) => text.includes(host));
+    }
+
+    function getClassText(el) {
+      try {
+        return safeLower(el.className && typeof el.className === "string" ? el.className : "");
+      } catch {
+        return "";
+      }
+    }
+
+    function isAdLikeElement(el) {
+      if (!(el instanceof Element)) return false;
+
+      const classText = getClassText(el);
+      const idText = safeLower(el.id || "");
+      const attrs = [
+        el.getAttribute("data-link"),
+        el.getAttribute("href"),
+        el.getAttribute("src"),
+        el.getAttribute("srcset"),
+        el.getAttribute("data-src"),
+      ];
+
+      if (attrs.some((value) => includesBlockedHost(value))) return true;
+      if (classText.includes("el-notify-box")) return true;
+      if (classText.includes("rp-inpage")) return true;
+      if (classText.includes("notify-block-link")) return true;
+      if (/^notify-\d+$/.test(idText) && classText.includes("el-notification")) return true;
+
+      const text = safeLower((el.textContent || "").slice(0, 400));
+      if ((classText.includes("notify") || classText.includes("rp-")) && TEXT_PATTERNS.some((re) => re.test(text))) {
+        return true;
+      }
+
+      return false;
+    }
+
+    function getRemovalTarget(el) {
+      try {
+        return el.closest(
+          ".el-notify-box, [class*='rp-inpage'], [class*='notify-block-link'], [id^='notify-']"
+        ) || el;
+      } catch {
+        return el;
+      }
+    }
+
+    function removeIfAd(el) {
+      if (!isAdLikeElement(el)) return false;
+      const target = getRemovalTarget(el);
+      try {
+        target.remove();
+      } catch {
+        try {
+          target.style.setProperty("display", "none", "important");
+          target.style.setProperty("visibility", "hidden", "important");
+          target.style.setProperty("pointer-events", "none", "important");
+        } catch {}
+      }
+      return true;
+    }
+
+    function scanRoot(root) {
+      if (!root || typeof root.querySelectorAll !== "function") return;
+      const selectors = [
+        ".el-notify-box",
+        "[class*='rp-inpage']",
+        "[class*='notify-block-link']",
+        "[data-link*='spacefree.space']",
+        "[data-link*='traff.world']",
+        "[src*='spacefree.space']",
+        "[src*='pebblepilot.com']",
+        "[href*='spacefree.space']",
+        "[href*='traff.world']",
+        "[id^='notify-']",
+      ];
+      for (const el of root.querySelectorAll(selectors.join(", "))) {
+        removeIfAd(el);
+      }
+    }
+
+    function observeDocument(doc) {
+      if (!doc || observedDocs.has(doc)) return;
+      observedDocs.add(doc);
+
+      const start = () => {
+        scanRoot(doc);
+
+        const observer = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            for (const node of mutation.addedNodes || []) {
+              if (!(node instanceof Element)) continue;
+              if (!removeIfAd(node)) scanRoot(node);
+              if (node.tagName === "IFRAME") {
+                try {
+                  node.addEventListener("load", () => observeDocument(node.contentDocument));
+                  observeDocument(node.contentDocument);
+                } catch {}
+              }
+            }
+          }
+        });
+
+        try {
+          observer.observe(doc.documentElement || doc, { childList: true, subtree: true });
+        } catch {}
+
+        try {
+          for (const frame of doc.querySelectorAll("iframe")) {
+            frame.addEventListener("load", () => observeDocument(frame.contentDocument));
+            observeDocument(frame.contentDocument);
+          }
+        } catch {}
+      };
+
+      if (doc.readyState === "loading") {
+        doc.addEventListener("DOMContentLoaded", start, { once: true });
+      } else {
+        start();
+      }
+    }
+
+    observeDocument(document);
+  }
+
   ensureDefaults();
   installBareMuxPortBridge();
   installAutoRepair();
+  installInjectedAdCleanup();
 })();

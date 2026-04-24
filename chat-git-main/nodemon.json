@@ -1,0 +1,18 @@
+{
+  "watch": [
+    ".env",
+    "server.js",
+    "routes",
+    "services",
+    "config",
+    "middleware",
+    "models"
+  ],
+  "ext": "js,mjs,cjs,json",
+  "ignore": [
+    "client/**",
+    "data/tlk-sessions.json",
+    "uploads/**",
+    "node_modules/**"
+  ]
+}

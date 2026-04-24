@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const selectElements = [
         { element: themeSelect, key: 'theme' },
-        { element: proxySelect, key: 'proxy', default: 'sj' },
+        { element: proxySelect, key: 'proxy', default: 'ag' },
         { element: transSelect, key: 'transport', default: 'epoxy' },
         { element: engineSelect, key: 'searchEngine', default: 'duckduckgo' }
     ];

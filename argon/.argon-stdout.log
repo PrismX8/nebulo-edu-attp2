@@ -1,0 +1,8 @@
+node environment!
+Configuration loaded: {
+  proxy_url: 'http://localhost:3010',
+  token_prefix: '/ag/',
+  local_listen_port: 3010
+}
+node environment!!!
+Listening on http://localhost:3010

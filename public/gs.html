@@ -261,15 +261,15 @@
       return url;
     }
     function updateProxyDisplay() {
-      const proxy = localStorage.getItem('proxy') || 'sj';
+      const proxy = localStorage.getItem('proxy') || 'ag';
       document.getElementById('activeProxy').textContent = proxy.toUpperCase();
     }
-    function enforceScramjetProxyDefault() {
+    function enforceArgonProxyDefault() {
       // Only set a default if the user hasn't chosen one.
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'sj'); } catch {}
+      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
     }
     function init() {
-      enforceScramjetProxyDefault();
+      enforceArgonProxyDefault();
       GAMES.forEach(game => gamesGrid.appendChild(createCard(game)));
       updateProxyDisplay();
       document.addEventListener('storage', ({ key }) => {

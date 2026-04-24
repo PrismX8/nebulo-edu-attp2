@@ -18,6 +18,18 @@
   const AVOID_SCRAMJET_HOSTS = [
     "polybuzz.ai",
     ".polybuzz.ai",
+    "tiktok.com",
+    ".tiktok.com",
+    "tiktokv.us",
+    ".tiktokv.us",
+    "tiktokw.us",
+    ".tiktokw.us",
+    "tiktokcdn-us.com",
+    ".tiktokcdn-us.com",
+    "tiktokcdn.com",
+    ".tiktokcdn.com",
+    "x-network.lol",
+    ".x-network.lol",
   ];
 
   function hostMatches(host, rule) {

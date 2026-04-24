@@ -552,7 +552,7 @@ select.form-control {
       <div class="settings-card">
         <div class="card-header">
           <h3>Custom Tab Appearance</h3>
-          <p>Customize how this tab appears in your browser</p>
+          <p>Customize how this tab appears in your browser. Custom tab cloaking does not work in About:Blank.</p>
         </div>
         <div class="form-group">
           <label class="form-label">Tab Title</label>
@@ -655,11 +655,12 @@ select.form-control {
         <div class="form-group">
           <label class="form-label">Browser Mode</label>
           <div class="select-wrapper">
-            <select class="form-control" id="proxy-select">
-              <option value="sj">Scramjet (Default)</option>
-              <option value="uv">UV (Alternate)</option>
-              <option value="ec">Eclipse (Alternate)</option>
-            </select>
+<select class="form-control" id="proxy-select">
+<option value="sj">Scramjet (Alternate)</option>
+<option value="uv">UV (Alternate)</option>
+<option value="ec">Eclipse (Alternate)</option>
+<option value="ag">Argon (Default)</option>
+</select>
           </div>
         </div>
         <div class="form-group">
@@ -1199,14 +1200,14 @@ document.addEventListener('DOMContentLoaded', initSettings);
 
 // Send initial proxy to service worker
 if ('serviceWorker' in navigator) {
-    const proxy = localStorage.getItem('proxy') || 'sj'; // or your default
+    const proxy = localStorage.getItem('proxy') || 'ag'; // or your default
     navigator.serviceWorker.ready.then(reg => {
         reg.active?.postMessage({ type: 'set-proxy', proxy });
     });
 
     // Listen for changes (e.g., when user selects a different proxy)
     document.getElementById('proxy-select').addEventListener('change', (e) => {
-        const newProxy = e.target.value; // 'sj', 'uv', or 'ec'
+        const newProxy = e.target.value; // 'sj', 'uv', 'ec', or 'ag'
         localStorage.setItem('proxy', newProxy);
         navigator.serviceWorker.controller?.postMessage({ type: 'set-proxy', proxy: newProxy });
     });

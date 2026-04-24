@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Argon</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap");
+
+    :root {
+      --argon-green: #286936;
+      --argon-deep: #1a2d16;
+      --argon-mist: #8d8992;
+      --argon-violet: #655aae;
+      --argon-charcoal: #494949;
+      --text: #f3f3f3;
+      --muted: #c9c6cd;
+      --danger: #ff9bad;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+
+    body {
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background: linear-gradient(160deg, var(--argon-deep) 0%, var(--argon-charcoal) 55%, var(--argon-deep) 100%);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 680px;
+      padding: 28px;
+      border-radius: 14px;
+      border: 1px solid var(--argon-mist);
+      background: rgba(26, 45, 22, 0.9);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    h1 {
+      font-size: clamp(1.55rem, 3.6vw, 2.05rem);
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--argon-mist);
+      border-radius: 12px;
+      background: rgba(73, 73, 73, 0.55);
+    }
+
+    #url {
+      width: 100%;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: rgba(26, 45, 22, 0.95);
+      color: var(--text);
+      padding: 0 14px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color .14s, box-shadow .14s;
+    }
+
+    #url:focus {
+      border-color: var(--argon-violet);
+      box-shadow: 0 0 0 3px rgba(101, 90, 174, 0.35);
+    }
+
+    #goBtn {
+      height: 44px;
+      min-width: 96px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--argon-violet);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .12s ease;
+    }
+
+    #goBtn:hover { filter: brightness(1.06); }
+
+    .error {
+      margin-top: 10px;
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--danger);
+    }
+
+    @media (max-width: 620px) {
+      .card { padding: 20px; }
+      .shell { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Argon Proxy</h1>
+    <p class="sub">Enter a URL to open it through the proxy.</p>
+
+    <div class="shell">
+      <input id="url" type="text" placeholder="https://example.com" autocomplete="off" spellcheck="false" />
+      <button id="goBtn" onclick="go()">Go</button>
+    </div>
+
+    <div class="error" id="err"></div>
+  </main>
+
+  <script>
+    const input = document.getElementById("url");
+    const err = document.getElementById("err");
+
+    async function cleanupWrongArgonRegistrations() {
+      if (!("serviceWorker" in navigator)) return;
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all((registrations || []).map(async (registration) => {
+          try {
+            const worker = registration.active || registration.waiting || registration.installing;
+            const scriptURL = worker && worker.scriptURL ? worker.scriptURL : "";
+            const scopePath = new URL(registration.scope, window.location.href).pathname;
+            const isArgonWorker = scriptURL.includes("/argon_service_worker.js");
+            const isWrongScope = isArgonWorker && !scopePath.startsWith("/ag/");
+            if (!isWrongScope) return;
+            await registration.unregister();
+          } catch {}
+        }));
+      } catch {}
+    }
+
+    cleanupWrongArgonRegistrations();
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") go();
+    });
+
+    function go() {
+      err.textContent = "";
+      let raw = input.value.trim();
+      if (!raw) return;
+      if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+
+      try {
+        new URL(raw);
+      } catch {
+        err.textContent = "Please enter a valid URL.";
+        return;
+      }
+
+      if (!("serviceWorker" in navigator)) {
+        err.textContent = "Service workers are not supported in this browser.";
+        return;
+      }
+
+      const swUrl = "/argon_service_worker.js?proxy_real_protocol=" +
+        encodeURIComponent(window.location.protocol.replace(":", "")) +
+        "&proxy_real_host=" + encodeURIComponent(window.location.host);
+
+      navigator.serviceWorker.getRegistration("/ag/")
+        .then((existing) => {
+          if (existing) return existing.update().then(() => existing, () => existing);
+          return navigator.serviceWorker.register(swUrl, { scope: "/ag/" });
+        })
+        .then((reg) => {
+          const sw = reg.installing || reg.waiting || reg.active;
+          if (reg.active) {
+            navigate(raw);
+            return;
+          }
+          sw.addEventListener("statechange", function handler() {
+            if (this.state === "activated") {
+              sw.removeEventListener("statechange", handler);
+              navigate(raw);
+            }
+          });
+        })
+        .catch((e) => {
+          err.textContent = "Service worker error: " + e.message;
+        });
+    }
+
+    function navigate(url) {
+      const u = new URL(url);
+      const prefix = window.__argon_prefix || "/ag/";
+      const normalizedPrefix = prefix.endsWith("/") ? prefix : prefix + "/";
+      const path = normalizedPrefix + u.protocol.replace(":", "") + "/" + u.host + (u.pathname || "/") + (u.search || "") + (u.hash || "");
+      window.location.href = path;
+    }
+  </script>
+</body>
+</html>

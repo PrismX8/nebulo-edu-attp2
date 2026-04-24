@@ -1,0 +1,19 @@
+{
+  "name": "argon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "argon-module.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:fastify": "node server.js",
+    "start:standalone": "node argon.cjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/static": "^7.0.4",
+    "fastify": "^4.28.1"
+  }
+}

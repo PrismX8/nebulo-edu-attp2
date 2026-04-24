@@ -4,8 +4,63 @@ document.addEventListener("DOMContentLoaded", () => {
 	const input2 = document.getElementById("input2");
 	let scramjet = null;
 	let scramjetInitPromise = null;
+	let argonServiceWorkerPromise = null;
 
 	let baremuxConnection = null;
+
+	function normalizeProxyChoice(value) {
+		return value === "argon" || value === "sj" ? "ag" : value;
+	}
+
+	function encodeArgonRoute(url) {
+		try {
+			const u = new URL(url);
+			if (u.protocol !== "http:" && u.protocol !== "https:") return url;
+			return "/ag/" + u.protocol.replace(":", "") + "/" + u.host + (u.pathname || "/") + (u.search || "") + (u.hash || "");
+		} catch {
+			return url;
+		}
+	}
+
+	async function ensureArgonServiceWorker() {
+		if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
+		argonServiceWorkerPromise = (async () => {
+			if (!("serviceWorker" in navigator)) return false;
+			const scriptUrl =
+				"/argon_service_worker.js?proxy_real_protocol=" +
+				encodeURIComponent(location.protocol.replace(":", "")) +
+				"&proxy_real_host=" +
+				encodeURIComponent(location.host);
+			try {
+				const registration = await navigator.serviceWorker.register(scriptUrl, {
+					scope: "/",
+					updateViaCache: "none",
+				});
+				if (!registration.active && (registration.installing || registration.waiting)) {
+					const worker = registration.installing || registration.waiting;
+					await new Promise((resolve) => {
+						const done = () => resolve();
+						const timer = setTimeout(done, 4000);
+						worker.addEventListener("statechange", () => {
+							if (worker.state === "activated" || worker.state === "redundant") {
+								clearTimeout(timer);
+								done();
+							}
+						});
+					});
+				}
+				return true;
+			} catch (err) {
+				console.error("Argon service worker registration failed:", err);
+				return false;
+			} finally {
+				setTimeout(() => {
+					argonServiceWorkerPromise = null;
+				}, 0);
+			}
+		})();
+		return argonServiceWorkerPromise;
+	}
 
 	// === Helper: async-safe localStorage write ===
 	function safeStore(key, value) {
@@ -170,18 +225,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// === Encode functions (DO NOT TOUCH) ===
 	function logHistory(url) {
-		if (localStorage.getItem("proxy") === "uv") {
+		const proxy = normalizeProxyChoice(localStorage.getItem("proxy"));
+		if (proxy === "uv") {
 			const decodedUrl = __uv$config.decodeUrl(url);
 			safeStore("history", decodedUrl);
 			return decodedUrl;
-		} else if (localStorage.getItem("proxy") === "sj") {
+		} else if (proxy === "sj") {
 			const decodedUrl = decodeURIComponent(url);
 			safeStore("history", decodedUrl);
 			return decodedUrl;
-		} else if (localStorage.getItem("proxy") === "ec") {
+		} else if (proxy === "ec") {
 			const decodedUrl = __eclipse$config.codec.encode(url);
 			safeStore("history", decodedUrl);
 			return decodedUrl;
+		} else if (proxy === "ag") {
+			safeStore("history", url);
+			return url;
 		}
 		safeStore("history", url);
 		return url;
@@ -220,6 +279,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		logHistory(url);
 		safeStore("url", encodedUrl);
         window.location.href = encodedUrl;
+	}
+
+	async function agEncode(url) {
+		await ensureArgonServiceWorker();
+		const encodedUrl = encodeArgonRoute(url);
+		logHistory(url);
+		safeStore("url", encodedUrl);
+		sessionStorage.setItem("Url", encodedUrl);
+		window.location.href = encodedUrl;
 	}
 
 	// === Decode button listeners ===
@@ -283,7 +351,7 @@ if (form && input) {
 		}
 
 		// --- Existing encoding logic ---
-		const savedProxy = localStorage.getItem("proxy");
+		const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
 		let proxy = savedProxy || "uv";
 		try {
 			const rules = window.NebuloProxyHostRules;
@@ -295,7 +363,7 @@ if (form && input) {
 			}
 		} catch {}
 		// Legacy/unsupported proxy modes (ex: "rh") can produce broken hvtrs paths.
-		if (!["uv", "sj", "ec"].includes(proxy)) {
+		if (!["uv", "sj", "ec", "ag"].includes(proxy)) {
 			proxy = "uv";
 			localStorage.setItem("proxy", "uv");
 		}
@@ -308,6 +376,9 @@ if (form && input) {
 				break;
 			case "ec":
 				await ecEncode(url);
+				break;
+			case "ag":
+				await agEncode(url);
 				break;
 			default:
 				await uvEncode(url);

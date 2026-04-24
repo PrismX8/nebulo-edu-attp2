@@ -236,8 +236,7 @@ s+='( document.getElementsByTagName("head")[0] || document.getElementsByTagName(
 s+='</script>'}
 return s}
 function cookMsg(){let s=''
-let imgHome=(document.domain=='localhost'?'/mathsisfun':'')+'/'
-s+='We may use <a href="'+imgHome+'about-ads.html">Cookies</a> &nbsp;'
+s+='We may use cookies. &nbsp;'
 s+='<div class="btn" style="display:inline-block; cursor: pointer;" onclick="cookOK()">OK</div>'
 return s}
 function cookOK(){console.log('cookOK')
@@ -299,37 +298,11 @@ function themeSet(theme){localStorage.setItem('theme',theme)
 console.log('themeSet',theme,document.documentElement.hasAttribute('theme'))
 document.documentElement.setAttribute('theme',theme)}
 function adsHideHTML(){let s=''
-s+='<div id="adsShow1"><a href="javascript:adsShow()">Show Ads</a></div>'
-s+='<div id="adsHide1"><a href="javascript:adsHide()">Hide Ads</a> | '
-let imgHome=(document.domain=='localhost'?'/mathsisfun':'')+'/'
-s+='<a href="'+imgHome+'about-ads.html">About Ads</a> </div>'
 return s}
-function adsHideSet(){if(adOffQ()){adsSet(false)}}
-function gTagHTML(){let s=''
-s+='<script async src="https://www.googletagmanager.com/gtag/js?id=UA-29771508-1"></script>'
-s+='<script>'
-s+='window.dataLayer = window.dataLayer || [];'
-s+='function gtag(){dataLayer.push(arguments);}'
-s+="gtag('js', new Date());"
-s+="gtag('config', 'UA-29771508-1');"
-s+='</script>'
-return s}
-function logVisit(){let pg=location.pathname
-if(pg=='index.html')return
-let pgHex=toHex(pg)
-addVisit(pgHex,'visit',window.location.hostname)}
-if(Math.random()<0.1)logVisit()
-function addVisit(pg,viewtype,hostname){console.log('addVisit',viewtype,hostname)
-let req
-req=new XMLHttpRequest()
-let params='type='+viewtype
-params+='&site=mif'
-params+='&pg='+encodeURIComponent(pg)
-params+='&lang='+encodeURIComponent(window.navigator.language)
-params+='&ref='+encodeURIComponent(toHex(document.referrer))
-req.open('POST.html','https://mi2f.com/update.php',true)
-req.setRequestHeader('Content-type','application/x-www-form-urlencoded')
-req.send(params)}
+function adsHideSet(){}
+function gTagHTML(){return ''}
+function logVisit(){}
+function addVisit(pg,viewtype,hostname){}
 function onScroll(){let scrollTop=document.documentElement?document.documentElement.scrollTop:document.body.scrollTop
 let menu=document.getElementById('menu')
 if(scrollTop>100){menu.style.top='0px'
@@ -407,13 +380,6 @@ let vidDivs=document.querySelectorAll('.video')
 for(let i=0;i<vidDivs.length;i++){vidExpand(vidDivs[i],i)}
 let scriptDivs=document.querySelectorAll('.script')
 for(let i=0;i<scriptDivs.length;i++){scriptExpand(scriptDivs[i])}
-if(document.domain=='localhost'){let dummy=document.createElement('img')
-dummy.setAttribute('src','mathsisfun/images/style/320x60.html')
-dummy.setAttribute('alt','dummy image')
-dummy.setAttribute('width','320')
-dummy.setAttribute('height','60')
-let dest=document.getElementById('adend')
-dest.appendChild(dummy)}else{setTimeout(adsenseDo,1000)}
 adsHideSet()
 doLocal()
 document.getElementById('searchFld').addEventListener('keyup',searchKey)}

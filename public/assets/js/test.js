@@ -246,7 +246,7 @@ setInterval(function() {
 			}
 
 			// --- Pass to your existing encoding logic ---
-			const proxy = localStorage.getItem("proxy") || "uv";
+			const proxy = localStorage.getItem("proxy") || "ag";
 			switch (proxy) {
 				case "uv":
 					await uvEncode(url);

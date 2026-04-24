@@ -1,0 +1,11 @@
+{
+  "name": "k-chat-client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "echo \"Vanilla frontend: run the backend server and open http://localhost:5000\"",
+    "build": "echo \"No build step for vanilla frontend\"",
+    "test": "echo \"No client test runner configured\"",
+    "eject": "echo \"Not applicable\""
+  }
+}

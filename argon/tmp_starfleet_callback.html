@@ -1,0 +1,144 @@
+<!--
+Copyright (c) 2020-2026, NVIDIA CORPORATION.  All rights reserved.
+
+NVIDIA CORPORATION and its licensors retain all intellectual property
+and proprietary rights in and to this software, related documentation
+and any modifications thereto.  Any use, reproduction, disclosure or
+distribution of this software and related documentation without an express
+license agreement from NVIDIA CORPORATION is strictly prohibited.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="robots" content="noindex,nofollow" />
+        <title>NVIDIA GeForce NOW</title>
+        <script>
+            (function() {
+                'use strict';
+                const GFN_OAUTH_NO_LOCALSTORAGE = 'no_localstorage_supported';
+                const GFN_OAUTH_NO_SESSIONSTORAGE = 'no_sessionstorage_supported';
+                const GFN_AUTH_REDIRECT_ERROR = 'auth_redirect_error';
+                const GfnOauthUrlData = 'GfnOauthUrlData';
+                const returnUrlKey = 'returnUrl';
+                const isSameTabFeatureEnabled = window.sessionStorage.getItem(GfnOauthUrlData) !== null;
+                const GFN_OAUTH_KEY = 'oauth';
+                const GFN_OAUTH_NONCE_SESSION_KEY = 'oauth_nonce_session';
+                const errorFieldKey = 'error';
+                const stateKey = 'state';
+                const oauthUrlKey = 'oauth_url';
+                const url = new URL(window.location.href);
+                const authResponse = {};
+                let returnUrl = '';
+                let errorClient = '';
+                let oAuthUrlData;
+
+                // Check if this is the initial redirect with nonce and oauth_url params
+                const stateParam = url.searchParams.get(stateKey);
+                const oauthUrlParam = url.searchParams.get(oauthUrlKey);
+
+                if (stateParam && oauthUrlParam) {
+                    let iFrmWindowObj = null;
+                    try {
+                        iFrmWindowObj = window.frameElement;
+                    } catch (err) {
+                        console.error('Error while accessing frameElement');
+                        return;
+                    }
+
+                    if (!window.opener && !iFrmWindowObj) {
+                        console.error('Cannot communicate with GeForce NOW');
+                        return;
+                    }
+
+                    const windowMsgObj = iFrmWindowObj ? window.parent : window.opener;
+
+                    try {
+                        // Store nonce in sessionStorage for later retrieval
+                        if (window.sessionStorage) {
+                            window.sessionStorage.setItem(GFN_OAUTH_NONCE_SESSION_KEY, stateParam);
+                            // Redirect to the actual OAuth URL
+                            window.location.href = oauthUrlParam;
+                            return;
+                        } else {
+                            windowMsgObj.postMessage({ key: GFN_OAUTH_NO_SESSIONSTORAGE, nonce: stateParam });
+                            console.error("This browser doesn't support sessionStorage");
+                            return;
+                        }
+                    } catch (err) {
+                        console.error('Error during initial OAuth redirect:', err);
+                        windowMsgObj.postMessage({ key: GFN_AUTH_REDIRECT_ERROR, nonce: stateParam });
+                        return;
+                    }
+                }
+
+                if (isSameTabFeatureEnabled) {
+                    try {
+                        oAuthUrlData = JSON.parse(sessionStorage.getItem(GfnOauthUrlData));
+                    } catch (e) {
+                        oAuthUrlData[returnUrlKey] = document.location.origin;
+                        errorClient = 'GfnOauthUrlData parse failed';
+                    }
+                    if (returnUrlKey in oAuthUrlData) {
+                        returnUrl = oAuthUrlData[returnUrlKey];
+                    } else {
+                        returnUrl = decodeURIComponent(url.searchParams.get('state'));
+                        url.searchParams.delete('state');
+                    }
+                }
+                url.searchParams.forEach((value, key) => {
+                    authResponse[key] = value;
+                });
+                const payload = {
+                    data: authResponse
+                };
+
+                if (isSameTabFeatureEnabled) {
+                    if (errorClient !== '' && errorFieldKey in payload.data) {
+                        payload.data[errorFieldKey] = payload.data[errorFieldKey] + ' ' + errorClient;
+                    } else if (errorClient !== '') {
+                        payload.data[errorFieldKey] = errorClient;
+                    }
+                    localStorage.setItem(GFN_OAUTH_KEY, JSON.stringify(payload));
+                    console.log('redirecting to url ', returnUrl);
+                    window.open(returnUrl, '_self');
+                } else {
+                    let iFrmWindowObj = null;
+                    try {
+                        iFrmWindowObj = window.frameElement;
+                    } catch (err) {
+                        console.error('Error while accessing frameElement');
+                        return;
+                    }
+
+                    if (!window.opener && !iFrmWindowObj) {
+                        console.error('Cannot communicate with GeForce NOW');
+                        return;
+                    }
+
+                    const windowMsgObj = iFrmWindowObj ? window.parent : window.opener;
+                    // Read nonce from sessionStorage (stored during initial redirect)
+                    const oauthNonce = window.sessionStorage.getItem(GFN_OAUTH_NONCE_SESSION_KEY);
+                    if (!window.localStorage) {
+                        windowMsgObj.postMessage({ key: GFN_OAUTH_NO_LOCALSTORAGE, nonce: oauthNonce });
+                        console.error("This browser doesn't support LocalStorage");
+                        return;
+                    }
+                    if (authResponse) {
+                        localStorage.setItem(GFN_OAUTH_KEY, JSON.stringify(payload));
+                        windowMsgObj.postMessage(
+                            {
+                                key: GFN_OAUTH_KEY,
+                                nonce: oauthNonce
+                            },
+                            url.origin
+                        );
+                        // Clean up nonce from sessionStorage after use
+                        window.sessionStorage.removeItem(GFN_OAUTH_NONCE_SESSION_KEY);
+                    }
+                }
+            })();
+        </script>
+    </head>
+</html>
