@@ -5,6 +5,13 @@ const crypto = require("crypto");
 const DATA_DIR = path.resolve(__dirname, "..", "..", "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const RESERVED_USERNAMES = new Set(["moderation"]);
+const cache = {
+  mtimeMs: -1,
+  store: { users: [] },
+  byId: new Map(),
+  byUsername: new Map(),
+  byEmail: new Map()
+};
 
 function ensureStore() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -15,22 +22,59 @@ function ensureStore() {
   }
 }
 
-function readStore() {
+function normalizeStore(input = {}) {
+  return {
+    users: Array.isArray(input.users) ? input.users : []
+  };
+}
+
+function rebuildIndexes(store) {
+  cache.byId = new Map();
+  cache.byUsername = new Map();
+  cache.byEmail = new Map();
+
+  for (const user of store.users) {
+    const id = String(user?._id || "").trim();
+    const username = String(user?.username || "").trim().toLowerCase();
+    const email = String(user?.email || "").trim().toLowerCase();
+    if (id) cache.byId.set(id, user);
+    if (username) cache.byUsername.set(username, user);
+    if (email) cache.byEmail.set(email, user);
+  }
+}
+
+function updateCache(store, mtimeMs = cache.mtimeMs) {
+  cache.store = normalizeStore(store);
+  cache.mtimeMs = Number.isFinite(mtimeMs) ? mtimeMs : cache.mtimeMs;
+  rebuildIndexes(cache.store);
+  return cache.store;
+}
+
+function readStore(force = false) {
   ensureStore();
   try {
+    const stats = fs.statSync(USERS_FILE);
+    if (!force && cache.mtimeMs === stats.mtimeMs) {
+      return cache.store;
+    }
     const raw = fs.readFileSync(USERS_FILE, "utf8");
     const parsed = JSON.parse(raw || "{}");
-    return {
-      users: Array.isArray(parsed.users) ? parsed.users : []
-    };
+    return updateCache(parsed, stats.mtimeMs);
   } catch (_err) {
-    return { users: [] };
+    return updateCache({ users: [] }, -1);
   }
 }
 
 function writeStore(store) {
   ensureStore();
-  fs.writeFileSync(USERS_FILE, JSON.stringify(store, null, 2), "utf8");
+  const nextStore = normalizeStore(store);
+  fs.writeFileSync(USERS_FILE, JSON.stringify(nextStore, null, 2), "utf8");
+  try {
+    const stats = fs.statSync(USERS_FILE);
+    updateCache(nextStore, stats.mtimeMs);
+  } catch (_err) {
+    updateCache(nextStore, Date.now());
+  }
 }
 
 function listUsers() {
@@ -43,25 +87,25 @@ function listUsers() {
 function findByUsername(username = "") {
   const target = String(username).trim().toLowerCase();
   if (!target) return null;
-  return listUsers().find((u) => String(u.username || "").toLowerCase() === target) || null;
+  readStore();
+  const user = cache.byUsername.get(target);
+  return user ? { ...user, role: applyConfiguredRole(user) } : null;
 }
 
 function findByIdentifier(identifier = "") {
   const target = String(identifier).trim().toLowerCase();
   if (!target) return null;
-  return (
-    listUsers().find((u) => {
-      const username = String(u.username || "").toLowerCase();
-      const email = String(u.email || "").toLowerCase();
-      return username === target || email === target;
-    }) || null
-  );
+  readStore();
+  const user = cache.byUsername.get(target) || cache.byEmail.get(target) || null;
+  return user ? { ...user, role: applyConfiguredRole(user) } : null;
 }
 
 function findById(id = "") {
   const target = String(id).trim();
   if (!target) return null;
-  return listUsers().find((u) => String(u._id) === target) || null;
+  readStore();
+  const user = cache.byId.get(target);
+  return user ? { ...user, role: applyConfiguredRole(user) } : null;
 }
 
 function parseEmailSet(input = "") {
