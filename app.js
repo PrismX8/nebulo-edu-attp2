@@ -2,6 +2,7 @@ import cluster from "node:cluster";
 import { hostname as osHostname } from "node:os";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { performance } from "node:perf_hooks";
@@ -17,8 +18,10 @@ import Ably from "ably";
 
 const require = createRequire(import.meta.url);
 const argonPlugin = require("./argon/argon-module.js");
+const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const path = require("path");
 
 const libcurlPath = fileURLToPath(
@@ -41,6 +44,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 } else {
   const publicPath = fileURLToPath(new URL("public/", import.meta.url));
   const pagesPath = fileURLToPath(new URL("pages/", import.meta.url));
+  const chatUsersPath = fileURLToPath(new URL("chat-git-main/data/users.json", import.meta.url));
   const patchedBareMuxWorkerPath = fileURLToPath(
     new URL("public/assets/js/baremux-worker.js", import.meta.url)
   );
@@ -54,6 +58,68 @@ if (cluster.isPrimary && WORKERS > 1) {
     new URL("public/assets/js/scramjet.all.js", import.meta.url)
   );
   const serviceWorkerPath = fileURLToPath(new URL("public/sw.js", import.meta.url));
+  const JWT_SECRET = process.env.JWT_SECRET || "your_secure_jwt_secret_key_replace_this";
+
+  const readChatUsers = () => {
+    try {
+      const raw = fs.readFileSync(chatUsersPath, "utf8");
+      const data = JSON.parse(raw);
+      return Array.isArray(data?.users) ? data.users : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const writeChatUsers = (users) => {
+    fs.writeFileSync(chatUsersPath, JSON.stringify({ users }, null, 2));
+  };
+
+  const sanitizeUser = (user) => ({
+    _id: user?._id || user?.id || "",
+    id: user?._id || user?.id || "",
+    username: String(user?.username || ""),
+    name: String(user?.name || user?.username || ""),
+    role: String(user?.role || "user"),
+    avatar: user?.avatar ?? null,
+  });
+
+  const findUserByUsername = (username) => {
+    const target = String(username || "").trim().toLowerCase();
+    if (!target) return null;
+    return readChatUsers().find((user) => String(user?.username || "").trim().toLowerCase() === target) || null;
+  };
+
+  const findUserById = (userId) => {
+    const target = String(userId || "").trim();
+    if (!target) return null;
+    return readChatUsers().find((user) => String(user?._id || user?.id || "").trim() === target) || null;
+  };
+
+  const signAuthToken = (user) =>
+    jwt.sign({ user: { id: user?._id || user?.id } }, JWT_SECRET, { expiresIn: "24h" });
+
+  const verifyPassword = async (inputPassword, storedPassword) => {
+    if (typeof storedPassword !== "string" || !storedPassword.length) return false;
+    const password = String(inputPassword || "");
+    if (/^\$2[aby]\$\d+\$/.test(storedPassword)) {
+      return bcrypt.compare(password, storedPassword);
+    }
+    return password === storedPassword;
+  };
+
+  const getAuthenticatedUser = (req) => {
+    const headerToken = req.headers["x-auth-token"];
+    const bearerToken = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+    const token = String(headerToken || bearerToken || "").trim();
+    if (!token) return null;
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      return findUserById(decoded?.user?.id) || null;
+    } catch {
+      return null;
+    }
+  };
 
   logging.set_level(logging.NONE);
   Object.assign(wisp.options, {
@@ -222,33 +288,23 @@ if (cluster.isPrimary && WORKERS > 1) {
     if (!username || !password) {
       return reply.status(400).send({ msg: "Username and password required" });
     }
-    // Stub: create mock user
+    const user = findUserByUsername(username);
     if (!user) {
       return reply.status(400).send({ msg: "Username not found" });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await verifyPassword(password, user.password);
     if (!isMatch) {
       return reply.status(400).send({ msg: "Incorrect password" });
     }
-    const token = jwt.sign({ user: { id: user._id } }, "your_secure_jwt_secret_key_replace_this", { expiresIn: "24h" });
-    return { token: "stub-token", user: { id: "1", username, name: username } };
+    return { token: signAuthToken(user), user: sanitizeUser(user) };
   });
 
   fastify.get("/api/auth", async (req, reply) => {
-    const token = req.headers["x-auth-token"];
-    if (!token) {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
       return reply.status(401).send({ msg: "No token" });
     }
-    try {
-      const decoded = jwt.verify(token, "your_secure_jwt_secret_key_replace_this");
-      return { id: decoded.user.id, username: "user" };
-      if (!user) {
-        return reply.status(401).send({ msg: "User not found" });
-      }
-      return { id: "1", username: username, name: username };
-    } catch (err) {
-      return reply.status(401).send({ msg: "Invalid token" });
-    }
+    return sanitizeUser(user);
   });
 
   // Registration
@@ -257,14 +313,23 @@ if (cluster.isPrimary && WORKERS > 1) {
     if (!username || !password) {
       return reply.status(400).send({ msg: "Username and password required" });
     }
-    const existing = null; // Stub
+    const existing = findUserByUsername(username);
     if (existing) {
       return reply.status(400).send({ msg: "Username already exists" });
     }
-    const hash = await bcrypt.hash(password, 10);
-    const user = { id: "1", username, name: name || username }; // Stub
-    const token = jwt.sign({ user: { id: user._id } }, "your_secure_jwt_secret_key_replace_this", { expiresIn: "24h" });
-    return { token: "stub-token", user: { id: "1", username, name: username } };
+    const users = readChatUsers();
+    const user = {
+      _id: randomUUID(),
+      username: String(username).trim(),
+      name: String(name || username).trim(),
+      password: await bcrypt.hash(String(password), 10),
+      role: "user",
+      avatar: null,
+      date: new Date().toISOString(),
+    };
+    users.push(user);
+    writeChatUsers(users);
+    return { token: signAuthToken(user), user: sanitizeUser(user) };
   });
 
   // Network stubs for chat
@@ -314,7 +379,67 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   // Users list
   fastify.get("/api/users", async (req, reply) => {
-    return [];
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+    return readChatUsers().map(sanitizeUser);
+  });
+
+  fastify.put("/api/users/profile", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const { name, avatar } = req.body || {};
+    const users = readChatUsers();
+    const index = users.findIndex((user) => String(user?._id || "") === String(authUser._id || ""));
+    if (index === -1) {
+      return reply.status(404).send({ msg: "User not found" });
+    }
+
+    if (typeof name === "string" && name.trim()) {
+      users[index].name = name.trim();
+    }
+    if (avatar === null || avatar === "") {
+      users[index].avatar = null;
+    } else if (typeof avatar === "string") {
+      users[index].avatar = avatar;
+    }
+
+    writeChatUsers(users);
+    return { user: sanitizeUser(users[index]), msg: "Profile updated successfully" };
+  });
+
+  fastify.put("/api/users/password", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) {
+      return reply.status(400).send({ msg: "Current and new password required" });
+    }
+    if (String(newPassword).length < 6) {
+      return reply.status(400).send({ msg: "New password must be at least 6 characters" });
+    }
+
+    const users = readChatUsers();
+    const index = users.findIndex((user) => String(user?._id || "") === String(authUser._id || ""));
+    if (index === -1) {
+      return reply.status(404).send({ msg: "User not found" });
+    }
+
+    const isMatch = await verifyPassword(currentPassword, users[index].password);
+    if (!isMatch) {
+      return reply.status(400).send({ msg: "Incorrect current password" });
+    }
+
+    users[index].password = await bcrypt.hash(String(newPassword), 10);
+    writeChatUsers(users);
+    return { msg: "Password updated successfully" };
   });
 
   // OpenBullet
