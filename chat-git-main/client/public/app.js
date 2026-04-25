@@ -153,7 +153,7 @@
     .notice-success{color:var(--success);}
     .notice-error{color:var(--danger);}
     .hidden{display:none!important;}
-    .composer-box{background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-lg);transition:border-color 0.2s;overflow:hidden;}
+    .composer-box{background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-lg);transition:border-color 0.2s;overflow:visible;position:relative;z-index:5;}
     .composer-box:focus-within{border-color:var(--border-lg);}
     .composer-form{display:flex;align-items:flex-end;padding:12px 12px 12px 16px;gap:8px;}
     .composer-textarea{flex:1;background:transparent;border:none;outline:none;resize:none;font-family:var(--font-ui),'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;font-size:14px;color:var(--text-1);line-height:1.55;max-height:180px;overflow-y:auto;padding:2px 0;unicode-bidi:plaintext;caret-color:var(--accent-hi);}
