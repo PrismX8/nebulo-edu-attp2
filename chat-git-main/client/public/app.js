@@ -1499,7 +1499,12 @@
         pickerEl.style.zIndex = '5000';
       });
 
-      document.addEventListener('mousedown', () => { if (open) closePicker(); }, { capture: true });
+      document.addEventListener('mousedown', (event) => {
+        if (!open) return;
+        const wrapper = btn.parentElement;
+        if (wrapper && wrapper.contains(event.target)) return;
+        closePicker();
+      }, { capture: true });
     };
 
     setupEmojiPicker();
@@ -1605,7 +1610,12 @@
         btn.parentElement.appendChild(popoverEl);
       });
 
-      document.addEventListener('mousedown', () => { if (open) closePicker(); }, { capture: true });
+      document.addEventListener('mousedown', (event) => {
+        if (!open) return;
+        const wrapper = btn.parentElement;
+        if (wrapper && wrapper.contains(event.target)) return;
+        closePicker();
+      }, { capture: true });
     };
 
     setupEffectsPicker();
