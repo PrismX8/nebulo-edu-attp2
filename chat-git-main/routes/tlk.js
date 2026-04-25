@@ -331,7 +331,8 @@ function enrichMessageIdentity(msg) {
       userId: safe?._id || null,
       nickname: safe?.name || decodedNickname || safe?.username || 'Unknown',
       avatar: safe?.avatar || null,
-      role: safe?.role || null
+      role: safe?.role || null,
+      equippedEffect: safe?.equippedEffect || "none"
     };
   }
   return {
@@ -340,7 +341,8 @@ function enrichMessageIdentity(msg) {
     userId: profile.userId || null,
     nickname: profile.name || decodedNickname || profile.username || "Unknown",
     avatar: profile.avatar || null,
-    role: profile.role || null
+    role: profile.role || null,
+    equippedEffect: profile.equippedEffect || "none"
   };
 }
 
@@ -658,7 +660,27 @@ router.post('/rooms/:room/messages', async (req, res) => {
       return res.status(response.status).json(response.data || { msg: 'Failed to send message' });
     }
 
-    return res.json(enrichMessageIdentity(response.data));
+    let rewardedUser = null;
+    if (authUser?._id) {
+      rewardedUser = userStore.grantCoins(authUser._id, 1);
+      if (rewardedUser) {
+        identityStore.updateByUserId(authUser._id, {
+          name: rewardedUser.name,
+          avatar: rewardedUser.avatar || null,
+          equippedEffect: rewardedUser.equippedEffect || "none"
+        });
+      }
+    }
+
+    return res.json({
+      ...enrichMessageIdentity(response.data),
+      reward: rewardedUser
+        ? {
+            coinsEarned: 1,
+            balance: rewardedUser.coins
+          }
+        : null
+    });
   } catch (error) {
     console.error('TLK send error:', error?.message || error);
     return res.status(502).json({ msg: error?.message || 'TLK send failed' });

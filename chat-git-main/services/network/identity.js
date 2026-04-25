@@ -88,6 +88,7 @@ function bindToken(token, profile) {
     name: profile.name || null,
     avatar: profile.avatar || null,
     role: profile.role || null,
+    equippedEffect: profile.equippedEffect || "none",
     updatedAt: Date.now()
   };
   writeState(state);

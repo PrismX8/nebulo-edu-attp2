@@ -24,6 +24,9 @@ const cors = require("cors");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const path = require("path");
+const chatUserStore = require("./chat-git-main/services/auth/localStore");
+const chatIdentityStore = require("./chat-git-main/services/network/identity");
+const chatEffects = require("./chat-git-main/services/chat/effects");
 
 const libcurlPath = fileURLToPath(
   new URL("node_modules/@mercuryworkshop/libcurl-transport/dist/", import.meta.url)
@@ -45,7 +48,6 @@ if (cluster.isPrimary && WORKERS > 1) {
 } else {
   const publicPath = fileURLToPath(new URL("public/", import.meta.url));
   const pagesPath = fileURLToPath(new URL("pages/", import.meta.url));
-  const chatUsersPath = fileURLToPath(new URL("chat-git-main/data/users.json", import.meta.url));
   const patchedBareMuxWorkerPath = fileURLToPath(
     new URL("public/assets/js/baremux-worker.js", import.meta.url)
   );
@@ -61,40 +63,13 @@ if (cluster.isPrimary && WORKERS > 1) {
   const serviceWorkerPath = fileURLToPath(new URL("public/sw.js", import.meta.url));
   const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
-  const readChatUsers = () => {
-    try {
-      const raw = fs.readFileSync(chatUsersPath, "utf8");
-      const data = JSON.parse(raw);
-      return Array.isArray(data?.users) ? data.users : [];
-    } catch {
-      return [];
-    }
+  const sanitizeUser = (user) => {
+    const safe = chatUserStore.sanitizeUser(user);
+    return safe ? { ...safe, id: safe._id || safe.id || "" } : null;
   };
 
-  const writeChatUsers = (users) => {
-    fs.writeFileSync(chatUsersPath, JSON.stringify({ users }, null, 2));
-  };
-
-  const sanitizeUser = (user) => ({
-    _id: user?._id || user?.id || "",
-    id: user?._id || user?.id || "",
-    username: String(user?.username || ""),
-    name: String(user?.name || user?.username || ""),
-    role: String(user?.role || "user"),
-    avatar: user?.avatar ?? null,
-  });
-
-  const findUserByUsername = (username) => {
-    const target = String(username || "").trim().toLowerCase();
-    if (!target) return null;
-    return readChatUsers().find((user) => String(user?.username || "").trim().toLowerCase() === target) || null;
-  };
-
-  const findUserById = (userId) => {
-    const target = String(userId || "").trim();
-    if (!target) return null;
-    return readChatUsers().find((user) => String(user?._id || user?.id || "").trim() === target) || null;
-  };
+  const findUserByUsername = (username) => chatUserStore.findByUsername(username);
+  const findUserById = (userId) => chatUserStore.findById(userId);
 
   const signAuthToken = (user) =>
     jwt.sign({ user: { id: user?._id || user?.id } }, JWT_SECRET, { expiresIn: "24h" });
@@ -323,19 +298,22 @@ if (cluster.isPrimary && WORKERS > 1) {
     if (existing) {
       return reply.status(400).send({ msg: "Username already exists" });
     }
-    const users = readChatUsers();
-    const user = {
-      _id: randomUUID(),
-      username: String(username).trim(),
-      name: String(name || username).trim(),
-      password: await bcrypt.hash(String(password), 10),
-      role: "user",
-      avatar: null,
-      date: new Date().toISOString(),
-    };
-    users.push(user);
-    writeChatUsers(users);
-    return { token: signAuthToken(user), user: sanitizeUser(user) };
+    try {
+      const user = chatUserStore.createUser({
+        username: String(username).trim(),
+        name: String(name || username).trim(),
+        passwordHash: await bcrypt.hash(String(password), 10)
+      });
+      return { token: signAuthToken(user), user: sanitizeUser(user) };
+    } catch (error) {
+      if (error?.code === "USERNAME_RESERVED") {
+        return reply.status(400).send({ msg: 'Username "moderation" is reserved' });
+      }
+      if (error?.code === "USERNAME_EXISTS") {
+        return reply.status(400).send({ msg: "Username already exists" });
+      }
+      return reply.status(500).send({ msg: "Failed to create user" });
+    }
   });
 
   fastify.get("/api/channels", async (req, reply) => {
@@ -354,7 +332,7 @@ if (cluster.isPrimary && WORKERS > 1) {
     if (!user) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
-    return readChatUsers().map(sanitizeUser);
+    return chatUserStore.listUsers().map(sanitizeUser);
   });
 
   fastify.put("/api/users/profile", async (req, reply) => {
@@ -363,24 +341,27 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
 
-    const { name, avatar } = req.body || {};
-    const users = readChatUsers();
-    const index = users.findIndex((user) => String(user?._id || "") === String(authUser._id || ""));
-    if (index === -1) {
+    const { name, avatar, coins } = req.body || {};
+    if (avatar && String(avatar).length > 2_000_000) {
+      return reply.status(400).send({ msg: "Avatar too large" });
+    }
+
+    const updatedUser = chatUserStore.updateProfile(authUser._id, {
+      name,
+      avatar,
+      coins
+    });
+    if (!updatedUser) {
       return reply.status(404).send({ msg: "User not found" });
     }
 
-    if (typeof name === "string" && name.trim()) {
-      users[index].name = name.trim();
-    }
-    if (avatar === null || avatar === "") {
-      users[index].avatar = null;
-    } else if (typeof avatar === "string") {
-      users[index].avatar = avatar;
-    }
+    chatIdentityStore.updateByUserId(authUser._id, {
+      name: updatedUser.name,
+      avatar: updatedUser.avatar || null,
+      equippedEffect: updatedUser.equippedEffect || "none"
+    });
 
-    writeChatUsers(users);
-    return { user: sanitizeUser(users[index]), msg: "Profile updated successfully" };
+    return { user: sanitizeUser(updatedUser), msg: "Profile updated successfully" };
   });
 
   fastify.put("/api/users/password", async (req, reply) => {
@@ -397,20 +378,95 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(400).send({ msg: "New password must be at least 6 characters" });
     }
 
-    const users = readChatUsers();
-    const index = users.findIndex((user) => String(user?._id || "") === String(authUser._id || ""));
-    if (index === -1) {
+    const user = findUserById(authUser._id);
+    if (!user) {
       return reply.status(404).send({ msg: "User not found" });
     }
 
-    const isMatch = await verifyPassword(currentPassword, users[index].password);
+    const isMatch = await verifyPassword(currentPassword, user.password);
     if (!isMatch) {
       return reply.status(400).send({ msg: "Incorrect current password" });
     }
 
-    users[index].password = await bcrypt.hash(String(newPassword), 10);
-    writeChatUsers(users);
+    chatUserStore.updatePassword(user._id, await bcrypt.hash(String(newPassword), 10));
     return { msg: "Password updated successfully" };
+  });
+
+  fastify.get("/api/chat-effects", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+    const currentUser = findUserById(authUser._id);
+    if (!currentUser) {
+      return reply.status(404).send({ msg: "User not found" });
+    }
+    return {
+      effects: chatEffects.listEffects(),
+      user: sanitizeUser(currentUser)
+    };
+  });
+
+  fastify.post("/api/chat-effects/:effectId/purchase", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    try {
+      const result = chatUserStore.purchaseEffect(authUser._id, req.params.effectId);
+      return {
+        msg: `${result.effect.name} unlocked`,
+        effect: result.effect,
+        user: sanitizeUser(result.user)
+      };
+    } catch (error) {
+      if (error?.code === "EFFECT_ALREADY_OWNED") {
+        return reply.status(400).send({ msg: "Effect already owned" });
+      }
+      if (error?.code === "INSUFFICIENT_COINS") {
+        return reply.status(400).send({ msg: "Not enough coins" });
+      }
+      if (error?.code === "EFFECT_NOT_FOUND") {
+        return reply.status(404).send({ msg: "Effect not found" });
+      }
+      if (error?.code === "USER_NOT_FOUND") {
+        return reply.status(404).send({ msg: "User not found" });
+      }
+      return reply.status(500).send({ msg: "Failed to purchase effect" });
+    }
+  });
+
+  fastify.post("/api/chat-effects/equip", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    try {
+      const result = chatUserStore.equipEffect(authUser._id, req.body?.effectId);
+      chatIdentityStore.updateByUserId(authUser._id, {
+        name: result.user.name,
+        avatar: result.user.avatar || null,
+        equippedEffect: result.user.equippedEffect || "none"
+      });
+      return {
+        msg: result.effect.id === "none" ? "Effect cleared" : `${result.effect.name} equipped`,
+        effect: result.effect,
+        user: sanitizeUser(result.user)
+      };
+    } catch (error) {
+      if (error?.code === "EFFECT_NOT_OWNED") {
+        return reply.status(400).send({ msg: "Effect not owned" });
+      }
+      if (error?.code === "EFFECT_NOT_FOUND") {
+        return reply.status(404).send({ msg: "Effect not found" });
+      }
+      if (error?.code === "USER_NOT_FOUND") {
+        return reply.status(404).send({ msg: "User not found" });
+      }
+      return reply.status(500).send({ msg: "Failed to equip effect" });
+    }
   });
 
   // OpenBullet

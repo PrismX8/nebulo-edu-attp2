@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const effects = require("../chat/effects");
 
 const DATA_DIR = path.resolve(__dirname, "..", "..", "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
@@ -24,7 +25,41 @@ function ensureStore() {
 
 function normalizeStore(input = {}) {
   return {
-    users: Array.isArray(input.users) ? input.users : []
+    users: Array.isArray(input.users) ? input.users.map((user) => normalizeUser(user)) : []
+  };
+}
+
+function sanitizeCoins(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.min(1000000, Math.floor(parsed)));
+}
+
+function normalizeOwnedEffects(value) {
+  const rawList = Array.isArray(value) ? value : [];
+  const owned = new Set(["none"]);
+  rawList.forEach((entry) => {
+    const effectId = String(entry || "").trim().toLowerCase();
+    if (effects.isValidEffect(effectId)) owned.add(effectId);
+  });
+  return [...owned];
+}
+
+function normalizeEquippedEffect(effectId, ownedEffects) {
+  const cleanId = String(effectId || "").trim().toLowerCase();
+  if (ownedEffects.includes(cleanId) && effects.isValidEffect(cleanId)) {
+    return cleanId;
+  }
+  return "none";
+}
+
+function normalizeUser(user = {}) {
+  const ownedEffects = normalizeOwnedEffects(user.ownedEffects);
+  return {
+    ...user,
+    coins: sanitizeCoins(user.coins),
+    ownedEffects,
+    equippedEffect: normalizeEquippedEffect(user.equippedEffect, ownedEffects)
   };
 }
 
@@ -162,6 +197,9 @@ function createUser({ username, name, passwordHash }) {
     avatar: null,
     password: passwordHash,
     role,
+    coins: 0,
+    ownedEffects: ["none"],
+    equippedEffect: "none",
     date: new Date().toISOString()
   };
   store.users.push(user);
@@ -194,22 +232,115 @@ function updateProfile(userId, updates = {}) {
   if (typeof updates.avatar === "string") {
     next.avatar = updates.avatar || null;
   }
+  if (updates.coins !== undefined) {
+    next.coins = sanitizeCoins(updates.coins);
+  }
+  if (typeof updates.equippedEffect === "string") {
+    next.equippedEffect = normalizeEquippedEffect(updates.equippedEffect, normalizeOwnedEffects(next.ownedEffects));
+  }
 
-  store.users[idx] = next;
+  store.users[idx] = normalizeUser(next);
   writeStore(store);
-  return next;
+  return store.users[idx];
+}
+
+function grantCoins(userId, amount = 0) {
+  const delta = Math.floor(Number(amount) || 0);
+  if (!delta) return findById(userId);
+  const store = readStore();
+  const idx = store.users.findIndex((u) => String(u._id) === String(userId));
+  if (idx < 0) return null;
+  const currentCoins = sanitizeCoins(store.users[idx]?.coins);
+  store.users[idx] = normalizeUser({
+    ...store.users[idx],
+    coins: currentCoins + delta
+  });
+  writeStore(store);
+  return store.users[idx];
+}
+
+function purchaseEffect(userId, effectId = "") {
+  const effect = effects.getEffect(effectId);
+  if (!effect || effect.id === "none") {
+    const error = new Error("Effect not found");
+    error.code = "EFFECT_NOT_FOUND";
+    throw error;
+  }
+
+  const store = readStore();
+  const idx = store.users.findIndex((u) => String(u._id) === String(userId));
+  if (idx < 0) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+
+  const current = normalizeUser(store.users[idx]);
+  if (current.ownedEffects.includes(effect.id)) {
+    const error = new Error("Effect already owned");
+    error.code = "EFFECT_ALREADY_OWNED";
+    throw error;
+  }
+  if (current.coins < effect.price) {
+    const error = new Error("Not enough coins");
+    error.code = "INSUFFICIENT_COINS";
+    throw error;
+  }
+
+  store.users[idx] = normalizeUser({
+    ...current,
+    coins: current.coins - effect.price,
+    ownedEffects: [...current.ownedEffects, effect.id]
+  });
+  writeStore(store);
+  return { user: store.users[idx], effect };
+}
+
+function equipEffect(userId, effectId = "") {
+  const effect = effects.getEffect(effectId);
+  if (!effect) {
+    const error = new Error("Effect not found");
+    error.code = "EFFECT_NOT_FOUND";
+    throw error;
+  }
+
+  const store = readStore();
+  const idx = store.users.findIndex((u) => String(u._id) === String(userId));
+  if (idx < 0) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+
+  const current = normalizeUser(store.users[idx]);
+  if (!current.ownedEffects.includes(effect.id)) {
+    const error = new Error("Effect not owned");
+    error.code = "EFFECT_NOT_OWNED";
+    throw error;
+  }
+
+  store.users[idx] = normalizeUser({
+    ...current,
+    equippedEffect: effect.id
+  });
+  writeStore(store);
+  return { user: store.users[idx], effect };
 }
 
 function sanitizeUser(user) {
   if (!user) return null;
-  const effectiveRole = applyConfiguredRole(user);
+  const normalized = normalizeUser(user);
+  const effectiveRole = applyConfiguredRole(normalized);
   return {
-    _id: user._id,
-    username: user.username,
-    name: user.name,
-    avatar: user.avatar || null,
+    _id: normalized._id,
+    username: normalized.username,
+    name: normalized.name,
+    avatar: normalized.avatar || null,
     role: effectiveRole,
-    date: user.date
+    coins: sanitizeCoins(normalized.coins),
+    ownedEffects: normalizeOwnedEffects(normalized.ownedEffects),
+    equippedEffect: normalizeEquippedEffect(normalized.equippedEffect, normalizeOwnedEffects(normalized.ownedEffects)),
+    date: normalized.date
   };
 }
 
@@ -221,5 +352,8 @@ module.exports = {
   createUser,
   updateProfile,
   updatePassword,
+  grantCoins,
+  purchaseEffect,
+  equipEffect,
   sanitizeUser
 };

@@ -99,6 +99,25 @@
     .msg-head > span:last-of-type{font-family:var(--font-mono);font-size:10px;color:var(--text-3);}
     .msg-bubble{font-size:14px;line-height:1.6;color:var(--text-2);word-break:break-word;font-family:var(--font-ui),'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;}
     .msg:hover .msg-bubble{color:var(--text-1);}
+    .msg-bubble[class*="effect-"],.effect-preview[class*="effect-"]{display:inline-block;max-width:min(100%,920px);padding:6px 11px;border-radius:12px;border:1px solid transparent;position:relative;overflow:hidden;}
+    .msg-bubble.effect-flashbands,.effect-preview.effect-flashbands{background:linear-gradient(135deg,rgba(105,145,205,0.14),rgba(130,215,255,0.08));border-color:rgba(130,215,255,0.18);box-shadow:0 0 0 1px rgba(130,215,255,0.05),0 0 18px rgba(91,127,166,0.12);}
+    .msg-bubble.effect-flashbands::after,.effect-preview.effect-flashbands::after{content:'';position:absolute;inset:-20% -60%;background:repeating-linear-gradient(180deg,transparent 0 11px,rgba(170,220,255,0.14) 11px 15px,transparent 15px 26px);transform:translateX(-28%);mix-blend-mode:screen;animation:flashbandsSweep 2.8s linear infinite;}
+    .msg-bubble.effect-scramble,.effect-preview.effect-scramble{background:linear-gradient(135deg,rgba(120,72,160,0.14),rgba(52,85,170,0.08));border-color:rgba(160,120,255,0.18);text-shadow:1px 0 rgba(255,60,160,0.28),-1px 0 rgba(80,200,255,0.24);animation:scrambleShift 0.18s steps(2,end) infinite;}
+    .msg-bubble.effect-embers,.effect-preview.effect-embers{background:linear-gradient(135deg,rgba(176,83,38,0.18),rgba(255,186,82,0.08));border-color:rgba(255,168,73,0.22);box-shadow:0 0 18px rgba(255,120,60,0.08);animation:embersPulse 2.2s ease-in-out infinite;}
+    .msg-bubble.effect-frostbyte,.effect-preview.effect-frostbyte{background:linear-gradient(135deg,rgba(110,160,210,0.16),rgba(215,240,255,0.08));border-color:rgba(170,220,255,0.24);box-shadow:0 0 20px rgba(140,205,255,0.09);}
+    .msg-bubble.effect-frostbyte::after,.effect-preview.effect-frostbyte::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent);transform:translateX(-120%);animation:frostbyteSweep 3.1s ease-in-out infinite;}
+    .msg-bubble.effect-matrix,.effect-preview.effect-matrix{background:linear-gradient(135deg,rgba(42,110,76,0.2),rgba(15,40,22,0.16));border-color:rgba(92,210,132,0.2);color:#b9ffd2;box-shadow:0 0 18px rgba(84,255,138,0.08);animation:matrixFlicker 2.6s linear infinite;}
+    .msg-bubble.effect-starlight,.effect-preview.effect-starlight{background:linear-gradient(135deg,rgba(84,96,168,0.16),rgba(210,220,255,0.08));border-color:rgba(200,216,255,0.22);box-shadow:0 0 18px rgba(180,195,255,0.1);animation:starlightGlow 2.8s ease-in-out infinite;}
+    .msg-name.effect-flashbands,.msg-name.effect-frostbyte,.msg-name.effect-starlight{color:#e8f4ff;}
+    .msg-name.effect-scramble{color:#f0d6ff;text-shadow:1px 0 rgba(255,60,160,0.3),-1px 0 rgba(80,200,255,0.28);}
+    .msg-name.effect-embers{color:#ffd2a2;}
+    .msg-name.effect-matrix{color:#86ffab;}
+    @keyframes flashbandsSweep{from{transform:translateX(-30%);}to{transform:translateX(30%);}}
+    @keyframes scrambleShift{0%{transform:translate(0,0);}33%{transform:translate(0.4px,-0.4px);}66%{transform:translate(-0.4px,0.4px);}100%{transform:translate(0,0);}}
+    @keyframes embersPulse{0%,100%{box-shadow:0 0 14px rgba(255,120,60,0.08);}50%{box-shadow:0 0 24px rgba(255,120,60,0.18);}}
+    @keyframes frostbyteSweep{0%,15%{transform:translateX(-120%);}50%{transform:translateX(120%);}100%{transform:translateX(120%);}}
+    @keyframes matrixFlicker{0%,100%{opacity:0.94;}10%{opacity:0.88;}12%{opacity:1;}54%{opacity:0.9;}56%{opacity:0.98;}}
+    @keyframes starlightGlow{0%,100%{box-shadow:0 0 12px rgba(180,195,255,0.08);}50%{box-shadow:0 0 24px rgba(180,195,255,0.18);}}
     .msg-actions{display:flex;align-items:center;gap:6px;margin-top:4px;opacity:0;transition:opacity 0.15s;}
     .rank-chip{display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;padding:2px 7px;border-radius:3px;line-height:1;position:relative;top:-1px;}
     .rank-owner{background:var(--gold-lo);color:var(--gold);border:1px solid rgba(184,149,90,0.28);}
@@ -185,6 +204,19 @@
     .status-line{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11.5px;color:var(--text-2);padding:6px 12px;background:var(--bg-raised);border-radius:var(--radius-md);border:1px solid var(--border-md);}
     .btn-bar{display:flex;gap:8px;flex-wrap:wrap;}
     .msg-state{display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-3);font-family:var(--font-mono);font-size:13px;padding:40px;gap:10px;letter-spacing:0.04em;}
+    .coin-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;background:var(--gold-lo);border:1px solid rgba(184,149,90,0.22);color:var(--gold);font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;}
+    .settings-balance{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--bg-raised);border-radius:var(--radius-lg);border:1px solid var(--border-md);}
+    .settings-balance strong{font-family:var(--font-head);font-size:18px;letter-spacing:0.08em;color:var(--text-1);}
+    .effect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+    .effect-card{background:rgba(14,14,18,0.94);border:1px solid var(--border-md);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px;min-height:180px;}
+    .effect-card.owned{border-color:rgba(184,149,90,0.16);}
+    .effect-card.active{border-color:var(--accent-border);box-shadow:0 0 0 1px rgba(176,180,204,0.06);}
+    .effect-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+    .effect-card-title{font-family:var(--font-head);font-size:16px;letter-spacing:0.06em;color:var(--text-1);}
+    .effect-price{font-family:var(--font-mono);font-size:11px;color:var(--gold);}
+    .effect-desc{font-size:12.5px;color:var(--text-2);line-height:1.5;}
+    .effect-preview{display:block;font-size:13px;line-height:1.55;color:var(--text-1);padding:10px 12px;border-radius:12px;border:1px solid var(--border-md);background:rgba(255,255,255,0.02);}
+    .effect-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;}
     #toast-host{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
     .toast-anim{background:var(--bg-card);border:1px solid var(--border-lg);color:var(--text-1);padding:12px 18px;border-radius:var(--radius-lg);font-size:13px;font-family:var(--font-ui);box-shadow:0 4px 20px rgba(0,0,0,0.6);animation:toastIn 0.3s cubic-bezier(0.16,1,0.3,1),toastOut 0.3s 2.3s ease forwards;pointer-events:auto;backdrop-filter:blur(16px);}
     @keyframes toastIn{from{opacity:0;transform:translateX(16px) scale(0.95);}to{opacity:1;transform:translateX(0) scale(1);}}
@@ -242,6 +274,16 @@
     { cmd: '/clearchat',  usage: '/clearchat [reason]',           desc: 'Clear room messages',               roles: ['owner'] }
   ];
 
+  const fallbackEffects = [
+    { id: 'none',       name: 'None',       price: 0,  description: 'No message effect.' },
+    { id: 'flashbands', name: 'Flashbands', price: 6,  description: 'Cold scan-lines sweep across your messages.' },
+    { id: 'scramble',   name: 'Scramble',   price: 8,  description: 'Glitchy jitter with broken neon shadows.' },
+    { id: 'embers',     name: 'Embers',     price: 9,  description: 'A hot orange glow with pulsing heat.' },
+    { id: 'frostbyte',  name: 'Frostbyte',  price: 10, description: 'Icy highlights and a pale blue shimmer.' },
+    { id: 'matrix',     name: 'Matrix',     price: 12, description: 'Green terminal glow with digital flicker.' },
+    { id: 'starlight',  name: 'Starlight',  price: 14, description: 'Soft cosmic shimmer with a brighter edge.' }
+  ];
+
   /* ═══════════════════════════════════════════════════════════════
      UTILITIES
   ═══════════════════════════════════════════════════════════════ */
@@ -250,6 +292,34 @@
     const div = document.createElement('div');
     div.textContent = String(v);
     return div.innerHTML;
+  };
+
+  const normalizeEffectId = (value) => {
+    const clean = String(value || 'none').trim().toLowerCase();
+    return fallbackEffects.some((effect) => effect.id === clean) ? clean : 'none';
+  };
+
+  const getEffectMeta = (effectId) =>
+    fallbackEffects.find((effect) => effect.id === normalizeEffectId(effectId)) || fallbackEffects[0];
+
+  const getMessageEffect = (message) =>
+    normalizeEffectId(message?.equippedEffect || message?.sender?.equippedEffect || 'none');
+
+  const applyUserSnapshot = (user) => {
+    state.user = user || null;
+    updateCoinDisplays();
+    return state.user;
+  };
+
+  const updateCoinDisplays = () => {
+    const coins = Math.max(0, Number(state.user?.coins || 0));
+    const label = `${coins} coin${coins === 1 ? '' : 's'}`;
+    const sidebarCoins = document.getElementById('sidebar-coins');
+    if (sidebarCoins) sidebarCoins.textContent = label;
+    const settingsCoins = document.getElementById('settings-coins-balance');
+    if (settingsCoins) settingsCoins.textContent = label;
+    const settingsEffect = document.getElementById('settings-equipped-effect');
+    if (settingsEffect) settingsEffect.textContent = getEffectMeta(state.user?.equippedEffect).name;
   };
 
   const getHashPath  = () => (window.location.hash || '#/').replace(/^#/, '') || '/';
@@ -413,9 +483,9 @@
      DATA
   ═══════════════════════════════════════════════════════════════ */
   const loadUser = async () => {
-    if (!state.token) { state.user = null; return null; }
-    try { state.user = await api('/api/auth'); return state.user; }
-    catch { setToken(''); state.user = null; return null; }
+    if (!state.token) { applyUserSnapshot(null); return null; }
+    try { return applyUserSnapshot(await api('/api/auth')); }
+    catch { setToken(''); applyUserSnapshot(null); return null; }
   };
 
   const mapChannels = (networkData) => {
@@ -858,6 +928,7 @@
                 <div style="font-size:13px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${displayName}</div>
                 <div style="font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px">
                   <span class="status-dot status-online"></span>Online
+                  <span id="sidebar-coins" class="coin-chip">${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}</span>
                 </div>
               </div>
             </div>
@@ -890,7 +961,7 @@
     `;
 
     document.getElementById('btn-logout')?.addEventListener('click', () => {
-      cleanupChatTimers(); setToken(''); state.user = null; navigate('/login');
+      cleanupChatTimers(); setToken(''); applyUserSnapshot(null); navigate('/login');
     });
     document.getElementById('btn-settings')?.addEventListener('click', () => navigate('/settings'));
     document.getElementById('btn-admin')?.addEventListener('click',    () => navigate('/admin'));
@@ -961,6 +1032,8 @@
       const mine      = isMine(m);
       const bgStyle   = `background:${avatarColor(name)}`;
       const sameServer = isSameServer(m);
+      const effectId  = isDeleted ? 'none' : getMessageEffect(m);
+      const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
 
       const deleteBtn = canDelete(m)
         ? `<button data-delete-id="${esc(id)}" data-delete-token="${esc(token)}" class="delete-btn">Delete</button>`
@@ -983,11 +1056,11 @@
           <div class="msg-avatar" style="${bgStyle}">${esc(avatarL)}</div>
           <div class="msg-body">
             <div class="msg-head">
-              <strong>${esc(name)}</strong>
+              <strong class="msg-name ${effectCls}">${esc(name)}</strong>
               ${rankHtml}
               <span>${esc(fmtTime(m))}</span>
             </div>
-            <div class="msg-bubble">${isDeleted ? '<em>Message deleted</em>' : formattedBody}</div>
+            <div class="msg-bubble ${effectCls}">${isDeleted ? '<em>Message deleted</em>' : formattedBody}</div>
             ${deleteBtn ? `<div class="msg-actions">${deleteBtn}</div>` : ''}
           </div>
         </div>
@@ -1050,7 +1123,8 @@
       body: body,
       date: new Date().toISOString(),
       userId: state.user?._id || '',
-      role: state.user?.role || 'user'
+      role: state.user?.role || 'user',
+      equippedEffect: normalizeEffectId(state.user?.equippedEffect)
     };
     state.messages.push(optimisticMsg);
     renderMessages();
@@ -1062,7 +1136,14 @@
     });
 
     try {
-      await postMsg();
+      const sent = await postMsg();
+      if (sent?.reward?.balance !== undefined && state.user) {
+        state.user = {
+          ...state.user,
+          coins: Math.max(0, Number(sent.reward.balance || 0))
+        };
+        updateCoinDisplays();
+      }
       if (state.currentChannel?._id === channel._id) await getMessages(channel);
     } catch (err) {
       // Remove optimistic message on error
@@ -1346,9 +1427,15 @@
      RENDER: SETTINGS
   ═══════════════════════════════════════════════════════════════ */
   const renderSettingsPage = async () => {
+    let effectsPayload = null;
+    try {
+      effectsPayload = await api('/api/chat-effects');
+      if (effectsPayload?.user) applyUserSnapshot(effectsPayload.user);
+    } catch {}
+
     layoutShell(`
       <div class="page-scroll">
-        <div class="page-inner" style="max-width:560px">
+        <div class="page-inner" style="max-width:760px">
           <div style="margin-bottom:4px">
             <h1 style="font-size:20px;font-weight:700;color:var(--text-1);letter-spacing:-0.02em">Settings</h1>
             <p style="font-size:13px;color:var(--text-3);margin-top:4px">Manage your account preferences</p>
@@ -1364,6 +1451,10 @@
                 <input name="name" placeholder="How should others see you?" value="${esc(state.user?.name || '')}" class="inp" />
               </div>
               <div class="field">
+                <label>Coins</label>
+                <input name="coins" type="number" min="0" step="1" value="${esc(Math.max(0, Number(state.user?.coins || 0)))}" class="inp" />
+              </div>
+              <div class="field">
                 <label>Avatar image</label>
                 <input id="avatar-file" type="file" accept="image/*" style="font-size:13px;color:var(--text-2)" />
               </div>
@@ -1371,6 +1462,22 @@
                 <button class="btn btn-primary" type="submit">Save Profile</button>
               </div>
             </form>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Chat Effects</div>
+            <div class="settings-balance" style="margin-bottom:14px">
+              <div>
+                <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Balance</div>
+                <strong id="settings-coins-balance">${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}</strong>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Equipped</div>
+                <div id="settings-equipped-effect" style="font-family:var(--font-head);font-size:16px;letter-spacing:0.06em;color:var(--text-1)">${esc(getEffectMeta(state.user?.equippedEffect).name)}</div>
+              </div>
+            </div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:14px">You earn 1 coin per sent chat message. Prices stay low so effects are easy to unlock.</p>
+            <div id="effects-grid" class="effect-grid"></div>
           </div>
 
           <div class="card">
@@ -1401,11 +1508,79 @@
     const errEl   = document.getElementById('settings-err');
     const showErr = (m) => { errEl.textContent = m; errEl.classList.remove('hidden'); msgEl.classList.add('hidden'); };
     const showMsg = (m) => { msgEl.textContent = m; msgEl.classList.remove('hidden'); errEl.classList.add('hidden'); };
+    const effectsGrid = document.getElementById('effects-grid');
+    const effectState = {
+      effects: Array.isArray(effectsPayload?.effects) && effectsPayload.effects.length ? effectsPayload.effects : fallbackEffects
+    };
+
+    const renderEffectsGrid = () => {
+      if (!effectsGrid) return;
+      const owned = new Set((state.user?.ownedEffects || ['none']).map((effectId) => normalizeEffectId(effectId)));
+      const equipped = normalizeEffectId(state.user?.equippedEffect);
+      const coins = Math.max(0, Number(state.user?.coins || 0));
+
+      effectsGrid.innerHTML = effectState.effects.map((effect) => {
+        const effectId = normalizeEffectId(effect.id);
+        const price = Math.max(0, Number(effect.price || 0));
+        const ownedEffect = owned.has(effectId);
+        const active = equipped === effectId;
+        const locked = !ownedEffect;
+        const canAfford = coins >= price;
+        const action = ownedEffect ? 'equip' : 'buy';
+        const disabled = active || (locked && !canAfford);
+        const buttonText = active ? 'Equipped' : ownedEffect ? 'Use' : `Buy ${price}c`;
+        const metaText = active ? 'Active' : ownedEffect ? 'Owned' : canAfford ? 'Cheap unlock' : 'Need more coins';
+        const previewClass = effectId === 'none' ? '' : `effect-${effectId}`;
+
+        return `
+          <div class="effect-card ${ownedEffect ? 'owned' : ''} ${active ? 'active' : ''}">
+            <div class="effect-card-head">
+              <div class="effect-card-title">${esc(effect.name || getEffectMeta(effectId).name)}</div>
+              <div class="effect-price">${price === 0 ? 'FREE' : `${price} COINS`}</div>
+            </div>
+            <div class="effect-desc">${esc(effect.description || getEffectMeta(effectId).description)}</div>
+            <div class="effect-preview ${previewClass}">Preview text for ${esc(effect.name || effectId)}</div>
+            <div class="effect-meta">
+              <span>${esc(metaText)}</span>
+              ${locked ? '<span>Locked</span>' : '<span>Unlocked</span>'}
+            </div>
+            <div>
+              <button class="btn btn-primary btn-sm" data-effect-action="${esc(action)}" data-effect-id="${esc(effectId)}" ${disabled ? 'disabled' : ''}>
+                ${esc(buttonText)}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      effectsGrid.querySelectorAll('[data-effect-action]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const effectId = normalizeEffectId(button.getAttribute('data-effect-id'));
+          const action = String(button.getAttribute('data-effect-action') || '');
+          try {
+            const data = action === 'buy'
+              ? await api(`/api/chat-effects/${encodeURIComponent(effectId)}/purchase`, { method: 'POST' })
+              : await api('/api/chat-effects/equip', { method: 'POST', body: { effectId } });
+            if (data?.user) applyUserSnapshot(data.user);
+            renderEffectsGrid();
+            renderMessages();
+            showMsg(data?.msg || (action === 'buy' ? 'Effect unlocked' : 'Effect equipped'));
+          } catch (err) {
+            showErr(err.message);
+          }
+        });
+      });
+
+      updateCoinDisplays();
+    };
+
+    renderEffectsGrid();
 
     document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd   = new FormData(e.currentTarget);
       const name = String(fd.get('name') || '').trim();
+      const coins = Math.max(0, Number(fd.get('coins') || 0));
       const file = document.getElementById('avatar-file')?.files?.[0] || null;
       let avatar = null;
       if (file) {
@@ -1417,10 +1592,12 @@
         });
       }
       try {
-        await api('/api/users/profile', { method: 'PUT', body: { name, avatar } });
+        const data = await api('/api/users/profile', { method: 'PUT', body: { name, avatar, coins } });
         if (name) localStorage.setItem('tlkNickname', name);
         localStorage.removeItem('tlkParticipantToken');
-        await loadUser();
+        if (data?.user) applyUserSnapshot(data.user);
+        else await loadUser();
+        renderEffectsGrid();
         showMsg('Profile updated successfully');
       } catch (err) { showErr(err.message); }
     });
