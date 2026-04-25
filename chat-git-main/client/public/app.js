@@ -89,6 +89,38 @@
     .main-header-sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);}
     .room-effect-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid var(--border-md);color:var(--text-2);}
     .room-effect-chip strong{font-family:var(--font-head);font-size:12px;letter-spacing:0.08em;color:var(--text-1);}
+    .room-effect-stage{position:absolute;inset:0;pointer-events:none;z-index:25;overflow:hidden;opacity:0;transition:opacity 0.25s ease;}
+    .room-effect-stage.active{opacity:1;}
+    .room-effect-layer{position:absolute;inset:-12%;pointer-events:none;}
+    .room-effect-flashbands{background:linear-gradient(180deg,rgba(110,170,220,0.06),rgba(12,20,32,0.02));}
+    .room-effect-scramble{background:linear-gradient(135deg,rgba(190,60,150,0.04),rgba(60,180,255,0.04));}
+    .room-effect-embers{background:linear-gradient(180deg,rgba(255,140,70,0.06),rgba(70,20,10,0.03));}
+    .room-effect-frostbyte{background:linear-gradient(180deg,rgba(195,228,255,0.08),rgba(20,34,48,0.03));}
+    .room-effect-matrix{background:linear-gradient(180deg,rgba(28,90,48,0.08),rgba(6,20,10,0.03));}
+    .room-effect-starlight{background:linear-gradient(180deg,rgba(132,156,220,0.06),rgba(24,24,46,0.03));}
+    .room-effect-flashbands .room-effect-layer-a{background:repeating-linear-gradient(180deg,transparent 0 20px,rgba(165,220,255,0.12) 20px 28px,transparent 28px 52px);mix-blend-mode:screen;animation:roomFlashbands 6s linear infinite;}
+    .room-effect-flashbands .room-effect-layer-b{background:linear-gradient(90deg,transparent,rgba(170,225,255,0.14),transparent);transform:translateX(-120%);animation:roomSweepX 4.8s ease-in-out infinite;}
+    .room-effect-scramble .room-effect-layer-a{background:linear-gradient(90deg,rgba(255,40,140,0.08),transparent 35%,rgba(40,220,255,0.08) 65%,transparent);mix-blend-mode:screen;animation:roomScrambleShift 0.22s steps(2,end) infinite;}
+    .room-effect-scramble .room-effect-layer-b{background:repeating-linear-gradient(180deg,rgba(255,255,255,0.02) 0 2px,transparent 2px 9px);opacity:0.75;animation:roomScramblePulse 1.4s ease-in-out infinite;}
+    .room-effect-embers .room-effect-layer-a{background:radial-gradient(circle at 15% 85%,rgba(255,140,70,0.18),transparent 28%),radial-gradient(circle at 78% 18%,rgba(255,190,90,0.12),transparent 22%),radial-gradient(circle at 52% 62%,rgba(255,110,60,0.12),transparent 20%);animation:roomEmbersGlow 3.2s ease-in-out infinite;}
+    .room-effect-embers .room-effect-layer-b{background:repeating-radial-gradient(circle at center,rgba(255,205,140,0.08) 0 2px,transparent 2px 26px);mix-blend-mode:screen;animation:roomEmbersRise 9s linear infinite;}
+    .room-effect-frostbyte .room-effect-layer-a{background:linear-gradient(135deg,rgba(180,220,255,0.12),transparent 35%,rgba(255,255,255,0.07) 50%,transparent 70%);transform:translateX(-100%);animation:roomFrostSweep 5.4s ease-in-out infinite;}
+    .room-effect-frostbyte .room-effect-layer-b{background:repeating-linear-gradient(135deg,rgba(200,235,255,0.08) 0 8px,transparent 8px 22px);mix-blend-mode:screen;opacity:0.85;}
+    .room-effect-matrix .room-effect-layer-a{background:repeating-linear-gradient(90deg,transparent 0 24px,rgba(92,255,150,0.08) 24px 27px,transparent 27px 52px);animation:roomMatrixFall 6s linear infinite;}
+    .room-effect-matrix .room-effect-layer-b{background:linear-gradient(180deg,rgba(32,255,112,0.08),transparent 25%,rgba(32,255,112,0.04) 75%,transparent);mix-blend-mode:screen;animation:roomMatrixPulse 2.6s linear infinite;}
+    .room-effect-starlight .room-effect-layer-a{background:radial-gradient(circle at 18% 28%,rgba(255,255,255,0.2) 0 1px,transparent 2px),radial-gradient(circle at 72% 18%,rgba(215,228,255,0.18) 0 1px,transparent 2px),radial-gradient(circle at 84% 68%,rgba(255,255,255,0.16) 0 1px,transparent 2px),radial-gradient(circle at 32% 78%,rgba(210,222,255,0.18) 0 1px,transparent 2px);background-size:260px 260px;animation:roomStarsDrift 16s linear infinite;}
+    .room-effect-starlight .room-effect-layer-b{background:radial-gradient(circle at center,rgba(200,216,255,0.14),transparent 58%);mix-blend-mode:screen;animation:roomStarsGlow 4s ease-in-out infinite;}
+    @keyframes roomFlashbands{0%{transform:translateY(-8%);}100%{transform:translateY(8%);}}
+    @keyframes roomSweepX{0%,15%{transform:translateX(-120%);}50%{transform:translateX(120%);}100%{transform:translateX(120%);}}
+    @keyframes roomScrambleShift{0%{transform:translate(0,0);}33%{transform:translate(4px,-2px);}66%{transform:translate(-4px,2px);}100%{transform:translate(0,0);}}
+    @keyframes roomScramblePulse{0%,100%{opacity:0.5;}50%{opacity:0.9;}}
+    @keyframes roomEmbersGlow{0%,100%{opacity:0.65;filter:saturate(1);}50%{opacity:1;filter:saturate(1.25);}}
+    @keyframes roomEmbersRise{0%{transform:translateY(10%);}100%{transform:translateY(-10%);}}
+    @keyframes roomFrostSweep{0%,18%{transform:translateX(-100%);}50%{transform:translateX(100%);}100%{transform:translateX(100%);}}
+    @keyframes roomMatrixFall{0%{transform:translateY(-12%);}100%{transform:translateY(12%);}}
+    @keyframes roomMatrixPulse{0%,100%{opacity:0.45;}50%{opacity:0.85;}}
+    @keyframes roomStarsDrift{0%{transform:translate3d(0,0,0);}100%{transform:translate3d(-80px,60px,0);}}
+    @keyframes roomStarsGlow{0%,100%{opacity:0.35;}50%{opacity:0.8;}}
     #chat-messages{flex:1;overflow-y:auto;padding:18px 14px 10px;display:flex;flex-direction:column;gap:8px;}
     .msg{display:flex;gap:12px;padding:10px 12px;position:relative;transition:background 0.12s,border-color 0.12s,transform 0.12s;animation:msgIn 0.18s ease;border:1px solid transparent;border-radius:18px;}
     @keyframes msgIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:translateY(0);}}
@@ -346,10 +378,23 @@
 
   const getActiveRoomEffectId = () => normalizeEffectId(state.roomEffect?.effectId);
 
-  const getMessageEffect = (message) => {
-    const roomEffectId = normalizeEffectId(message?.roomEffect?.effectId || state.roomEffect?.effectId);
-    if (roomEffectId !== 'none') return roomEffectId;
-    return normalizeEffectId(message?.equippedEffect || message?.sender?.equippedEffect || 'none');
+  const getMessageEffect = (message) =>
+    normalizeEffectId(message?.equippedEffect || message?.sender?.equippedEffect || 'none');
+
+  const renderRoomEffectStage = () => {
+    const stage = document.getElementById('room-effect-stage');
+    if (!stage) return;
+    const effectId = getActiveRoomEffectId();
+    if (effectId === 'none') {
+      stage.className = 'room-effect-stage';
+      stage.innerHTML = '';
+      return;
+    }
+    stage.className = `room-effect-stage active room-effect-${effectId}`;
+    stage.innerHTML = `
+      <div class="room-effect-layer room-effect-layer-a"></div>
+      <div class="room-effect-layer room-effect-layer-b"></div>
+    `;
   };
 
   const setRoomEffectState = (roomEffect) => {
@@ -358,6 +403,7 @@
       ? null
       : { ...roomEffect, effectId: normalizedId };
     updateCoinDisplays();
+    renderRoomEffectStage();
     return state.roomEffect;
   };
 
@@ -1051,6 +1097,7 @@
             <span id="header-online-count" class="header-online">0 online</span>
           </header>
           <div id="main-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative">
+            <div id="room-effect-stage" class="room-effect-stage"></div>
             ${contentHtml}
           </div>
           ${footerHtml}
@@ -1376,6 +1423,7 @@
 
     state.autoFollow = true;
     setJumpToLatestVisible(false);
+    renderRoomEffectStage();
 
     document.getElementById('chat-messages')?.addEventListener('scroll', syncAutoFollowFromScroll, { passive: true });
     document.getElementById('jump-to-latest')?.addEventListener('click', () => {

@@ -94,7 +94,13 @@ function readStore(force = false) {
     }
     const raw = fs.readFileSync(USERS_FILE, "utf8");
     const parsed = JSON.parse(raw || "{}");
-    return updateCache(parsed, stats.mtimeMs);
+    const normalized = normalizeStore(parsed);
+    if (JSON.stringify(parsed || {}) !== JSON.stringify(normalized)) {
+      fs.writeFileSync(USERS_FILE, JSON.stringify(normalized, null, 2), "utf8");
+      const nextStats = fs.statSync(USERS_FILE);
+      return updateCache(normalized, nextStats.mtimeMs);
+    }
+    return updateCache(normalized, stats.mtimeMs);
   } catch (_err) {
     return updateCache({ users: [] }, -1);
   }
