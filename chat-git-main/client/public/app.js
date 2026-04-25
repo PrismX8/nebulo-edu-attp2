@@ -78,28 +78,39 @@
     .status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
     .status-online{background:var(--success);box-shadow:0 0 6px var(--teal-glow);}
     .main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg-base);position:relative;}
-    .main-header{height:52px;padding:0 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-md);flex-shrink:0;background:var(--bg-panel);backdrop-filter:blur(20px);z-index:10;box-shadow:0 1px 0 var(--border-md),0 4px 16px rgba(0,0,0,0.4);}
+    .main-header{min-height:64px;padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-md);flex-shrink:0;background:linear-gradient(180deg,rgba(18,18,24,0.98),rgba(12,12,16,0.92));backdrop-filter:blur(20px);z-index:10;box-shadow:0 1px 0 var(--border-md),0 10px 32px rgba(0,0,0,0.35);}
     .main-header-hash{font-family:var(--font-mono);font-size:15px;color:var(--accent);}
     .main-header h2{font-family:var(--font-head);font-size:16px;font-weight:600;color:var(--text-1);letter-spacing:0.06em;}
     .header-online{font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);display:flex;align-items:center;gap:6px;margin-left:auto;}
     .header-online::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text-3);}
     .header-online.has-users{color:var(--teal);}
     .header-online.has-users::before{background:var(--teal);box-shadow:0 0 5px var(--teal-glow);}
-    #chat-messages{flex:1;overflow-y:auto;padding:16px 0 8px;display:flex;flex-direction:column;gap:0;}
-    .msg{display:flex;gap:12px;padding:6px 20px;position:relative;transition:background 0.1s;animation:msgIn 0.18s ease;}
+    .main-header-meta{display:flex;flex-direction:column;gap:3px;min-width:0;}
+    .main-header-sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);}
+    .room-effect-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid var(--border-md);color:var(--text-2);}
+    .room-effect-chip strong{font-family:var(--font-head);font-size:12px;letter-spacing:0.08em;color:var(--text-1);}
+    #chat-messages{flex:1;overflow-y:auto;padding:18px 14px 10px;display:flex;flex-direction:column;gap:8px;}
+    .msg{display:flex;gap:12px;padding:10px 12px;position:relative;transition:background 0.12s,border-color 0.12s,transform 0.12s;animation:msgIn 0.18s ease;border:1px solid transparent;border-radius:18px;}
     @keyframes msgIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:translateY(0);}}
-    .msg:hover{background:rgba(255,255,255,0.018);}
+    .msg:hover{background:rgba(255,255,255,0.018);border-color:rgba(255,255,255,0.05);transform:translateY(-1px);}
     .msg:hover .msg-actions{opacity:1;}
     .msg-avatar{width:36px;height:36px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--text-1);flex-shrink:0;margin-top:2px;text-transform:uppercase;background:linear-gradient(135deg,#252840,#363c60);border:1px solid var(--border-lg);}
     .msg.deleted{opacity:0.35;}
-    .msg-body{flex:1;min-width:0;}
+    .msg.system-note{gap:0;padding:0;background:none;border:none;transform:none;}
+    .msg.system-note:hover{background:none;border:none;transform:none;}
+    .msg.system-note .msg-avatar{display:none;}
+    .msg-body{flex:1;min-width:0;padding:2px 0;}
     .msg-head{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
     .msg-head strong{font-family:var(--font-head);font-size:14px;font-weight:600;color:var(--text-1);letter-spacing:0.04em;}
     .msg.mine .msg-head strong{color:var(--accent-hi);}
     .msg-head > span:last-of-type{font-family:var(--font-mono);font-size:10px;color:var(--text-3);}
-    .msg-bubble{font-size:14px;line-height:1.6;color:var(--text-2);word-break:break-word;font-family:var(--font-ui),'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;}
+    .msg-bubble{font-size:14px;line-height:1.6;color:var(--text-2);word-break:break-word;font-family:var(--font-ui),'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);border-radius:16px;padding:10px 12px;}
     .msg:hover .msg-bubble{color:var(--text-1);}
     .msg-bubble[class*="effect-"],.effect-preview[class*="effect-"]{display:inline-block;max-width:min(100%,920px);padding:6px 11px;border-radius:12px;border:1px solid transparent;position:relative;overflow:hidden;}
+    .msg.system-note .msg-body{width:100%;}
+    .msg.system-note .msg-head{margin:0;}
+    .msg.system-note .msg-name{color:var(--gold);}
+    .msg.system-note .msg-bubble{display:block;background:linear-gradient(135deg,rgba(184,149,90,0.1),rgba(88,116,174,0.06));border:1px solid rgba(184,149,90,0.16);font-family:var(--font-mono);font-size:12px;letter-spacing:0.03em;color:var(--text-1);}
     .msg-bubble.effect-flashbands,.effect-preview.effect-flashbands{background:linear-gradient(135deg,rgba(105,145,205,0.14),rgba(130,215,255,0.08));border-color:rgba(130,215,255,0.18);box-shadow:0 0 0 1px rgba(130,215,255,0.05),0 0 18px rgba(91,127,166,0.12);}
     .msg-bubble.effect-flashbands::after,.effect-preview.effect-flashbands::after{content:'';position:absolute;inset:-20% -60%;background:repeating-linear-gradient(180deg,transparent 0 11px,rgba(170,220,255,0.14) 11px 15px,transparent 15px 26px);transform:translateX(-28%);mix-blend-mode:screen;animation:flashbandsSweep 2.8s linear infinite;}
     .msg-bubble.effect-scramble,.effect-preview.effect-scramble{background:linear-gradient(135deg,rgba(120,72,160,0.14),rgba(52,85,170,0.08));border-color:rgba(160,120,255,0.18);text-shadow:1px 0 rgba(255,60,160,0.28),-1px 0 rgba(80,200,255,0.24);animation:scrambleShift 0.18s steps(2,end) infinite;}
@@ -126,7 +137,12 @@
     .rank-admin::before{content:'◆ ';}
     .delete-btn{background:transparent;border:none;cursor:pointer;font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);padding:2px 8px;border-radius:var(--radius-sm);transition:background 0.12s,color 0.12s;}
     .delete-btn:hover{background:var(--danger-lo);color:var(--danger);}
-    .composer{border-top:1px solid var(--border-md);padding:12px 16px 16px;flex-shrink:0;background:var(--bg-panel);backdrop-filter:blur(20px);}
+    .composer{border-top:1px solid var(--border-md);padding:12px 16px 16px;flex-shrink:0;background:linear-gradient(180deg,rgba(14,14,18,0.94),rgba(10,10,14,0.98));backdrop-filter:blur(20px);}
+    .composer-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px 10px;}
+    .composer-toolbar-copy{display:flex;flex-direction:column;gap:3px;min-width:0;}
+    .composer-toolbar-title{font-family:var(--font-head);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-1);}
+    .composer-toolbar-meta{font-family:var(--font-mono);font-size:10px;color:var(--text-3);}
+    .composer-room-effect{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid var(--border-md);font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-2);}
     #command-panel{background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-lg);margin-bottom:8px;padding:4px;box-shadow:0 -4px 24px rgba(0,0,0,0.5);backdrop-filter:blur(16px);}
     .cmd-item{width:100%;text-align:left;padding:7px 10px;border-radius:var(--radius-sm);display:flex;align-items:baseline;gap:10px;cursor:pointer;background:transparent;border:none;transition:background 0.1s;}
     .cmd-item:hover{background:var(--bg-hover);}
@@ -139,15 +155,27 @@
     .hidden{display:none!important;}
     .composer-box{background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-lg);transition:border-color 0.2s;overflow:hidden;}
     .composer-box:focus-within{border-color:var(--border-lg);}
-    .composer-form{display:flex;align-items:flex-end;padding:10px 12px 10px 16px;gap:6px;}
+    .composer-form{display:flex;align-items:flex-end;padding:12px 12px 12px 16px;gap:8px;}
     .composer-textarea{flex:1;background:transparent;border:none;outline:none;resize:none;font-family:var(--font-ui),'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;font-size:14px;color:var(--text-1);line-height:1.55;max-height:180px;overflow-y:auto;padding:2px 0;unicode-bidi:plaintext;caret-color:var(--accent-hi);}
     .composer-textarea::placeholder{color:var(--text-3);}
     .composer-send{width:30px;height:30px;border-radius:var(--radius-sm);background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-3);transition:color 0.15s,background 0.15s;margin-bottom:1px;}
     .composer-send:hover{color:var(--text-1);background:var(--bg-hover);}
     .composer-send:active{transform:scale(0.94);}
-    .composer-emoji-btn{width:30px;height:30px;border-radius:var(--radius-sm);background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;line-height:1;transition:background 0.15s,transform 0.1s;margin-bottom:1px;position:relative;}
-    .composer-emoji-btn:hover{background:var(--bg-hover);transform:scale(1.1);}
+    .composer-emoji-btn,.composer-effect-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;line-height:1;transition:background 0.15s,transform 0.1s,border-color 0.15s,color 0.15s;margin-bottom:1px;position:relative;color:var(--text-2);}
+    .composer-emoji-btn:hover,.composer-effect-btn:hover{background:var(--bg-hover);transform:translateY(-1px);border-color:var(--border-md);color:var(--text-1);}
     .emoji-picker-popover{position:absolute;bottom:calc(100% + 8px);right:0;background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-lg);padding:10px;box-shadow:0 -4px 32px rgba(0,0,0,0.7);z-index:50;width:300px;max-height:260px;overflow-y:auto;backdrop-filter:blur(20px);}
+    .effects-picker-popover{position:absolute;bottom:calc(100% + 8px);right:0;background:var(--bg-card);border:1px solid var(--border-md);border-radius:16px;padding:12px;box-shadow:0 -8px 36px rgba(0,0,0,0.7);z-index:60;width:min(360px,calc(100vw - 32px));max-height:340px;overflow-y:auto;backdrop-filter:blur(20px);}
+    .effects-picker-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+    .effects-picker-head strong{font-family:var(--font-head);font-size:15px;letter-spacing:0.08em;color:var(--text-1);}
+    .effects-picker-head span{display:block;font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:4px;}
+    .effects-picker-grid{display:flex;flex-direction:column;gap:10px;}
+    .effects-picker-card{background:rgba(255,255,255,0.02);border:1px solid var(--border-md);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:9px;}
+    .effects-picker-card.active{border-color:var(--accent-border);box-shadow:0 0 0 1px rgba(176,180,204,0.05);}
+    .effects-picker-line{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .effects-picker-name{font-family:var(--font-head);font-size:14px;letter-spacing:0.05em;color:var(--text-1);}
+    .effects-picker-price{font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;color:var(--gold);}
+    .effects-picker-desc{font-size:12px;line-height:1.5;color:var(--text-2);}
+    .effects-picker-trigger{font-family:var(--font-mono);font-size:10px;color:var(--text-3);}
     .emoji-picker-search{width:100%;background:var(--bg-raised);border:1px solid var(--border-md);border-radius:var(--radius-md);padding:7px 10px;font-size:13px;color:var(--text-1);outline:none;margin-bottom:8px;font-family:var(--font-mono);}
     .emoji-picker-search:focus{border-color:var(--border-lg);}
     .emoji-picker-search::placeholder{color:var(--text-3);}
@@ -226,6 +254,14 @@
     #mention-notification:hover{background:var(--bg-raised);border-color:var(--accent-border);}
     #mention-notification-close{cursor:pointer;padding:4px;color:var(--text-3);font-size:12px;transition:color 0.15s;}
     #mention-notification-close:hover{color:var(--text-1);}
+    @media (max-width: 720px){
+      .main-header{padding:12px 14px;align-items:flex-start;flex-direction:column;}
+      .header-online{margin-left:0;}
+      #chat-messages{padding:14px 10px 8px;}
+      .msg{padding:9px 10px;}
+      .composer-toolbar{flex-direction:column;align-items:flex-start;}
+      .composer-form{padding:10px 10px 10px 12px;}
+    }
   `;
   document.head.appendChild(styleEl);
 
@@ -260,6 +296,7 @@
     messagesRoomKey: '',
     presencePromise: null,
     alertsPromise: null,
+    roomEffect: null,
     routeNonce: 0
   };
 
@@ -302,8 +339,27 @@
   const getEffectMeta = (effectId) =>
     fallbackEffects.find((effect) => effect.id === normalizeEffectId(effectId)) || fallbackEffects[0];
 
-  const getMessageEffect = (message) =>
-    normalizeEffectId(message?.equippedEffect || message?.sender?.equippedEffect || 'none');
+  const getRoomEffectMeta = () => {
+    const effectId = normalizeEffectId(state.roomEffect?.effectId);
+    return getEffectMeta(effectId);
+  };
+
+  const getActiveRoomEffectId = () => normalizeEffectId(state.roomEffect?.effectId);
+
+  const getMessageEffect = (message) => {
+    const roomEffectId = normalizeEffectId(message?.roomEffect?.effectId || state.roomEffect?.effectId);
+    if (roomEffectId !== 'none') return roomEffectId;
+    return normalizeEffectId(message?.equippedEffect || message?.sender?.equippedEffect || 'none');
+  };
+
+  const setRoomEffectState = (roomEffect) => {
+    const normalizedId = normalizeEffectId(roomEffect?.effectId);
+    state.roomEffect = normalizedId === 'none'
+      ? null
+      : { ...roomEffect, effectId: normalizedId };
+    updateCoinDisplays();
+    return state.roomEffect;
+  };
 
   const applyUserSnapshot = (user) => {
     state.user = user || null;
@@ -320,6 +376,18 @@
     if (settingsCoins) settingsCoins.textContent = label;
     const settingsEffect = document.getElementById('settings-equipped-effect');
     if (settingsEffect) settingsEffect.textContent = getEffectMeta(state.user?.equippedEffect).name;
+    const roomCoins = document.getElementById('room-effects-balance');
+    if (roomCoins) roomCoins.textContent = label;
+    const headerRoomEffect = document.getElementById('header-room-effect');
+    if (headerRoomEffect) {
+      headerRoomEffect.textContent = getActiveRoomEffectId() === 'none' ? 'No room effect' : `${getRoomEffectMeta().name} live`;
+    }
+    const composerRoomEffect = document.getElementById('composer-room-effect');
+    if (composerRoomEffect) {
+      composerRoomEffect.textContent = getActiveRoomEffectId() === 'none'
+        ? 'No room effect active'
+        : `${getRoomEffectMeta().name} active for this room`;
+    }
   };
 
   const getHashPath  = () => (window.location.hash || '#/').replace(/^#/, '') || '/';
@@ -383,7 +451,7 @@
     const list = Array.isArray(messages) ? messages : [];
     return list.map((m) => [
       String(m?.id || m?._id || ''), String(m?.date || ''), String(m?.timestamp || ''),
-      String(m?.body || m?.content || ''), m?.deleted ? '1' : '0'
+      String(m?.body || m?.content || ''), m?.deleted ? '1' : '0', String(m?.roomEffect?.effectId || '')
     ].join('|')).join('||');
   };
 
@@ -561,6 +629,20 @@
     return data;
   };
 
+  const fetchRoomEffect = async (channel) => {
+    if (!channel?.room) {
+      setRoomEffectState(null);
+      return null;
+    }
+    try {
+      const data = await api(`/api/chat-effects/rooms/${encodeURIComponent(channel.room)}`);
+      if (data?.user) applyUserSnapshot(data.user);
+      return setRoomEffectState(data?.roomEffect || null);
+    } catch {
+      return state.roomEffect;
+    }
+  };
+
   const notifyMentions = (msg, channel) => {
     const mentions = detectMentions(String(msg?.body || msg?.content || ''));
     const currentUsername = String(state.user?.name || state.user?.username || '').trim().toLowerCase();
@@ -610,6 +692,10 @@
       const nextMessages  = Array.isArray(messages) ? messages : [];
       const nextSignature = getMessagesSignature(nextMessages);
       const changed       = nextSignature !== state.lastMessagesSignature;
+      const inferredRoomEffect = nextMessages.find((msg) => msg?.roomEffect)?.roomEffect || null;
+      if (inferredRoomEffect || state.roomEffect) {
+        setRoomEffectState(inferredRoomEffect || state.roomEffect);
+      }
       
       if (changed && nextMessages.length > 0) {
         const oldIds = new Set(state.messages.map(m => String(m.id || m._id || '')));
@@ -910,6 +996,10 @@
     const displayName = esc(state.user?.name || state.user?.username || 'Guest');
     const avatarLetter = String(state.user?.name || state.user?.username || 'U').trim().charAt(0).toUpperCase();
     const channelName = esc(state.currentChannel?.name?.replace(/^#/, '') || 'general');
+    const roomEffectMeta = getRoomEffectMeta();
+    const roomEffectLabel = getActiveRoomEffectId() === 'none'
+      ? 'No room effect'
+      : `${roomEffectMeta.name} live`;
 
     app.innerHTML = `
       <div id="mention-notification" class="hidden"></div>
@@ -949,7 +1039,15 @@
         <section class="main">
           <header class="main-header">
             <span class="main-header-hash">#</span>
-            <h2>${channelName}</h2>
+            <div class="main-header-meta">
+              <h2>${channelName}</h2>
+              <div class="main-header-sub">
+                <span class="room-effect-chip">
+                  <span>Room FX</span>
+                  <strong id="header-room-effect">${esc(roomEffectLabel)}</strong>
+                </span>
+              </div>
+            </div>
             <span id="header-online-count" class="header-online">0 online</span>
           </header>
           <div id="main-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative">
@@ -1030,8 +1128,8 @@
       const token     = String(m?.user_token || m?.senderId || '').trim();
       const isDeleted = !!m?.deleted;
       const mine      = isMine(m);
+      const isSystem  = !!m?.system || String(name).trim().toLowerCase() === 'system';
       const bgStyle   = `background:${avatarColor(name)}`;
-      const sameServer = isSameServer(m);
       const effectId  = isDeleted ? 'none' : getMessageEffect(m);
       const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
 
@@ -1052,11 +1150,11 @@
       }
 
       return `
-        <div class="msg ${mine ? 'mine' : ''} ${isDeleted ? 'deleted' : ''}">
+        <div class="msg ${mine ? 'mine' : ''} ${isDeleted ? 'deleted' : ''} ${isSystem ? 'system-note' : ''}">
           <div class="msg-avatar" style="${bgStyle}">${esc(avatarL)}</div>
           <div class="msg-body">
             <div class="msg-head">
-              <strong class="msg-name ${effectCls}">${esc(name)}</strong>
+              <strong class="msg-name ${effectCls}">${esc(isSystem ? 'System' : name)}</strong>
               ${rankHtml}
               <span>${esc(fmtTime(m))}</span>
             </div>
@@ -1236,6 +1334,7 @@
     state.lastMessagesSignature = '';
     state.routeNonce += 1;
     const routeNonce = state.routeNonce;
+    await fetchRoomEffect(state.currentChannel);
 
     const channelName = esc(state.currentChannel?.name?.replace(/^#/, '') || 'general');
 
@@ -1246,12 +1345,22 @@
          Jump to latest
        </button>`,
       `<div class="composer">
+        <div class="composer-toolbar">
+          <div class="composer-toolbar-copy">
+            <div class="composer-toolbar-title">Room Chat</div>
+            <div id="composer-room-effect" class="composer-room-effect">${esc(getActiveRoomEffectId() === 'none' ? 'No room effect active' : `${getRoomEffectMeta().name} active for this room`)}</div>
+          </div>
+          <div id="room-effects-balance" class="coin-chip">${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}</div>
+        </div>
         <div id="command-panel" class="hidden"></div>
         <div id="composer-notice" class="hidden"></div>
         <div class="composer-box">
           <form id="chat-form" class="composer-form">
             <textarea id="chat-input" rows="1" placeholder="Message #${channelName}" class="composer-textarea" spellcheck="true" autocomplete="off"></textarea>
             <div style="display:flex;gap:2px;align-items:flex-end;flex-shrink:0">
+              <div style="position:relative">
+                <button type="button" id="effects-btn" class="composer-effect-btn" title="Room effects" aria-label="Open room effects">✦</button>
+              </div>
               <div style="position:relative">
                 <button type="button" id="emoji-btn" class="composer-emoji-btn" title="Emoji & special characters" aria-label="Open emoji picker">😊</button>
               </div>
@@ -1395,6 +1504,113 @@
 
     setupEmojiPicker();
 
+    const setupEffectsPicker = () => {
+      const btn = document.getElementById('effects-btn');
+      if (!btn) return;
+      let popoverEl = null;
+      let open = false;
+
+      const closePicker = () => {
+        if (popoverEl && popoverEl.parentNode) popoverEl.parentNode.removeChild(popoverEl);
+        popoverEl = null;
+        open = false;
+      };
+
+      const activateRoomEffect = async (effectId) => {
+        if (!state.currentChannel?.room) return;
+        const data = await api(`/api/chat-effects/rooms/${encodeURIComponent(state.currentChannel.room)}/activate`, {
+          method: 'POST',
+          body: { effectId }
+        });
+        if (data?.user) applyUserSnapshot(data.user);
+        setRoomEffectState(data?.roomEffect || null);
+        renderMessages();
+        showComposerNotice(data?.msg || 'Room effect activated', 'success', 3600);
+        closePicker();
+        await getMessages(state.currentChannel).catch(() => {});
+      };
+
+      const buildPicker = () => {
+        const el = document.createElement('div');
+        el.className = 'effects-picker-popover';
+        const activeRoomEffectId = getActiveRoomEffectId();
+        const activeMeta = getRoomEffectMeta();
+        const activeTrigger = state.roomEffect?.triggeredByName
+          ? `Triggered by ${state.roomEffect.triggeredByName}`
+          : 'No room effect is active right now';
+        el.innerHTML = `
+          <div class="effects-picker-head">
+            <div>
+              <strong>Room Effects</strong>
+              <span>Everyone in #${channelName} sees the active effect.</span>
+            </div>
+            <div class="coin-chip" id="effects-picker-balance">${esc(`${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}`)}</div>
+          </div>
+          <div class="effects-picker-card ${activeRoomEffectId !== 'none' ? 'active' : ''}" style="margin-bottom:10px">
+            <div class="effects-picker-line">
+              <div class="effects-picker-name">Live Now</div>
+              <div class="effects-picker-price">${esc(activeRoomEffectId === 'none' ? 'NONE' : activeMeta.name.toUpperCase())}</div>
+            </div>
+            <div class="effects-picker-trigger">${esc(activeTrigger)}</div>
+          </div>
+          <div class="effects-picker-grid">
+            ${fallbackEffects
+              .filter((effect) => effect.id !== 'none')
+              .map((effect) => {
+                const effectId = normalizeEffectId(effect.id);
+                const active = effectId === activeRoomEffectId;
+                const canAfford = Math.max(0, Number(state.user?.coins || 0)) >= Math.max(0, Number(effect.price || 0));
+                return `
+                  <div class="effects-picker-card ${active ? 'active' : ''}">
+                    <div class="effects-picker-line">
+                      <div class="effects-picker-name">${esc(effect.name)}</div>
+                      <div class="effects-picker-price">${esc(`${Math.max(0, Number(effect.price || 0))} COINS`)}</div>
+                    </div>
+                    <div class="effects-picker-desc">${esc(effect.description)}</div>
+                    <div class="effect-preview effect-${effectId}">Room-wide preview for ${esc(effect.name)}</div>
+                    <button type="button" class="btn btn-primary btn-sm" data-room-effect-id="${esc(effectId)}" ${active || !canAfford ? 'disabled' : ''}>
+                      ${esc(active ? 'Active now' : canAfford ? `Activate for ${effect.price}c` : 'Need more coins')}
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+          </div>
+        `;
+
+        el.querySelectorAll('[data-room-effect-id]').forEach((actionBtn) => {
+          actionBtn.addEventListener('click', async () => {
+            const effectId = normalizeEffectId(actionBtn.getAttribute('data-room-effect-id'));
+            try {
+              actionBtn.disabled = true;
+              await activateRoomEffect(effectId);
+            } catch (err) {
+              actionBtn.disabled = false;
+              showComposerNotice(err.message || 'Failed to activate room effect', 'error', 4200);
+            }
+          });
+        });
+
+        el.addEventListener('mousedown', (e) => e.stopPropagation());
+        return el;
+      };
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (open) {
+          closePicker();
+          return;
+        }
+        open = true;
+        popoverEl = buildPicker();
+        btn.parentElement.appendChild(popoverEl);
+      });
+
+      document.addEventListener('mousedown', () => { if (open) closePicker(); }, { capture: true });
+    };
+
+    setupEffectsPicker();
+    updateCoinDisplays();
+
     (async () => {
       try {
         await joinRoom(state.currentChannel);
@@ -1451,15 +1667,36 @@
                 <input name="name" placeholder="How should others see you?" value="${esc(state.user?.name || '')}" class="inp" />
               </div>
               <div class="field">
-                <label>Coins</label>
-                <input name="coins" type="number" min="0" step="1" value="${esc(Math.max(0, Number(state.user?.coins || 0)))}" class="inp" />
-              </div>
-              <div class="field">
                 <label>Avatar image</label>
                 <input id="avatar-file" type="file" accept="image/*" style="font-size:13px;color:var(--text-2)" />
               </div>
+              <div class="settings-balance">
+                <div>
+                  <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Current balance</div>
+                  <strong>${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}</strong>
+                </div>
+                <div style="text-align:right;font-size:12px;color:var(--text-3)">Coins come from sending chat messages and can be gifted below.</div>
+              </div>
               <div>
                 <button class="btn btn-primary" type="submit">Save Profile</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Give Coins</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:14px">Send coins directly to another account by username.</p>
+            <form id="coin-transfer-form" class="form-stack">
+              <div class="field">
+                <label>Recipient username</label>
+                <input name="username" placeholder="Who should receive coins?" class="inp" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Amount</label>
+                <input name="amount" type="number" min="1" step="1" placeholder="How many coins?" class="inp" />
+              </div>
+              <div>
+                <button class="btn btn-primary" type="submit">Send Coins</button>
               </div>
             </form>
           </div>
@@ -1580,7 +1817,6 @@
       e.preventDefault();
       const fd   = new FormData(e.currentTarget);
       const name = String(fd.get('name') || '').trim();
-      const coins = Math.max(0, Number(fd.get('coins') || 0));
       const file = document.getElementById('avatar-file')?.files?.[0] || null;
       let avatar = null;
       if (file) {
@@ -1592,7 +1828,7 @@
         });
       }
       try {
-        const data = await api('/api/users/profile', { method: 'PUT', body: { name, avatar, coins } });
+        const data = await api('/api/users/profile', { method: 'PUT', body: { name, avatar } });
         if (name) localStorage.setItem('tlkNickname', name);
         localStorage.removeItem('tlkParticipantToken');
         if (data?.user) applyUserSnapshot(data.user);
@@ -1600,6 +1836,27 @@
         renderEffectsGrid();
         showMsg('Profile updated successfully');
       } catch (err) { showErr(err.message); }
+    });
+
+    document.getElementById('coin-transfer-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const username = String(fd.get('username') || '').trim();
+      const amount = Math.max(0, Number(fd.get('amount') || 0));
+      if (!username) { showErr('Recipient username is required'); return; }
+      if (!Number.isFinite(amount) || amount <= 0) { showErr('Amount must be greater than 0'); return; }
+      try {
+        const data = await api('/api/users/transfer-coins', {
+          method: 'POST',
+          body: { username, amount }
+        });
+        if (data?.user) applyUserSnapshot(data.user);
+        renderEffectsGrid();
+        e.currentTarget.reset();
+        showMsg(data?.msg || 'Coins sent successfully');
+      } catch (err) {
+        showErr(err.message);
+      }
     });
 
     document.getElementById('password-form')?.addEventListener('submit', async (e) => {

@@ -20,6 +20,7 @@ const state = {
   roomBans: new Map(),
   deletedMessages: new Map(),
   clearedRooms: new Map(),
+  roomEffects: new Map(),
   warningsByUser: new Map(),
   cooldownByUser: new Map(),
   pendingAlerts: new Map()
@@ -31,7 +32,8 @@ function savePersistentState() {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     const payload = {
-      clearedRooms: Object.fromEntries(state.clearedRooms.entries())
+      clearedRooms: Object.fromEntries(state.clearedRooms.entries()),
+      roomEffects: Object.fromEntries(state.roomEffects.entries())
     };
     fs.writeFileSync(PERSIST_FILE, JSON.stringify(payload, null, 2), "utf8");
   } catch (_err) {
@@ -46,7 +48,11 @@ function loadPersistentState() {
     const clearedRooms = parsed?.clearedRooms && typeof parsed.clearedRooms === "object"
       ? parsed.clearedRooms
       : {};
+    const roomEffects = parsed?.roomEffects && typeof parsed.roomEffects === "object"
+      ? parsed.roomEffects
+      : {};
     state.clearedRooms = new Map(Object.entries(clearedRooms));
+    state.roomEffects = new Map(Object.entries(roomEffects));
   } catch (_err) {
   }
 }
@@ -409,6 +415,32 @@ function getRoomClearMeta(room = "") {
   return state.clearedRooms.get(key) || null;
 }
 
+function setRoomEffect(room = "", meta = {}) {
+  const key = String(room || "").trim().toLowerCase();
+  if (!key) return null;
+
+  const effectId = String(meta.effectId || "none").trim().toLowerCase() || "none";
+  const roomEffect = {
+    room: key,
+    effectId,
+    triggeredByUserId: String(meta.triggeredByUserId || "").trim() || null,
+    triggeredByName: String(meta.triggeredByName || "").trim() || "Unknown",
+    triggeredByUsername: String(meta.triggeredByUsername || "").trim() || null,
+    price: Math.max(0, Number(meta.price || 0)),
+    activatedAt: Number(meta.activatedAt || Date.now())
+  };
+
+  state.roomEffects.set(key, roomEffect);
+  savePersistentState();
+  return roomEffect;
+}
+
+function getRoomEffect(room = "") {
+  const key = String(room || "").trim().toLowerCase();
+  if (!key) return null;
+  return state.roomEffects.get(key) || null;
+}
+
 function moderateDisplayName(name = "") {
   const raw = String(name || "").trim();
   const fallback = `guest_${Math.random().toString(36).slice(2, 7)}`;
@@ -730,6 +762,8 @@ module.exports = {
   deleteMessageById,
   clearRoomMessages,
   getRoomClearMeta,
+  setRoomEffect,
+  getRoomEffect,
   moderateDisplayName,
   addWarning,
   clearWarnings,

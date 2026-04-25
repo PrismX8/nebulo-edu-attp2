@@ -26,7 +26,9 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const chatUserStore = require("./chat-git-main/services/auth/localStore");
 const chatIdentityStore = require("./chat-git-main/services/network/identity");
+const chatNetState = require("./chat-git-main/services/network/state");
 const chatEffects = require("./chat-git-main/services/chat/effects");
+const tlkRoutes = require("./chat-git-main/routes/tlk");
 
 const libcurlPath = fileURLToPath(
   new URL("node_modules/@mercuryworkshop/libcurl-transport/dist/", import.meta.url)
@@ -192,7 +194,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   fastify.use(express.json({ limit: "1mb" }));
   fastify.use(express.urlencoded({ extended: true, limit: "1mb" }));
   fastify.use("/api/network", require("./chat-git-main/routes/network"));
-  fastify.use("/api/tlk", require("./chat-git-main/routes/tlk"));
+  fastify.use("/api/tlk", tlkRoutes);
 
   // Now register static after API routes
   fastify.register(fastifyStatic, {
@@ -341,15 +343,14 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
 
-    const { name, avatar, coins } = req.body || {};
+    const { name, avatar } = req.body || {};
     if (avatar && String(avatar).length > 2_000_000) {
       return reply.status(400).send({ msg: "Avatar too large" });
     }
 
     const updatedUser = chatUserStore.updateProfile(authUser._id, {
       name,
-      avatar,
-      coins
+      avatar
     });
     if (!updatedUser) {
       return reply.status(404).send({ msg: "User not found" });
@@ -362,6 +363,51 @@ if (cluster.isPrimary && WORKERS > 1) {
     });
 
     return { user: sanitizeUser(updatedUser), msg: "Profile updated successfully" };
+  });
+
+  fastify.post("/api/users/transfer-coins", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const rawRecipient = String(req.body?.username || req.body?.recipient || "").trim();
+    const amount = Math.floor(Number(req.body?.amount || 0));
+    if (!rawRecipient) {
+      return reply.status(400).send({ msg: "Recipient username required" });
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return reply.status(400).send({ msg: "Amount must be greater than 0" });
+    }
+
+    const recipient = chatUserStore.findByUsername(rawRecipient);
+    if (!recipient) {
+      return reply.status(404).send({ msg: "Recipient not found" });
+    }
+
+    try {
+      const result = chatUserStore.transferCoins(authUser._id, recipient._id, amount);
+      return {
+        msg: `Sent ${result.amount} coin${result.amount === 1 ? "" : "s"} to ${result.toUser.name || result.toUser.username}`,
+        amount: result.amount,
+        recipient: sanitizeUser(result.toUser),
+        user: sanitizeUser(result.fromUser)
+      };
+    } catch (error) {
+      if (error?.code === "SAME_USER") {
+        return reply.status(400).send({ msg: "You can't send coins to yourself" });
+      }
+      if (error?.code === "INSUFFICIENT_COINS") {
+        return reply.status(400).send({ msg: "Not enough coins" });
+      }
+      if (error?.code === "INVALID_AMOUNT") {
+        return reply.status(400).send({ msg: "Amount must be greater than 0" });
+      }
+      if (error?.code === "USER_NOT_FOUND") {
+        return reply.status(404).send({ msg: "Recipient not found" });
+      }
+      return reply.status(500).send({ msg: "Failed to send coins" });
+    }
   });
 
   fastify.put("/api/users/password", async (req, reply) => {
@@ -404,6 +450,25 @@ if (cluster.isPrimary && WORKERS > 1) {
     return {
       effects: chatEffects.listEffects(),
       user: sanitizeUser(currentUser)
+    };
+  });
+
+  fastify.get("/api/chat-effects/rooms/:room", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const room = String(req.params.room || "").trim().toLowerCase();
+    if (!room) {
+      return reply.status(400).send({ msg: "Room is required" });
+    }
+
+    const roomEffect = chatNetState.getRoomEffect(room);
+    return {
+      room,
+      roomEffect,
+      user: sanitizeUser(findUserById(authUser._id))
     };
   });
 
@@ -467,6 +532,55 @@ if (cluster.isPrimary && WORKERS > 1) {
       }
       return reply.status(500).send({ msg: "Failed to equip effect" });
     }
+  });
+
+  fastify.post("/api/chat-effects/rooms/:room/activate", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const room = String(req.params.room || "").trim().toLowerCase();
+    const effect = chatEffects.getEffect(req.body?.effectId);
+    if (!room) {
+      return reply.status(400).send({ msg: "Room is required" });
+    }
+    if (!effect || effect.id === "none") {
+      return reply.status(400).send({ msg: "Choose a valid room effect" });
+    }
+
+    const currentUser = findUserById(authUser._id);
+    if (!currentUser) {
+      return reply.status(404).send({ msg: "User not found" });
+    }
+    if (Math.max(0, Number(currentUser.coins || 0)) < effect.price) {
+      return reply.status(400).send({ msg: "Not enough coins" });
+    }
+
+    const updatedUser = chatUserStore.grantCoins(authUser._id, -effect.price);
+    const roomEffect = chatNetState.setRoomEffect(room, {
+      effectId: effect.id,
+      triggeredByUserId: currentUser._id,
+      triggeredByName: currentUser.name || currentUser.username || "Unknown",
+      triggeredByUsername: currentUser.username || null,
+      price: effect.price,
+      activatedAt: Date.now()
+    });
+
+    try {
+      await tlkRoutes.postRoomNote(
+        room,
+        `${roomEffect.triggeredByName} activated the ${effect.name} room effect for ${effect.price} coin${effect.price === 1 ? "" : "s"}.`,
+        tlkRoutes.SYSTEM_BOT_NAME || "System"
+      );
+    } catch {}
+
+    return {
+      msg: `${effect.name} is now live in #${room}`,
+      effect,
+      roomEffect,
+      user: sanitizeUser(updatedUser)
+    };
   });
 
   // OpenBullet

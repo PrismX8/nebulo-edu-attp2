@@ -16,6 +16,7 @@ const TLK_BASE = 'https://tlk.io';
 const bridgeSessions = new Map();
 const RETRY_COUNT = 2;
 const MOD_BOT_NAME = process.env.MOD_BOT_NAME || 'Moderation';
+const SYSTEM_BOT_NAME = process.env.SYSTEM_BOT_NAME || 'System';
 const SESSION_DIR = path.resolve(__dirname, '..', 'data');
 const SESSION_FILE = path.join(SESSION_DIR, 'tlk-sessions.json');
 const ROOM_META_FILE = path.join(SESSION_DIR, 'tlk-room-meta.json');
@@ -261,11 +262,12 @@ async function ensureParticipant(session, nickname) {
   return session.participant;
 }
 
-async function postModerationMessage(room, text) {
+async function postRoomNote(room, text, botName = MOD_BOT_NAME) {
   try {
-    const modSession = getSession(`moderation:${room}`);
+    const cleanBotName = String(botName || MOD_BOT_NAME).trim() || MOD_BOT_NAME;
+    const modSession = getSession(`room-note:${cleanBotName}:${room}`);
     const { chatId } = await retryRequest(() => ensureRoom(modSession, room));
-    await ensureParticipant(modSession, MOD_BOT_NAME);
+    await ensureParticipant(modSession, cleanBotName);
 
     const sendResponse = await retryRequest(() =>
       axios.post(
@@ -284,7 +286,7 @@ async function postModerationMessage(room, text) {
 
     applySetCookies(modSession, sendResponse.headers['set-cookie']);
   } catch (error) {
-    console.error('Moderation post error:', error?.message || error);
+    console.error('Room note post error:', error?.message || error);
   }
 }
 
@@ -320,29 +322,37 @@ function getAuthenticatedUser(req) {
 function enrichMessageIdentity(msg) {
   const decodedBody = decodeHtmlEntities(msg?.body || '');
   const decodedNickname = decodeHtmlEntities(msg?.nickname || '');
+  const normalizedNickname = String(decodedNickname || '').trim().toLowerCase();
+  const isSystem = normalizedNickname === SYSTEM_BOT_NAME.toLowerCase();
+  const baseMessage = {
+    ...msg,
+    body: decodedBody,
+    nickname: decodedNickname || msg?.nickname || 'Unknown',
+    system: isSystem
+  };
   const profile = identityStore.getByToken(msg?.user_token);
   if (!profile) {
     const byName = userStore.findByUsername(String(decodedNickname || '').trim());
-    if (!byName) return msg;
+    if (!byName) return baseMessage;
     const safe = userStore.sanitizeUser(byName);
     return {
-      ...msg,
-      body: decodedBody,
+      ...baseMessage,
       userId: safe?._id || null,
       nickname: safe?.name || decodedNickname || safe?.username || 'Unknown',
       avatar: safe?.avatar || null,
       role: safe?.role || null,
-      equippedEffect: safe?.equippedEffect || "none"
+      equippedEffect: safe?.equippedEffect || "none",
+      system: isSystem
     };
   }
   return {
-    ...msg,
-    body: decodedBody,
+    ...baseMessage,
     userId: profile.userId || null,
     nickname: profile.name || decodedNickname || profile.username || "Unknown",
     avatar: profile.avatar || null,
     role: profile.role || null,
-    equippedEffect: profile.equippedEffect || "none"
+    equippedEffect: profile.equippedEffect || "none",
+    system: isSystem
   };
 }
 
@@ -557,6 +567,7 @@ router.get('/rooms/:room/messages', async (req, res) => {
     }
 
     const roomClearMeta = netState.getRoomClearMeta(room);
+    const roomEffect = netState.getRoomEffect(room);
     const roomClearedAt = Number(roomClearMeta?.clearedAt || 0);
     const filtered = Array.isArray(response.data)
       ? response.data
@@ -566,7 +577,10 @@ router.get('/rooms/:room/messages', async (req, res) => {
             return tsMs > roomClearedAt;
           })
           .filter((m) => !netState.isMutedUser(m.user_token))
-          .map((m) => withDeletedOverlay(enrichMessageIdentity(m), requesterRole))
+          .map((m) => ({
+            ...withDeletedOverlay(enrichMessageIdentity(m), requesterRole),
+            roomEffect: roomEffect || null
+          }))
       : [];
     const latest = filtered.slice(-250);
     debugMsg('success', {
@@ -621,7 +635,7 @@ router.post('/rooms/:room/messages', async (req, res) => {
     const moderation = await netState.moderateText(body);
     if (!moderation?.allowed) {
       const primaryReason = (moderation?.reasons || [])[0] || 'harmful content';
-      await postModerationMessage(room, `${userName} message blocked by moderation (${primaryReason}).`);
+      await postRoomNote(room, `${userName} message blocked by moderation (${primaryReason}).`);
 
       return res.status(400).json({
         msg: `Message blocked by AI moderation: ${primaryReason}`,
@@ -765,11 +779,14 @@ router.post('/rooms/:room/moderation-note', auth, async (req, res) => {
   if (!text) return res.status(400).json({ msg: 'text is required' });
 
   try {
-    await postModerationMessage(room, text);
+    await postRoomNote(room, text);
     return res.json({ ok: true });
   } catch (error) {
     return res.status(502).json({ msg: error?.message || 'Failed to post moderation note' });
   }
 });
+
+router.postRoomNote = postRoomNote;
+router.SYSTEM_BOT_NAME = SYSTEM_BOT_NAME;
 
 module.exports = router;

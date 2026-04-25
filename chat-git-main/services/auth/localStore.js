@@ -259,6 +259,61 @@ function grantCoins(userId, amount = 0) {
   return store.users[idx];
 }
 
+function transferCoins(fromUserId, toUserId, amount = 0) {
+  const senderId = String(fromUserId || "").trim();
+  const recipientId = String(toUserId || "").trim();
+  const delta = Math.floor(Number(amount) || 0);
+
+  if (!senderId || !recipientId) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  if (senderId === recipientId) {
+    const error = new Error("Cannot transfer coins to yourself");
+    error.code = "SAME_USER";
+    throw error;
+  }
+  if (!Number.isFinite(delta) || delta <= 0) {
+    const error = new Error("Invalid amount");
+    error.code = "INVALID_AMOUNT";
+    throw error;
+  }
+
+  const store = readStore();
+  const fromIdx = store.users.findIndex((u) => String(u._id) === senderId);
+  const toIdx = store.users.findIndex((u) => String(u._id) === recipientId);
+  if (fromIdx < 0 || toIdx < 0) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+
+  const sender = normalizeUser(store.users[fromIdx]);
+  const recipient = normalizeUser(store.users[toIdx]);
+  if (sender.coins < delta) {
+    const error = new Error("Not enough coins");
+    error.code = "INSUFFICIENT_COINS";
+    throw error;
+  }
+
+  store.users[fromIdx] = normalizeUser({
+    ...sender,
+    coins: sender.coins - delta
+  });
+  store.users[toIdx] = normalizeUser({
+    ...recipient,
+    coins: recipient.coins + delta
+  });
+  writeStore(store);
+
+  return {
+    fromUser: store.users[fromIdx],
+    toUser: store.users[toIdx],
+    amount: delta
+  };
+}
+
 function purchaseEffect(userId, effectId = "") {
   const effect = effects.getEffect(effectId);
   if (!effect || effect.id === "none") {
@@ -353,6 +408,7 @@ module.exports = {
   updateProfile,
   updatePassword,
   grantCoins,
+  transferCoins,
   purchaseEffect,
   equipEffect,
   sanitizeUser
