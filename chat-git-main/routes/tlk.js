@@ -356,6 +356,26 @@ function enrichMessageIdentity(msg) {
   };
 }
 
+function buildRoomEffectSystemMessage(room = "", roomEffect = null) {
+  if (!roomEffect?.effectId) return null;
+  const activatedAt = Number(roomEffect.activatedAt || Date.now());
+  const effectName = String(roomEffect.effectId || "effect")
+    .trim()
+    .replace(/(^\w)|(-\w)/g, (part) => part.replace("-", " ").toUpperCase());
+  const price = Math.max(0, Number(roomEffect.price || 0));
+  const triggeredByName = String(roomEffect.triggeredByName || "Someone").trim() || "Someone";
+  return {
+    id: `system-room-effect-${String(room || "").trim().toLowerCase()}-${activatedAt}`,
+    _id: `system-room-effect-${String(room || "").trim().toLowerCase()}-${activatedAt}`,
+    nickname: SYSTEM_BOT_NAME,
+    body: `${triggeredByName} activated the ${effectName} screen effect for ${price} coin${price === 1 ? "" : "s"}.`,
+    timestamp: Math.floor(activatedAt / 1000),
+    date: new Date(activatedAt).toISOString(),
+    system: true,
+    roomEffect
+  };
+}
+
 function withDeletedOverlay(msg, viewerRole = "user") {
   const deletedMeta = netState.getDeletedMessage(msg?.id);
   const isTlkDeleted = !!msg?.deleted;
@@ -583,6 +603,13 @@ router.get('/rooms/:room/messages', async (req, res) => {
           }))
       : [];
     const latest = filtered.slice(-250);
+    if (roomEffect?.effectId) {
+      const roomEffectNote = buildRoomEffectSystemMessage(room, roomEffect);
+      const hasRoomEffectNote = latest.some((msg) => String(msg?.id || msg?._id || "") === String(roomEffectNote?.id || ""));
+      if (roomEffectNote && !hasRoomEffectNote) {
+        latest.push(roomEffectNote);
+      }
+    }
     debugMsg('success', {
       room,
       clientId,

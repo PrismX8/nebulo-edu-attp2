@@ -567,13 +567,13 @@ if (cluster.isPrimary && WORKERS > 1) {
       activatedAt: Date.now()
     });
 
-    try {
-      await tlkRoutes.postRoomNote(
+    Promise.resolve().then(() =>
+      tlkRoutes.postRoomNote(
         room,
         `${roomEffect.triggeredByName} activated the ${effect.name} room effect for ${effect.price} coin${effect.price === 1 ? "" : "s"}.`,
         tlkRoutes.SYSTEM_BOT_NAME || "System"
-      );
-    } catch {}
+      )
+    ).catch(() => {});
 
     return {
       msg: `${effect.name} is now live in #${room}`,
