@@ -47,6 +47,13 @@ const EFFECTS = Object.freeze([
     price: 14,
     description: "Soft cosmic shimmer with a brighter edge.",
     roomDurationMs: 9000
+  },
+  {
+    id: "duck",
+    name: "Duck Quack",
+    price: 5,
+    description: "A loud duck quack plays on everyone's screen globally.",
+    roomDurationMs: 0
   }
 ]);
 

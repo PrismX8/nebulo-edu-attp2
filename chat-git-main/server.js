@@ -20,6 +20,9 @@ const io = socketIo(server, {
   }
 });
 
+// Expose io globally for routes
+globalThis.__nebuloChatIo = io;
+
 // Configuration
 const config = {
   port: process.env.PORT || 5000,

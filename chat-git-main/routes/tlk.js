@@ -39,7 +39,7 @@ const effectDefinitions = (() => {
 })();
 // --- BEGIN chat-effects API PATCH ---
 // Add chat-effects endpoints for compatibility with client
-router.post('/api/chat-effects/rooms/:room', auth, async (req, res) => {
+router.post('/chat-effects/rooms/:room', auth, async (req, res) => {
   // This endpoint triggers a room effect (generic)
   const room = String(req.params.room || '').trim();
   const effectId = req.body?.effectId || req.body?.effect || req.query?.effectId || req.query?.effect;
@@ -65,7 +65,7 @@ router.post('/api/chat-effects/rooms/:room', auth, async (req, res) => {
   }
 });
 
-router.post('/api/chat-effects/rooms/:room/activate', auth, async (req, res) => {
+router.post('/chat-effects/rooms/:room/activate', auth, async (req, res) => {
   // This endpoint triggers a room effect (explicit activate)
   const room = String(req.params.room || '').trim();
   const effectId = req.body?.effectId || req.body?.effect || req.query?.effectId || req.query?.effect;
@@ -97,13 +97,38 @@ router.post('/api/chat-effects/rooms/:room/activate', auth, async (req, res) => 
 });
 
 // GET current room effect
-router.get('/api/chat-effects/rooms/:room', auth, async (req, res) => {
+router.get('/chat-effects/rooms/:room', auth, async (req, res) => {
   const room = String(req.params.room || '').trim();
   try {
     const roomEffect = netState.getRoomEffect(room);
     return res.json({ roomEffect: roomEffect || null });
   } catch (e) {
     return res.status(500).json({ msg: 'Failed to get room effect', error: e?.message });
+  }
+});
+
+// Global effect activation
+router.post('/chat-effects/global/activate', auth, async (req, res) => {
+  const effectId = req.body?.effectId || req.body?.effect || req.query?.effectId || req.query?.effect;
+  const triggeredByName = req.user?.name || req.user?.username || 'Someone';
+  if (!effectId) return res.status(400).json({ msg: 'EffectId required' });
+  try {
+    const cleanEffectId = String(effectId || '').trim().toLowerCase();
+    const effectDef = effectDefinitions.get(cleanEffectId);
+    if (!effectDef) return res.status(400).json({ msg: 'Invalid global effect' });
+
+    // Broadcast the global effect to all connected clients via socket.io
+    if (globalThis.__nebuloChatIo) {
+      globalThis.__nebuloChatIo.emit('global_effect', {
+        effectId: cleanEffectId,
+        triggeredByName,
+        activatedAt: Date.now()
+      });
+    }
+
+    return res.json({ ok: true, effectId: cleanEffectId, effect: effectDef });
+  } catch (e) {
+    return res.status(500).json({ msg: 'Failed to activate global effect', error: e?.message });
   }
 });
 // --- END chat-effects API PATCH ---

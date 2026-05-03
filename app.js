@@ -642,6 +642,60 @@ if (cluster.isPrimary && WORKERS > 1) {
     };
   });
 
+  fastify.post("/api/chat-effects/global/activate", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const requestedEffectId = String(req.body?.effectId || "").trim().toLowerCase();
+    const fallbackDuckEffect = {
+      id: "duck",
+      name: "Duck Quack",
+      price: 5,
+      description: "A loud duck quack plays on everyone's screen globally.",
+      roomDurationMs: 0
+    };
+    const effect = chatEffects.getEffect(requestedEffectId) || (requestedEffectId === "duck" ? fallbackDuckEffect : null);
+    if (!effect || effect.id === "none") {
+      return reply.status(400).send({ msg: "Choose a valid global effect" });
+    }
+
+    const currentUser = findUserById(authUser._id);
+    if (!currentUser) {
+      return reply.status(404).send({ msg: "User not found" });
+    }
+    if (Math.max(0, Number(currentUser.coins || 0)) < effect.price) {
+      return reply.status(400).send({ msg: "Not enough coins" });
+    }
+
+    const updatedUser = chatUserStore.grantCoins(authUser._id, -effect.price);
+
+    // Broadcast global effect to all connected clients
+    if (globalThis.__nebuloChatIo) {
+      globalThis.__nebuloChatIo.emit('global_effect', {
+        effectId: effect.id,
+        triggeredByUserId: currentUser._id,
+        triggeredByName: currentUser.name || currentUser.username || "Unknown",
+        price: effect.price,
+        activatedAt: Date.now()
+      });
+    }
+
+    const systemMessage = await tlkRoutes.postRoomNote(
+      "nebulo5_4", // global room
+      `${currentUser.name || currentUser.username || "Unknown"} activated the ${effect.name} global effect for ${effect.price} coin${effect.price === 1 ? "" : "s"}.`,
+      tlkRoutes.SYSTEM_BOT_NAME || "System"
+    );
+
+    return {
+      msg: `${effect.name} is now live globally`,
+      effect,
+      systemMessage: systemMessage || null,
+      user: sanitizeUser(updatedUser)
+    };
+  });
+
   // OpenBullet
   fastify.get("/api/openbullet/status", async (req, reply) => {
     return { status: "ok" };
@@ -687,14 +741,29 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   fastify.get("/kchat/modules/*", (req, reply) => {
     reply.header("Cache-Control", "no-store");
-    const filePath = path.join(chatGitClientPath, 'modules', req.params['*']);
-    return reply.sendFile(filePath);
+    const relativePath = req.params['*'];
+    const filePath = path.join(chatGitClientPath, 'modules', relativePath);
+    try {
+      const content = fs.readFileSync(filePath);
+      const ext = String(path.extname(relativePath || '') || '').toLowerCase();
+      const contentType =
+        ext === '.js' || ext === '.mjs' ? 'application/javascript' :
+        ext === '.css' ? 'text/css' :
+        ext === '.json' ? 'application/json' :
+        ext === '.mp3' ? 'audio/mpeg' :
+        ext === '.wav' ? 'audio/wav' :
+        ext === '.ogg' ? 'audio/ogg' :
+        ext === '.png' ? 'image/png' :
+        ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+        ext === '.svg' ? 'image/svg+xml' :
+        'application/octet-stream';
+      reply.type(contentType).send(content);
+    } catch (err) {
+      console.error('Failed to read file:', filePath, err.message);
+      reply.status(404).send('File not found');
+    }
   });
 
-  fastify.get("/kchat/*", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return reply.sendFile("index.html", chatGitClientPath);
-  });
 
   // Override scramjet.all.js with our patched copy (no-store) so bare-mux changes
   // take effect immediately and survive `npm install`.

@@ -45,6 +45,16 @@ function normalizeOwnedEffects(value) {
   return [...owned];
 }
 
+function normalizeFriends(value) {
+  const rawList = Array.isArray(value) ? value : [];
+  const friends = new Set();
+  rawList.forEach((entry) => {
+    const friendUsername = String(entry || "").trim().toLowerCase();
+    if (friendUsername) friends.add(friendUsername);
+  });
+  return [...friends];
+}
+
 function normalizeEquippedEffect(effectId, ownedEffects) {
   const cleanId = String(effectId || "").trim().toLowerCase();
   if (ownedEffects.includes(cleanId) && effects.isValidEffect(cleanId)) {
@@ -59,6 +69,7 @@ function normalizeUser(user = {}) {
     ...user,
     coins: sanitizeCoins(user.coins),
     ownedEffects,
+    friends: normalizeFriends(user.friends),
     equippedEffect: normalizeEquippedEffect(user.equippedEffect, ownedEffects)
   };
 }
@@ -149,6 +160,55 @@ function findById(id = "") {
   return user ? { ...user, role: applyConfiguredRole(user) } : null;
 }
 
+function addFriend(userId, targetUsername = "") {
+  const normalizedTarget = String(targetUsername || "").trim().toLowerCase();
+  if (!normalizedTarget) return null;
+  const store = readStore();
+  const idx = store.users.findIndex((u) => String(u._id) === String(userId));
+  if (idx < 0) return null;
+  const current = normalizeUser(store.users[idx]);
+  if (current.username.toLowerCase() === normalizedTarget) {
+    const error = new Error("Cannot add yourself");
+    error.code = "CANNOT_ADD_SELF";
+    throw error;
+  }
+  const targetUser = store.users.find((u) => String(u.username || "").toLowerCase() === normalizedTarget);
+  if (!targetUser) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const friends = new Set(normalizeFriends(current.friends));
+  friends.add(normalizedTarget);
+  store.users[idx] = normalizeUser({ ...current, friends: [...friends] });
+  writeStore(store);
+  return store.users[idx];
+}
+
+function getMutualFriends(userId) {
+  const caller = findById(userId);
+  if (!caller) return [];
+  const callerUsername = String(caller.username || "").trim().toLowerCase();
+  if (!callerUsername) return [];
+  const friends = Array.isArray(caller.friends) ? caller.friends : [];
+  return listUsers().filter((user) => {
+    const targetUsername = String(user.username || "").trim().toLowerCase();
+    if (!targetUsername || targetUsername === callerUsername) return false;
+    const targetFriends = Array.isArray(user.friends) ? user.friends : [];
+    return friends.includes(targetUsername) && targetFriends.includes(callerUsername);
+  });
+}
+
+function searchUsersByUsername(query = "", excludeUserId = "") {
+  const normalizedQuery = String(query || "").trim().toLowerCase();
+  const excludeId = String(excludeUserId || "").trim();
+  return listUsers().filter((user) => {
+    if (String(user._id || "") === excludeId) return false;
+    if (!normalizedQuery) return true;
+    return String(user.username || "").toLowerCase().includes(normalizedQuery);
+  });
+}
+
 function parseEmailSet(input = "") {
   return new Set(
     String(input || "")
@@ -205,6 +265,7 @@ function createUser({ username, name, passwordHash }) {
     role,
     coins: 0,
     ownedEffects: ["none"],
+    friends: [],
     equippedEffect: "none",
     date: new Date().toISOString()
   };
@@ -231,10 +292,6 @@ function updateProfile(userId, updates = {}) {
   if (idx < 0) return null;
 
   const next = { ...store.users[idx] };
-  if (typeof updates.name === "string") {
-    const n = updates.name.trim();
-    if (n) next.name = n.slice(0, 40);
-  }
   if (typeof updates.avatar === "string") {
     next.avatar = updates.avatar || null;
   }
@@ -395,11 +452,12 @@ function sanitizeUser(user) {
   return {
     _id: normalized._id,
     username: normalized.username,
-    name: normalized.name,
+    name: normalized.username,
     avatar: normalized.avatar || null,
     role: effectiveRole,
     coins: sanitizeCoins(normalized.coins),
     ownedEffects: normalizeOwnedEffects(normalized.ownedEffects),
+    friends: normalizeFriends(normalized.friends),
     equippedEffect: normalizeEquippedEffect(normalized.equippedEffect, normalizeOwnedEffects(normalized.ownedEffects)),
     date: normalized.date
   };
@@ -410,6 +468,9 @@ module.exports = {
   findByUsername,
   findByIdentifier,
   findById,
+  addFriend,
+  getMutualFriends,
+  searchUsersByUsername,
   createUser,
   updateProfile,
   updatePassword,

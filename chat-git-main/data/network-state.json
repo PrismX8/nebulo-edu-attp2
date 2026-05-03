@@ -7,20 +7,16 @@
       "clearedByName": "PrismX",
       "clearedByUserId": "6b629194-fe8b-4e18-a5be-65ec5ff2828c",
       "reason": "Owner cleared room"
+    },
+    "nebulo": {
+      "room": "nebulo",
+      "clearedAt": 1777780730150,
+      "clearedByRole": "owner",
+      "clearedByName": "Admin",
+      "clearedByUserId": "6ec9cef2-a808-4b46-89e7-b582a1a670f8",
+      "reason": "Iced T being a bitch"
     }
   },
-  "roomEffects": {
-    "platnium": {
-      "room": "platnium",
-      "effectId": "embers",
-      "triggeredByUserId": "6b629194-fe8b-4e18-a5be-65ec5ff2828c",
-      "triggeredByName": "PrismX",
-      "triggeredByUsername": "PrismX",
-      "price": 9,
-      "activatedAt": 1777767088240,
-      "durationMs": 8500,
-      "expiresAt": 1777767096740
-    }
-  },
+  "roomEffects": {},
   "slowmodeMs": 5000
 }

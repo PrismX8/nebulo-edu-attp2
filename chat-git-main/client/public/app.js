@@ -1,5 +1,6 @@
 import { injectAppStyles } from './modules/styles.js';
 import { createChatUi } from './modules/chat-ui.js';
+import { activateGlobalEffect } from './modules/effects.js';
 
 (() => {
   injectAppStyles();
@@ -118,7 +119,10 @@ import { createChatUi } from './modules/chat-ui.js';
     lastFlashbangKey: '',
     flashbangCleanupTimer: null,
     routeNonce: 0,
-    avatarVersion: Date.now()
+    avatarVersion: Date.now(),
+    mutualFriends: [],
+    friendSearchResults: [],
+    friendSearchQuery: ''
   };
 
   // Extra state for settings page file handling
@@ -134,6 +138,7 @@ import { createChatUi } from './modules/chat-ui.js';
     { cmd: '/unban',      usage: '/unban <target>',               desc: 'Unban a user',                      roles: ['admin', 'owner'] },
     { cmd: '/clearwarns', usage: '/clearwarns <target>',          desc: 'Reset warning count',               roles: ['admin', 'owner'] },
     { cmd: '/slowmode',   usage: '/slowmode <seconds>',           desc: 'Set global chat slowmode',          roles: ['admin', 'owner'] },
+    { cmd: '/global',     usage: '/global <effectId>',           desc: 'Activate a global chat effect',      roles: ['owner'] },
     { cmd: '/clearchat',  usage: '/clearchat [reason]',           desc: 'Clear room messages',               roles: ['owner'] }
   ];
 
@@ -144,7 +149,8 @@ import { createChatUi } from './modules/chat-ui.js';
     { id: 'embers',     name: 'Embers',     price: 9,  description: 'A hot orange glow with pulsing heat.' },
     { id: 'frostbyte',  name: 'Frostbyte',  price: 10, description: 'Icy highlights and a pale blue shimmer.' },
     { id: 'matrix',     name: 'Matrix',     price: 12, description: 'Green terminal glow with digital flicker.' },
-    { id: 'starlight',  name: 'Starlight',  price: 14, description: 'Soft cosmic shimmer with a brighter edge.' }
+    { id: 'starlight',  name: 'Starlight',  price: 14, description: 'Soft cosmic shimmer with a brighter edge.' },
+    { id: 'duck',       name: 'Duck Quack', price: 5,  description: 'A loud duck quack plays on everyone\'s screen globally.' }
   ];
 
   /* ═══════════════════════════════════════════════════════════════
@@ -550,6 +556,8 @@ import { createChatUi } from './modules/chat-ui.js';
     renderSidebar,
     renderMessages,
     sendMessage,
+    refreshFriends,
+    renderDirectMessagesPage,
     renderChatPage
   } = createChatUi({
     app,
@@ -570,7 +578,8 @@ import { createChatUi } from './modules/chat-ui.js';
     api,
     getMessagesSignature,
     normalizeEffectId,
-    renderRoomEffectStage
+    renderRoomEffectStage,
+    activateGlobalEffect
   });
 
   /* ═══════════════════════════════════════════════════════════════
@@ -655,8 +664,8 @@ import { createChatUi } from './modules/chat-ui.js';
             <div id="settings-err" class="banner banner-error hidden" style="margin-bottom:14px"></div>
             <form id="profile-form" class="form-stack">
               <div class="field">
-                <label>Display name</label>
-                <input name="name" placeholder="How should others see you?" value="${esc(state.user?.name || '')}" class="inp" />
+                <label>Username</label>
+                <input name="username" value="${esc(state.user?.username || '')}" class="inp" readonly />
               </div>
               <div class="field">
                 <label>Avatar image</label>
@@ -862,7 +871,6 @@ import { createChatUi } from './modules/chat-ui.js';
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
-        const name = String(fd.get('name') || '').trim();
         let avatar = null;
 
         // If a new file is selected, convert to base64
@@ -882,7 +890,7 @@ import { createChatUi } from './modules/chat-ui.js';
 
         try {
           // Send profile update
-          const data = await api('/api/users/profile', { method: 'PUT', body: { name, avatar } });
+          const data = await api('/api/users/profile', { method: 'PUT', body: { avatar } });
           
           // After successful update, refresh user data from server to get the latest avatar URL
           await loadUser();  // This will call applyUserSnapshot with fresh data
@@ -1016,13 +1024,13 @@ import { createChatUi } from './modules/chat-ui.js';
               <table class="data-table" id="admin-users">
                 <thead>
                   <tr>
-                    <th>Display Name</th>
                     <th>Username</th>
+                    ${role === 'owner' ? '<th>User ID</th>' : ''}
                     <th>Role</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="3" style="color:var(--text-3);padding:16px 0">Loading users…</td></tr>
+                  <tr><td colspan="${role === 'owner' ? '3' : '2'}" style="color:var(--text-3);padding:16px 0">Loading users…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1074,14 +1082,14 @@ import { createChatUi } from './modules/chat-ui.js';
 
       document.getElementById('admin-users').querySelector('tbody').innerHTML =
         (!Array.isArray(users) || users.length === 0)
-          ? '<tr><td colspan="3" style="color:var(--text-3);padding:16px 0">No users found</td></tr>'
+          ? `<tr><td colspan="${role === 'owner' ? '4' : '3'}" style="color:var(--text-3);padding:16px 0">No users found</td></tr>`
           : users.map((u) => {
               const r = String(u.role || 'user').toLowerCase();
               const roleClass = r === 'owner' ? 'role-owner' : r === 'admin' ? 'role-admin' : 'role-user';
               return `
                 <tr>
-                  <td>${esc(u.name || '—')}</td>
                   <td style="font-family:var(--font-mono);font-size:12.5px">${esc(u.username || '')}</td>
+                  ${role === 'owner' ? `<td style="font-family:var(--font-mono);font-size:12.5px;display:flex;align-items:center;gap:8px"><span>${esc(u._id || '')}</span><button type="button" data-copy-user-id="${esc(u._id || '')}" class="copy-id-btn">Copy</button></td>` : ''}
                   <td><span class="role-badge ${roleClass}">${esc(r)}</span></td>
                 </tr>
               `;
@@ -1095,6 +1103,25 @@ import { createChatUi } from './modules/chat-ui.js';
     }
 
     await refreshAutomation();
+
+    document.querySelectorAll('[data-copy-user-id]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const userId = String(btn.getAttribute('data-copy-user-id') || '').trim();
+        if (!userId) return;
+        try {
+          await navigator.clipboard.writeText(userId);
+          showToast('User ID copied');
+        } catch {
+          const textArea = document.createElement('textarea');
+          textArea.value = userId;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          textArea.remove();
+          showToast('User ID copied');
+        }
+      });
+    });
 
     document.getElementById('btn-auto-refresh')?.addEventListener('click', async () => { await refreshAutomation(); showToast('Status refreshed'); });
     document.getElementById('btn-auto-start')?.addEventListener('click', async () => {
@@ -1317,6 +1344,7 @@ import { createChatUi } from './modules/chat-ui.js';
     if (!state.user) await loadUser();
     if (!state.user) { navigate('/login'); return false; }
     if (!state.channels.length) await loadChannels().catch(() => { state.channels = []; });
+    if (typeof refreshFriends === 'function') await refreshFriends();
     return true;
   };
 
@@ -1336,6 +1364,7 @@ import { createChatUi } from './modules/chat-ui.js';
       setupMentionClicks();
       return;
     }
+    if (path.startsWith('/direct-messages')) { cleanupChatTimers(); await renderDirectMessagesPage(); return; }
     if (path === '/' || path === '/channels' || path === '/dashboard') { navigate('/channels/global'); return; }
     if (path.startsWith('/settings'))    { cleanupChatTimers(); await renderSettingsPage();    return; }
     if (path.startsWith('/admin'))       { cleanupChatTimers(); await renderAdminPage();       return; }

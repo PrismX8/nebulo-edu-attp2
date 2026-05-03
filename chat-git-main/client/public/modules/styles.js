@@ -604,7 +604,8 @@ export const APP_STYLES = `
       opacity: 0;
       transition: opacity 0.15s;
     }
-    .delete-btn {
+    .delete-btn,
+    .copy-id-btn {
       background: transparent;
       border: none;
       cursor: pointer;
@@ -614,7 +615,8 @@ export const APP_STYLES = `
       border-radius: var(--radius-sm);
       transition: all 0.12s;
     }
-    .delete-btn:hover { background: var(--danger-lo); color: var(--danger); }
+    .delete-btn:hover,
+    .copy-id-btn:hover { background: var(--danger-lo); color: var(--danger); }
     
     /* ===== COMPOSER – MODERN, CLICK ANYWHERE FOCUS ===== */
     .composer {
@@ -663,6 +665,8 @@ export const APP_STYLES = `
       margin-bottom: 12px;
       padding: 6px;
       box-shadow: var(--shadow-lg);
+      max-height: 200px;
+      overflow-y: auto;
     }
     .typing-indicator {
       display: flex;
@@ -1090,6 +1094,28 @@ export const APP_STYLES = `
       box-shadow: var(--shadow-lg);
       pointer-events: auto;
       animation: toastIn 0.2s ease, toastOut 0.2s 2.5s ease forwards;
+    }
+    .toast-top-anim {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10001;
+      max-width: min(92vw, 860px);
+      width: auto;
+      background: rgba(15, 23, 42, 0.96);
+      color: var(--text-1);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 24px 64px rgba(15, 23, 42, 0.45);
+      border-radius: 28px;
+      padding: 18px 26px;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      animation: toastIn 0.2s ease, toastOut 0.2s 3.2s ease forwards;
     }
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(8px); }

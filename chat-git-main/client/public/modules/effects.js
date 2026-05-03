@@ -18,4 +18,12 @@ export async function activateRoomEffect(effectId) {
   // Optionally: re-render messages, fetch messages, etc.
 }
 
+export async function activateGlobalEffect(effectId) {
+  const data = await api('/api/chat-effects/global/activate', {
+    method: 'POST',
+    body: { effectId }
+  });
+  showComposerNotice(data?.msg || 'Global effect activated', 'success', 3600);
+}
+
 // Add more effect-related helpers as needed

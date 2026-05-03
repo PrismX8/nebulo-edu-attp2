@@ -25,7 +25,7 @@ router.post(
     }
 
     try {
-      const { username, name, password } = req.body;
+      const { username, password } = req.body;
       const cleanUsername = String(username || "").trim();
       if (cleanUsername.toLowerCase() === 'moderation') {
         return res.status(400).json({ msg: 'Username "moderation" is reserved' });
@@ -37,7 +37,7 @@ router.post(
 
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
-      const user = userStore.createUser({ username: cleanUsername, name, passwordHash });
+      const user = userStore.createUser({ username: cleanUsername, name: cleanUsername, passwordHash });
 
       const payload = {
         user: {
@@ -65,6 +65,68 @@ router.post(
     }
   }
 );
+
+// @route   POST api/users/friends
+// @desc    Add a friend by username
+// @access  Private
+router.post('/friends', auth, async (req, res) => {
+  try {
+    const caller = userStore.findById(req.user.id);
+    if (!caller) {
+      return res.status(401).json({ msg: 'User not found' });
+    }
+    const username = String(req.body?.username || '').trim();
+    if (!username) return res.status(400).json({ msg: 'Friend username is required' });
+
+    try {
+      const updated = userStore.addFriend(caller._id, username);
+      return res.json({ ok: true, user: userStore.sanitizeUser(updated) });
+    } catch (err) {
+      if (err?.code === 'USER_NOT_FOUND') return res.status(404).json({ msg: 'User not found' });
+      if (err?.code === 'CANNOT_ADD_SELF') return res.status(400).json({ msg: 'Cannot add yourself' });
+      return res.status(400).json({ msg: err.message || 'Failed to add friend' });
+    }
+  } catch (_err) {
+    return res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/users/friends
+// @desc    Search friend candidates and list mutual friends
+// @access  Private
+router.get('/friends', auth, async (req, res) => {
+  try {
+    const caller = userStore.findById(req.user.id);
+    if (!caller) {
+      return res.status(401).json({ msg: 'User not found' });
+    }
+
+    const search = String(req.query.search || '').trim();
+    const results = userStore.searchUsersByUsername(search, caller._id);
+    const mutualFriends = userStore.getMutualFriends(caller._id);
+    const callerUsername = String(caller.username || '').trim().toLowerCase();
+
+    const normalizedResults = results.map((user) => {
+      const targetUsername = String(user.username || '').trim().toLowerCase();
+      const added = Array.isArray(caller.friends) && caller.friends.includes(targetUsername);
+      const mutual = added && Array.isArray(user.friends) && user.friends.includes(callerUsername);
+      return {
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar || null,
+        added,
+        mutual
+      };
+    });
+
+    return res.json({
+      mutualFriends: mutualFriends.map(userStore.sanitizeUser),
+      results: normalizedResults
+    });
+  } catch (_err) {
+    return res.status(500).send('Server Error');
+  }
+});
 
 // @route   GET api/users
 // @desc    Get all users

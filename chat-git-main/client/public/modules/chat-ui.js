@@ -20,7 +20,8 @@ export function createChatUi(deps) {
     api,
     getMessagesSignature,
     normalizeEffectId,
-    renderRoomEffectStage
+    renderRoomEffectStage,
+    activateGlobalEffect
   } = deps;
 
   const toastHost = document.getElementById('toast-host') || (() => {
@@ -71,26 +72,35 @@ export function createChatUi(deps) {
     if (!message || !currentRoomId || (roomId && roomId !== currentRoomId)) return false;
 
     const messageId = getMessageId(message);
+    let optimisticIndex = state.messages.findIndex((entry) => String(entry?._id || '').startsWith('temp-'));
     if (messageId) {
       const existingIndex = state.messages.findIndex((entry) => getMessageId(entry) === messageId);
       if (existingIndex >= 0) {
-        state.messages.splice(existingIndex, 1, { ...state.messages[existingIndex], ...message });
+        if (replaceOptimistic && optimisticIndex >= 0 && existingIndex !== optimisticIndex) {
+          state.messages.splice(existingIndex, 1);
+          if (existingIndex < optimisticIndex) optimisticIndex -= 1;
+        }
+        const targetIndex = replaceOptimistic && optimisticIndex >= 0 ? optimisticIndex : existingIndex;
+        state.messages.splice(targetIndex, 1, { ...state.messages[targetIndex], ...message });
         state.lastMessagesSignature = getMessagesSignature(state.messages);
         renderMessages();
         return true;
       }
     }
 
-    if (replaceOptimistic) {
-      const optimisticIndex = state.messages.findIndex((entry) => String(entry?._id || '').startsWith('temp-'));
-      if (optimisticIndex >= 0) {
-        state.messages.splice(optimisticIndex, 1, message);
-        state.lastMessagesSignature = getMessagesSignature(state.messages);
-        renderMessages();
-        return true;
+    if (replaceOptimistic && optimisticIndex >= 0) {
+      state.messages.splice(optimisticIndex, 1, message);
+      if (messageId) {
+        state.messages = state.messages.filter((entry, index) => index === optimisticIndex || getMessageId(entry) !== messageId);
       }
+      state.lastMessagesSignature = getMessagesSignature(state.messages);
+      renderMessages();
+      return true;
     }
 
+    if (messageId) {
+      state.messages = state.messages.filter((entry) => getMessageId(entry) !== messageId);
+    }
     state.messages.push(message);
     state.lastMessagesSignature = getMessagesSignature(state.messages);
     renderMessages();
@@ -186,19 +196,43 @@ export function createChatUi(deps) {
     }
   };
 
+  const showTopNotification = (message, durationMs = 3600) => {
+    const div = document.createElement('div');
+    div.className = 'toast-top-anim';
+    div.textContent = String(message || '');
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), Number(durationMs));
+  };
+
+  const handleGlobalEffect = (data = {}) => {
+    const effectId = String(data?.effectId || '').trim().toLowerCase();
+    const triggerName = String(data?.triggeredByName || 'Someone');
+    const effectName = getEffectMeta(effectId).name || 'Global effect';
+    showTopNotification(`${triggerName} activated ${effectName} globally`, 4200);
+    if (effectId === 'duck') {
+      // Play the duck quack sound
+      const audio = new Audio(new URL('./sounds/freesound_community-075176_duck-quack-40345.mp3', import.meta.url).href);
+      audio.volume = 0.7; // Set volume to 70%
+      audio.play().catch(err => console.warn('Failed to play duck sound:', err));
+    }
+  };
+
   const ensureChatSocket = async () => {
     const origin = getSocketOrigin();
     const socket = await getSocket(origin);
     if (activeSocket && (activeSocket !== socket || activeSocketOrigin !== origin)) {
       activeSocket.off('user_typing', handleRemoteTyping);
       activeSocket.off('receive_message', handleRealtimeMessage);
+      activeSocket.off('global_effect', handleGlobalEffect);
     }
     activeSocket = socket;
     activeSocketOrigin = origin;
     activeSocket.off('user_typing', handleRemoteTyping);
     activeSocket.off('receive_message', handleRealtimeMessage);
+    activeSocket.off('global_effect', handleGlobalEffect);
     activeSocket.on('user_typing', handleRemoteTyping);
     activeSocket.on('receive_message', handleRealtimeMessage);
+    activeSocket.on('global_effect', handleGlobalEffect);
     return activeSocket;
   };
 
@@ -293,8 +327,7 @@ export function createChatUi(deps) {
 
     const token = String(value.split(/\s+/)[0] || '/').toLowerCase();
     const items = getAllowedSlashCommands()
-      .filter((item) => token === '/' || item.cmd.startsWith(token))
-      .slice(0, 8);
+      .filter((item) => token === '/' || item.cmd.startsWith(token));
 
     if (!items.length) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
 
@@ -452,12 +485,80 @@ export function createChatUi(deps) {
     clearChatRuntime();
   };
 
-  const showToast = (message) => {
+  const showToast = (message, opts = {}) => {
+    const { isWarning = false } = opts;
+
+    if (isWarning) {
+      showModalWarning(message);
+      return;
+    }
+
     const div = document.createElement('div');
     div.className = 'toast-anim';
     div.textContent = message;
     toastHost.appendChild(div);
     setTimeout(() => div.remove(), 2800);
+  };
+
+  const showModalWarning = (message) => {
+    if (document.getElementById('modal-warning-backdrop')) return;
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'modal-warning-backdrop';
+    Object.assign(backdrop.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      boxSizing: 'border-box',
+      zIndex: '100000',
+    });
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-warning-modal';
+    Object.assign(modal.style, {
+      background: 'linear-gradient(135deg, rgba(22, 19, 57, 0.98), rgba(45, 27, 63, 0.98))',
+      color: '#fff',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      borderRadius: '1rem',
+      padding: '1.5rem 1.75rem',
+      maxWidth: 'min(90vw, 420px)',
+      width: '100%',
+      boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+    });
+
+    const text = document.createElement('div');
+    text.style.fontSize = '1rem';
+    text.style.lineHeight = '1.5';
+    text.style.margin = '0';
+    text.textContent = message;
+    modal.appendChild(text);
+
+    const actions = document.createElement('div');
+    actions.style.display = 'flex';
+    actions.style.justifyContent = 'flex-end';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.textContent = 'Dismiss';
+    closeBtn.style.cssText = 'border:none;border-radius:0.5rem;padding:0.5rem 1rem;background:rgba(255,255,255,0.15);color:#fff;cursor:pointer;';
+    closeBtn.addEventListener('click', () => backdrop.remove());
+    actions.appendChild(closeBtn);
+
+    modal.appendChild(actions);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
   };
 
   /* ========== DATA ========== */
@@ -712,7 +813,11 @@ export function createChatUi(deps) {
           headers: { 'x-chat-device-id': getChatDeviceId(), 'x-tlk-participant-token': String(localStorage.getItem('tlkParticipantToken') || '') }
         });
         const list = alerts?.alerts;
-        if (Array.isArray(list) && list.length > 0) showToast(list[list.length - 1]?.message || 'Moderation notice');
+        if (Array.isArray(list) && list.length > 0) {
+          const lastAlert = list[list.length - 1];
+          const isWarning = lastAlert?.type === 'warning' || /warned/i.test(lastAlert?.message || '');
+          showToast(lastAlert?.message || 'Moderation notice', { isWarning });
+        }
       } catch {}
     })();
     try {
@@ -986,6 +1091,11 @@ export function createChatUi(deps) {
             <div class="sidebar-logo">U</div>
             <span class="sidebar-title">UBG-chat by PrismX</span>
           </div>
+          <div class="sidebar-section-label">Direct Messages</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 8px">
+            <button id="btn-add-friend" class="btn btn-primary btn-sm" type="button">+ Add Friend</button>
+          </div>
+          <div id="sidebar-direct-messages" style="max-height:220px;overflow-y:auto;padding-bottom:8px"></div>
           <div class="sidebar-section-label">Channels</div>
           <div id="sidebar-channels" style="flex:1;overflow-y:auto;padding-bottom:8px"></div>
           <div class="sidebar-footer">
@@ -1130,6 +1240,14 @@ export function createChatUi(deps) {
       const deleteBtn = canDelete(m)
         ? `<button data-delete-id="${esc(id)}" data-delete-token="${esc(token)}" class="delete-btn">Delete</button>`
         : '';
+      const canCopyId = String(state.user?.role || '').toLowerCase() === 'owner';
+      const userId = esc(getUserId(m));
+      const copyIdBtn = canCopyId && userId
+        ? `<button data-copy-id="${userId}" class="copy-id-btn" title="Copy user ID">Copy ID</button>`
+        : '';
+      const actionsHtml = (deleteBtn || copyIdBtn)
+        ? `<div class="msg-actions">${deleteBtn}${copyIdBtn}</div>`
+        : '';
 
       const rankHtml = rank
         ? `<span class="rank-chip rank-${rank.key}">${esc(rank.label)}</span>`
@@ -1155,7 +1273,7 @@ export function createChatUi(deps) {
               <span>${esc(fmtTime(m))}</span>
             </div>
             <div class="msg-bubble ${effectCls}">${isDeleted ? '<em>Message deleted</em>' : formattedBody}</div>
-            ${deleteBtn ? `<div class="msg-actions">${deleteBtn}</div>` : ''}
+            ${actionsHtml}
           </div>
         </div>
       `;
@@ -1189,6 +1307,25 @@ export function createChatUi(deps) {
           }).catch(() => {});
         }
         if (state.currentChannel) await getMessages(state.currentChannel).catch(() => {});
+      });
+    });
+
+    root.querySelectorAll('[data-copy-id]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const userId = String(btn.getAttribute('data-copy-id') || '').trim();
+        if (!userId) return;
+        try {
+          await navigator.clipboard.writeText(userId);
+          showToast('User ID copied');
+        } catch {
+          const textArea = document.createElement('textarea');
+          textArea.value = userId;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          textArea.remove();
+          showToast('User ID copied');
+        }
       });
     });
 
@@ -1291,7 +1428,23 @@ export function createChatUi(deps) {
     const role = String(state.user?.role || '').toLowerCase();
     const hasModRole = role === 'owner' || role === 'admin';
 
-    if (cmd === '/help') { showComposerNotice('Commands: /ai /warn /ban /banfromall /unban /clearwarns /slowmode /clearchat', 'success', 4000); return true; }
+    if (cmd === '/help') { showComposerNotice('Commands: /ai /global /warn /ban /banfromall /unban /clearwarns /slowmode /clearchat', 'success', 4000); return true; }
+
+    if (cmd === '/global') {
+      if (role !== 'owner') { showComposerNotice('Only owner can use /global', 'error', 3500); return true; }
+      const effectId = String(parts[0] || '').trim().toLowerCase();
+      if (!effectId) { showComposerNotice('Usage: /global <effectId>', 'error', 3500); return true; }
+      const effectMeta = getEffectMeta(effectId);
+      if (effectMeta.id === 'none') { showComposerNotice(`Unknown global effect: ${effectId}`, 'error', 3500); return true; }
+      try {
+        const data = await api('/api/chat-effects/global/activate', { method: 'POST', body: { effectId: effectMeta.id } });
+        if (data?.user) applyUserSnapshot(data.user);
+        showComposerNotice(data?.msg || `${effectMeta.name} activated globally`, 'success', 3600);
+      } catch (err) {
+        showComposerNotice(err.message || 'Failed to activate global effect', 'error', 4200);
+      }
+      return true;
+    }
 
     if (cmd === '/ai') {
       const siteId = String(parts[0] || '').toLowerCase();
@@ -1504,9 +1657,14 @@ export function createChatUi(deps) {
 
       let pickerEl = null;
       let open = false;
+      let documentMouseDownListener = null;
 
       const closePicker = () => {
         if (pickerEl) { pickerEl.remove(); pickerEl = null; }
+        if (documentMouseDownListener) {
+          document.removeEventListener('mousedown', documentMouseDownListener, { capture: true });
+          documentMouseDownListener = null;
+        }
         open = false;
       };
 
@@ -1569,14 +1727,17 @@ export function createChatUi(deps) {
         pickerEl.style.bottom = 'calc(100% + 8px)';
         pickerEl.style.right = '0';
         pickerEl.style.zIndex = '5000';
-      });
 
-      document.addEventListener('mousedown', (event) => {
-        if (!open) return;
-        const wrapper = btn.parentElement;
-        if (wrapper && wrapper.contains(event.target)) return;
-        closePicker();
-      }, { capture: true });
+        if (!documentMouseDownListener) {
+          documentMouseDownListener = (event) => {
+            if (!open) return;
+            const wrapper = btn.parentElement;
+            if (wrapper && wrapper.contains(event.target)) return;
+            closePicker();
+          };
+          document.addEventListener('mousedown', documentMouseDownListener, { capture: true });
+        }
+      });
     };
 
     setupEmojiPicker();
@@ -1620,6 +1781,17 @@ export function createChatUi(deps) {
         await getMessages(state.currentChannel).catch(() => {});
       };
 
+      const activateGlobalEffectLocal = async (effectId) => {
+        const data = await api('/api/chat-effects/global/activate', {
+          method: 'POST',
+          body: { effectId }
+        });
+        if (data?.user) applyUserSnapshot(data.user);
+        handleGlobalEffect({ effectId });
+        showComposerNotice(data?.msg || 'Global effect activated', 'success', 3600);
+        closePicker();
+      };
+
       const buildPicker = () => {
         const el = document.createElement('div');
         el.className = 'effects-picker-popover';
@@ -1643,27 +1815,53 @@ export function createChatUi(deps) {
             </div>
             <div class="effects-picker-trigger">${esc(activeTrigger)}</div>
           </div>
-          <div class="effects-picker-grid">
-            ${fallbackEffects
-              .filter((effect) => effect.id !== 'none')
-              .map((effect) => {
-                const effectId = normalizeEffectId(effect.id);
-                const active = effectId === activeRoomEffectId;
-                const canAfford = Math.max(0, Number(state.user?.coins || 0)) >= Math.max(0, Number(effect.price || 0));
-                return `
-                  <div class="effects-picker-card ${active ? 'active' : ''}">
-                    <div class="effects-picker-line">
-                      <div class="effects-picker-name">${esc(effect.name)}</div>
-                      <div class="effects-picker-price">${esc(`${Math.max(0, Number(effect.price || 0))} COINS`)}</div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: var(--text-1); font-size: 14px; margin-bottom: 8px; display: block;">Room Effects</strong>
+            <div class="effects-picker-grid">
+              ${fallbackEffects
+                .filter((effect) => effect.id !== 'none' && effect.id !== 'duck')
+                .map((effect) => {
+                  const effectId = normalizeEffectId(effect.id);
+                  const active = effectId === activeRoomEffectId;
+                  const canAfford = Math.max(0, Number(state.user?.coins || 0)) >= Math.max(0, Number(effect.price || 0));
+                  return `
+                    <div class="effects-picker-card ${active ? 'active' : ''}">
+                      <div class="effects-picker-line">
+                        <div class="effects-picker-name">${esc(effect.name)}</div>
+                        <div class="effects-picker-price">${esc(`${Math.max(0, Number(effect.price || 0))} COINS`)}</div>
+                      </div>
+                      <div class="effects-picker-desc">${esc(effect.description)}</div>
+                      <div class="effect-preview effect-${effectId}">Room-wide preview for ${esc(effect.name)}</div>
+                      <button type="button" class="btn btn-primary btn-sm" data-room-effect-id="${esc(effectId)}" ${active || !canAfford ? 'disabled' : ''}>
+                        ${esc(active ? 'Active now' : canAfford ? `Activate for ${effect.price}c` : 'Need more coins')}
+                      </button>
                     </div>
-                    <div class="effects-picker-desc">${esc(effect.description)}</div>
-                    <div class="effect-preview effect-${effectId}">Room-wide preview for ${esc(effect.name)}</div>
-                    <button type="button" class="btn btn-primary btn-sm" data-room-effect-id="${esc(effectId)}" ${active || !canAfford ? 'disabled' : ''}>
-                      ${esc(active ? 'Active now' : canAfford ? `Activate for ${effect.price}c` : 'Need more coins')}
-                    </button>
-                  </div>
-                `;
-              }).join('')}
+                  `;
+                }).join('')}
+            </div>
+          </div>
+          <div>
+            <strong style="color: var(--text-1); font-size: 14px; margin-bottom: 8px; display: block;">Global Effects</strong>
+            <div class="effects-picker-grid">
+              ${fallbackEffects
+                .filter((effect) => effect.id === 'duck')
+                .map((effect) => {
+                  const effectId = normalizeEffectId(effect.id);
+                  const canAfford = Math.max(0, Number(state.user?.coins || 0)) >= Math.max(0, Number(effect.price || 0));
+                  return `
+                    <div class="effects-picker-card">
+                      <div class="effects-picker-line">
+                        <div class="effects-picker-name">${esc(effect.name)}</div>
+                        <div class="effects-picker-price">${esc(`${Math.max(0, Number(effect.price || 0))} COINS`)}</div>
+                      </div>
+                      <div class="effects-picker-desc">${esc(effect.description)}</div>
+                      <button type="button" class="btn btn-primary btn-sm" data-global-effect-id="${esc(effectId)}" ${!canAfford ? 'disabled' : ''}>
+                        ${esc(canAfford ? `Activate globally for ${effect.price}c` : 'Need more coins')}
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+            </div>
           </div>
         `;
 
@@ -1676,6 +1874,19 @@ export function createChatUi(deps) {
             } catch (err) {
               actionBtn.disabled = false;
               showComposerNotice(err.message || 'Failed to activate room effect', 'error', 4200);
+            }
+          });
+        });
+
+        el.querySelectorAll('[data-global-effect-id]').forEach((actionBtn) => {
+          actionBtn.addEventListener('click', async () => {
+            const effectId = normalizeEffectId(actionBtn.getAttribute('data-global-effect-id'));
+            try {
+              actionBtn.disabled = true;
+              await activateGlobalEffectLocal(effectId);
+            } catch (err) {
+              actionBtn.disabled = false;
+              showComposerNotice(err.message || 'Failed to activate global effect', 'error', 4200);
             }
           });
         });
