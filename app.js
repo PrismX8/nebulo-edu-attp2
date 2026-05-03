@@ -105,7 +105,7 @@ if (cluster.isPrimary && WORKERS > 1) {
     hostname_blacklist: [],
   });
 
-  const fastify = Fastify({
+ const fastify = Fastify({
     logger: false,
     trustProxy: true,
     bodyLimit: 3 * 1024 * 1024,
@@ -153,6 +153,13 @@ if (cluster.isPrimary && WORKERS > 1) {
 
       return server;
     },
+  });
+
+  // ✅ Register static file serving OUTSIDE the options object:
+  await fastify.register(fastifyStatic, {
+    root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'chat-git-main'),
+    prefix: '/kchat/',
+    decorateReply: false
   });
 
   const io = new Server(fastify.server, {
