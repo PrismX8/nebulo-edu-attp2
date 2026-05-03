@@ -98,7 +98,21 @@ router.get('/friends', auth, async (req, res) => {
   try {
     const caller = userStore.findById(req.user.id);
     if (!caller) {
-      return res.status(401).json({ msg: 'User not found' });
+      // If user not found, return all users without filtering
+      const search = String(req.query.search || '').trim();
+      const results = userStore.searchUsersByUsername(search, '');
+      const mutualFriends = [];
+      const normalizedResults = results.map((user) => ({
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar || null,
+        added: false,
+        mutual: false
+      }));
+      return res.json({
+        mutualFriends: mutualFriends.map(userStore.sanitizeUser),
+        results: normalizedResults
+      });
     }
 
     const search = String(req.query.search || '').trim();

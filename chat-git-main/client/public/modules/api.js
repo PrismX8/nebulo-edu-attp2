@@ -26,7 +26,7 @@ function buildApiBaseCandidates() {
   try {
     const current = new URL(window.location.origin);
     if (isLoopbackHost(current.hostname)) {
-      [400, 401, 402, 403, 404, 405].forEach((port) => {
+      [400, 401, 402, 403, 404, 405, 5000].forEach((port) => {
         add(`${current.protocol}//${current.hostname}:${port}`);
       });
     }

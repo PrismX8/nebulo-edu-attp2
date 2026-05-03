@@ -20,10 +20,162 @@ export function createChatUi(deps) {
     api,
     getMessagesSignature,
     normalizeEffectId,
-    renderRoomEffectStage,
-    activateGlobalEffect
+    renderRoomEffectStage
   } = deps;
 
+  const isFriendUsername = (username) => {
+    const normalized = String(username || '').trim().toLowerCase();
+    if (!normalized || !Array.isArray(state.mutualFriends)) return false;
+    return state.mutualFriends.some((friend) => String(friend?.username || friend || '').trim().toLowerCase() === normalized);
+  };
+
+  // Hoisted renderMessages so it's available everywhere
+  function renderMessages() {
+    const root = document.getElementById('chat-messages');
+    if (!root) return;
+
+    const wasNearBottom = isNearBottom(root);
+    const prevScrollTop = root.scrollTop;
+    const prevScrollHeight = root.scrollHeight;
+
+    if (state.bannedMessage) {
+      root.innerHTML = `<div class="msg-state" style="color:var(--danger)">${esc(state.bannedMessage)}</div>`;
+      setJumpToLatestVisible(false);
+      return;
+    }
+
+    if (!state.messages.length) {
+      root.innerHTML = `<div class="msg-state">No messages yet — say something!</div>`;
+      return;
+    }
+
+    let enteringIndex = 0;
+    root.innerHTML = state.messages.map((m) => {
+      const rank = getRank(m);
+      const name = m?.nickname || m?.sender?.name || 'Unknown';
+      const body = String(m?.body || m?.content || '');
+      const avatarSrc = String(m?.avatar || m?.sender?.avatar || '').trim();
+      const avatarL = String(name || 'U').trim().charAt(0).toUpperCase() || 'U';
+      const id = String(m?.id || m?._id || '').trim();
+      const token = String(m?.user_token || m?.senderId || '').trim();
+      const isDeleted = !!m?.deleted;
+      const mine = isMine(m);
+      const isSystem = !!m?.system || String(name).trim().toLowerCase() === 'system';
+      const shouldAnimate = !!id && !animatedMessageIds.has(id);
+      const enterClass = shouldAnimate ? ' msg-enter' : '';
+      const enterStyle = shouldAnimate ? ` style="--msg-enter-delay:${Math.min(enteringIndex++ * 42, 210)}ms"` : '';
+      const bgStyle = `background:${avatarColor(name)}`;
+      const effectId = isDeleted ? 'none' : getMessageEffect(m);
+      const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
+
+      const deleteBtn = canDelete(m)
+        ? `<button data-delete-id="${esc(id)}" data-delete-token="${esc(token)}" class="delete-btn">Delete</button>`
+        : '';
+      const canCopyId = String(state.user?.role || '').toLowerCase() === 'owner';
+      const userId = esc(getUserId(m));
+      const copyIdBtn = canCopyId && userId
+        ? `<button data-copy-id="${userId}" class="copy-id-btn" title="Copy user ID">Copy ID</button>`
+        : '';
+      const actionsHtml = (deleteBtn || copyIdBtn)
+        ? `<div class="msg-actions">${deleteBtn}${copyIdBtn}</div>`
+        : '';
+
+      const rankHtml = rank
+        ? `<span class="rank-chip rank-${rank.key}">${esc(rank.label)}</span>`
+        : '';
+      const friendTagHtml = !isSystem && isFriendUsername(name)
+        ? `<span class="friend-tag" style="margin-left:8px;font-size:11px;font-weight:700;color:var(--success);background:rgba(56,161,105,0.12);border:1px solid rgba(56,161,105,0.2);padding:0 6px;border-radius:9px;line-height:1.5">Friend</span>`
+        : '';
+
+      let formattedBody = renderBody(body);
+      if (!isDeleted) {
+        const myUsername = String(state.user?.username || state.user?.name || '').trim();
+        if (myUsername && isMentioned(m, myUsername)) {
+          formattedBody = highlightMention(renderBody(body), myUsername);
+        }
+      }
+
+      return `
+        <div class="msg ${mine ? 'mine' : ''} ${isDeleted ? 'deleted' : ''} ${isSystem ? 'system-note' : ''}${enterClass}"${enterStyle}>
+          <div class="msg-avatar" style="${bgStyle}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">
+            ${avatarSrc ? `<img src="${esc(avatarSrc)}" alt="${esc(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" />` : esc(avatarL)}
+          </div>
+          <div class="msg-body">
+            <div class="msg-head">
+              <strong class="msg-name ${effectCls}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">${esc(isSystem ? 'System' : name)}</strong>
+              ${friendTagHtml}
+              ${rankHtml}
+              <span>${esc(fmtTime(m))}</span>
+            </div>
+            <div class="msg-bubble ${effectCls}">${isDeleted ? '<em>Message deleted</em>' : formattedBody}</div>
+            ${actionsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    state.messages.forEach((m) => {
+      const id = String(m?.id || m?._id || '').trim();
+      if (id) animatedMessageIds.add(id);
+    });
+
+    root.querySelectorAll('.msg').forEach((msgEl, index) => {
+      if (index < state.messages.length) addMentionListener(msgEl, state.messages[index]);
+    });
+
+    root.querySelectorAll('[data-delete-id]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = String(btn.getAttribute('data-delete-id') || '').trim();
+        const senderToken = String(btn.getAttribute('data-delete-token') || '').trim();
+        if (!id || !state.currentChannel) return;
+        try {
+          await api(`/api/tlk/rooms/${encodeURIComponent(state.currentChannel.room)}/messages/${encodeURIComponent(id)}/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-tlk-client-id': getTlkClientId(), 'x-chat-device-id': getChatDeviceId() },
+            body: { senderToken }
+          });
+        } catch {
+          await api(`/api/network/messages/${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: { senderToken, callerToken: String(localStorage.getItem('tlkParticipantToken') || '') }
+          }).catch(() => {});
+        }
+        if (state.currentChannel) await getMessages(state.currentChannel).catch(() => {});
+      });
+    });
+
+    root.querySelectorAll('[data-copy-id]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const userId = String(btn.getAttribute('data-copy-id') || '').trim();
+        if (!userId) return;
+        try {
+          await navigator.clipboard.writeText(userId);
+          showToast('User ID copied');
+        } catch {
+          const textArea = document.createElement('textarea');
+          textArea.value = userId;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          textArea.remove();
+          showToast('User ID copied');
+        }
+      });
+    });
+
+    if (state.autoFollow || wasNearBottom) {
+      state.autoFollow = true;
+      setJumpToLatestVisible(false);
+      scrollChatToBottom('auto');
+      return;
+    }
+    root.scrollTop = prevScrollTop + Math.max(0, root.scrollHeight - prevScrollHeight);
+    setJumpToLatestVisible(true);
+  }
+
+  // Variables / other functions (order matters: animatedMessageIds must be before renderMessages)
+  let animatedMessageIds = new Set();
   const toastHost = document.getElementById('toast-host') || (() => {
     const host = document.createElement('div');
     host.id = 'toast-host';
@@ -31,7 +183,6 @@ export function createChatUi(deps) {
     return host;
   })();
 
-  let animatedMessageIds = new Set();
   let activeSocket = null;
   let activeSocketOrigin = '';
   let joinedTypingRoomId = '';
@@ -210,9 +361,9 @@ export function createChatUi(deps) {
     const effectName = getEffectMeta(effectId).name || 'Global effect';
     showTopNotification(`${triggerName} activated ${effectName} globally`, 4200);
     if (effectId === 'duck') {
-      // Play the duck quack sound
-      const audio = new Audio(new URL('./sounds/freesound_community-075176_duck-quack-40345.mp3', import.meta.url).href);
-      audio.volume = 0.7; // Set volume to 70%
+      // Fixed absolute path to avoid routing issues
+      const audio = new Audio('/kchat/modules/sounds/freesound_community-075176_duck-quack-40345.mp3');
+      audio.volume = 0.7;
       audio.play().catch(err => console.warn('Failed to play duck sound:', err));
     }
   };
@@ -1173,16 +1324,47 @@ export function createChatUi(deps) {
       dmRoot.innerHTML = directFriends.length > 0
         ? directFriends.map((friend) => {
             const active = state.currentChannel?._id === `dm:${friend.username}`;
+            const dmChannel = buildDmChannel(friend.username);
+            const unreadCount = active ? 0 : dmChannel ? Number(state.dmUnreadCounts?.[dmChannel.room] || 0) : 0;
+            const friendAvatar = withAvatarVersion(String(friend?.avatar || friend?.avatarUrl || '').trim());
+            const avatarLetter = esc((String(friend.username || '').trim().charAt(0) || 'U').toUpperCase());
             return `
-              <div class="channel-item ${active ? 'active' : ''}" data-friend-username="${esc(friend.username)}">
-                <span class="channel-hash">@</span>
+              <div class="channel-item ${active ? 'active' : ''}" data-friend-username="${esc(friend.username)}" style="position:relative;">
+                <span class="channel-avatar" style="width:28px;height:28px;flex-shrink:0;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-1);margin-right:10px;">
+                  ${friendAvatar ? `<img src="${esc(friendAvatar)}" alt="${esc(friend.username)}" style="width:100%;height:100%;object-fit:cover;display:block" />` : avatarLetter}
+                </span>
                 <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(friend.username)}</span>
+                ${unreadCount > 0 ? `<span class="msg-badge" style="background:red;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;margin-right:4px;">${unreadCount}</span>` : ''}
+                <button class="remove-friend-btn" data-friend-username="${esc(friend.username)}" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);color:red;font-size:16px;border:none;background:none;cursor:pointer;padding:0;width:20px;height:20px;line-height:1;" title="Remove friend">×</button>
               </div>
             `;
           }).join('')
         : `<div style="color:var(--text-3);font-size:13px;line-height:1.4">No direct messages yet. Add a friend to start a chat.</div>`;
       dmRoot.querySelectorAll('[data-friend-username]').forEach((el) => {
-        el.addEventListener('click', () => navigate(`/channels/${encodeURIComponent(`dm:${el.getAttribute('data-friend-username')}`)}`));
+        el.addEventListener('click', () => {
+          const username = el.getAttribute('data-friend-username');
+          const dmChannel = buildDmChannel(username);
+          if (dmChannel) {
+          }
+          renderSidebar();
+          navigate(`/channels/${encodeURIComponent(`dm:${username}`)}`);
+        });
+      });
+      dmRoot.querySelectorAll('.channel-item').forEach((item) => {
+        const btn = item.querySelector('.remove-friend-btn');
+        item.addEventListener('mouseenter', () => { btn.style.display = 'block'; });
+        item.addEventListener('mouseleave', () => { btn.style.display = 'none'; });
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const username = btn.getAttribute('data-friend-username');
+          try {
+            await api(`/api/users/friends/${encodeURIComponent(username)}`, { method: 'DELETE' });
+            await refreshFriends('');
+            renderSidebar();
+          } catch (err) {
+            console.warn('Remove friend failed:', err);
+          }
+        });
       });
     }
 
@@ -1208,7 +1390,12 @@ export function createChatUi(deps) {
     });
 
     const addFriendButton = document.getElementById('btn-add-friend');
-    if (addFriendButton) addFriendButton.addEventListener('click', () => navigate('/direct-messages'));
+    if (addFriendButton) {
+      addFriendButton.addEventListener('click', () => {
+        console.log('[Add Friend] Global Add Friend button clicked, navigating to /direct-messages');
+        navigate('/direct-messages');
+      });
+    }
 
     const headerCount = document.getElementById('header-online-count');
     if (headerCount && state.currentChannel) {
@@ -1250,59 +1437,178 @@ export function createChatUi(deps) {
       console.log('Friend API response:', data);
       state.mutualFriends = Array.isArray(data?.mutualFriends) ? data.mutualFriends : [];
       state.friendSearchResults = Array.isArray(data?.results) ? data.results : [];
+      state.friendRequestsIncoming = Array.isArray(data?.requests?.incoming) ? data.requests.incoming : [];
+      state.friendRequestsOutgoing = Array.isArray(data?.requests?.outgoing) ? data.requests.outgoing : [];
+      
       const dmChannels = state.mutualFriends
         .map((friend) => buildDmChannel(friend.username))
         .filter(Boolean);
       const otherChannels = state.channels.filter((c) => c.type !== 'dm');
       state.channels = [...dmChannels, ...otherChannels];
+      
       renderSidebar();
       return state.friendSearchResults;
     } catch (err) {
       console.error('Failed to refresh friends:', err);
       state.mutualFriends = state.mutualFriends || [];
       state.friendSearchResults = state.friendSearchResults || [];
+      state.friendRequestsIncoming = state.friendRequestsIncoming || [];
+      state.friendRequestsOutgoing = state.friendRequestsOutgoing || [];
       return state.friendSearchResults;
     }
   };
 
+  const renderFriendRequestsSection = () => {
+    const incoming = Array.isArray(state.friendRequestsIncoming) ? state.friendRequestsIncoming : [];
+    const outgoing = Array.isArray(state.friendRequestsOutgoing) ? state.friendRequestsOutgoing : [];
+
+    const incomingHtml = incoming.length
+      ? incoming.map((entry) => {
+          const username = String(entry?.username || entry || '').trim();
+          return `
+          <div class="friend-list-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;align-items:center;gap:12px;min-width:0">
+              <div class="avatar sm" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--border);border-radius:50%;font-size:14px;font-weight:700;color:var(--text-1)">${esc((username || 'U').charAt(0).toUpperCase())}</div>
+              <div style="min-width:0;overflow:hidden">
+                <div style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(username)}</div>
+                <div style="font-size:12px;color:var(--text-3)">Incoming friend request</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button data-friend-action="accept" data-friend-username="${esc(username)}" class="btn btn-primary btn-sm">Accept</button>
+              <button data-friend-action="deny" data-friend-username="${esc(username)}" class="btn btn-ghost btn-sm">Deny</button>
+            </div>
+          </div>
+        `;
+        }).join('')
+      : '<div style="color:var(--text-3);font-size:13px;line-height:1.6">No incoming requests.</div>';
+
+    const outgoingHtml = outgoing.length
+      ? outgoing.map((entry) => {
+          const username = String(entry?.username || entry || '').trim();
+          return `
+          <div class="friend-list-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;align-items:center;gap:12px;min-width:0">
+              <div class="avatar sm" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--border);border-radius:50%;font-size:14px;font-weight:700;color:var(--text-1)">${esc((username || 'U').charAt(0).toUpperCase())}</div>
+              <div style="min-width:0;overflow:hidden">
+                <div style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(username)}</div>
+                <div style="font-size:12px;color:var(--text-3)">Request pending</div>
+              </div>
+            </div>
+            <button data-friend-action="cancel" data-friend-username="${esc(username)}" class="btn btn-ghost btn-sm">Cancel</button>
+          </div>
+        `;
+        }).join('')
+      : '<div style="color:var(--text-3);font-size:13px;line-height:1.6">No outgoing requests.</div>';
+
+    return `
+      <div id="friend-requests-section" class="card" style="margin-bottom:16px">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <span>Friend Requests</span>
+          <button data-friend-action="refresh-requests" style="background:none;border:none;color:var(--text-1);font-size:18px;cursor:pointer;" title="Refresh requests">↻</button>
+        </div>
+        <div style="padding:0 16px 16px">
+          <div style="margin-bottom:12px">
+            <strong>Incoming</strong>
+          </div>
+          <div>${incomingHtml}</div>
+          <div style="margin:16px 0 12px">
+            <strong>Outgoing</strong>
+          </div>
+          <div>${outgoingHtml}</div>
+        </div>
+      </div>
+    `;
+  };
+
   const renderFriendSearchResults = () => {
+    const hasSearchQuery = String(state.friendSearchQuery || '').trim().length > 0;
     if (!Array.isArray(state.friendSearchResults) || state.friendSearchResults.length === 0) {
-      return `<div style="color:var(--text-3);font-size:13px;line-height:1.6">No users match your search.</div>`;
+      const message = hasSearchQuery
+        ? 'No users match your search.'
+        : 'No users available.';
+      return `<div style="color:var(--text-3);font-size:13px;line-height:1.6">${message}</div>`;
     }
     return state.friendSearchResults.map((user) => {
-      const statusLabel = user.mutual ? 'Friends' : user.added ? 'Requested' : 'Add Friend';
-      const buttonClass = user.mutual ? 'btn btn-ghost btn-sm' : 'btn btn-primary btn-sm';
-      const disabled = user.mutual || user.added ? 'disabled' : '';
+      const targetUsername = String(user.username || '').trim().toLowerCase();
+      const isMutual = user.mutual;
+      const isIncoming = user.incoming;
+      const isPending = user.pending;
+      const statusLabel = isMutual ? 'Friends' : isIncoming ? 'Incoming' : isPending ? 'Pending' : 'Add Friend';
+      const statusText = isMutual ? 'Mutual friend' : isIncoming ? 'Incoming request' : isPending ? 'Request pending' : 'Not friends yet';
+      const buttonClass = isMutual ? 'btn btn-ghost btn-sm' : 'btn btn-primary btn-sm';
+      const disabled = isMutual ? 'disabled' : '';
       return `
         <div class="friend-list-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
           <div style="display:flex;align-items:center;gap:12px;min-width:0">
-            <div class="avatar sm" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--border);
-                 border-radius:50%;font-size:14px;font-weight:700;color:var(--text-1)">${esc((user.username || 'U').charAt(0).toUpperCase())}</div>
+            <div class="avatar sm" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--border);border-radius:50%;font-size:14px;font-weight:700;color:var(--text-1)">${esc((user.username || 'U').charAt(0).toUpperCase())}</div>
             <div style="min-width:0;overflow:hidden">
               <div style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(user.username)}</div>
-              <div style="font-size:12px;color:var(--text-3)">${user.mutual ? 'Mutual friend' : user.added ? 'Request sent' : 'Not friends yet'}</div>
+              <div style="font-size:12px;color:var(--text-3)">${statusText}</div>
             </div>
           </div>
-          <button data-friend-username="${esc(user.username)}" class="${buttonClass}" ${disabled}>
-            ${statusLabel}
-          </button>
+          <div style="display:flex;gap:8px">
+            ${isIncoming ? `
+              <button data-friend-action="accept" data-friend-username="${esc(targetUsername)}" class="btn btn-primary btn-sm">Accept</button>
+              <button data-friend-action="deny" data-friend-username="${esc(targetUsername)}" class="btn btn-ghost btn-sm">Deny</button>
+            ` : isPending ? `
+              <button data-friend-action="cancel" data-friend-username="${esc(targetUsername)}" class="btn btn-ghost btn-sm">Cancel</button>
+            ` : isMutual ? `
+              <button data-friend-action="remove" data-friend-username="${esc(targetUsername)}" class="btn btn-ghost btn-sm">Remove</button>
+            ` : `
+              <button data-friend-action="add" data-friend-username="${esc(targetUsername)}" class="btn btn-primary btn-sm">Add Friend</button>
+            `}
+          </div>
         </div>
       `;
     }).join('');
   };
 
   const attachFriendSearchActions = () => {
-    document.querySelectorAll('[data-friend-username]').forEach((button) => {
+    document.querySelectorAll('[data-friend-action]').forEach((button) => {
       const username = button.getAttribute('data-friend-username');
-      if (!username) return;
+      const action = button.getAttribute('data-friend-action');
+      if (!action) return;
       button.addEventListener('click', async () => {
         if (button.disabled) return;
         try {
-          await api('/api/users/friends', { method: 'POST', body: { username } });
+          if (action === 'add') {
+            if (!username) return;
+            await api('/api/users/friends', { method: 'POST', body: { username } });
+          } else if (action === 'remove' || action === 'cancel') {
+            if (!username) return;
+            await api(`/api/users/friends/${encodeURIComponent(username)}`, { method: 'DELETE' });
+          } else if (action === 'accept') {
+            if (!username) return;
+            await api('/api/users/friends/accept', { method: 'POST', body: { username } });
+          } else if (action === 'deny') {
+            if (!username) return;
+            await api('/api/users/friends/deny', { method: 'POST', body: { username } });
+          } else if (action === 'refresh-requests') {
+            await refreshFriends(state.friendSearchQuery || '');
+            const resultsContainer = document.getElementById('friend-search-results');
+            if (resultsContainer) {
+              resultsContainer.innerHTML = renderFriendSearchResults();
+            }
+            const requestsContainer = document.getElementById('friend-requests-section');
+            if (requestsContainer) {
+              requestsContainer.outerHTML = renderFriendRequestsSection();
+            }
+            attachFriendSearchActions();
+            return;
+          }
           await refreshFriends(state.friendSearchQuery || '');
-          renderDirectMessagesPage();
+          const resultsContainer = document.getElementById('friend-search-results');
+          if (resultsContainer) {
+            resultsContainer.innerHTML = renderFriendSearchResults();
+          }
+          const requestsContainer = document.getElementById('friend-requests-section');
+          if (requestsContainer) {
+            requestsContainer.outerHTML = renderFriendRequestsSection();
+          }
+          attachFriendSearchActions();
         } catch (err) {
-          console.warn('Add friend failed:', err);
+          console.warn('Friend action failed:', action, username, err);
         }
       });
     });
@@ -1320,14 +1626,15 @@ export function createChatUi(deps) {
           <div class="page-inner" style="max-width:760px">
             <div style="margin-bottom:4px">
               <h1 style="font-size:20px;font-weight:700;color:var(--text-1);letter-spacing:-0.02em">Direct Messages</h1>
-              <p style="font-size:13px;color:var(--text-3);margin-top:4px">Search by username and add friends. Only mutual connections show up here.</p>
+              <p style="font-size:13px;color:var(--text-3);margin-top:4px">All users are listed below. Use the search box to filter by username and add friends. Only mutual connections appear in your direct messages.</p>
             </div>
             <div class="card" style="margin-bottom:16px">
               <div class="field">
-                <label>Search by username</label>
-                <input id="friend-search-input" class="inp" placeholder="Search username" value="${esc(state.friendSearchQuery)}" autocomplete="off" />
+                <label for="friend-search-input">Filter users</label>
+                <input id="friend-search-input" name="friend-search" class="inp" placeholder="Filter users by username" value="${esc(state.friendSearchQuery)}" autocomplete="username" />
               </div>
             </div>
+            ${renderFriendRequestsSection()}
             <div class="card">
               <div class="card-title">Users</div>
               <div id="friend-search-results" style="display:flex;flex-direction:column;gap:0">
@@ -1347,7 +1654,14 @@ export function createChatUi(deps) {
             state.friendSearchQuery = String(searchInput.value || '').trim();
             console.log('Searching for friends with query:', state.friendSearchQuery);
             await refreshFriends(state.friendSearchQuery);
-            document.getElementById('friend-search-results').innerHTML = renderFriendSearchResults();
+            const resultsContainer = document.getElementById('friend-search-results');
+            if (resultsContainer) {
+              resultsContainer.innerHTML = renderFriendSearchResults();
+            }
+            const requestsContainer = document.getElementById('friend-requests-section');
+            if (requestsContainer) {
+              requestsContainer.outerHTML = renderFriendRequestsSection();
+            }
             attachFriendSearchActions();
           }, 240);
         });
@@ -1358,146 +1672,6 @@ export function createChatUi(deps) {
       console.error('Error rendering direct messages page:', err);
       throw err;
     }
-  };
-
-  const renderMessages = () => {
-    const root = document.getElementById('chat-messages');
-    if (!root) return;
-
-    const wasNearBottom = isNearBottom(root);
-    const prevScrollTop = root.scrollTop;
-    const prevScrollHeight = root.scrollHeight;
-
-    if (state.bannedMessage) {
-      root.innerHTML = `<div class="msg-state" style="color:var(--danger)">${esc(state.bannedMessage)}</div>`;
-      setJumpToLatestVisible(false);
-      return;
-    }
-
-    if (!state.messages.length) {
-      root.innerHTML = `<div class="msg-state">No messages yet — say something!</div>`;
-      return;
-    }
-
-    let enteringIndex = 0;
-    root.innerHTML = state.messages.map((m) => {
-      const rank = getRank(m);
-      const name = m?.nickname || m?.sender?.name || 'Unknown';
-      const body = String(m?.body || m?.content || '');
-      const avatarSrc = String(m?.avatar || m?.sender?.avatar || '').trim();
-      const avatarL = String(name || 'U').trim().charAt(0).toUpperCase() || 'U';
-      const id = String(m?.id || m?._id || '').trim();
-      const token = String(m?.user_token || m?.senderId || '').trim();
-      const isDeleted = !!m?.deleted;
-      const mine = isMine(m);
-      const isSystem = !!m?.system || String(name).trim().toLowerCase() === 'system';
-      const shouldAnimate = !!id && !animatedMessageIds.has(id);
-      const enterClass = shouldAnimate ? ' msg-enter' : '';
-      const enterStyle = shouldAnimate ? ` style="--msg-enter-delay:${Math.min(enteringIndex++ * 42, 210)}ms"` : '';
-      const bgStyle = `background:${avatarColor(name)}`;
-      const effectId = isDeleted ? 'none' : getMessageEffect(m);
-      const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
-
-      const deleteBtn = canDelete(m)
-        ? `<button data-delete-id="${esc(id)}" data-delete-token="${esc(token)}" class="delete-btn">Delete</button>`
-        : '';
-      const canCopyId = String(state.user?.role || '').toLowerCase() === 'owner';
-      const userId = esc(getUserId(m));
-      const copyIdBtn = canCopyId && userId
-        ? `<button data-copy-id="${userId}" class="copy-id-btn" title="Copy user ID">Copy ID</button>`
-        : '';
-      const actionsHtml = (deleteBtn || copyIdBtn)
-        ? `<div class="msg-actions">${deleteBtn}${copyIdBtn}</div>`
-        : '';
-
-      const rankHtml = rank
-        ? `<span class="rank-chip rank-${rank.key}">${esc(rank.label)}</span>`
-        : '';
-
-      let formattedBody = renderBody(body);
-      if (!isDeleted) {
-        const myUsername = String(state.user?.username || state.user?.name || '').trim();
-        if (myUsername && isMentioned(m, myUsername)) {
-          formattedBody = highlightMention(renderBody(body), myUsername);
-        }
-      }
-
-      return `
-        <div class="msg ${mine ? 'mine' : ''} ${isDeleted ? 'deleted' : ''} ${isSystem ? 'system-note' : ''}${enterClass}"${enterStyle}>
-          <div class="msg-avatar" style="${bgStyle}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">
-            ${avatarSrc ? `<img src="${esc(avatarSrc)}" alt="${esc(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" />` : esc(avatarL)}
-          </div>
-          <div class="msg-body">
-            <div class="msg-head">
-              <strong class="msg-name ${effectCls}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">${esc(isSystem ? 'System' : name)}</strong>
-              ${rankHtml}
-              <span>${esc(fmtTime(m))}</span>
-            </div>
-            <div class="msg-bubble ${effectCls}">${isDeleted ? '<em>Message deleted</em>' : formattedBody}</div>
-            ${actionsHtml}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    state.messages.forEach((m) => {
-      const id = String(m?.id || m?._id || '').trim();
-      if (id) animatedMessageIds.add(id);
-    });
-
-    root.querySelectorAll('.msg').forEach((msgEl, index) => {
-      if (index < state.messages.length) addMentionListener(msgEl, state.messages[index]);
-    });
-
-    root.querySelectorAll('[data-delete-id]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const id = String(btn.getAttribute('data-delete-id') || '').trim();
-        const senderToken = String(btn.getAttribute('data-delete-token') || '').trim();
-        if (!id || !state.currentChannel) return;
-        try {
-          await api(`/api/tlk/rooms/${encodeURIComponent(state.currentChannel.room)}/messages/${encodeURIComponent(id)}/delete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-tlk-client-id': getTlkClientId(), 'x-chat-device-id': getChatDeviceId() },
-            body: { senderToken }
-          });
-        } catch {
-          await api(`/api/network/messages/${encodeURIComponent(id)}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: { senderToken, callerToken: String(localStorage.getItem('tlkParticipantToken') || '') }
-          }).catch(() => {});
-        }
-        if (state.currentChannel) await getMessages(state.currentChannel).catch(() => {});
-      });
-    });
-
-    root.querySelectorAll('[data-copy-id]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const userId = String(btn.getAttribute('data-copy-id') || '').trim();
-        if (!userId) return;
-        try {
-          await navigator.clipboard.writeText(userId);
-          showToast('User ID copied');
-        } catch {
-          const textArea = document.createElement('textarea');
-          textArea.value = userId;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand('copy');
-          textArea.remove();
-          showToast('User ID copied');
-        }
-      });
-    });
-
-    if (state.autoFollow || wasNearBottom) {
-      state.autoFollow = true;
-      setJumpToLatestVisible(false);
-      scrollChatToBottom('auto');
-      return;
-    }
-    root.scrollTop = prevScrollTop + Math.max(0, root.scrollHeight - prevScrollHeight);
-    setJumpToLatestVisible(true);
   };
 
   /* ========== MESSAGING ========== */
@@ -1688,6 +1862,8 @@ export function createChatUi(deps) {
     if (!state.channels.length) await loadChannels();
     state.currentChannel = getCurrentChannel(channelId);
     const currentRoomId = String(state.currentChannel?.room || '').trim();
+    if (state.currentChannel?.type === 'dm' && currentRoomId) {
+    }
     if (previousRoomId && previousRoomId !== currentRoomId) leaveTypingRoom(previousRoomId);
     else {
       stopLocalTyping(previousRoomId);
@@ -2128,7 +2304,23 @@ export function createChatUi(deps) {
     }
   };
 
-  // Export required functions
+  const updateFriendsUI = async () => {
+    if (!document.getElementById('friend-search-results')) return; // only if friends page is active
+    try {
+      await refreshFriends('');
+      const resultsContainer = document.getElementById('friend-search-results');
+      if (resultsContainer) resultsContainer.innerHTML = renderFriendSearchResults();
+      const requestsContainer = document.getElementById('friend-requests-section');
+      if (requestsContainer) requestsContainer.outerHTML = renderFriendRequestsSection();
+      attachFriendSearchActions();
+    } catch (err) {
+      console.warn('Auto-refresh friends failed:', err);
+    }
+  };
+
+  setInterval(updateFriendsUI, 5000); // refresh every 5 seconds
+
+  // Final return with all public functions
   return {
     cleanupChatTimers,
     showToast,
@@ -2141,6 +2333,8 @@ export function createChatUi(deps) {
     renderSidebar,
     renderMessages,
     sendMessage,
+    refreshFriends,
+    renderDirectMessagesPage,
     renderChatPage
   };
 }

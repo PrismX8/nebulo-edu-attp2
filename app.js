@@ -497,6 +497,162 @@ if (cluster.isPrimary && WORKERS > 1) {
     return { msg: "Password updated successfully" };
   });
 
+  fastify.get("/api/users/friends", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const caller = findUserById(authUser._id);
+    if (!caller) {
+      return reply.status(401).send({ msg: "User not found" });
+    }
+
+    const search = String(req.query.search || "").trim();
+    const results = chatUserStore.searchUsersByUsername(search, caller._id);
+    const mutualFriends = chatUserStore.getMutualFriends(caller._id);
+    const callerUsername = String(caller.username || "").trim().toLowerCase();
+    const friendRequests = chatUserStore.getFriendRequests(caller._id);
+
+    const normalizedResults = results.map((user) => {
+      const targetUsername = String(user.username || "").trim().toLowerCase();
+      const isFriend = Array.isArray(caller.friends) && caller.friends.includes(targetUsername);
+      const mutual = isFriend && Array.isArray(user.friends) && user.friends.includes(callerUsername);
+      const pending = Array.isArray(caller.friendRequestsSent) && caller.friendRequestsSent.includes(targetUsername) && !mutual;
+      const incoming = Array.isArray(caller.friendRequestsReceived) && caller.friendRequestsReceived.includes(targetUsername) && !mutual;
+      return {
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar || null,
+        added: mutual || pending,
+        mutual,
+        pending,
+        incoming
+      };
+    });
+
+    const incomingRequests = Array.isArray(friendRequests.incoming)
+      ? friendRequests.incoming.map((username) => sanitizeUser(findUserByUsername(username))).filter(Boolean)
+      : [];
+    const outgoingRequests = Array.isArray(friendRequests.outgoing)
+      ? friendRequests.outgoing.map((username) => sanitizeUser(findUserByUsername(username))).filter(Boolean)
+      : [];
+
+    return reply.send({
+      mutualFriends: mutualFriends.map(sanitizeUser),
+      results: normalizedResults,
+      requests: {
+        incoming: incomingRequests,
+        outgoing: outgoingRequests
+      }
+    });
+  });
+
+  fastify.post("/api/users/friends", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const caller = findUserById(authUser._id);
+    if (!caller) {
+      return reply.status(401).send({ msg: "User not found" });
+    }
+
+    const username = String(req.body?.username || "").trim();
+    if (!username) {
+      return reply.status(400).send({ msg: "Friend username is required" });
+    }
+
+    try {
+      const updated = chatUserStore.addFriendRequest(caller._id, username);
+      return { ok: true, user: sanitizeUser(updated) };
+    } catch (error) {
+      if (error?.code === "USER_NOT_FOUND") {
+        return reply.status(404).send({ msg: "User not found" });
+      }
+      if (error?.code === "CANNOT_ADD_SELF") {
+        return reply.status(400).send({ msg: "Cannot add yourself" });
+      }
+      if (error?.code === "ALREADY_FRIENDS") {
+        return reply.status(400).send({ msg: "Already friends" });
+      }
+      return reply.status(400).send({ msg: error?.message || "Failed to send friend request" });
+    }
+  });
+
+  fastify.post("/api/users/friends/accept", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+    const caller = findUserById(authUser._id);
+    if (!caller) {
+      return reply.status(401).send({ msg: "User not found" });
+    }
+    const username = String(req.body?.username || "").trim();
+    if (!username) {
+      return reply.status(400).send({ msg: "Requester username is required" });
+    }
+    try {
+      const updated = chatUserStore.acceptFriendRequest(caller._id, username);
+      return { ok: true, user: sanitizeUser(updated) };
+    } catch (error) {
+      if (error?.code === "USER_NOT_FOUND" || error?.code === "REQUEST_NOT_FOUND") {
+        return reply.status(404).send({ msg: error.message || "Friend request not found" });
+      }
+      return reply.status(400).send({ msg: error?.message || "Failed to accept friend request" });
+    }
+  });
+
+  fastify.post("/api/users/friends/deny", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+    const caller = findUserById(authUser._id);
+    if (!caller) {
+      return reply.status(401).send({ msg: "User not found" });
+    }
+    const username = String(req.body?.username || "").trim();
+    if (!username) {
+      return reply.status(400).send({ msg: "Requester username is required" });
+    }
+    try {
+      const updated = chatUserStore.denyFriendRequest(caller._id, username);
+      return { ok: true, user: sanitizeUser(updated) };
+    } catch (error) {
+      if (error?.code === "USER_NOT_FOUND" || error?.code === "REQUEST_NOT_FOUND") {
+        return reply.status(404).send({ msg: error.message || "Friend request not found" });
+      }
+      return reply.status(400).send({ msg: error?.message || "Failed to deny friend request" });
+    }
+  });
+
+  fastify.delete("/api/users/friends/:username", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+    const caller = findUserById(authUser._id);
+    if (!caller) {
+      return reply.status(401).send({ msg: "User not found" });
+    }
+    const username = String(req.params.username || "").trim();
+    if (!username) {
+      return reply.status(400).send({ msg: "Username is required" });
+    }
+    try {
+      const updated = chatUserStore.removeFriendRelationship(caller._id, username);
+      return { ok: true, user: sanitizeUser(updated) };
+    } catch (error) {
+      if (error?.code === "USER_NOT_FOUND") {
+        return reply.status(404).send({ msg: "User not found" });
+      }
+      return reply.status(400).send({ msg: error?.message || "Failed to remove friend" });
+    }
+  });
+
   fastify.get("/api/chat-effects", async (req, reply) => {
     const authUser = getAuthenticatedUser(req);
     if (!authUser) {

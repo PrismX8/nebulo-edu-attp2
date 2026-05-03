@@ -1,6 +1,5 @@
 import { injectAppStyles } from './modules/styles.js';
 import { createChatUi } from './modules/chat-ui.js';
-import { activateGlobalEffect } from './modules/effects.js';
 
 (() => {
   injectAppStyles();
@@ -122,12 +121,13 @@ import { activateGlobalEffect } from './modules/effects.js';
     avatarVersion: Date.now(),
     mutualFriends: [],
     friendSearchResults: [],
-    friendSearchQuery: ''
+    friendSearchQuery: '',
+    friendRequestsIncoming: [],
+    friendRequestsOutgoing: []
   };
 
-  // Extra state for settings page file handling
-  let selectedAvatarFile = null;   // the File object
-  let selectedAvatarDataUrl = null; // preview
+  let selectedAvatarFile = null;
+  let selectedAvatarDataUrl = null;
 
   const slashCommands = [
     { cmd: '/help',       usage: '/help',                         desc: 'Show available commands',           roles: ['user', 'admin', 'owner'] },
@@ -427,7 +427,7 @@ import { activateGlobalEffect } from './modules/effects.js';
     try {
       const current = new URL(window.location.origin);
       if (isLoopbackHost(current.hostname)) {
-        [400, 401, 402, 403, 404, 405].forEach((port) => {
+        [400, 401, 402, 403, 404, 405, 5000].forEach((port) => {
           add(`${current.protocol}//${current.hostname}:${port}`);
         });
       }
@@ -578,8 +578,7 @@ import { activateGlobalEffect } from './modules/effects.js';
     api,
     getMessagesSignature,
     normalizeEffectId,
-    renderRoomEffectStage,
-    activateGlobalEffect
+    renderRoomEffectStage
   });
 
   /* ═══════════════════════════════════════════════════════════════
@@ -629,7 +628,7 @@ import { activateGlobalEffect } from './modules/effects.js';
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     RENDER: SETTINGS (with avatar preview + file persistence)
+     RENDER: SETTINGS (unchanged)
   ═══════════════════════════════════════════════════════════════ */
   const renderSettingsPage = async () => {
     let effectsPayload = null;
@@ -640,12 +639,10 @@ import { activateGlobalEffect } from './modules/effects.js';
       console.warn('Failed to load effects:', err);
     }
 
-    // Helper to get current avatar URL with cache-bust
     const currentAvatarUrl = state.user?.avatar
       ? withAvatarVersion(state.user.avatar, state.avatarVersion)
       : null;
 
-    // Build avatar preview block
     const avatarPreviewHtml = currentAvatarUrl
       ? `<img id="current-avatar-preview" class="avatar-preview-img" src="${esc(currentAvatarUrl)}" alt="Your avatar" />`
       : `<div class="avatar-preview-placeholder">👤</div>`;
@@ -757,8 +754,6 @@ import { activateGlobalEffect } from './modules/effects.js';
       effects: Array.isArray(effectsPayload?.effects) && effectsPayload.effects.length ? effectsPayload.effects : fallbackEffects
     };
 
-    // ---- Avatar file handling ----
-
     const fileInput = document.getElementById('avatar-file');
     const fileNameSpan = document.getElementById('avatar-file-name');
     const previewImg = document.getElementById('current-avatar-preview');
@@ -788,7 +783,6 @@ import { activateGlobalEffect } from './modules/effects.js';
         if (previewImg) {
           previewImg.src = selectedAvatarDataUrl;
         } else {
-          // Create preview img if missing
           const wrapper = document.querySelector('.avatar-preview-wrapper');
           if (wrapper) {
             const newImg = document.createElement('img');
@@ -803,7 +797,6 @@ import { activateGlobalEffect } from './modules/effects.js';
       reader.readAsDataURL(file);
     });
 
-    // ---- Effects grid (unchanged) ----
     const renderEffectsGrid = () => {
       if (!effectsGrid) return;
       const owned = new Set((state.user?.ownedEffects || ['none']).map((effectId) => normalizeEffectId(effectId)));
@@ -865,7 +858,6 @@ import { activateGlobalEffect } from './modules/effects.js';
     };
     renderEffectsGrid();
 
-    // ---- Profile form submit (fixed avatar saving) ----
     const profileForm = document.getElementById('profile-form');
     if (profileForm) {
       profileForm.addEventListener('submit', async (e) => {
@@ -873,7 +865,6 @@ import { activateGlobalEffect } from './modules/effects.js';
         const fd = new FormData(e.currentTarget);
         let avatar = null;
 
-        // If a new file is selected, convert to base64
         if (selectedAvatarFile) {
           try {
             avatar = await new Promise((resolve, reject) => {
@@ -889,19 +880,14 @@ import { activateGlobalEffect } from './modules/effects.js';
         }
 
         try {
-          // Send profile update
           const data = await api('/api/users/profile', { method: 'PUT', body: { avatar } });
-          
-          // After successful update, refresh user data from server to get the latest avatar URL
-          await loadUser();  // This will call applyUserSnapshot with fresh data
-          
-          // Clear the local file selection
+          await loadUser();
+
           selectedAvatarFile = null;
           selectedAvatarDataUrl = null;
           if (fileInput) fileInput.value = '';
           if (fileNameSpan) fileNameSpan.textContent = '';
-          
-          // Update the preview with the new avatar from server (if any)
+
           const newAvatarUrl = state.user?.avatar
             ? withAvatarVersion(state.user.avatar, Date.now())
             : null;
@@ -909,7 +895,6 @@ import { activateGlobalEffect } from './modules/effects.js';
           if (previewImgElem && newAvatarUrl) {
             previewImgElem.src = newAvatarUrl;
           } else if (previewImgElem && !newAvatarUrl) {
-            // If no avatar, replace with placeholder
             const wrapper = document.querySelector('.avatar-preview-wrapper');
             if (wrapper) {
               const placeholder = document.createElement('div');
@@ -918,10 +903,9 @@ import { activateGlobalEffect } from './modules/effects.js';
               previewImgElem.replaceWith(placeholder);
             }
           }
-          
-          // Refresh sidebar avatar (if sidebar uses images)
+
           refreshSidebarAvatar();
-          renderMessages(); // refresh messages to show new avatar in chat
+          renderMessages();
           showMsg(data?.msg || 'Profile updated successfully');
         } catch (err) {
           console.error('Profile save error:', err);
@@ -930,7 +914,6 @@ import { activateGlobalEffect } from './modules/effects.js';
       });
     }
 
-    // ---- Coin transfer (unchanged) ----
     document.getElementById('coin-transfer-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.currentTarget);
@@ -949,7 +932,6 @@ import { activateGlobalEffect } from './modules/effects.js';
       }
     });
 
-    // ---- Change password (unchanged) ----
     document.getElementById('password-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.currentTarget);
@@ -966,7 +948,7 @@ import { activateGlobalEffect } from './modules/effects.js';
   };
 
   /* ═══════════════════════════════════════════════════════════════
-     RENDER: ADMIN (with error resilience)
+     RENDER: ADMIN (unchanged)
   ═══════════════════════════════════════════════════════════════ */
   const renderAdminPage = async () => {
     const role = String(state.user?.role || '').toLowerCase();
@@ -1148,7 +1130,7 @@ import { activateGlobalEffect } from './modules/effects.js';
   };
 
   /* ═══════════════════════════════════════════════════════════════
-     RENDER: SHOP
+     RENDER: SHOP (unchanged)
   ═══════════════════════════════════════════════════════════════ */
   const renderShopPage = async () => {
     layoutShell(`
@@ -1243,7 +1225,7 @@ import { activateGlobalEffect } from './modules/effects.js';
   };
 
   /* ═══════════════════════════════════════════════════════════════
-     RENDER: MARKETPLACE
+     RENDER: MARKETPLACE (unchanged)
   ═══════════════════════════════════════════════════════════════ */
   const renderMarketplacePage = async () => {
     layoutShell(`
@@ -1364,7 +1346,12 @@ import { activateGlobalEffect } from './modules/effects.js';
       setupMentionClicks();
       return;
     }
-    if (path.startsWith('/direct-messages')) { cleanupChatTimers(); await renderDirectMessagesPage(); return; }
+    if (path.startsWith('/direct-messages')) { 
+      console.log('Routing to direct messages page');
+      cleanupChatTimers(); 
+      await renderDirectMessagesPage(); 
+      return; 
+    }
     if (path === '/' || path === '/channels' || path === '/dashboard') { navigate('/channels/global'); return; }
     if (path.startsWith('/settings'))    { cleanupChatTimers(); await renderSettingsPage();    return; }
     if (path.startsWith('/admin'))       { cleanupChatTimers(); await renderAdminPage();       return; }

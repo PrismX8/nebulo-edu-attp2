@@ -55,6 +55,16 @@ function normalizeFriends(value) {
   return [...friends];
 }
 
+function normalizeFriendRequests(value) {
+  const rawList = Array.isArray(value) ? value : [];
+  const requests = new Set();
+  rawList.forEach((entry) => {
+    const username = String(entry || "").trim().toLowerCase();
+    if (username) requests.add(username);
+  });
+  return [...requests];
+}
+
 function normalizeEquippedEffect(effectId, ownedEffects) {
   const cleanId = String(effectId || "").trim().toLowerCase();
   if (ownedEffects.includes(cleanId) && effects.isValidEffect(cleanId)) {
@@ -70,6 +80,8 @@ function normalizeUser(user = {}) {
     coins: sanitizeCoins(user.coins),
     ownedEffects,
     friends: normalizeFriends(user.friends),
+    friendRequestsSent: normalizeFriendRequests(user.friendRequestsSent),
+    friendRequestsReceived: normalizeFriendRequests(user.friendRequestsReceived),
     equippedEffect: normalizeEquippedEffect(user.equippedEffect, ownedEffects)
   };
 }
@@ -183,6 +195,161 @@ function addFriend(userId, targetUsername = "") {
   store.users[idx] = normalizeUser({ ...current, friends: [...friends] });
   writeStore(store);
   return store.users[idx];
+}
+
+function updateUser(userId, updateFn) {
+  const store = readStore();
+  const idx = store.users.findIndex((u) => String(u._id) === String(userId));
+  if (idx < 0) return null;
+  const current = normalizeUser(store.users[idx]);
+  const next = normalizeUser(updateFn(current));
+  store.users[idx] = next;
+  writeStore(store);
+  return next;
+}
+
+function addFriendRequest(userId, targetUsername = "") {
+  const normalizedTarget = String(targetUsername || "").trim().toLowerCase();
+  if (!normalizedTarget) return null;
+  const sender = findById(userId);
+  if (!sender) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const target = findByUsername(normalizedTarget);
+  if (!target) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const senderUsername = String(sender.username || "").trim().toLowerCase();
+  if (senderUsername === normalizedTarget) {
+    const error = new Error("Cannot add yourself");
+    error.code = "CANNOT_ADD_SELF";
+    throw error;
+  }
+  if (sender.friendRequestsSent.includes(normalizedTarget)) {
+    return sender;
+  }
+  if (sender.friendRequestsReceived.includes(normalizedTarget)) {
+    return acceptFriendRequest(userId, normalizedTarget);
+  }
+  if (sender.friends.includes(normalizedTarget) && target.friends.includes(senderUsername)) {
+    const error = new Error("Already friends");
+    error.code = "ALREADY_FRIENDS";
+    throw error;
+  }
+  updateUser(userId, (current) => ({
+    ...current,
+    friendRequestsSent: [...new Set([...(current.friendRequestsSent || []), normalizedTarget])]
+  }));
+  updateUser(target._id, (current) => ({
+    ...current,
+    friendRequestsReceived: [...new Set([...(current.friendRequestsReceived || []), senderUsername])]
+  }));
+  return findById(userId);
+}
+
+function acceptFriendRequest(userId, requesterUsername = "") {
+  const normalizedRequester = String(requesterUsername || "").trim().toLowerCase();
+  if (!normalizedRequester) return null;
+  const recipient = findById(userId);
+  if (!recipient) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const requester = findByUsername(normalizedRequester);
+  if (!requester) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const recipientUsername = String(recipient.username || "").trim().toLowerCase();
+  if (!recipient.friendRequestsReceived.includes(normalizedRequester)) {
+    const error = new Error("Friend request not found");
+    error.code = "REQUEST_NOT_FOUND";
+    throw error;
+  }
+  updateUser(userId, (current) => ({
+    ...current,
+    friends: [...new Set([...(current.friends || []), normalizedRequester])],
+    friendRequestsReceived: (current.friendRequestsReceived || []).filter((u) => u !== normalizedRequester)
+  }));
+  updateUser(requester._id, (current) => ({
+    ...current,
+    friends: [...new Set([...(current.friends || []), recipientUsername])],
+    friendRequestsSent: (current.friendRequestsSent || []).filter((u) => u !== recipientUsername)
+  }));
+  return findById(userId);
+}
+
+function denyFriendRequest(userId, requesterUsername = "") {
+  const normalizedRequester = String(requesterUsername || "").trim().toLowerCase();
+  if (!normalizedRequester) return null;
+  const recipient = findById(userId);
+  if (!recipient) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const requester = findByUsername(normalizedRequester);
+  if (!requester) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const recipientUsername = String(recipient.username || "").trim().toLowerCase();
+  updateUser(userId, (current) => ({
+    ...current,
+    friendRequestsReceived: (current.friendRequestsReceived || []).filter((u) => u !== normalizedRequester)
+  }));
+  updateUser(requester._id, (current) => ({
+    ...current,
+    friendRequestsSent: (current.friendRequestsSent || []).filter((u) => u !== recipientUsername)
+  }));
+  return findById(userId);
+}
+
+function removeFriendRelationship(userId, targetUsername = "") {
+  const normalizedTarget = String(targetUsername || "").trim().toLowerCase();
+  if (!normalizedTarget) return null;
+  const user = findById(userId);
+  if (!user) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const target = findByUsername(normalizedTarget);
+  if (!target) {
+    const error = new Error("User not found");
+    error.code = "USER_NOT_FOUND";
+    throw error;
+  }
+  const userUsername = String(user.username || "").trim().toLowerCase();
+  updateUser(userId, (current) => ({
+    ...current,
+    friends: (current.friends || []).filter((u) => u !== normalizedTarget),
+    friendRequestsSent: (current.friendRequestsSent || []).filter((u) => u !== normalizedTarget),
+    friendRequestsReceived: (current.friendRequestsReceived || []).filter((u) => u !== normalizedTarget)
+  }));
+  updateUser(target._id, (current) => ({
+    ...current,
+    friends: (current.friends || []).filter((u) => u !== userUsername),
+    friendRequestsSent: (current.friendRequestsSent || []).filter((u) => u !== userUsername),
+    friendRequestsReceived: (current.friendRequestsReceived || []).filter((u) => u !== userUsername)
+  }));
+  return findById(userId);
+}
+
+function getFriendRequests(userId) {
+  const user = findById(userId);
+  if (!user) return { incoming: [], outgoing: [] };
+  return {
+    incoming: Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [],
+    outgoing: Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : []
+  };
 }
 
 function getMutualFriends(userId) {
@@ -469,6 +636,11 @@ module.exports = {
   findByIdentifier,
   findById,
   addFriend,
+  addFriendRequest,
+  acceptFriendRequest,
+  denyFriendRequest,
+  removeFriendRelationship,
+  getFriendRequests,
   getMutualFriends,
   searchUsersByUsername,
   createUser,
