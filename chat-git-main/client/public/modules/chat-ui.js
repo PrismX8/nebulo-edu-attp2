@@ -43,7 +43,7 @@ export function createChatUi(deps) {
   const remoteTypingTimers = new Map();
 
   const getSocketOrigin = () => String(state.apiBase || window.location.origin || '').trim().replace(/\/+$/, '') || window.location.origin;
-  const getLocalDisplayName = () => String(localStorage.getItem('tlkNickname') || state.user?.name || state.user?.username || '').trim();
+  const getLocalDisplayName = () => String(localStorage.getItem('tlkNickname') || state.user?.username || '').trim();
   const getMessageId = (message) => String(message?.id || message?._id || '').trim();
   const defaultComposerHint = 'Enter to send · Shift+Enter for new line · / for commands';
   const buildLocalSystemMessage = (body, roomId, idSeed = Date.now()) => ({
@@ -163,8 +163,8 @@ export function createChatUi(deps) {
     if (!username || !typingKey) return;
 
     const localNames = new Set([
-      String(state.user?.name || '').trim().toLowerCase(),
       String(state.user?.username || '').trim().toLowerCase(),
+      String(state.user?.name || '').trim().toLowerCase(),
       String(localStorage.getItem('tlkNickname') || '').trim().toLowerCase()
     ].filter(Boolean));
     const localUserId = String(state.user?._id || '').trim();
@@ -649,7 +649,7 @@ export function createChatUi(deps) {
     if (!channel) return;
     const roomKey = String(channel.room || '').trim();
     if (state.joinPromise && state.joinRoomKey === roomKey) return state.joinPromise;
-    let nickname = String(state.user?.name || state.user?.username || localStorage.getItem('tlkNickname') || '').trim();
+    let nickname = String(state.user?.username || state.user?.name || localStorage.getItem('tlkNickname') || '').trim();
     if (!nickname) nickname = 'guest';
     state.joinRoomKey = roomKey;
     state.joinPromise = api(`/api/tlk/rooms/${encodeURIComponent(channel.room)}/join`, {
@@ -684,7 +684,7 @@ export function createChatUi(deps) {
 
   const notifyMentions = (msg, channel) => {
     const mentions = detectMentions(String(msg?.body || msg?.content || ''));
-    const currentUsername = String(state.user?.name || state.user?.username || '').trim().toLowerCase();
+    const currentUsername = String(state.user?.username || state.user?.name || '').trim().toLowerCase();
     const isMentioned = mentions.some(m => m.toLowerCase() === currentUsername);
 
     if (currentUsername && isMentioned) {
@@ -1006,7 +1006,7 @@ export function createChatUi(deps) {
         resetChatViewState();
         resetLocalChatIdentity({ clearNickname: true });
         setToken(data?.token || '');
-        if (data?.user?.name) localStorage.setItem('tlkNickname', String(data.user.name));
+        if (data?.user?.username) localStorage.setItem('tlkNickname', String(data.user.username));
         await loadUser();
         navigate('/channels/global');
       } catch (err) { errEl.textContent = err.message; errEl.classList.remove('hidden'); }
@@ -1026,10 +1026,6 @@ export function createChatUi(deps) {
             <div class="field">
               <label>Username</label>
               <input name="username" placeholder="Choose a username" required minlength="3" class="inp" autocomplete="username" />
-            </div>
-            <div class="field">
-              <label>Display name <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
-              <input name="name" placeholder="How should we call you?" class="inp" />
             </div>
             <div class="field">
               <label>Password</label>
@@ -1057,13 +1053,13 @@ export function createChatUi(deps) {
       const password = String(fd.get('password') || '');
       const password2 = String(fd.get('password2') || '');
       if (password !== password2) { errEl.textContent = 'Passwords do not match'; errEl.classList.remove('hidden'); return; }
-      const payload = { username: String(fd.get('username') || '').trim(), name: String(fd.get('name') || '').trim(), password };
+      const payload = { username: String(fd.get('username') || '').trim(), password };
       try {
         const data = await api('/api/users', { method: 'POST', body: payload });
         resetChatViewState();
         resetLocalChatIdentity({ clearNickname: true });
         setToken(data?.token || '');
-        if (data?.user?.name) localStorage.setItem('tlkNickname', String(data.user.name));
+        if (data?.user?.username) localStorage.setItem('tlkNickname', String(data.user.username));
         await loadUser();
         navigate('/channels/global');
       } catch (err) { errEl.textContent = err.message; errEl.classList.remove('hidden'); }
@@ -1073,7 +1069,7 @@ export function createChatUi(deps) {
   /* ========== LAYOUT, SIDEBAR, MESSAGES ========== */
   const layoutShell = (contentHtml, footerHtml = '') => {
     const isStaff = ['owner', 'admin'].includes(String(state.user?.role || '').toLowerCase());
-    const displayName = esc(state.user?.name || state.user?.username || 'Guest');
+    const displayName = esc(state.user?.username || state.user?.name || 'Guest');
     const sidebarAvatarSrc = withAvatarVersion(state.user?.avatar || '');
     const channelName = esc(state.currentChannel?.name?.replace(/^#/, '') || 'general');
     const roomEffectMeta = getRoomEffectMeta();
@@ -1170,9 +1166,29 @@ export function createChatUi(deps) {
   };
 
   const renderSidebar = () => {
-    const root = document.getElementById('sidebar-channels');
-    if (!root) return;
-    root.innerHTML = state.channels.map((c) => {
+    const dmRoot = document.getElementById('sidebar-direct-messages');
+    const channelRoot = document.getElementById('sidebar-channels');
+    if (dmRoot) {
+      const directFriends = Array.isArray(state.mutualFriends) ? state.mutualFriends : [];
+      dmRoot.innerHTML = directFriends.length > 0
+        ? directFriends.map((friend) => {
+            const active = state.currentChannel?._id === `dm:${friend.username}`;
+            return `
+              <div class="channel-item ${active ? 'active' : ''}" data-friend-username="${esc(friend.username)}">
+                <span class="channel-hash">@</span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(friend.username)}</span>
+              </div>
+            `;
+          }).join('')
+        : `<div style="color:var(--text-3);font-size:13px;line-height:1.4">No direct messages yet. Add a friend to start a chat.</div>`;
+      dmRoot.querySelectorAll('[data-friend-username]').forEach((el) => {
+        el.addEventListener('click', () => navigate(`/channels/${encodeURIComponent(`dm:${el.getAttribute('data-friend-username')}`)}`));
+      });
+    }
+
+    if (!channelRoot) return;
+    const normalChannels = state.channels.filter((c) => c.type !== 'dm');
+    channelRoot.innerHTML = normalChannels.map((c) => {
       const active = state.currentChannel?._id === c._id;
       const name = c.name?.replace(/^#/, '') || c._id;
       const count = Number(c.onlineCount || 0);
@@ -1187,15 +1203,160 @@ export function createChatUi(deps) {
         </div>
       `;
     }).join('');
-    root.querySelectorAll('[data-channel-id]').forEach((el) => {
+    channelRoot.querySelectorAll('[data-channel-id]').forEach((el) => {
       el.addEventListener('click', () => navigate(`/channels/${el.getAttribute('data-channel-id')}`));
     });
+
+    const addFriendButton = document.getElementById('btn-add-friend');
+    if (addFriendButton) addFriendButton.addEventListener('click', () => navigate('/direct-messages'));
 
     const headerCount = document.getElementById('header-online-count');
     if (headerCount && state.currentChannel) {
       const count = Number(state.currentChannel.onlineCount || 0);
       headerCount.textContent = `${count} online`;
       headerCount.className = count > 0 ? 'header-online has-users' : 'header-online';
+    }
+  };
+
+  const buildDmChannel = (friendUsername) => {
+    const me = String(state.user?.username || '').trim().toLowerCase();
+    const friend = String(friendUsername || '').trim().toLowerCase();
+    if (!me || !friend) return null;
+    const pair = [me, friend].sort().join('|');
+    let hash = 2166136261;
+    for (let i = 0; i < pair.length; i += 1) {
+      hash ^= pair.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    let roomId = '';
+    for (let i = 0; roomId.length < 8; i += 1) {
+      roomId += String.fromCharCode(97 + ((hash >> (i * 5)) & 31) % 26);
+    }
+    return {
+      _id: `dm:${friend}`,
+      room: roomId,
+      name: `@${friend}`,
+      type: 'dm',
+      username: friend,
+      onlineCount: 0
+    };
+  };
+
+  const refreshFriends = async (search = '') => {
+    try {
+      const query = search ? `?search=${encodeURIComponent(search)}` : '';
+      console.log('Calling /api/users/friends with query:', query);
+      const data = await api(`/api/users/friends${query}`);
+      console.log('Friend API response:', data);
+      state.mutualFriends = Array.isArray(data?.mutualFriends) ? data.mutualFriends : [];
+      state.friendSearchResults = Array.isArray(data?.results) ? data.results : [];
+      const dmChannels = state.mutualFriends
+        .map((friend) => buildDmChannel(friend.username))
+        .filter(Boolean);
+      const otherChannels = state.channels.filter((c) => c.type !== 'dm');
+      state.channels = [...dmChannels, ...otherChannels];
+      renderSidebar();
+      return state.friendSearchResults;
+    } catch (err) {
+      console.error('Failed to refresh friends:', err);
+      state.mutualFriends = state.mutualFriends || [];
+      state.friendSearchResults = state.friendSearchResults || [];
+      return state.friendSearchResults;
+    }
+  };
+
+  const renderFriendSearchResults = () => {
+    if (!Array.isArray(state.friendSearchResults) || state.friendSearchResults.length === 0) {
+      return `<div style="color:var(--text-3);font-size:13px;line-height:1.6">No users match your search.</div>`;
+    }
+    return state.friendSearchResults.map((user) => {
+      const statusLabel = user.mutual ? 'Friends' : user.added ? 'Requested' : 'Add Friend';
+      const buttonClass = user.mutual ? 'btn btn-ghost btn-sm' : 'btn btn-primary btn-sm';
+      const disabled = user.mutual || user.added ? 'disabled' : '';
+      return `
+        <div class="friend-list-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <div style="display:flex;align-items:center;gap:12px;min-width:0">
+            <div class="avatar sm" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--border);
+                 border-radius:50%;font-size:14px;font-weight:700;color:var(--text-1)">${esc((user.username || 'U').charAt(0).toUpperCase())}</div>
+            <div style="min-width:0;overflow:hidden">
+              <div style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(user.username)}</div>
+              <div style="font-size:12px;color:var(--text-3)">${user.mutual ? 'Mutual friend' : user.added ? 'Request sent' : 'Not friends yet'}</div>
+            </div>
+          </div>
+          <button data-friend-username="${esc(user.username)}" class="${buttonClass}" ${disabled}>
+            ${statusLabel}
+          </button>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const attachFriendSearchActions = () => {
+    document.querySelectorAll('[data-friend-username]').forEach((button) => {
+      const username = button.getAttribute('data-friend-username');
+      if (!username) return;
+      button.addEventListener('click', async () => {
+        if (button.disabled) return;
+        try {
+          await api('/api/users/friends', { method: 'POST', body: { username } });
+          await refreshFriends(state.friendSearchQuery || '');
+          renderDirectMessagesPage();
+        } catch (err) {
+          console.warn('Add friend failed:', err);
+        }
+      });
+    });
+  };
+
+  const renderDirectMessagesPage = async () => {
+    try {
+      state.friendSearchQuery = state.friendSearchQuery || '';
+      console.log('Loading direct messages page, friendSearchQuery:', state.friendSearchQuery);
+      await refreshFriends(state.friendSearchQuery);
+      console.log('Refreshed friends:', state.mutualFriends.length, 'mutual,', state.friendSearchResults.length, 'results');
+      
+      layoutShell(`
+        <div class="page-scroll">
+          <div class="page-inner" style="max-width:760px">
+            <div style="margin-bottom:4px">
+              <h1 style="font-size:20px;font-weight:700;color:var(--text-1);letter-spacing:-0.02em">Direct Messages</h1>
+              <p style="font-size:13px;color:var(--text-3);margin-top:4px">Search by username and add friends. Only mutual connections show up here.</p>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="field">
+                <label>Search by username</label>
+                <input id="friend-search-input" class="inp" placeholder="Search username" value="${esc(state.friendSearchQuery)}" autocomplete="off" />
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Users</div>
+              <div id="friend-search-results" style="display:flex;flex-direction:column;gap:0">
+                ${renderFriendSearchResults()}
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+
+      const searchInput = document.getElementById('friend-search-input');
+      if (searchInput) {
+        let timer = null;
+        searchInput.addEventListener('input', () => {
+          clearTimeout(timer);
+          timer = setTimeout(async () => {
+            state.friendSearchQuery = String(searchInput.value || '').trim();
+            console.log('Searching for friends with query:', state.friendSearchQuery);
+            await refreshFriends(state.friendSearchQuery);
+            document.getElementById('friend-search-results').innerHTML = renderFriendSearchResults();
+            attachFriendSearchActions();
+          }, 240);
+        });
+      }
+      attachFriendSearchActions();
+      console.log('Direct messages page rendered');
+    } catch (err) {
+      console.error('Error rendering direct messages page:', err);
+      throw err;
     }
   };
 
@@ -1255,7 +1416,7 @@ export function createChatUi(deps) {
 
       let formattedBody = renderBody(body);
       if (!isDeleted) {
-        const myUsername = String(state.user?.name || state.user?.username || '').trim();
+        const myUsername = String(state.user?.username || state.user?.name || '').trim();
         if (myUsername && isMentioned(m, myUsername)) {
           formattedBody = highlightMention(renderBody(body), myUsername);
         }
@@ -1361,7 +1522,7 @@ export function createChatUi(deps) {
 
     const optimisticMsg = {
       _id: 'temp-' + Date.now(),
-      nickname: String(localStorage.getItem('tlkNickname') || state.user?.name || state.user?.username || 'You').trim(),
+      nickname: String(state.user?.username || state.user?.name || localStorage.getItem('tlkNickname') || 'You').trim(),
       avatar: state.user?.avatar || null,
       body: body,
       date: new Date().toISOString(),
@@ -1478,7 +1639,7 @@ export function createChatUi(deps) {
       if (!state.slowmodeMs) state.slowmodeUntil = 0;
       scheduleSlowmodeUi();
       if (room) {
-        const actor = state.user?.name || state.user?.username || 'Moderation';
+        const actor = state.user?.username || state.user?.name || 'Moderation';
         await postModerationNote(room, `Moderation: ${actor} set global slowmode to ${slowmodeSeconds}s.`);
         if (state.currentChannel?.room === room) await getMessages(state.currentChannel).catch(() => {});
       }
@@ -1493,7 +1654,7 @@ export function createChatUi(deps) {
     if (cmd === '/clearchat') {
       const reason = String(parts.join(' ') || 'Owner cleared room').trim();
       await api('/api/network/mod/actions', { method: 'POST', body: { action: 'clearchat', target: '__room__', reason, room } });
-      await postModerationNote(room, `Moderation: ${state.user?.name || state.user?.username || 'Owner'} cleared this room.`);
+      await postModerationNote(room, `Moderation: ${state.user?.username || state.user?.name || 'Owner'} cleared this room.`);
       if (state.currentChannel?.room === room) await getMessages(state.currentChannel);
       showComposerNotice('Chat cleared', 'success', 3000);
       return true;
