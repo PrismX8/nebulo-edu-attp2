@@ -108,7 +108,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   const fastify = Fastify({
     logger: false,
     trustProxy: true,
-    bodyLimit: 1024 * 1024,
+    bodyLimit: 3 * 1024 * 1024,
     pluginTimeout: 20000,
     requestTimeout: 30000,
     keepAliveTimeout: 65000,
@@ -130,6 +130,11 @@ if (cluster.isPrimary && WORKERS > 1) {
 
           if (path === "/wisp" || path.startsWith("/wisp/") || path === "/blockwisp" || path.startsWith("/blockwisp/")) {
             wisp.routeRequest(req, socket, head);
+            return;
+          }
+
+          // Let Socket.IO handle its own websocket upgrades.
+          if (path === "/socket.io/" || path.startsWith("/socket.io/")) {
             return;
           }
 
@@ -157,6 +162,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       methods: ["GET", "POST"]
     }
   });
+  globalThis.__nebuloChatIo = io;
 
   io.on("connection", (socket) => {
     socket.on("join_room", (roomId) => {
@@ -191,10 +197,43 @@ if (cluster.isPrimary && WORKERS > 1) {
   // handle TLK rooms, presence, moderation, and persisted room metadata.
   await fastify.register(fastifyExpress);
   fastify.use(cors());
-  fastify.use(express.json({ limit: "1mb" }));
-  fastify.use(express.urlencoded({ extended: true, limit: "1mb" }));
-  fastify.use("/api/network", require("./chat-git-main/routes/network"));
-  fastify.use("/api/tlk", tlkRoutes);
+  const expressJson = express.json({ limit: "1mb" });
+  const expressUrlencoded = express.urlencoded({ extended: true, limit: "1mb" });
+  const mountExpressRouter = (prefix, router) => {
+    fastify.use(prefix, (req, res, next) => {
+      const originalUrl = String(req.url || "");
+      const originalBaseUrl = req.baseUrl;
+      const strippedUrl = originalUrl.startsWith(prefix)
+        ? originalUrl.slice(prefix.length) || "/"
+        : originalUrl || "/";
+
+      req.url = strippedUrl.startsWith("/") ? strippedUrl : `/${strippedUrl}`;
+      req.baseUrl = prefix;
+
+      expressJson(req, res, (jsonErr) => {
+        if (jsonErr) {
+          req.url = originalUrl;
+          req.baseUrl = originalBaseUrl;
+          return next(jsonErr);
+        }
+        expressUrlencoded(req, res, (urlErr) => {
+          if (urlErr) {
+            req.url = originalUrl;
+            req.baseUrl = originalBaseUrl;
+            return next(urlErr);
+          }
+          router(req, res, (routerErr) => {
+            req.url = originalUrl;
+            req.baseUrl = originalBaseUrl;
+            next(routerErr);
+          });
+        });
+      });
+    });
+  };
+
+  mountExpressRouter("/api/network", require("./chat-git-main/routes/network"));
+  mountExpressRouter("/api/tlk", tlkRoutes);
 
   // Now register static after API routes
   fastify.register(fastifyStatic, {
@@ -410,6 +449,25 @@ if (cluster.isPrimary && WORKERS > 1) {
     }
   });
 
+  fastify.post("/api/users/coins/dev-grant", async (req, reply) => {
+    const authUser = getAuthenticatedUser(req);
+    if (!authUser) {
+      return reply.status(401).send({ msg: "Invalid token" });
+    }
+
+    const updatedUser = chatUserStore.updateProfile(authUser._id, {
+      coins: 1000000
+    });
+    if (!updatedUser) {
+      return reply.status(404).send({ msg: "User not found" });
+    }
+
+    return {
+      msg: "Test balance set to 1,000,000 coins",
+      user: sanitizeUser(updatedUser)
+    };
+  });
+
   fastify.put("/api/users/password", async (req, reply) => {
     const authUser = getAuthenticatedUser(req);
     if (!authUser) {
@@ -564,21 +622,21 @@ if (cluster.isPrimary && WORKERS > 1) {
       triggeredByName: currentUser.name || currentUser.username || "Unknown",
       triggeredByUsername: currentUser.username || null,
       price: effect.price,
-      activatedAt: Date.now()
+      activatedAt: Date.now(),
+      durationMs: Math.max(0, Number(effect.roomDurationMs || 0))
     });
 
-    Promise.resolve().then(() =>
-      tlkRoutes.postRoomNote(
-        room,
-        `${roomEffect.triggeredByName} activated the ${effect.name} room effect for ${effect.price} coin${effect.price === 1 ? "" : "s"}.`,
-        tlkRoutes.SYSTEM_BOT_NAME || "System"
-      )
-    ).catch(() => {});
+    const systemMessage = await tlkRoutes.postRoomNote(
+      room,
+      `${roomEffect.triggeredByName} activated the ${effect.name} room effect for ${effect.price} coin${effect.price === 1 ? "" : "s"}.`,
+      tlkRoutes.SYSTEM_BOT_NAME || "System"
+    );
 
     return {
       msg: `${effect.name} is now live in #${room}`,
       effect,
       roomEffect,
+      systemMessage: systemMessage || null,
       user: sanitizeUser(updatedUser)
     };
   });
@@ -616,17 +674,24 @@ if (cluster.isPrimary && WORKERS > 1) {
     return reply.sendFile("index.html", chatGitClientPath);
   });
 
-  fastify.get("/kchat/*", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return reply.sendFile("index.html", chatGitClientPath);
-  });
-
   fastify.get("/kchat/app.js", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
     return reply.sendFile("app.js", chatGitClientPath);
   });
 
   fastify.get("/kchat/app.css", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
     return reply.sendFile("app.css", chatGitClientPath);
+  });
+
+  fastify.get("/kchat/modules/*", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile(req.params["*"], `${chatGitClientPath}\\modules`);
+  });
+
+  fastify.get("/kchat/*", (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return reply.sendFile("index.html", chatGitClientPath);
   });
 
   // Override scramjet.all.js with our patched copy (no-store) so bare-mux changes

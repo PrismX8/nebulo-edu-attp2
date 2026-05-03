@@ -12,7 +12,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_s1y6ljh9v1_1771713803667": {
     "cookies": {
@@ -27,7 +28,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_013pzkpvr72u_1771714427637": {
     "cookies": {
@@ -42,7 +44,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_c7udtyk7js9_1771714488231": {
     "cookies": {
@@ -57,7 +60,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_i0i9va48li_1771776619135": {
     "cookies": {
@@ -72,7 +76,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_9utej50l5wu_1771777620588": {
     "cookies": {
@@ -81,7 +86,8 @@
     "csrfToken": "Un5VPa0rf68uRZP+Sb1PJG13hmlGB3VmPE12EvZHT7tQhSBsr8HL/BSTzYiOkX3xaP94rELdkn3jeioBtazFzA==",
     "room": "nebulo",
     "chatId": "10133467",
-    "participant": null
+    "participant": null,
+    "authUserId": null
   },
   "client_fm6ym26pzkb_1771788343538": {
     "cookies": {
@@ -96,7 +102,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "debug_client": {
     "cookies": {
@@ -105,7 +112,8 @@
     "csrfToken": "UtR0rk4bH4j71pGfk/08A6JwAKQMuu1i1WicLCX3+pUo20g9kGcliPM3EfBnU9HzznbzYdq0I8mvalmYFtIZVw==",
     "room": "globalb8alls",
     "chatId": "10154182",
-    "participant": null
+    "participant": null,
+    "authUserId": null
   },
   "diag": {
     "cookies": {
@@ -114,7 +122,8 @@
     "csrfToken": "PU1COMib3bEZgs2Ob4ahMTgQybrMe1BSkXCtznfCpsAHoMJSBvMN7rg0NFsNV6RFXhUgmXd1VsU9TAQyrM2t3w==",
     "room": "globalb8alls",
     "chatId": "10154182",
-    "participant": null
+    "participant": null,
+    "authUserId": null
   },
   "client_zwhnivj0wjg_1771805278227": {
     "cookies": {
@@ -129,7 +138,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_dkx98gn8v0e_1771810957873": {
     "cookies": {
@@ -144,7 +154,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "moderation:globalb8alls": {
     "cookies": {
@@ -159,7 +170,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_o6usqkc6d0c_1771858409625": {
     "cookies": {
@@ -174,7 +186,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_s1zeaodxpan_1771885834929": {
     "cookies": {
@@ -189,7 +202,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "client_ypoaq4tg5le_1771889571938": {
     "cookies": {
@@ -204,7 +218,8 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
   },
   "moderation:nebulo": {
     "cookies": {
@@ -219,6 +234,257 @@
       "provider": "anonymous",
       "avatar": null,
       "profile_url": null
-    }
+    },
+    "authUserId": null
+  },
+  "x": {
+    "cookies": {
+      "_tlkio_session": "SERWM2xCOWpMbnNRbWZqMWpXcld4NW5ySWJidG5sVEF0M3JvYXZoREdJWXN1blRyYk40OWpRQ29kbk5sdnlBU2tXazMzTEg1Qzk0TGhyQzBkU0lOTmFkeXlTenNIN01lRk9aaGovM0Q3ek1Hemw2b0xycy9zWUZBb0JZYW1KMnR6NnFzcnZ5VHBsTkt3eVdOazRmVElsYkI4L1lJVXdicEUxVmJadEc3eEtYMkFPOGxwblM4cDhsMnp1YUlGSnRSZHIvOHp4ZExhZy80elVKNnNWQndkVnAwOHk4NUdtRExHRWFscE1OMFhvV3FFcmxrelJDcW1wNHh5VXNKMmwwcEt0TEswVHQvVHZZaFZ4WVFWd1JjMVpGK2Y1dWd1aVorVXZyMlhxU205cU84eGZLaTh5YjJOZHRoeU8yeUE3NVZ0US9pTjREQ1h0dlJIVFRIa1dkNm5GZFd2ckZ4c2FYOXNVTlZGNXdCUmNWRnFsMlNQZUg1ay94T1FrQjVtWlluT0hBdmYrSXFhUXNITXZab0R5NzlhQT09LS0xNnlFMWVadmN0d3hmbm1GSWdxcG53PT0%3D--dbaa85be95269790a4beb91db2009cff2040cefe"
+    },
+    "csrfToken": "NCmq3aLDBVl00qjPY8FpSZtNJO/tIHTge934S6fPuLrCKloCRJSeeuRmDaRux4U8mEKLGD2+J9EdBe+473ucLQ==",
+    "room": "test",
+    "chatId": "283",
+    "participant": null,
+    "authUserId": null
+  },
+  "client_my9kgcymh7c_1777123490911": {
+    "cookies": {
+      "_tlkio_session": "d3R5RkZJREFManlaaUFONmpZOVVjRDl2M0dLZTZQWnF0Qk84MHRMbVZFSXdXVUR3ZTExOXk4NFpwY2kyVndnL21ZNmlRZWhUcW8xb29LL3JWYU15aktaWUlsbDZjSGJUelB3Q3lSbVFqdXljOWhuSG1PbmFIa0haWWNPZmM2T2ZqWU40UStuWVVRRVY4QTB1TlVpTWJOU0JaRm1pSkVaTVIvZlpWSEFQZWd3SHBlbUJCVVYvdW41TmlnamxtMHFhcmkrR3pMbHRxN3hNSDMrUm4vVVI2OExZdG13aXA3ZW1vR05sdmhWbW9nNmhSTHJzaENBT1AyMlI5MDRTWnRRbGNjdmI5QmpDQ0M4bEFJeEVDOFJuUXBNTlo1Y3o2bXIydDJhRnREYzdZYXU2b21UWHNHU2krRUpxU1N2NVJJMHhOVlBMTXYwY2M1RzRzVUNRdzB6SzdlUW80TkZqUkJvOU9WVmN5TkxmNXRmaHJZT1BPQWVMZEFkaWc3SDMyZ3RTeHc3SENOZTVaSnFodVRITTFLK3FRb0VyQ2JuL29qU0pqNlNpbjkwc2VwQkNUWDRxdmljaWgvbTllcVdRNUZtdFhzcTlRd3EzUnZabW5PcVQ0RDU4c1E9PS0taEhXcEhKTXdYZzI4Q002bERRMGRidz09--faa28175cd7fc3dd96f745a330359a6843871a50"
+    },
+    "csrfToken": "sPr2eTNthV8OerQ4DU6ztWDxAPaRPueQD8ivd33uHooW6Z/z72KH+Z+y20767CkyGJEKXs8taum1LeMfrCClMQ==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "0daae5",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "room-note:System:nebulo": {
+    "cookies": {
+      "_tlkio_session": "MUZYcXQwOExBbGRBSTBjMmdCZFhxdlV4OHFoSjdSRkhCaFEvYkNhYnllclFsWngwZnRSZGJDaWhvaW5aSDdCVmdna3BLckRCQXV6L1Ixc25PUjhjMmljVkRzL1dVa2x1Rk9DYjhnR1dhMENpS2cycncvakxtOFpPUEFWRXRSckUyMFI2R3pCd1pTY1E5SE8vNkxGTEFjWkd0V0EwU0ptT08vaUdJMk1lYzdpWmZNazZlOG95aFE4YkJzRDNBUXdzcVdwc2wrcW9DQ1lxZDFGcnpnT3h2MnRwZ0FtaXhwWGhRL1ZjNG5KQSt3MURkUE1NZUR1cnA0eWxlNDlUdmpsNmZ1VmlpYkcwRThpbTFsL2FKcGRiN21qYW4xdk5LTkhYWGdpNmMwQWptVWNTUHZadTIxZjBjaDQyeUtrTWxCdlUvaFFRQnpZM3VZc1VsZjZpRlQzaTNZYmZaWC9Zd2dNY2o4L3JBenVvOTBsekp6ODBFSG94RWJJanZFeW80WmZTdkhKYnc5VDJ5dU9DQlZDcXNIVFFYRlBlTzNFZU9uMlVxUU4ydGVZTlBSTTBrYktrbjBaZEdxVENkZ1Y3ZlNpczZsTGM4SjYxbzZhbGg1SWppVnNCRFE9PS0tUG9VS1B0emNybGNkb2kvUXo0TTNtQT09--b510edef8fab76da9b43f8e02a8e45385f852f61"
+    },
+    "csrfToken": "d1uIZG2dNj3w4vxc/pUtqYxJZz/cxBg5tmwNQMG1Mjbq/Eln1/KTC341gYAQODFpZqWtiCy3ZNARMQTrnG6QNQ==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "5c4f77",
+      "nickname": "System",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_a5z7d9zwm7f_1777124659237": {
+    "cookies": {
+      "_tlkio_session": "TUl0Ym5rVytiOVdJOHFEM1dJS0dneGgwbkVXcWhHaGRmSEJvVVRsU0RqYkh2OXI2ZWtyOUE4MERQdjUxMHB1enZUbnFsaVhQTVE2c2ZxblhPUmVIL1FxN3VaanNKeFhCS1dieGlzNjBHbnFUSDB1bG1kVFlPR1BPa1dURHlNZjBkQTJUVHoxcjdMQ01wdzdvQmFxd1g1RjJUbmI3Mllaa1F5bjdDY1ZRZWxxcS9wanpUMEVBM3FPaTNRVWQ3cnMvUWZ6dGc3Y1JsOE50ZEtUb3p1TnhIQlM4UzE3b2JNYWRmeGRpN1A5QWMzVEFVZzFUbUFoWDI2SlFOS0JYMlRITzVQWmVhK2hqV2dzRFYzSWl3R1llQ3FSL1BGL2ErMUxzaFBNaTU0dzRHTW9vYVBwNkVyY2VJT2FFWmo0aXdiaml0UGxSeGRMZVIxSlhPSWx0YjF3T3VPZDBBbm5GMWdhaFl1YXBlRnNJQnFaRTQ4RHRVMVlGd0xxVFgxL05RQzBJM2JlWHp1Nm5Pd2t4Q3oyWi8wdWNQVXpjWUJ6Y2x0eGZiVERJbUExSHA5MS9OSmJndHByZkNaZnQrT3dSVDM1ZzdXRW1ia0QxQ1NJTzRuamZSSGQ4OUE9PS0tOEJPVEZadGtGS0dTcjQxVHlDTzloQT09--47147b67a912681e9742f2c5382cc8b3cc1c1e0a"
+    },
+    "csrfToken": "C0bRS1MX5PkTfq/qrtqwwnldMycCWY43EgFv3SF4CYkK+eM79GS5KGBkO4WfZw3I58qHzj1gTq6dREHMPwd6dg==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "5af19e",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_0ilfiiisuzzq_1777125129358": {
+    "cookies": {
+      "_tlkio_session": "d0tsVytxZWZYamhLblAwMTJiUGs2aStMWUUxeWNyZ3V1cDRBY01CK243R3dUOUFxYkNET2hOZXBJd0RlVU96SEtBMm1uR01uMlZzTC85Vjd1bWNLa0JMQ3U3ZFk2Z3A0VjlUUDdzMjBBNmRvdmdodTcyNkVzQ1hiU3VQSzRzZElaUjJ4SG1obFFhSTdFUjg4NFNhQngrZWhBQXp6WVFmQWN2czIzOG5GTzNDZXg5TzlxaVdTYUI4cFRYd1RDdTg4VkFleEhFQ05xOVgvc2Q0TjVHTjVyMVhoeWszOGJRVGhTNERNQ2p2ZWIwTFdoQjgyL3hBR1ByZ0VWK29WVjZDVmVNSVdVdzA0SzdRckFHSzl2SnlKUEYyTllnZVYzMW91bkwrSjJpVzBkY0lJdlNSUzErczMzNjg5VmdxdUpScjF2SEpUR1hqditIYk5SeTAxZ0hXdUJWZnRhL2VUQkZyS2Yyd3FDbTJFL2lwRUVJdFA0ZnFScTZZc0YrVEU1enpRYW9lTzZKWjZpSmg5YkxiZFNLZFd2VUVhREdqS0F3UmxWSmRoMkFJYkMzT2dQeW5tNjVsaVoyR2I5R01HY21ORjh4WmlyS01lYmVEaU9RSlkrY05GTEE9PS0tWUsyVnRYd0I5UzNiay8xVW51TzVWUT09--08a7cabf1c0b53978c6043febf445730103d69f7"
+    },
+    "csrfToken": "HWcR28sqMVdeZKoeOUDC4SIWliCMHDhV1t2WIZY7yCOU4yLMwK2gADXLi/K3TedVfQX/w2PA5xHW85MH795cFw==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "4585c7",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_fcjxxgjgy6q_1777125555453": {
+    "cookies": {
+      "_tlkio_session": "MWc4eGlERWVzN1dIRVFreUc1NDBjOGpWdGFBcEFqaDdIMHltY2N4NUNFWEpCVkNDWnpYYVMvMW11Ynp0c01TL25EWDFjWDV5b2t6Q1RwcHIvNGorSTFpTC9lKzczYTVuUVpSOXUyTnFQcUZvNXB0YU9Sb053Vmpsb0llRWw0OUxld0N5S1FXRnJvSERrRER2OUJGYStETDNyb0hmaHdNZmhLOVZyOVIyeWdBTDRkTUU4dVllNlZGaEtIZGIrZTVFc0NJdDZOODJoMytzVm9QT2NlRUx1RHY4cGJFYjBzbytQVnB3ZldSV1M3bjJmTk9ZMkE5UXJ2dUVvVDhRd1psdm1HdGI1dzJ2SGF0UmlHM3AzR1o2Y0NCK21PNlpha3NKRFNYL3pVenB6MEd5RnFib3JoNXpMRURBUGlGZUFzUmw2aG01WCtXUkl6bGoydVFRNlUyVXY4ako2blJkRmZoc1ZidlpjS1V5MFJqTmNpdXBqYjZvcTMxeXgzMDZjbXNLUHFvdDhrSFlSR3BOeVlrcGFXa0JYUEViUk5JRjRuMTB6azB5TmJrYXlPejZWeFEyQW9oOWM4OFg2ZzZtMDV6UlJhZ3Q2Q2xuR1R2UUVmaFN6dWUyYkE9PS0td1dvdlBDVGhIQ0lDc3djNld4RWJCUT09--a7218394423a8abb91ef0487db92c43a2bd1b8cd"
+    },
+    "csrfToken": "RbMZBscBPQH1vUPYuL2FoTsqt3stcOgnYlRF1RdpX72IlvXVhCtYdrQ1ITRBGxKBLi3G64iLFK1a0KJqG15Stg==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "559ced",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_fa4jfr93wwh_1777125600063": {
+    "cookies": {
+      "_tlkio_session": "TUJmaWgvT1VYV2V1Nm1vQTluNGtvQ1VEUDliL1lCbGk0Y0lGdVlzWjJ3aXpKSmtRT3dMSG41cmFlRm0ycGF6ZWM0SFphaHNDaERDMUtqNkF0YmQ5SVovN2ZxaDFNcWRtcGdxK1lvb1hoWm9JUWdIYUpBUEVrV0djSFRPRFl0cmhYMlpPYU9BUDZoOVVhK0ErODhvWjJuTkx4QkVBb2VSUGFBRVp3UVhSOThyaGRUVi9SS21BQ2RtNUJIdmlkU0FEaDR4Q1R0Y0F5WXRaUEZUN1VaendwYUlVNDdFL1BIZE1kU2hhWURZV0t4c2VZcnFoRHBoMDlrS1ArMFl3OTNNRm5ndFR1ek8rbjhNNmg2amZvUjBvUWlNTjVrRHZjWVE0aVpzaXdUWXI3MjJBTm03YkRpSnFlWFRIYXZVbFBtUEpqUEtjdmxsYVVFbUJhNnNLdVJKTU01TDRhSXlxeVVSY2dhMEhlSGJiRE9HUXFhalZqc1pBTGxEVDl3TUEwb2haTVNObndmWjhWcGIvNmpsS0FuekpOQU9WTUVSNjlpNy9IRk5mQjJLR3RYUThJclk4d0pHVFo0UzlIdTV1eklvRCt5VDJaa0J5RnFtYmpudng3b0xJM1E9PS0tUkpoUmpsY2E3Vm5FZmIzMndzcEJaQT09--4fa8697828c4472cb48669f972c9b12d12fb6b05"
+    },
+    "csrfToken": "g1fP7CtlESIsteceXlg+QhAu7U6XME+cCIX8rpDa5oHnGBMjt1OC7VBpTjxXSUZqopjztLohMV5XMKNpQQNzew==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "52f7c1",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_lcjtvy9c96_1777125946888": {
+    "cookies": {
+      "_tlkio_session": "TU5wa3JCUi9hZmxYdW9Xb3JraE5ZcTA2ZGZxbHRNb2lhSGU2czhkVmREejNtQlJTNFRwclppSjlubkp5aGV2bGtSSG9vaTZBbDBoNmRUcTBHSmtVdnV3RGFuZWpnZHVWR0ZkdkdKSVNOTHY1dmkrR1crLyt1TTJ4WEhIL3FMSFZFbE1qUnRNTHJEWWZMbGIvUGFJSTNvcTk3R0ZwU3dWTDM3QmMyN1RydmNuR3pTeFlSQWVVMWcrS3ZZbFBzdjhSK2F0K3RKOHV1TFZVb0MzOGhaMnMybTdIcGc2QnoxR3FXWHNLOXl5bjR2ZzVTNGR2cFJUekxqS3RwUklpS0N2aVA0M2ZEYWdtYlBUci9PRUVXWnI3cjJWM2dadjVHcEhodVJSMFl1aTloUnJqSHNKREw2eWMyNWtiOXZ6aFZxakMyUlVlUG5QM0NJNG9abWNQNFBGMGpXODE4M3lOd2JZZjlTR3V4WWJpS3B6K0ZOLzdmM0ExSXRqdE1XQlNKWnhJMEUrZ2hjZmppYzc5VmNUU0R1TERtNnM1K3JJNmpYSkhsSEgvREdhWDlFZVRzZkt0Y0F6dHppOS8yUld2OXhuWlBMM2lFS3lkN1FFdUdkeVd4Q3pHWXc9PS0tWFRuWUM2VWRSREd5NEpoKzZYV296UT09--da5798ac57bf789d5db125395d46079bc1d86e22"
+    },
+    "csrfToken": "sQFgSf+E4v2UqUzxtEk51hpTNTmrk2UGRKrWEcFr2Y3crs8b5Ltp9PmltYl2vdbk83BPrDQjv+K8mP4yPuGbNQ==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "974bc4",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_mo08sg9e0sd_1777126575126": {
+    "cookies": {
+      "_tlkio_session": "QkJVZ0FOcXk4UXZHYmV5SjRNNmRjNEJjL0lST25YRWQ0ZUk5b2xXem1Yb2w0T1NJYWFySHE2QkV1c21FQUp3R2EvWEJPaHdxT1BMVmdnTHZudlpHTForUTNkdFBBTzcwNHd6Y08vZ09QbHk5Rkc2eVNRYkRjUjJBelR4YWhVVVZ3dzFoaHpPa0RiZDFyVG4xUkRYbHRpNXJ2UFFNSGE3dER5d2xXQnJxNGFONktuNmZXQ3VGMGRWOXI0eHM1eGNVNUxTazRCY2p0Uk9VSWRXZE41UnRQVFpZeVAzTlVldEFJMmZySWwzMkN4UUJLTzVZOGJGajJnY2lWME1YWnM4bjRNazV0LzdOdjVTdjRzYkErQ2VjVGQ3Q2VnZTR2R0FhUEVkbE5HOGlhdEFXVHVkdElRVDZyYTYxVHFMRUlnSmNjSy9oWUNRK013UDVEYmd6VXRQMm1uV3R2djBqSmpHMDkvV0dCei9BS1d0c2dLbEp6UmJkQk16Mi9XS056ZzVvWFREZWZCOFA0TTdkVFZzS21TUzhZa2dmdnU2Q1lYb1FIcGlFaENIZGFNdkIyc2tQbEIxYlZpTXA0aE5CWHYwTHhLdGxLRDErczlWQVFGS2pndHNianc9PS0teU84eUhMMlI3WTJOWFZLMVZGaXAzUT09--d7423a4c6b77a1d866e9afa08060efc3982a5d25"
+    },
+    "csrfToken": "HF6bGtYqVqhGbbjziO5g5NI0gCbnvtTiMQrusjiMnDn17h7LsNfa/5z4IMkGciVFt0+tUT9T0A947kKjrGTH/w==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "c8279f",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "client_lxdkxqpy13j_1776614622721": {
+    "cookies": {
+      "_tlkio_session": "Z0k1c2VjT3lWai9ha09JSHBWOFYrZGk3NGlObVJ2bDhsZ1hyTGpMM2s4Sno5WEFLQjB6QUl3dCs2RDNaMmp4bXJia2F5RXFlUnhIOVh4TVdWUWhwdTFoK28yR1RxOVRVUWt1bCs4OUtzTFhCcVlHc2tEMm4zM0hxTGk2MUcyRWdjRnhhdTkvYUwyRlNzT2JBNS9zNmpEYW9BSGE3TU5pRngxd0pWRlFxdlVaNHdrWUxENkUwZWhLSExhZ0dIaDgrMXlHVEdORTZGZWRXK3pBZU84Wm1Uc3ZMbjVCd3FseERMd2ZaZXZ4aVl0TkpnaVVOc1lDNDQ5ZjlYQXdIRWdxY05BM3hGODA4K2dBMFJMbjlaVEN0VlNyanV0VTh0RHpjM3lrbTV3SGU5WldvUmlSS2FyRkRhUDRiVE1HOW5ocWFnQ0o1cmxJNXlNS0Q0SzNOUnZTalBHK3oxQ3pSNnNpa0l6WE9XY1ZRbWtwUXcvRmJwWFNFNlFsWG5oVnZBd20wbzNodGFOU2hGTWprQ280dm0ySmphU3R6RURRTXdSTjlDS1BObmRNTTFKWEFpc0NkSXNMcDNWSXI5OHd4VG51ZWc1bGtVR0k5VDZqR3k0dWkrSUFOMGc9PS0tRjBPTkJHTjljektNR3BPUzlDaitoZz09--8e052affa31896a14fb32e07eee6f62b2eed3ca1"
+    },
+    "csrfToken": "nuHXwZijdKvfGp47ex2IpUjzZ3Gq2vTrnBB4rgDtPMKw7I5sSdwg8R47SOBbrrkdQqVkARnFfgfp3CcAjqOK+Q==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "47c232",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": "6b629194-fe8b-4e18-a5be-65ec5ff2828c"
+  },
+  "client_gvmm6uiyvjb_1777165376868": {
+    "cookies": {
+      "_tlkio_session": "aGNCbHVRU3dmRFRSTzJiUmRzOExtSTVMQWpoSlozWWcwZnJyQ3YydkZNbWlWUElpMnl4bHpLU2JyREZ5TEUwbnBkaUVVME1ZVUhJZ0lacHFtVEY1L3Y1dFEvd254UjUvN3QrakhrMTZKZTM4VHphTmp4M251ck5LN0hMb0QwVzFCakdoL3NhTjRjQXNyamVwazdxRFNtV3dVZXVHeGNVbk9GcGlFRXBYanhFd0NLMDdHOXlnT1N2UmZuUkNwRTZpRU1VRlBia2FGV0hiMmtCY3VEOWRSZmtSdy9nK1EyTGxwbHFHdkQ1U25Na0tTRXFtS0d3SXUwcVdBRUlXeDJkMWpqRVpqb0JkQWpyWGRjZGNCS3ROUnFLUVpRT08wWG8rdnRwTjRwd1pQRWtDS2FaeTNPSnMrQkYzSHVTS1JkNWVGUlNkU2drT0VsN2hHMkhQMTdSR2FqUEhOajhkM1RWS21mdFh3Y1dGMXpSWkhmWVVLTXpQOUEzR2VpWm0wTmZySnB5bkVsQlJuTVk1WHQ0OE8xL1lkOFk0Mi9MZTlUR3lNc25XOXBrWGpLeTA5WE5WK3ltQUNDNnB6ZzE2QjZLRXg1SEc3dy91UkM4M1l6bzBZMnFxamc9PS0tRXNPd1lCSlQ2S2hqK3VWR3JrUTRUZz09--57bde534f35f2fbb37f75c2760c56af28b498b7f"
+    },
+    "csrfToken": "vbafBqsZqQmMTMkiHT8pa2df4bRD+Aq7PHZWXsdP4ra8WTjb5wNS1UoBNz1cz4vb7MN4phQJn7wP/iG1JDV74A==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "9f9cb9",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "n4hw226dph1777592352065": {
+    "cookies": {
+      "_tlkio_session": "WHc0aDBlenB6NXJHVmhZK29QczFlSjF6OWRGWVMySCtoWkJ5dDV3ZkhnT2lCa3JVTDFaNjhqbWQ2VHozTlBQKzl4MDVJeVhCNnd2V0RWejRnQVBjNXl6UGsra3FUY3ZRYnRFWG9pbWJyQmRYMFovaERKU2toUDFNT0psV05hbm1CSEFPSUNQSlk3V2lRUk5lc2tMVlNKT0I5UWxqaklrdmpGMVpBSGFjRjg1UnhSdFJFbFNyazBiZUxCMFdhVE9wYTFQZEcwUGYxRlRma3VIS3dHN1BGaGlBQXZvTklJd1krUWt5cTZpNk1aR0FzdzZsanR4NWhiUFJZMmIyOUlQYjBmKzVMZmNWNTMzOTMyNUdLOG1GcUlkdWloYWdQZTVPSjdaY2FsZnF4VWVRVndTd3JGNUVSY01KcXgxTFh5MEhvNk9UdWNxSmdKUVd0T25aZzBONzJLdFgrZ2I4MzhOaDVYUVMrYTFRS1VGM0pidE1BZmdqczhKTnM5SVFWS0ovY0pIUXlwQmNqYUFHekVma1hUNWw2U2EzYmlRNjRFKzNDNUVacDNGQ3RlakxZalArQlpVYWg4ZUVVa1JqYi9kcEdiVzJpQWk4VllUcW84Uk42SlFGWWc9PS0tZUFhU3NjeC9ySDdsRU9aWXVidXZYZz09--51b5d12ea4d27265801c48fe9bbd4d337a1ade5b"
+    },
+    "csrfToken": "ELVLc7V8L5FrSLBh2BD0evjoKfjHmUPWavhkgNVUVwIuhOL3eA91k3TDGJHuU2HwBDD7oC0rKo+nsiEwbL6xxg==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "1bb683",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "room-note:System:globalb8alls": {
+    "cookies": {
+      "_tlkio_session": "TGhNTmFad1NjR0VsZWFGVHNXSzlLUUlIWkJ4VGp3U0VxUktNcG1vcmNoU29ybkxTZWR6NE1JRFBGQXV2RkxvcThvNTNKZnA3SHRXa3lTdlVXQ000UDg3cW9ZTmRIa1EwUzlpeGxsTWZ5VUVnVjdQcFhidDlRUzRLc1QzNm1GMEdMalNYMkhSMHJRWGZpU1c3RFZObGJ0cFdvUVVNNkFZWXBjcFpzWUJqWjdXd0o3ZGVLc1Y4WW9PUDdKbEdsY1FMTnppZlJYN0tPU04vTVh4WUNIVEJrTHF6QlhUSGQ4ZmllWFRzdXorY20vNlZYTDF1S20zdDNnNkx3VEdhcFBmbDFmRnhaYmJ6eGxXS09kM1ZmK0p0K0tsK1hZNmhFVVU3bmdnT0ZNc1FjWHhidnR6M3lGTDA2MmR0YjIxdHZuck05YmZJYzNRa0VRU3d1blE2Y2hrQzBseFdYWU1uZWNEQUtXdlA0VGJaRkJZVWk1V3ZFYWlpUmg3aU1HWEpnZVlkRkgyY2VZaWRnVnE4bFlLdEVnRUYwc3l4MklEMzEwZXBEMkJFazBKcS9ycW82ZDhZNFJ3WkFYeGJkVTY4aVd5eHVJS0JQNDdGTkU5dWgxbi8ybGFyQlE9PS0tb3F5S0ppSkx0TG1ONVk1alJxNmVTdz09--673b8e1e48b11c5d366b9ffaae9a521f39adcda9"
+    },
+    "csrfToken": "5HGJs8T5Tg03L6MH/+sxtCxcreRUAe2Wss8PHSD2CUicT+0TUxuh9YECMIfBfD/WCqYujqsXzmcys0YNaynJvg==",
+    "room": "globalb8alls",
+    "chatId": "10154182",
+    "participant": {
+      "token": "0f71d1",
+      "nickname": "System",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "room-note:Moderation:nebulo": {
+    "cookies": {
+      "_tlkio_session": "UjlJYU9Mc2Z6RmhKbUpoQkNyUmxuYS9UKzVySS9LS2VDQklYeDgrUTFBRC9aWnRZcmVEOHFBVVA2UFZUOHdLNW9sVkV0bG85WkZjL3lBWXR4K2dZSC9JWEM1OXBYU2F3SGhPeVBpYkdydUN2d1RGZVpEbnN2QXFZN3pUd0V4OWpYRmZ5YUlBRVpRWFpvY1J5aWFQSlc0ZG5aT1FzRFByYTdyOUkrTWthSzJ2R2NneW9MTFdkWm9XWWJRUUg2OEtUMHJtZjQvS3B2OHVUVUZpMlZYTlBSU0JpR3VPZklZK3NBK1Btd080NHBWRDBDUHE0czFtQ0lPdE5JUkNxak85Ykc2aWRCYlNkaDdxZHBMaWkxc0Q5c2RDUVo0VlY1VDcwT2FkNEtLTTJEZmRnSjNuYThhYXRsMm1IQThzcGpUMDd4dGlsN1MyRXBja011QmdwazVFdE00NFJGSEZ6ekxia3ZOeEo0aXUzNFJ2bllxTWFQZFdXajV5Nmh1bC8yYVRwTk1OWnB2b3AvTDREeTVBaGdTNGYvRnV2ZEExMmh3dEdJcGNvOWw5Ykp2ZlZPb0xQenpXU1Q5RWxYUHhVR3VxVFNqcVZuWmRPODlNNWFrZ3ZQT2gwT2c9PS0tcXpWaUZ4bFZXRENDS2RWT1cwRGpWZz09--cadc57079af09834917fd925f0f186faf2bc7612"
+    },
+    "csrfToken": "D9vCrwk23PeTBK5LV/oon2k/TZR02rzRCTUuF5VT/C9cBqa9ywM+9A9yHfMb8dUklau3aQy8mWHZ7vGW5vAjFg==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "52693f",
+      "nickname": "Moderation",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
+  },
+  "zkp8qqt2ccs1777765748016": {
+    "cookies": {
+      "_tlkio_session": "ZFhERmE0ZExoSXV0cFlFZ0lYdVFzc2ZhbU82eHlxVXB3cUo5MEdNalRFU3lJKzk5WlZ0WTBibVJNOTNid0RoWExsdFhxRXg2Z1ZLMVgzeWo5V0FHWjIvT1JZUXEwU1JBQmF2K2VXTDhjVmxncWxxVm9wZGRQOVpsa2RpUWovamRIUUJTN0YxUGF4M0p6YzVMWkxvWUdvNEt4NnhvTGgxQ0dqWENtQ28xOFd0NUU1NG02bm5FMmR2WURvUVRZWjdhUkdjN1czVzV2dzl6QnVBN1A5T3VjM2lwY3FYTTRLWEJTWnN1dHZSSk8xUnVXdkpZS042K0l5MFJNcGFXMFBkSDdPaWVDc29pZnpXWE4rV08xTUtoRTRHNEZLUDYxTzhOQW93TDhEemdKWnZRVFIyL1lyUDVMc0dXY0J5K1YyUVY5MEovUy82aTBFTDRhVFgzZ2UyL1N6ZE5hcjk4Z3FDZ0VKa09XMml3VHlzc1JBa2ZRc0dXeVVPVU9jcGlpaksvaWlOZDh3WDFMeml4d0NTS1NDRWV4NmJ3ZlVuL1g3VTNZZlRQQTBQWEVIcEoydjQ4UURjTHV5ejdoUThIaWNIb3FsY080dnhFTWdBOUpocmtaNGlQbVE9PS0tQ3VBWEV0NmdvWnA1TUNaUENNSUlpdz09--d54081a68fa2d69de623f365e37905972cb618f1"
+    },
+    "csrfToken": "qZv++uNlr7k4OgzFsZb9gyOsuB8Uh6Lgd2ApnQuwfJqCCJf3DTpoI2GLaJ1+2lxGSIfshyTT6V44qhI+BwgjaA==",
+    "room": "nebulo",
+    "chatId": "10133467",
+    "participant": {
+      "token": "23a011",
+      "nickname": "tests",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": "ed8e3052-d848-42d0-bf1c-781cc7491f9e"
+  },
+  "room-note:System:platnium": {
+    "cookies": {
+      "_tlkio_session": "eE52dkIrOUV6ckN2SDJVc2pTNDZDYkRhQk9xN0JCa2NrUVVVSDZsTU8wNko3enlBRHFJTEM5Zi85VkZNSzg3TW81OTFwTWJ3a3YwYkpudzMzaGx0ak1oNEs4dHMyMXBDYWhlcG1IRFRUZ3czbk9NVUhKTFdZMXllaWtyTHVsRDhBdHhrYm0yUDc4c2ZPK2R3Vjh5Vm5aeWUzcVZGQUE4RFdTZlVPam1wNUVIY2lvTUUyQTVNbVdTdzQ1TjNQOEdsODFJMUtEeTNNdGxjbythS0RGM1I1d1cxSU1DM2d2anZLdjFDU1dDUVlsRkVQUlpyYmVPMnNCV1dSWnZIRGJQV1BrU0Nic1hRU3pab1Z3eVkwY1htQWx2Ni9TQU8vcFlnYXl2RHhRWWxVcFBrb2xHdFVoOUQ2M3FNY0ZJdFZ5bHlwS2hzK1RMa0ZsQTJrM0dja20vTVdEUXBXcHN0bXFobXhpUWxEc2diL1RuamNDa0k3emVmMk0vbklrK05WSjUrYjhVZXdJYkcrcFQzYmFpQnowMnhrRzh5bzdyNHBpT1ptMG9ZSEk5MnVPNGhZd1c0NEI4NHhBWWlpQ3VIMHoybENaS1l1THVaKzdGK1RodEtaaW1GeEE9PS0tbUFoZmt2cU1mTFZzRDNqNGF0NmNNZz09--72b56680143bf034d2a2175575c6d3633d16d3f0"
+    },
+    "csrfToken": "sDasSm0zIGTDOwpCvgyz7fLd+NKJOGU5EWcork7T0FvvP2BPjAXcWQArVPOIV5h8Jw7meapug97b9+WVJW650w==",
+    "room": "platnium",
+    "chatId": "10152965",
+    "participant": {
+      "token": "e18613",
+      "nickname": "System",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": null
   }
 }

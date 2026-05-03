@@ -18,6 +18,95 @@ const RETRY_COUNT = 2;
 const MOD_BOT_NAME = process.env.MOD_BOT_NAME || 'Moderation';
 const SYSTEM_BOT_NAME = process.env.SYSTEM_BOT_NAME || 'System';
 const SESSION_DIR = path.resolve(__dirname, '..', 'data');
+// Load effect definitions to get duration
+const effectDefinitions = (() => {
+  try {
+    const effectList = require('../services/chat/effects.js');
+    if (effectList && typeof effectList.listEffects === 'function') {
+      const effects = effectList.listEffects();
+      const map = new Map();
+      for (const effect of effects || []) {
+        if (effect && effect.id) {
+          map.set(String(effect.id).trim().toLowerCase(), effect);
+        }
+      }
+      return map;
+    }
+  } catch (e) {
+    console.error('Failed to load effect definitions:', e.message);
+  }
+  return new Map();
+})();
+// --- BEGIN chat-effects API PATCH ---
+// Add chat-effects endpoints for compatibility with client
+router.post('/api/chat-effects/rooms/:room', auth, async (req, res) => {
+  // This endpoint triggers a room effect (generic)
+  const room = String(req.params.room || '').trim();
+  const effectId = req.body?.effectId || req.body?.effect || req.query?.effectId || req.query?.effect;
+  const triggeredByName = req.user?.name || req.user?.username || 'Someone';
+  if (!room || !effectId) return res.status(400).json({ msg: 'Room and effectId required' });
+  // Simulate effect activation (store in netState)
+  try {
+    const cleanEffectId = String(effectId || '').trim().toLowerCase();
+    const effectDef = effectDefinitions.get(cleanEffectId);
+    const durationMs = effectDef?.roomDurationMs || 0;
+    const roomEffect = netState.setRoomEffect(room, {
+      effectId: cleanEffectId,
+      triggeredByName,
+      triggeredByUsername: req.user?.username || null,
+      triggeredByUserId: req.user?._id || null,
+      activatedAt: Date.now(),
+      price: 0,
+      durationMs
+    });
+    return res.json({ ok: true, effectId: cleanEffectId, roomEffect });
+  } catch (e) {
+    return res.status(500).json({ msg: 'Failed to activate effect', error: e?.message });
+  }
+});
+
+router.post('/api/chat-effects/rooms/:room/activate', auth, async (req, res) => {
+  // This endpoint triggers a room effect (explicit activate)
+  const room = String(req.params.room || '').trim();
+  const effectId = req.body?.effectId || req.body?.effect || req.query?.effectId || req.query?.effect;
+  const triggeredByName = req.user?.name || req.user?.username || 'Someone';
+  if (!room || !effectId) return res.status(400).json({ msg: 'Room and effectId required' });
+  try {
+    const cleanEffectId = String(effectId || '').trim().toLowerCase();
+    const effectDef = effectDefinitions.get(cleanEffectId);
+    const durationMs = effectDef?.roomDurationMs || 0;
+    const effectName = String(effectDef?.name || cleanEffectId || 'effect').trim();
+    const roomEffect = netState.setRoomEffect(room, {
+      effectId: cleanEffectId,
+      triggeredByName,
+      triggeredByUsername: req.user?.username || null,
+      triggeredByUserId: req.user?._id || null,
+      activatedAt: Date.now(),
+      price: 0,
+      durationMs
+    });
+    const systemMessage = await postRoomNote(
+      room,
+      `${triggeredByName} activated the ${effectName} room effect.`,
+      SYSTEM_BOT_NAME
+    );
+    return res.json({ ok: true, effectId: cleanEffectId, roomEffect, systemMessage: systemMessage || null });
+  } catch (e) {
+    return res.status(500).json({ msg: 'Failed to activate effect', error: e?.message });
+  }
+});
+
+// GET current room effect
+router.get('/api/chat-effects/rooms/:room', auth, async (req, res) => {
+  const room = String(req.params.room || '').trim();
+  try {
+    const roomEffect = netState.getRoomEffect(room);
+    return res.json({ roomEffect: roomEffect || null });
+  } catch (e) {
+    return res.status(500).json({ msg: 'Failed to get room effect', error: e?.message });
+  }
+});
+// --- END chat-effects API PATCH ---
 const SESSION_FILE = path.join(SESSION_DIR, 'tlk-sessions.json');
 const ROOM_META_FILE = path.join(SESSION_DIR, 'tlk-room-meta.json');
 const roomChatIdCache = new Map();
@@ -71,7 +160,8 @@ function saveSessions() {
         csrfToken: session.csrfToken || null,
         room: session.room || null,
         chatId: session.chatId || null,
-        participant: session.participant || null
+        participant: session.participant || null,
+        authUserId: session.authUserId || null
       };
     }
     fs.writeFileSync(SESSION_FILE, JSON.stringify(serializable, null, 2), 'utf8');
@@ -90,7 +180,8 @@ function loadSessions() {
         csrfToken: session?.csrfToken || null,
         room: session?.room || null,
         chatId: session?.chatId || null,
-        participant: session?.participant || null
+        participant: session?.participant || null,
+        authUserId: session?.authUserId || null
       });
     });
   } catch (_err) {
@@ -147,11 +238,23 @@ function getSession(clientId) {
       csrfToken: null,
       room: null,
       chatId: null,
-      participant: null
+      participant: null,
+      authUserId: null
     });
     saveSessions();
   }
   return bridgeSessions.get(clientId);
+}
+
+function resetSessionIdentity(session) {
+  if (!session) return;
+  session.cookies = {};
+  session.csrfToken = null;
+  session.room = null;
+  session.chatId = null;
+  session.participant = null;
+  session.authUserId = null;
+  saveSessions();
 }
 
 function applySetCookies(session, setCookie) {
@@ -285,8 +388,23 @@ async function postRoomNote(room, text, botName = MOD_BOT_NAME) {
     );
 
     applySetCookies(modSession, sendResponse.headers['set-cookie']);
+    if (sendResponse.status === 200 && sendResponse.data) {
+      const realtimeMessage = {
+        ...enrichMessageIdentity(sendResponse.data),
+        roomId: String(room || '').trim()
+      };
+      try {
+        globalThis.__nebuloChatIo?.to?.(String(room || '').trim())?.emit?.('receive_message', {
+          roomId: String(room || '').trim(),
+          message: realtimeMessage
+        });
+      } catch {}
+      return realtimeMessage;
+    }
+    return null;
   } catch (error) {
     console.error('Room note post error:', error?.message || error);
+    return null;
   }
 }
 
@@ -353,26 +471,6 @@ function enrichMessageIdentity(msg) {
     role: profile.role || null,
     equippedEffect: profile.equippedEffect || "none",
     system: isSystem
-  };
-}
-
-function buildRoomEffectSystemMessage(room = "", roomEffect = null) {
-  if (!roomEffect?.effectId) return null;
-  const activatedAt = Number(roomEffect.activatedAt || Date.now());
-  const effectName = String(roomEffect.effectId || "effect")
-    .trim()
-    .replace(/(^\w)|(-\w)/g, (part) => part.replace("-", " ").toUpperCase());
-  const price = Math.max(0, Number(roomEffect.price || 0));
-  const triggeredByName = String(roomEffect.triggeredByName || "Someone").trim() || "Someone";
-  return {
-    id: `system-room-effect-${String(room || "").trim().toLowerCase()}-${activatedAt}`,
-    _id: `system-room-effect-${String(room || "").trim().toLowerCase()}-${activatedAt}`,
-    nickname: SYSTEM_BOT_NAME,
-    body: `${triggeredByName} activated the ${effectName} screen effect for ${price} coin${price === 1 ? "" : "s"}.`,
-    timestamp: Math.floor(activatedAt / 1000),
-    date: new Date(activatedAt).toISOString(),
-    system: true,
-    roomEffect
   };
 }
 
@@ -460,6 +558,16 @@ router.post('/rooms/:room/join', async (req, res) => {
 
     presence.touch(clientId, req.params.room);
     const session = getSession(clientId);
+    const authUserId = String(authUser?._id || '').trim();
+    const sessionAuthUserId = String(session.authUserId || '').trim();
+    const sessionNickname = String(session.participant?.nickname || '').trim();
+    if (session.participant && (
+      authUserId !== sessionAuthUserId ||
+      (sessionNickname && sessionNickname !== nickname)
+    )) {
+      resetSessionIdentity(session);
+    }
+
     await retryRequest(() => ensureRoom(session, req.params.room));
 
     const response = await retryRequest(() => axios.post(
@@ -482,6 +590,7 @@ router.post('/rooms/:room/join', async (req, res) => {
     }
 
     session.participant = response.data;
+    session.authUserId = authUser?._id || null;
     if (authUser && session.participant?.token) {
       identityStore.bindToken(session.participant.token, userStore.sanitizeUser(authUser));
     }
@@ -603,13 +712,6 @@ router.get('/rooms/:room/messages', async (req, res) => {
           }))
       : [];
     const latest = filtered.slice(-250);
-    if (roomEffect?.effectId) {
-      const roomEffectNote = buildRoomEffectSystemMessage(room, roomEffect);
-      const hasRoomEffectNote = latest.some((msg) => String(msg?.id || msg?._id || "") === String(roomEffectNote?.id || ""));
-      if (roomEffectNote && !hasRoomEffectNote) {
-        latest.push(roomEffectNote);
-      }
-    }
     debugMsg('success', {
       room,
       clientId,
@@ -645,6 +747,12 @@ router.post('/rooms/:room/messages', async (req, res) => {
     const deviceId = getDeviceId(req);
     presence.touch(clientId, room);
     const session = getSession(clientId);
+    const authUserId = String(authUser?._id || '').trim();
+    const sessionAuthUserId = String(session.authUserId || '').trim();
+    if (session.participant && authUserId !== sessionAuthUserId) {
+      resetSessionIdentity(session);
+      return res.status(401).json({ msg: 'Chat identity changed. Rejoin the room first.' });
+    }
     const { chatId } = await retryRequest(() => ensureRoom(session, room));
 
     if (!session.participant) {
@@ -677,7 +785,7 @@ router.post('/rooms/:room/messages', async (req, res) => {
       if (cooldown.blocked) {
         const seconds = Math.ceil(cooldown.retryAfterMs / 1000);
         return res.status(429).json({
-          msg: `Cooldown active. Wait ${seconds}s before sending another message.`
+          msg: `Slowmode active. Wait ${seconds}s before sending another message.`
         });
       }
     }
@@ -701,6 +809,18 @@ router.post('/rooms/:room/messages', async (req, res) => {
       return res.status(response.status).json(response.data || { msg: 'Failed to send message' });
     }
 
+    const enrichedMessage = {
+      ...enrichMessageIdentity(response.data),
+      roomId: room
+    };
+
+    try {
+      globalThis.__nebuloChatIo?.to?.(room)?.emit?.("receive_message", {
+        roomId: room,
+        message: enrichedMessage
+      });
+    } catch {}
+
     let rewardedUser = null;
     if (authUser?._id) {
       rewardedUser = userStore.grantCoins(authUser._id, 1);
@@ -714,7 +834,7 @@ router.post('/rooms/:room/messages', async (req, res) => {
     }
 
     return res.json({
-      ...enrichMessageIdentity(response.data),
+      ...enrichedMessage,
       reward: rewardedUser
         ? {
             coinsEarned: 1,

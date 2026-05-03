@@ -348,9 +348,13 @@ button.primary:hover {
 }
 
 .msg {
-  padding: 2px 16px;
+  padding: 1px 8px;
   display: flex;
-  gap: 16px;
+  gap: 4px;
+  margin-bottom: 2px;
+  animation: messageAppear 0.3s ease-out forwards;
+  opacity: 0;
+  transform-origin: center;
 }
 
 .msg:hover {
@@ -521,6 +525,57 @@ button.primary:hover {
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   margin-top: 8px;
   animation: slideIn 0.2s ease;
+}
+
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes spinSpiral {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  15% {
+    transform: rotate(30deg) scale(1.05);
+    opacity: 0.9;
+  }
+  30% {
+    transform: rotate(60deg) scale(1.1);
+    opacity: 0.8;
+  }
+  45% {
+    transform: rotate(90deg) scale(1.15);
+    opacity: 0.7;
+  }
+  60% {
+    transform: rotate(120deg) scale(1.2);
+    opacity: 0.6;
+  }
+  75% {
+    transform: rotate(150deg) scale(1.25);
+    opacity: 0.5;
+  }
+  90% {
+    transform: rotate(180deg) scale(1.3);
+    opacity: 0.4;
+  }
+  100% {
+    transform: rotate(2160deg) scale(0.1);
+    opacity: 0;
+  }
+}
+
+.message-spinning {
+  animation: spinSpiral 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+  transition: all 2s !important;
 }
 
 @keyframes slideIn {

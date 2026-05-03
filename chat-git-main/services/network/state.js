@@ -23,7 +23,8 @@ const state = {
   roomEffects: new Map(),
   warningsByUser: new Map(),
   cooldownByUser: new Map(),
-  pendingAlerts: new Map()
+  pendingAlerts: new Map(),
+  slowmodeMs: null
 };
 
 function savePersistentState() {
@@ -33,7 +34,8 @@ function savePersistentState() {
     }
     const payload = {
       clearedRooms: Object.fromEntries(state.clearedRooms.entries()),
-      roomEffects: Object.fromEntries(state.roomEffects.entries())
+      roomEffects: Object.fromEntries(state.roomEffects.entries()),
+      slowmodeMs: Math.max(0, Number(state.slowmodeMs || 0))
     };
     fs.writeFileSync(PERSIST_FILE, JSON.stringify(payload, null, 2), "utf8");
   } catch (_err) {
@@ -53,13 +55,19 @@ function loadPersistentState() {
       : {};
     state.clearedRooms = new Map(Object.entries(clearedRooms));
     state.roomEffects = new Map(Object.entries(roomEffects));
+    if (Object.prototype.hasOwnProperty.call(parsed || {}, "slowmodeMs")) {
+      state.slowmodeMs = Math.max(0, Number(parsed?.slowmodeMs || 0));
+    }
   } catch (_err) {
   }
 }
 
 loadPersistentState();
 const warningLimit = Number(process.env.MOD_WARNING_LIMIT || 3);
-const cooldownMs = Number(process.env.MOD_COOLDOWN_MS || 5000);
+const defaultCooldownMs = Number(process.env.MOD_COOLDOWN_MS || 6000);
+if (!Number.isFinite(state.slowmodeMs) || state.slowmodeMs < 0) {
+  state.slowmodeMs = Math.max(0, defaultCooldownMs);
+}
 const useBlockedWords = String(process.env.MOD_USE_BLOCKED_WORDS || "false").toLowerCase() === "true";
 const strictMode = String(process.env.MOD_STRICT_MODE || "true").toLowerCase() === "true";
 const strictMinSeverity = String(process.env.MOD_STRICT_MIN_SEVERITY || "medium").toLowerCase();
@@ -155,7 +163,8 @@ function getModeration() {
     mutedUsers: asArray(state.mutedUsers),
     bannedUsers: asArray(state.bannedUsers),
     bannedAccounts: asArray(state.bannedAccounts),
-    bannedDevices: asArray(state.bannedDevices)
+    bannedDevices: asArray(state.bannedDevices),
+    slowmodeMs: Math.max(0, Number(state.slowmodeMs || 0))
   };
 }
 
@@ -200,7 +209,22 @@ function setModeration(payload = {}) {
     );
   }
 
+  if (payload.slowmodeMs !== undefined) {
+    state.slowmodeMs = Math.max(0, Number(payload.slowmodeMs || 0));
+    savePersistentState();
+  }
+
   return getModeration();
+}
+
+function getSlowmodeMs() {
+  return Math.max(0, Number(state.slowmodeMs || 0));
+}
+
+function setSlowmodeMs(value) {
+  state.slowmodeMs = Math.max(0, Number(value || 0));
+  savePersistentState();
+  return getSlowmodeMs();
 }
 
 function isBlockedWord(body = "") {
@@ -420,6 +444,8 @@ function setRoomEffect(room = "", meta = {}) {
   if (!key) return null;
 
   const effectId = String(meta.effectId || "none").trim().toLowerCase() || "none";
+  const activatedAt = Number(meta.activatedAt || Date.now());
+  const durationMs = Math.max(0, Number(meta.durationMs || 0));
   const roomEffect = {
     room: key,
     effectId,
@@ -427,7 +453,9 @@ function setRoomEffect(room = "", meta = {}) {
     triggeredByName: String(meta.triggeredByName || "").trim() || "Unknown",
     triggeredByUsername: String(meta.triggeredByUsername || "").trim() || null,
     price: Math.max(0, Number(meta.price || 0)),
-    activatedAt: Number(meta.activatedAt || Date.now())
+    activatedAt,
+    durationMs,
+    expiresAt: durationMs > 0 ? activatedAt + durationMs : null
   };
 
   state.roomEffects.set(key, roomEffect);
@@ -438,7 +466,15 @@ function setRoomEffect(room = "", meta = {}) {
 function getRoomEffect(room = "") {
   const key = String(room || "").trim().toLowerCase();
   if (!key) return null;
-  return state.roomEffects.get(key) || null;
+  const roomEffect = state.roomEffects.get(key) || null;
+  if (!roomEffect) return null;
+  const expiresAt = Number(roomEffect.expiresAt || 0);
+  if (expiresAt > 0 && expiresAt <= Date.now()) {
+    state.roomEffects.delete(key);
+    savePersistentState();
+    return null;
+  }
+  return roomEffect;
 }
 
 function moderateDisplayName(name = "") {
@@ -516,6 +552,7 @@ function applyManualWarning(identity = {}, reason = "Moderator warning") {
 
 function checkCooldown(userToken) {
   const key = String(userToken || "").trim();
+  const cooldownMs = getSlowmodeMs();
   if (!key) return { blocked: false, retryAfterMs: 0, cooldownMs };
 
   const now = Date.now();
@@ -768,6 +805,8 @@ module.exports = {
   addWarning,
   clearWarnings,
   applyManualWarning,
+  getSlowmodeMs,
+  setSlowmodeMs,
   checkCooldown,
   buildAiResponse,
   moderateText: aiModerateText

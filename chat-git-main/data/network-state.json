@@ -8,5 +8,19 @@
       "clearedByUserId": "6b629194-fe8b-4e18-a5be-65ec5ff2828c",
       "reason": "Owner cleared room"
     }
-  }
+  },
+  "roomEffects": {
+    "platnium": {
+      "room": "platnium",
+      "effectId": "embers",
+      "triggeredByUserId": "6b629194-fe8b-4e18-a5be-65ec5ff2828c",
+      "triggeredByName": "PrismX",
+      "triggeredByUsername": "PrismX",
+      "price": 9,
+      "activatedAt": 1777767088240,
+      "durationMs": 8500,
+      "expiresAt": 1777767096740
+    }
+  },
+  "slowmodeMs": 5000
 }

@@ -150,10 +150,10 @@ router.post("/mod/actions", auth, (req, res) => {
   const target = String(req.body?.target || "").trim();
   const reason = String(req.body?.reason || "Moderator action").trim();
   const room = String(req.body?.room || "").trim().toLowerCase();
-  if (!["warn", "ban", "banfromall", "unban", "clearwarns", "clearchat"].includes(action)) {
+  if (!["warn", "ban", "banfromall", "unban", "clearwarns", "clearchat", "slowmode"].includes(action)) {
     return res.status(400).json({ msg: "Invalid action" });
   }
-  if (action !== "clearchat" && !target) {
+  if (!["clearchat", "slowmode"].includes(action) && !target) {
     return res.status(400).json({ msg: "target is required" });
   }
 
@@ -171,6 +171,21 @@ router.post("/mod/actions", auth, (req, res) => {
       reason
     });
     return res.json({ ok: true, action, room, cleared });
+  }
+
+  if (action === "slowmode") {
+    const secondsRaw = req.body?.seconds ?? target;
+    const seconds = Number(secondsRaw);
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return res.status(400).json({ msg: "seconds must be a number greater than or equal to 0" });
+    }
+    const slowmodeMs = netState.setSlowmodeMs(Math.round(seconds * 1000));
+    return res.json({
+      ok: true,
+      action,
+      slowmodeMs,
+      slowmodeSeconds: Math.round(slowmodeMs / 1000)
+    });
   }
 
   const resolved = resolveTargetIdentity(target);
