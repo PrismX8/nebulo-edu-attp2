@@ -105,7 +105,7 @@ if (cluster.isPrimary && WORKERS > 1) {
     hostname_blacklist: [],
   });
 
- const fastify = Fastify({
+  const fastify = Fastify({
     logger: false,
     trustProxy: true,
     bodyLimit: 3 * 1024 * 1024,
@@ -117,6 +117,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       ignoreTrailingSlash: true,
       maxParamLength: 4096,
     },
+    
     serverFactory: (handler) => {
       const server = createServer((req, res) => handler(req, res));
       server.keepAliveTimeout = 65000;
@@ -153,13 +154,6 @@ if (cluster.isPrimary && WORKERS > 1) {
 
       return server;
     },
-  });
-
-  // ✅ Register static file serving OUTSIDE the options object:
-  await fastify.register(fastifyStatic, {
-    root: path.join(path.dirname(fileURLToPath(import.meta.url)), 'chat-git-main'),
-    prefix: '/kchat/',
-    decorateReply: false
   });
 
   const io = new Server(fastify.server, {
@@ -693,7 +687,8 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   fastify.get("/kchat/modules/*", (req, reply) => {
     reply.header("Cache-Control", "no-store");
-    return reply.sendFile(req.params["*"], `${chatGitClientPath}\\modules`);
+    const filePath = path.join(chatGitClientPath, 'modules', req.params['*']);
+    return reply.sendFile(filePath);
   });
 
   fastify.get("/kchat/*", (req, reply) => {
