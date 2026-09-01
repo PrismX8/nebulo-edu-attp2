@@ -6,17 +6,21 @@
   <title>Nebulo V5.4</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="/assets/js/proxy-runtime.js"></script>
+  <script src="/assets/js/proxy-runtime.js?v=20260830-proxy-choice-3"></script>
   <script src="/baremux/index.js" defer></script>
   <script src="/epoxy/index.js" defer></script>
   <script src="/uv/uv.bundle.js" defer></script>
   <script src="/uv/uv.config.js" defer></script>
-  <script src="/scram/scramjet.all.js" defer></script>
-  <script src="/ec/eclipse.codecs.js" defer></script>
-  <script src="/ec/eclipse.config.js" defer></script>
-  <script src="/assets/js/proxy-host-rules.js" defer></script>
+  <script src="/assets/js/proxy-host-rules.js?v=20260830-proxy-choice-3" defer></script>
   <script defer src="https://cloud.umami.is/script.js" data-website-id="ac558ad5-a729-416f-846e-d59a418f77ac"></script>
-  <script src="https://richinfo.co/richpartners/in-page/js/richads-ob.js?pubid=998500&siteid=387310" async></script>
+  <script>
+    if (localStorage.getItem('nebuloAdBlock') === 'false') {
+      const adScript = document.createElement('script');
+      adScript.src = '/ag/https/richinfo.co/richpartners/in-page/js/richads-ob.js?pubid=998500&siteid=387310';
+      adScript.async = true;
+      document.head.appendChild(adScript);
+    }
+  </script>
   <script src="/assets/js/loading-rotator.js" defer></script>
   <style>
     /* === CLEAN COLOR SCHEME === */
@@ -394,6 +398,25 @@
       width: 100%;
       max-width: 600px;
     }
+
+    .adblock-control {
+      width: 100%; max-width: 600px; margin: 0 0 12px; padding: 10px 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 14px;
+      color: var(--text); background: rgba(20,25,40,.72); border: 1px solid var(--border);
+      border-radius: 10px; backdrop-filter: blur(12px); cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18); transition: border-color .2s, background .2s;
+    }
+    .adblock-control:hover { background: rgba(26,32,50,.9); border-color: rgba(107,138,255,.48); }
+    .adblock-copy { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .adblock-copy i { color: var(--accent-light); font-size: 15px; }
+    .adblock-title { display: block; font-size: 13px; font-weight: 700; }
+    .adblock-state { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 500; }
+    .adblock-control input { position: absolute; opacity: 0; pointer-events: none; }
+    .adblock-switch { width: 38px; height: 22px; padding: 3px; flex: 0 0 auto; border-radius: 999px; background: #343c52; transition: background .2s; }
+    .adblock-switch::after { content: ''; display: block; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.35); transition: transform .22s cubic-bezier(.2,.8,.2,1); }
+    .adblock-control input:checked + .adblock-switch { background: var(--accent); }
+    .adblock-control input:checked + .adblock-switch::after { transform: translateX(16px); }
+    .adblock-control input:focus-visible + .adblock-switch { outline: 2px solid var(--accent-light); outline-offset: 3px; }
     
     .search-input {
       width: 100%;
@@ -447,192 +470,184 @@
       box-shadow: 0 6px 25px rgba(74, 108, 247, 0.5);
     }
     
-    /* APPS SECTION */
+    /* QUICK ACCESS — A compact Nebulo command shelf */
     .apps-container {
-      background: var(--surface);
-      border-radius: 24px;
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(74, 108, 247, 0.1);
-      box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      max-width: 900px;
-      margin: 60px auto 40px;
-      padding: 40px 30px;
+      max-width: 936px;
+      margin: 52px auto 36px;
+      padding: 20px;
       position: relative;
       z-index: 10;
+      background: #0d1320;
+      border: 1px solid #2a3853;
+      border-radius: 14px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(160, 190, 255, 0.04);
     }
-    
+
     .apps-section {
-      margin-bottom: 40px;
+      margin-bottom: 24px;
     }
-    
+
     .section-label {
-      color: var(--muted);
-      font-size: 0.9rem;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 14px;
+      color: #b9c8e4;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      line-height: 1;
+      text-align: left;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 25px;
-      text-align: center;
     }
-    
+
+    .section-label::before {
+      width: 5px;
+      height: 5px;
+      content: '';
+      background: var(--accent-light);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(107, 138, 255, 0.1);
+    }
+
     .apps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-      gap: 20px;
-      max-width: 700px;
-      margin: 0 auto;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      max-width: none;
+      margin: 0;
     }
-    
-    .app-card {
-      background: rgba(30, 35, 50, 0.5);
-      border: 1px solid rgba(74, 108, 247, 0.1);
-      border-radius: 16px;
-      padding: 25px 15px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      color: inherit;
-      backdrop-filter: blur(10px);
-      position: relative;
+
+    .app-card,
+    .app-card.app-card-games,
+    .app-card.app-card-danger,
+    .app-card.app-card-spotify,
+    .app-card.app-card-youtube {
+      --app-rgb: 169, 196, 255;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-width: 0;
+      min-height: 94px;
+      padding: 11px 10px 10px;
       overflow: hidden;
+      position: relative;
+      color: var(--text);
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      background: #111a29;
+      border: 1px solid rgba(var(--app-rgb), 0.28);
+      border-radius: 9px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 5px 12px rgba(0, 0, 0, 0.12);
+      transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
     }
-    
+
+    .app-card.app-card-games { --app-rgb: 125, 211, 252; }
+    .app-card.app-card-danger { --app-rgb: 252, 165, 165; }
+    .app-card.app-card-tiktok { --app-rgb: 103, 232, 249; }
+    .app-card.app-card-spotify { --app-rgb: 134, 239, 172; }
+    .app-card.app-card-youtube { --app-rgb: 252, 165, 165; }
+    .app-card:nth-child(3) { --app-rgb: 196, 181, 253; }
+    .app-card:nth-child(6) { --app-rgb: 253, 230, 138; }
+    .app-card:nth-child(7) { --app-rgb: 253, 224, 71; }
+    .app-card:nth-child(8) { --app-rgb: 103, 232, 249; }
+    .app-card:nth-child(9) { --app-rgb: 216, 180, 254; }
+    .app-card:nth-child(10) { --app-rgb: 125, 211, 252; }
+    .app-card:nth-child(11) { --app-rgb: 148, 163, 184; }
+    .app-card:nth-child(12) { --app-rgb: 253, 186, 116; }
+    .app-card:nth-child(13) { --app-rgb: 103, 232, 249; }
+    .app-card:nth-child(14) { --app-rgb: 110, 231, 183; }
+
     .app-card::before {
-      content: '';
       position: absolute;
       top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(74, 108, 247, 0.1),
-        rgba(74, 108, 247, 0.2),
-        rgba(74, 108, 247, 0.1),
-        transparent
-      );
-      transition: left 0.6s ease;
+      left: 20%;
+      right: 20%;
+      width: auto;
+      height: 2px;
+      content: '';
+      background: rgb(var(--app-rgb));
+      border-radius: 0 0 3px 3px;
+      opacity: 0.72;
+      transition: opacity 140ms ease;
     }
-    
-    .app-card:hover::before {
-      left: 100%;
-    }
-    
+
     .app-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-5px);
-      box-shadow: 
-        0 10px 25px rgba(0, 0, 0, 0.2),
-        0 0 20px rgba(74, 108, 247, 0.15);
+      transform: translateY(-1px);
+      background: #162238;
+      border-color: rgba(var(--app-rgb), 0.68);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 9px 18px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--app-rgb), 0.05);
     }
-    
-    .app-icon {
-      width: 50px;
-      height: 50px;
-      margin: 0 auto 15px;
+
+    .app-card:hover::before {
+      opacity: 1;
+    }
+
+    .app-card:active {
+      transform: translateY(0);
+      background: #0c1422;
+      box-shadow: none;
+    }
+
+    .app-card:focus-visible {
+      z-index: 1;
+      outline: 2px solid var(--accent-light);
+      outline-offset: 2px;
+      border-color: var(--accent-light);
+    }
+
+    .app-icon,
+    .app-card.app-card-games .app-icon,
+    .app-card.app-card-danger .app-icon,
+    .app-card.app-card-spotify .app-icon,
+    .app-card.app-card-youtube .app-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(74, 108, 247, 0.1);
-      border-radius: 12px;
-      color: var(--accent-light);
-      font-size: 20px;
-      position: relative;
-      z-index: 1;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(74, 108, 247, 0.2);
+      flex: 0 0 34px;
+      width: 34px;
+      height: 34px;
+      margin: 0;
+      color: rgb(var(--app-rgb));
+      font-size: 15px;
+      background: rgba(var(--app-rgb), 0.11);
+      border: 1px solid rgba(var(--app-rgb), 0.3);
+      border-radius: 7px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
     }
-    
+
+    .app-icon > i {
+      display: block;
+      line-height: 1;
+    }
+
     .app-card:hover .app-icon {
-      background: rgba(74, 108, 247, 0.2);
-      transform: scale(1.1);
-      color: var(--accent-glow);
+      color: rgb(var(--app-rgb));
+      background: rgba(var(--app-rgb), 0.18);
+      border-color: rgba(var(--app-rgb), 0.54);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 4px 10px rgba(0, 0, 0, 0.14);
+      transform: none;
     }
-    
+
     .app-name {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-      position: relative;
-      z-index: 1;
-      transition: color 0.3s ease;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      color: #edf2fb;
+      font-size: 0.84rem;
+      font-weight: 550;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: color 140ms ease;
     }
-    
+
     .app-card:hover .app-name {
-      color: var(--accent-light);
-    }
-
-    .app-card.app-card-danger {
-      border-color: rgba(239, 68, 68, 0.16);
-      background: linear-gradient(180deg, rgba(239, 68, 68, 0.045), rgba(239, 68, 68, 0.025));
-    }
-
-    .app-card.app-card-danger .app-icon {
-      background: rgba(239, 68, 68, 0.08);
-      border-color: rgba(239, 68, 68, 0.18);
-      color: #fca5a5;
-    }
-
-    .app-card.app-card-danger:hover {
-      border-color: rgba(248, 113, 113, 0.25);
-      box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.22),
-        0 0 16px rgba(239, 68, 68, 0.09);
-    }
-
-    .app-card.app-card-danger:hover .app-icon {
-      background: rgba(239, 68, 68, 0.12);
-      color: #fecaca;
-    }
-
-    .app-card.app-card-spotify {
-      border-color: rgba(34, 197, 94, 0.16);
-      background: linear-gradient(180deg, rgba(34, 197, 94, 0.045), rgba(34, 197, 94, 0.025));
-    }
-
-    .app-card.app-card-spotify .app-icon {
-      background: rgba(34, 197, 94, 0.08);
-      border-color: rgba(34, 197, 94, 0.18);
-      color: #86efac;
-    }
-
-    .app-card.app-card-spotify:hover {
-      border-color: rgba(74, 222, 128, 0.25);
-      box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.22),
-        0 0 16px rgba(34, 197, 94, 0.09);
-    }
-
-    .app-card.app-card-spotify:hover .app-icon {
-      background: rgba(34, 197, 94, 0.12);
-      color: #bbf7d0;
-    }
-
-    .app-card.app-card-youtube {
-      border-color: rgba(220, 38, 38, 0.16);
-      background: linear-gradient(180deg, rgba(220, 38, 38, 0.045), rgba(220, 38, 38, 0.025));
-    }
-
-    .app-card.app-card-youtube .app-icon {
-      background: rgba(220, 38, 38, 0.08);
-      border-color: rgba(220, 38, 38, 0.18);
-      color: #fca5a5;
-    }
-
-    .app-card.app-card-youtube:hover {
-      border-color: rgba(248, 113, 113, 0.25);
-      box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.22),
-        0 0 16px rgba(220, 38, 38, 0.09);
-    }
-
-    .app-card.app-card-youtube:hover .app-icon {
-      background: rgba(220, 38, 38, 0.12);
-      color: #fecaca;
+      color: #ffffff;
     }
     
     /* FOOTER */
@@ -849,38 +864,39 @@
       }
       
       .apps-container {
-        padding: 22px 14px;
-        margin: 40px auto 30px;
-        border-radius: 18px;
+        padding: 16px;
+        margin: 36px auto 28px;
+        border-radius: 12px;
         max-width: 620px;
       }
 
       .section-label {
-        font-size: 0.78rem;
-        margin-bottom: 18px;
+        font-size: 0.68rem;
+        margin-bottom: 12px;
       }
       
       .apps-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 11px;
+        gap: 8px;
       }
       
       .app-card {
-        min-height: 104px;
-        padding: 13px 8px;
-        border-radius: 12px;
+        min-height: 88px;
+        padding: 9px 7px;
+        border-radius: 8px;
       }
       
       .app-icon {
-        width: 34px;
-        height: 34px;
-        font-size: 15px;
-        margin-bottom: 10px;
+        flex-basis: 30px;
+        width: 30px;
+        height: 30px;
+        margin: 0;
+        font-size: 13px;
       }
 
       .app-name {
-        font-size: 12px;
-        line-height: 1.25;
+        font-size: 0.76rem;
+        line-height: 1.2;
       }
 
       .footer {
@@ -949,30 +965,32 @@
       }
       
       .apps-container {
-        padding: 16px 12px;
+        padding: 14px 10px;
         margin: 30px auto 20px;
-        border-radius: 16px;
+        border-radius: 10px;
       }
       
       .apps-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        gap: 7px;
       }
       
       .app-card {
-        min-height: 106px;
-        padding: 12px 10px;
+        min-height: 82px;
+        padding: 8px 6px;
       }
 
       .app-icon {
-        width: 30px;
-        height: 30px;
-        font-size: 13px;
+        flex-basis: 28px;
+        width: 28px;
+        height: 28px;
+        margin: 0;
+        font-size: 12px;
       }
 
       .app-name {
-        font-size: 12px;
-        line-height: 1.25;
+        font-size: 0.75rem;
+        line-height: 1.2;
       }
 
       .chat-cta-btn {
@@ -983,6 +1001,7 @@
       .chat-cta-note {
         font-size: 8px;
       }
+
     }
     
     /* Respect reduced motion */
@@ -999,6 +1018,7 @@
   <script src="/assets/js/panic.js" defer></script>
   <script src="/assets/js/appearance.js" defer></script>
   <script src="/assets/js/cloaking.js" defer></script>
+  <script src="/assets/js/achievements.js" defer></script>
 <meta name="description" content="Nebulo Education Plus is a mathematics learning platform with algebra practice, geometry tools, chemistry lessons, and educational resources.">
 <meta name="keywords" content="math, mathematics, algebra, geometry, chemistry, educational games, study tools, learning platform">
 <meta name="classification" content="Mathematics Education">
@@ -1051,6 +1071,11 @@
 
   <!-- SEARCH - NOW DIRECTLY ON BACKGROUND -->
   <div class="search-section">
+    <label class="adblock-control">
+      <span class="adblock-copy"><i class="fas fa-shield-halved"></i><span><span class="adblock-title">Ad blocker</span><span class="adblock-state" id="adBlockState">Ads, popups, and redirects blocked</span></span></span>
+      <input type="checkbox" id="adBlockToggle" aria-label="Ad blocker">
+      <span class="adblock-switch" aria-hidden="true"></span>
+    </label>
     <div class="search-box">
       <form id="searchForm">
         <input type="text" class="search-input" id="searchInput" placeholder="search anything" autocomplete="off">
@@ -1096,6 +1121,24 @@
       return localStorage.getItem('particles') !== 'false';
     }
 
+    const adBlockToggle = document.getElementById('adBlockToggle');
+    const adBlockEnabled = localStorage.getItem('nebuloAdBlock') !== 'false';
+    adBlockToggle.checked = adBlockEnabled;
+    function syncAdBlock(enabled) {
+      localStorage.setItem('nebuloAdBlock', String(enabled));
+      document.getElementById('adBlockState').textContent = enabled
+        ? 'Ads, popups, and redirects blocked'
+        : 'Protection is off';
+      navigator.serviceWorker?.controller?.postMessage({ type: 'nebulo-adblock-setting', enabled });
+    }
+    syncAdBlock(adBlockEnabled);
+    adBlockToggle.addEventListener('change', () => syncAdBlock(adBlockToggle.checked));
+    navigator.serviceWorker?.ready.then((registration) => {
+      (registration.active || navigator.serviceWorker.controller)?.postMessage({
+        type: 'nebulo-adblock-setting', enabled: adBlockToggle.checked
+      });
+    });
+
     function applyParticlesSetting(value) {
       const enabled = particlesEnabled(value);
       const waveLines = document.querySelector('.wave-lines');
@@ -1120,15 +1163,8 @@
         const searchBtn = document.querySelector('.search-btn');
         if (!searchInput) return;
         
-        const currentProxy = (localStorage.getItem('proxy') || '').toLowerCase();
-        
-        if (currentProxy === 'ag') {
-          searchInput.placeholder = 'search MUST be a url EX: youtube.com';
-          updateSearchButtonState();
-        } else {
-          searchInput.placeholder = 'search anything';
-          if (searchBtn) searchBtn.disabled = false;
-        }
+        searchInput.placeholder = 'search anything';
+        if (searchBtn) searchBtn.disabled = false;
       } catch (e) {
         console.error('Error updating search placeholder:', e);
       }
@@ -1140,14 +1176,8 @@
         const searchBtn = document.querySelector('.search-btn');
         if (!searchBtn || !searchInput) return;
         
-        const currentProxy = (localStorage.getItem('proxy') || '').toLowerCase();
-        if (currentProxy !== 'ag') {
-          searchBtn.disabled = false;
-          return;
-        }
-        
         const query = searchInput.value.trim();
-        const isValidSearch = query.length > 0 && isValidUrl(query);
+        const isValidSearch = query.length > 0;
         searchBtn.disabled = !isValidSearch;
         searchBtn.style.opacity = isValidSearch ? '1' : '0.5';
         searchBtn.style.cursor = isValidSearch ? 'pointer' : 'not-allowed';
@@ -1185,17 +1215,16 @@
       }
     }
     
-    function enforceArgonProxyDefault() {
+    function enforceSpeedProxyDefault() {
       // Only set a default if the user hasn't chosen one.
       try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
     }
-    enforceArgonProxyDefault();
+    enforceSpeedProxyDefault();
 
     // Initialize when page loads
     window.addEventListener('load', () => {
       applyParticlesSetting();
       initFloatingDots();
-      ensureProxyRuntimeReady().catch(() => {});
       
       // Add subtle hover effect to search input
       const searchInput = document.getElementById('searchInput');
@@ -1237,13 +1266,21 @@
   let scramjetControllerPromise = null;
   let argonServiceWorkerPromise = null;
     const HOME_MODE = new URLSearchParams(location.search).get('mode') === 'home';
+    const PROXY_CACHE_VERSION = '20260830-tiktok-origin-proxy-choice-7';
+    if (HOME_MODE) document.querySelector('.adblock-control')?.setAttribute('hidden', '');
+    if (localStorage.getItem('proxyRuntimeCacheVersion') !== PROXY_CACHE_VERSION) {
+      fetch('/api/runtime-cache-reset?v=' + encodeURIComponent(PROXY_CACHE_VERSION), { cache: 'no-store' })
+        .then(() => localStorage.setItem('proxyRuntimeCacheVersion', PROXY_CACHE_VERSION))
+        .catch(() => {});
+    }
     const GLOBAL_CHAT_URL = '/kchat';
 
     const APPS = [
-      { name: "Blooket Bot", icon: "fas fa-user-secret", url: "https://blooketbot.x-network.lol/", cardClass: "app-card-danger" },
-      { name: "Music", icon: "fas fa-headphones", url: "https://vapor.onl/page/music/index.html" },
+      { name: "GΛMΞS", icon: "fas fa-gamepad", url: "/chemistry", cardClass: "app-card-games" },
+      { name: "TikTok", icon: "fab fa-tiktok", url: "https://www.tiktok.com/", cardClass: "app-card-tiktok" },
+      { name: "Music", icon: "fas fa-headphones", url: "https://audiomack.com"},
       { name: "Spotify", icon: "fab fa-spotify", url: "https://open.spotify.com/", cardClass: "app-card-spotify" },
-      { name: "YouTube", icon: "fab fa-youtube", url: "https://www.youtube.com/", cardClass: "app-card-youtube" },
+      { name: "YouTube", icon: "fab fa-youtube", url: "https://www.youtube.com/", cardClass: "app-card-youtube", forceProxy: "ag" },
       { name: "Movies", icon: "fas fa-film", url: "https://www.cineby.gd" },
       { name: "Achievements", icon: "fas fa-trophy", url: "/achievements" },
       { name: "Links", icon: "fas fa-link", url: "/links" },
@@ -1251,7 +1288,6 @@
       { name: "Help", icon: "fas fa-circle-question", url: "/help" },
       { name: "Settings", icon: "fas fa-cog", url: "/settings" },
       { name: "Report Issue", icon: "fas fa-exclamation-triangle", url: "https://forms.gle/GbmQTfsa8ta8oV8n8" },
-      { name: "TikTok", icon: "fas fa-music", url: "https://www.tiktok.com/" },
       { name: "ChatGPT", icon: "fas fa-robot", url: "https://chatgpt.com/" },
     ];
 
@@ -1267,8 +1303,9 @@
 
       if (globalChatBtn) {
         globalChatBtn.addEventListener('click', () => {
+          window.NebuloAchievements?.track('chat', { page: 'chat' });
           // Open as a Nebulo in-site tab (handled by parent rindex.html tab system).
-          if (!requestParentOpenTab(GLOBAL_CHAT_URL, { title: 'Global Chat', icon: 'fa-comments', forceProxy: 'sj' })) {
+          if (!requestParentOpenTab(GLOBAL_CHAT_URL, { title: 'Global Chat', icon: 'fa-comments' })) {
             navigate(GLOBAL_CHAT_URL);
           }
         });
@@ -1281,7 +1318,10 @@
         card.className = `app-card${app.cardClass ? ` ${app.cardClass}` : ''}`;
         card.onclick = (e) => {
           e.preventDefault();
-          navigate(app.url);
+          window.NebuloAchievements?.track('quick_access', { id: app.name });
+          if (app.url === '/settings') window.NebuloAchievements?.track('settings', { page: 'settings' });
+          if (app.url === '/kchat') window.NebuloAchievements?.track('chat', { page: 'chat' });
+          navigate(app.url, app.forceProxy || null);
         };
         
         card.innerHTML = `
@@ -1295,21 +1335,11 @@
       });
 
       // Search functionality
+      window.NebuloAchievements?.track('visit', { page: 'home' });
       searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const query = searchInput.value.trim();
-        const currentProxy = (localStorage.getItem('proxy') || '').toLowerCase();
-        
-        // Block search if Argon is selected and input is not a URL
-        if (currentProxy === 'ag') {
-          if (!isValidUrl(query)) {
-            if (query.length > 0) {
-              alert('❌ Argon proxy requires a real URL\n\nExamples:\n• youtube.com\n• https://google.com\n• reddit.com');
-            }
-            return;
-          }
-        }
-        
+
         if (query) {
           performSearch(query);
         }
@@ -1377,7 +1407,7 @@
     // Functions
     async function initServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
-      await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.register('/sw.js?v=20260831-tiktok-fast-feed-cache-26');
       await navigator.serviceWorker.ready;
       if (!navigator.serviceWorker.controller) {
         await new Promise((resolve) => {
@@ -1531,9 +1561,42 @@
       ]);
     }
 
+  const proxyScriptPromises = new Map();
+
+  function loadProxyScript(src) {
+    if (proxyScriptPromises.has(src)) return proxyScriptPromises.get(src);
+    const promise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing?.dataset.loaded === 'true') return resolve();
+      const script = existing || document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.addEventListener('load', () => {
+        script.dataset.loaded = 'true';
+        resolve();
+      }, { once: true });
+      script.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), { once: true });
+      if (!existing) document.head.appendChild(script);
+    }).catch((error) => {
+      proxyScriptPromises.delete(src);
+      throw error;
+    });
+    proxyScriptPromises.set(src, promise);
+    return promise;
+  }
+
+  async function ensureEclipseRuntime() {
+    if (typeof __eclipse$config !== 'undefined') return;
+    await loadProxyScript('/ec/eclipse.codecs.js');
+    await loadProxyScript('/ec/eclipse.config.js');
+  }
+
   async function ensureScramjetController() {
       if (scramjetControllerPromise) return scramjetControllerPromise;
       scramjetControllerPromise = (async () => {
+        if (typeof $scramjetLoadController !== 'function') {
+          await loadProxyScript('/scram/scramjet.all.js');
+        }
         if (typeof $scramjetLoadController !== 'function') return null;
         const { ScramjetController } = $scramjetLoadController();
         const controller = new ScramjetController({
@@ -1553,13 +1616,12 @@
   }
 
   function normalizeProxyChoice(value) {
-    return value === 'argon' || value === 'sj' ? 'ag' : value;
+    return value === 'argon' ? 'ag' : value;
   }
 
   function encodeArgonRoute(inputUrl) {
     const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
     if (!raw) return raw;
-
     try {
       const u = new URL(raw);
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
@@ -1569,42 +1631,21 @@
     }
   }
 
-  async function ensureArgonServiceWorker() {
+  async function ensureArgonServiceWorker(targetUrl) {
+    if (typeof window.ensureArgonWorkerForTarget === 'function') {
+      return window.ensureArgonWorkerForTarget(targetUrl);
+    }
     if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
     argonServiceWorkerPromise = (async () => {
       if (!('serviceWorker' in navigator)) return false;
-      const scriptUrl =
-        '/argon_service_worker.js?proxy_real_protocol=' +
-        encodeURIComponent(location.protocol.replace(':', '')) +
-        '&proxy_real_host=' +
-        encodeURIComponent(location.host);
-
       try {
-        const registration = await navigator.serviceWorker.register(scriptUrl, {
-          scope: '/ag/',
-          updateViaCache: 'none'
-        });
-        if (!registration.active && (registration.installing || registration.waiting)) {
-          const worker = registration.installing || registration.waiting;
-          await new Promise((resolve) => {
-            const done = () => resolve();
-            const timer = setTimeout(done, 4000);
-            worker.addEventListener('statechange', () => {
-              if (worker.state === 'activated' || worker.state === 'redundant') {
-                clearTimeout(timer);
-                done();
-              }
-            });
-          });
-        }
-        // Wait for controller change to ensure the service worker is controlling the page
-        if (!navigator.serviceWorker.controller) {
-          await new Promise((resolve) => {
-            const done = () => resolve();
-            navigator.serviceWorker.addEventListener('controllerchange', done, { once: true });
-            setTimeout(done, 2000); // Shorter timeout for Argon SW
-          });
-        }
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => {
+          const worker = registration.active || registration.waiting || registration.installing;
+          return worker?.scriptURL.includes('/argon_service_worker.js')
+            ? registration.unregister()
+            : Promise.resolve(false);
+        }));
         return true;
       } catch {
         return false;
@@ -1683,13 +1724,17 @@
       }
     }
 
-    async function navigate(url) {
+    async function navigate(url, overrideProxy = null) {
       const raw = normalizeExistingProxyTarget(url);
       if (!raw) return;
 
+      const hostRules = window.NebuloProxyHostRules;
+      const hostForcedProxy = hostRules?.shouldForceArgonForUrl?.(raw) ? 'ag' : null;
+      const requestedProxy = hostForcedProxy;
+
       // In "home mode" (no internal tabs open), keep this page as the homepage and open destinations as real Nebulo tabs.
       if (HOME_MODE) {
-        if (requestParentOpenTab(raw)) return;
+        if (requestParentOpenTab(raw, { forceProxy: requestedProxy })) return;
       }
 
       const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
@@ -1738,13 +1783,6 @@
 
       showLoading('Loading page...');
       try {
-        // Ensure the loading overlay paints before navigation starts.
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        await new Promise((resolve) => setTimeout(resolve, 40));
-
-        await withTimeout(ensureProxyRuntimeReady(), 900).catch(() => {});
-
-        let encodedUrl;
         const rules = window.NebuloProxyHostRules;
         const savedProxy = normalizeProxyChoice(localStorage.getItem('proxy'));
         const forcedProxy =
@@ -1752,7 +1790,7 @@
           (rules && typeof rules.shouldForceScramjetForUrl === 'function' && rules.shouldForceScramjetForUrl(raw))
             ? 'sj'
             : null;
-        let proxy = savedProxy || 'ag';
+        let proxy = requestedProxy || savedProxy || 'ag';
         if (forcedProxy) proxy = forcedProxy;
         if (
           proxy === 'sj' &&
@@ -1763,12 +1801,20 @@
           proxy = 'uv';
         }
 
+        // Ensure the loading overlay paints before navigation starts.
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        if (proxy !== 'ag') {
+          await withTimeout(ensureProxyRuntimeReady(), 900).catch(() => {});
+        }
+
+        let encodedUrl;
         if (proxy === 'uv' && typeof __uv$config !== 'undefined') {
           encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(raw);
         } else if (proxy === 'ag') {
-          // For Argon proxy, ensure full proxy runtime is ready before proceeding
-          await ensureProxyRuntimeReady();
-          await ensureArgonServiceWorker();
+          // Argon is server-backed and does not depend on BareMux/UV startup.
+          // Legacy worker cleanup is useful hygiene, but it must not add a
+          // round-trip before the document can begin loading.
+          void ensureArgonServiceWorker(raw).catch(() => {});
           encodedUrl = encodeArgonRoute(raw);
         } else if (proxy === 'sj') {
           const scramjet = await ensureScramjetController();
@@ -1778,6 +1824,7 @@
             encodedUrl = encodeViaUv(raw);
           }
         } else if (proxy === 'ec') {
+          await ensureEclipseRuntime();
           if (typeof window.encodeProxiedUrl === 'function') {
             encodedUrl = window.encodeProxiedUrl(raw);
           } else if (typeof __eclipse$config !== 'undefined' && __eclipse$config?.codec?.encode) {
@@ -1811,6 +1858,7 @@
 
     function performSearch(query) {
       if (!query.trim()) return;
+      window.NebuloAchievements?.track('search', { page: 'home' });
       
       // Save to history
       saveToHistory(query);
@@ -1821,31 +1869,37 @@
         // Likely a URL
         url = query.startsWith('http') ? query : `https://${query}`;
       } else {
-        // For non-Argon proxies, search query: honor configured search engine
-        const engine = (localStorage.getItem('searchEngine') || 'duckduckgo').toLowerCase();
-        switch (engine) {
-          case 'google':
-            url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-            break;
-          case 'bing':
-            url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-            break;
-          case 'yahoo':
-            url = `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
-            break;
-          case 'ecosia':
-            url = `https://www.ecosia.org/search?q=${encodeURIComponent(query)}`;
-            break;
-          case 'brave':
-            url = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
-            break;
-          case 'irs':
-            url = `https://www.irs.gov/site-index-search?search=${encodeURIComponent(query)}`;
-            break;
-          case 'duckduckgo':
-          default:
-            url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
-            break;
+        // DuckDuckGo is the reliable search target under Argon. Other modes keep
+        // honoring the user's configured search engine.
+        const proxy = normalizeProxyChoice(localStorage.getItem('proxy')) || 'ag';
+        if (proxy === 'ag') {
+          url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+        } else {
+          const engine = (localStorage.getItem('searchEngine') || 'duckduckgo').toLowerCase();
+          switch (engine) {
+            case 'google':
+              url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+              break;
+            case 'bing':
+              url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+              break;
+            case 'yahoo':
+              url = `https://search.yahoo.com/search?p=${encodeURIComponent(query)}`;
+              break;
+            case 'ecosia':
+              url = `https://www.ecosia.org/search?q=${encodeURIComponent(query)}`;
+              break;
+            case 'brave':
+              url = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+              break;
+            case 'irs':
+              url = `https://www.irs.gov/site-index-search?search=${encodeURIComponent(query)}`;
+              break;
+            case 'duckduckgo':
+            default:
+              url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+              break;
+          }
         }
       }
 
@@ -1853,11 +1907,11 @@
       const searchBtn = document.querySelector('.search-btn');
       searchBtn.style.transform = 'translateY(-50%) scale(1.1)';
       searchBtn.style.boxShadow = '0 0 30px rgba(74, 108, 247, 0.5)';
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         searchBtn.style.transform = 'translateY(-50%) scale(1)';
         searchBtn.style.boxShadow = '0 4px 20px rgba(74, 108, 247, 0.4)';
         navigate(url);
-      }, 200);
+      });
       
       hideSuggestions();
     }
@@ -1879,7 +1933,7 @@
           `;
           item.onclick = () => {
             searchInput.value = app.name;
-            navigate(app.url);
+            navigate(app.url, app.forceProxy || null);
           };
           suggestions.appendChild(item);
         });
@@ -1952,7 +2006,14 @@
       applySettingChange(event.key, event.newValue);
     });
 
-    // Lazy-init proxy runtime only when navigating; avoids startup errors for non-proxy usage.
+    // Warm the selected transport as soon as the launcher DOM is ready. External
+    // analytics and ad scripts must not delay the first proxy navigation.
+    const warmProxyRuntime = () => ensureProxyRuntimeReady().catch(() => {});
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', warmProxyRuntime, { once: true });
+    } else {
+      warmProxyRuntime();
+    }
   </script>
 
 <!-- math-essay -->

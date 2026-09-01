@@ -1,76 +1,101 @@
 const express = require('express');
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
+const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const config = require('../config/config');
+const { REMOTE_AUTH_BASE, mapLocalUser, mapRemoteUser, parseTokenFromSetCookie } = require('../services/auth/remoteAuth');
 const userStore = require('../services/auth/localStore');
 
+const ROLE_RANK = { owner: 4, admin: 3, mod: 2, seller: 1, user: 0 };
+function highestRole(a, b) {
+  return (ROLE_RANK[a] ?? 0) >= (ROLE_RANK[b] ?? 0) ? a : b;
+}
+
+function mergeWithLocal(remoteUser) {
+  const id = String(remoteUser._id || remoteUser.id || '').trim();
+  const username = String(remoteUser.username || remoteUser.name || '').trim();
+  const local = (id && userStore.findById(id)) || (username && userStore.findByUsername(username));
+  if (!local) return remoteUser;
+  const safe = userStore.sanitizeUser(local);
+  return {
+    ...remoteUser,
+    coins: safe.coins,
+    ownedEffects: safe.ownedEffects,
+    equippedEffect: safe.equippedEffect,
+    friends: safe.friends,
+    role: highestRole(safe.role, remoteUser.role),
+    avatar: safe.avatar || remoteUser.avatar,
+  };
+}
+
 // @route   POST api/auth
-// @desc    Authenticate user & get token
+// @desc    Authenticate user & get token (proxied to remote auth server)
 // @access  Public
-router.post(
-  '/',
-  [
-    check('username', 'Username is required').not().isEmpty(),
-    check('password', 'Password is required').exists()
-  ],
-  async (req, res) => {
-    console.log('Auth POST req.body:', req.body);
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    try {
-      const { username, password } = req.body;
-      console.log('Login attempt:', { username, password: JSON.stringify(password), passwordLength: password?.length });
-      const user = userStore.findByIdentifier(username);
-      console.log('User found:', !!user);
-      if (!user) {
-        return res.status(400).json({ msg: 'Invalid credentials' });
-      }
-
-      const isMatch = password === user.password;
-      console.log('Password match:', isMatch, 'stored:', JSON.stringify(user.password), 'input:', JSON.stringify(password));
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'Invalid credentials' });
-      }
-
-      const payload = {
-        user: {
-          id: user._id
-        }
-      };
-
-      jwt.sign(
-        payload,
-        config.jwtSecret || 'secret',
-        { expiresIn: config.jwtExpiration || '24h' },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token, user: userStore.sanitizeUser(user) });
-        }
-      );
-    } catch (_err) {
-      return res.status(500).send('Server Error');
-    }
-  }
-);
-
-// @route   GET api/auth
-// @desc    Get logged in user
-// @access  Private
-router.get('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const user = userStore.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+    const { username, email, password } = req.body;
+    const loginEmail = email || username;
+    if (!loginEmail || !password) {
+      return res.status(400).json({ msg: 'Email and password are required' });
     }
-    return res.json(userStore.sanitizeUser(user));
+
+    const localUser = userStore.findByIdentifier(loginEmail);
+    if (localUser && await userStore.verifyPassword(localUser, password)) {
+      const user = mapLocalUser(localUser);
+      const token = jwt.sign({ user: { id: user.id } }, config.jwtSecret, { expiresIn: '30d' });
+      return res.json({ token, user });
+    }
+
+    const loginRes = await axios.post(`${REMOTE_AUTH_BASE}/auth/login`, { email: loginEmail, password }, {
+      validateStatus: null,
+      maxRedirects: 0,
+      headers: {
+        'Content-Type': 'application/json',
+        'Origin': REMOTE_AUTH_BASE,
+        'Referer': `${REMOTE_AUTH_BASE}/`
+      }
+    });
+
+    console.error('[auth proxy] login status:', loginRes.status, 'data:', JSON.stringify(loginRes.data));
+
+    if (loginRes.status >= 400) {
+      return res.status(loginRes.status).json(loginRes.data || { msg: 'Invalid credentials' });
+    }
+
+    const token = parseTokenFromSetCookie(loginRes.headers['set-cookie']);
+    if (!token) {
+      return res.status(500).json({ msg: 'Authentication failed: no token received' });
+    }
+
+    const meRes = await axios.get(`${REMOTE_AUTH_BASE}/auth/me`, {
+      headers: { Cookie: `access-token=${token}` },
+      validateStatus: null
+    });
+
+    if (meRes.status >= 400 || !meRes.data?.user) {
+      return res.status(500).json({ msg: 'Failed to retrieve user profile' });
+    }
+
+    const remoteUser = mapRemoteUser(meRes.data.user);
+    userStore.upsertRemoteUser(remoteUser);
+    const user = mergeWithLocal(remoteUser);
+    return res.json({ token, user });
   } catch (_err) {
     return res.status(500).send('Server Error');
   }
+});
+
+// @route   GET api/auth
+// @desc    Get logged in user with local metadata merged
+// @access  Private
+router.get('/', auth, (req, res) => {
+  if (!req.user?.email) {
+    return res.json({ user: req.user });
+  }
+  userStore.upsertRemoteUser(req.user);
+  const user = mergeWithLocal(req.user);
+  return res.json({ user });
 });
 
 module.exports = router;

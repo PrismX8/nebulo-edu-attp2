@@ -3,7 +3,8 @@ const defaultSites = [
     id: "nebulo",
     name: "Nebulo",
     url: "https://adc.school.dovereducation.org",
-    room: "nebulo",
+    channelName: "nebulo",
+    room: "rxrhcicz",
     aiName: "Nebulo AI",
     verifiedOwners: ["prism8x", "nebulo_owner"]
   },

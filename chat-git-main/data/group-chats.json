@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "room": "hvxbt",
+      "name": "jjj",
+      "createdAt": 1782189888532,
+      "creator": "Prism2",
+      "singleMemberSince": null,
+      "members": []
+    },
+    {
+      "room": "kasmt",
+      "name": "OG group chat (Made By UBG chat owner)",
+      "createdAt": 1782171361874,
+      "creator": "prismx",
+      "singleMemberSince": null,
+      "members": [
+        "prismx",
+        "Prism2",
+        "Ek0sz",
+        "fluxion",
+        "35_Sigma"
+      ]
+    }
+  ]
+}

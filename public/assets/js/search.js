@@ -116,11 +116,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	scramjet.init();
 
 	function normalizeProxyChoice(value) {
-		return value === "argon" || value === "sj" ? "ag" : value;
+		return value === "argon" ? "ag" : value;
 	}
 
 	function buildSearchEngineUrl(query) {
 		const encodedQuery = encodeURIComponent(String(query || "").trim());
+		const proxy = normalizeProxyChoice(localStorage.getItem("proxy")) || "ag";
+		if (proxy === "ag") {
+			return `https://duckduckgo.com/?q=${encodedQuery}`;
+		}
 		const engine = (localStorage.getItem("searchEngine") || "duckduckgo").toLowerCase();
 		switch (engine) {
 			case "brave":
@@ -153,34 +157,21 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	async function ensureArgonServiceWorker() {
+	async function ensureArgonServiceWorker(targetUrl) {
+		if (typeof window.ensureArgonWorkerForTarget === "function") {
+			return window.ensureArgonWorkerForTarget(targetUrl);
+		}
 		if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
 		argonServiceWorkerPromise = (async () => {
 			if (!("serviceWorker" in navigator)) return false;
-			const scriptUrl =
-				"/argon_service_worker.js?proxy_real_protocol=" +
-				encodeURIComponent(location.protocol.replace(":", "")) +
-				"&proxy_real_host=" +
-				encodeURIComponent(location.host);
-
 			try {
-				const registration = await navigator.serviceWorker.register(scriptUrl, {
-					scope: "/ag/",
-					updateViaCache: "none",
-				});
-				if (!registration.active && (registration.installing || registration.waiting)) {
-					const worker = registration.installing || registration.waiting;
-					await new Promise((resolve) => {
-						const done = () => resolve();
-						const timer = setTimeout(done, 4000);
-						worker.addEventListener("statechange", () => {
-							if (worker.state === "activated" || worker.state === "redundant") {
-								clearTimeout(timer);
-								done();
-							}
-						});
-					});
-				}
+				const registrations = await navigator.serviceWorker.getRegistrations();
+				await Promise.all(registrations.map((registration) => {
+					const worker = registration.active || registration.waiting || registration.installing;
+					return worker?.scriptURL.includes("/argon_service_worker.js")
+						? registration.unregister()
+						: Promise.resolve(false);
+				}));
 				return true;
 			} catch {
 				return false;
@@ -545,7 +536,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	async function agEncode(url) {
-		await ensureArgonServiceWorker();
+		await ensureArgonServiceWorker(url);
 		const encodedUrl = encodeArgonRoute(url);
 		logHistory(url);
 		safeStore("url", encodedUrl);
@@ -617,6 +608,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			host === "tlk.io" ||
 			host.endsWith(".tlk.io")
 		);
+	}
+
+	function shouldForceArgonForUrl(inputUrl) {
+		const rules = window.NebuloProxyHostRules;
+		return Boolean(rules?.shouldForceArgonForUrl?.(inputUrl));
 	}
 
 	function shouldAvoidScramjetForUrl(inputUrl) {
@@ -716,14 +712,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (isAlreadyProxied || isArgonProxied) return raw;
 
 	const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-	const forced = (!overrideProxy && (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(raw)) ? "sj" : null;
-	const isForcedSj = forced === "sj";
-	let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || "uv";
-	if (forced) proxy = forced;
-	if (proxy === "sj" && shouldAvoidScramjetForUrl(raw)) proxy = "uv";
+	const proxy = shouldForceArgonForUrl(raw) ? "ag" : (savedProxy || "ag");
 
 	if (proxy === "ag") {
-		await ensureArgonServiceWorker();
+		await ensureArgonServiceWorker(raw);
 		return encodeArgonRoute(raw);
 	}
 		switch (proxy) {
@@ -733,7 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				try {
 					return scramjet.encodeUrl(raw);
 				} catch {
-					return isForcedSj ? encodeScramjetRoute(raw) : (__uv$config.prefix + __uv$config.encodeUrl(raw));
+					return encodeScramjetRoute(raw);
 				}
 			case "ec":
 				return __eclipse$config.prefix + __eclipse$config.codec.encode(raw);
@@ -778,8 +770,8 @@ if (form && input) {
 
 		// --- Existing encoding logic ---
 		const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-		const forced = (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(url) ? "sj" : null;
-		const proxy = forced || savedProxy || "uv";
+		// Only YouTube has a host-level override; all other sites use the saved choice.
+		const proxy = shouldForceArgonForUrl(url) ? "ag" : (savedProxy || "ag");
 		switch (proxy) {
 			case "uv":
 				await uvEncode(url);

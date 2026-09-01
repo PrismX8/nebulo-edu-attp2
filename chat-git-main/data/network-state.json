@@ -17,6 +17,46 @@
       "reason": "Iced T being a bitch"
     }
   },
-  "roomEffects": {},
-  "slowmodeMs": 5000
+  "roomEffects": {
+    "qfzfokaw": {
+      "room": "qfzfokaw",
+      "effectId": "spiral",
+      "triggeredByUserId": "d11777bc-f056-444b-bef5-31235bbfe57c",
+      "triggeredByName": "prismx",
+      "triggeredByUsername": "prismx",
+      "price": 200,
+      "activatedAt": 1782363303022,
+      "durationMs": 14000,
+      "expiresAt": 1782363317022
+    }
+  },
+  "roomSettings": {},
+  "roomSlowmodes": {},
+  "pendingAlerts": {
+    "97f2ea76-df4d-4f6e-9b78-c1bf1f6c439f": [
+      {
+        "id": "234b8bb0-2c43-496c-9188-989f1f6c3043",
+        "type": "info",
+        "message": "Your ban appeal for \"platnium\" was approved by owner.",
+        "metadata": {},
+        "at": 1788043840482
+      },
+      {
+        "id": "b40d2eeb-3791-4ade-8bda-3da743a861b9",
+        "type": "ban",
+        "message": "You have been banned from \"platnium\" by moderation. Reason: Moderator action. Open a ticket to appeal: dsc.gg/nebulo",
+        "metadata": {},
+        "at": 1788043845984
+      },
+      {
+        "id": "8d559547-3b00-4345-a87a-2596fc4dbee3",
+        "type": "info",
+        "message": "Your ban appeal for \"platnium\" was approved by owner.",
+        "metadata": {},
+        "at": 1788043883158
+      }
+    ]
+  },
+  "slowmodeMs": 3000,
+  "lockdownActive": false
 }

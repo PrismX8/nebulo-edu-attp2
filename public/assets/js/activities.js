@@ -23,7 +23,7 @@ fetch('/assets/data/activities.json')
 
     // Setup search input
     searchInput.type = 'text';
-    searchInput.placeholder = 'Search games...';
+    searchInput.placeholder = 'Search GΛMΞS...';
     if (searchInput.parentNode !== appsContainer.parentNode) {
       appsContainer.parentNode.insertBefore(searchInput, appsContainer);
     }
@@ -76,7 +76,7 @@ let scramjetControllerPromise = null;
 let argonServiceWorkerPromise = null;
 
 function normalizeProxyChoice(value) {
-  return value === "argon" || value === "sj" ? "ag" : value;
+  return value === "argon" ? "ag" : value;
 }
 
 function encodeArgonRoute(inputUrl) {
@@ -92,7 +92,10 @@ function encodeArgonRoute(inputUrl) {
   }
 }
 
-async function ensureArgonServiceWorker() {
+async function ensureArgonServiceWorker(targetUrl) {
+  if (typeof window.ensureArgonWorkerForTarget === "function") {
+    return window.ensureArgonWorkerForTarget(targetUrl);
+  }
   if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
   argonServiceWorkerPromise = (async () => {
     if (!("serviceWorker" in navigator)) return false;
@@ -196,6 +199,11 @@ function shouldForceScramjetForUrl(inputUrl) {
   );
 }
 
+function shouldForceArgonForUrl(inputUrl) {
+  const rules = window.NebuloProxyHostRules;
+  return Boolean(rules?.shouldForceArgonForUrl?.(inputUrl));
+}
+
 function shouldAvoidScramjetForUrl(inputUrl) {
   const rules = window.NebuloProxyHostRules;
   if (rules && typeof rules.shouldAvoidScramjetForUrl === "function") {
@@ -291,22 +299,17 @@ async function encodeWithSelectedProxy(absoluteUrl, overrideProxy) {
   if (isAlreadyProxied) return raw;
 
   const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-  const forced = (!overrideProxy && (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(raw)) ? "sj" : null;
-  const isForcedSj = forced === "sj";
-  let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || "uv";
-  if (forced) proxy = forced;
-  if (proxy === "sj" && shouldAvoidScramjetForUrl(raw)) proxy = "uv";
+  const proxy = shouldForceArgonForUrl(absoluteUrl) ? "ag" : (savedProxy || "ag");
 
   if (proxy === "ag") {
-    await ensureArgonServiceWorker();
+    await ensureArgonServiceWorker(raw);
     return encodeArgonRoute(raw);
   }
 
   if (proxy === "sj") {
-    const scram = await ensureScramjetController();
-    if (scram && typeof scram.encodeUrl === "function") return scram.encodeUrl(raw);
-    if (isForcedSj) return encodeScramjetRoute(raw);
-    return encodeViaUv(raw);
+      const scram = await ensureScramjetController();
+      if (scram && typeof scram.encodeUrl === "function") return scram.encodeUrl(raw);
+      return encodeScramjetRoute(raw);
   }
 
   if (proxy === "ec") {

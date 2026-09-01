@@ -1,0 +1,47 @@
+{
+  "customTags": [],
+  "overrides": {
+    "tag_builder": {
+      "id": "tag_builder",
+      "name": "Coin Waster",
+      "price": 1800,
+      "description": "A practical tag for people who waste their time",
+      "color": "#fff700",
+      "effect": "shimmer",
+      "updatedAt": "2026-08-26T15:43:23.148Z"
+    },
+    "tag_night_shift": {
+      "id": "tag_night_shift",
+      "name": "Night Shift",
+      "price": 1200,
+      "description": "For people who are around after hours.",
+      "color": "#818cf8",
+      "effect": "shimmer",
+      "updatedAt": "2026-08-26T15:43:53.778Z"
+    },
+    "tag_honor": {
+      "id": "tag_honor",
+      "name": "Tag of Honor",
+      "price": 2400,
+      "description": "A premium gold honor badge.",
+      "color": "#fbbf24",
+      "effect": "prism",
+      "updatedAt": "2026-08-26T15:44:02.044Z"
+    },
+    "tag_original": {
+      "id": "tag_original",
+      "name": "🤡",
+      "price": 3200,
+      "description": ".",
+      "color": "#fa0000",
+      "effect": "prism",
+      "updatedAt": "2026-08-26T15:45:00.312Z"
+    }
+  },
+  "hiddenTagIds": [
+    "tag_lowkey",
+    "tag_tester",
+    "tag_supporter",
+    "tag_contributor"
+  ]
+}

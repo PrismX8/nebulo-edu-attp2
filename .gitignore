@@ -1,1 +1,17 @@
 node_modules
+.env.local
+
+# Environment secrets
+.env
+
+# Logs
+*.log
+.codex-*.log
+.codex-logs/
+.codex-runtime/
+
+# Temporary Chrome data
+.tmp-chrome-argon/
+
+# Cached/generated game files
+game-cache/

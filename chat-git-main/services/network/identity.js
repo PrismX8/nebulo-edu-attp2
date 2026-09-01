@@ -8,7 +8,9 @@ const cache = {
   state: { byToken: {} },
   byToken: new Map(),
   tokensByUserId: new Map(),
-  byUsername: new Map()
+  byUsername: new Map(),
+  dirty: false,
+  retryTimer: null
 };
 
 function ensureFile() {
@@ -18,9 +20,23 @@ function ensureFile() {
   }
 }
 
+function pruneDuplicateIdentities(byToken = {}) {
+  const result = {};
+  for (const [token, profile] of Object.entries(byToken || {})) {
+    const cleanToken = String(token || "").trim();
+    if (!cleanToken || !profile || typeof profile !== "object") continue;
+    // A person can receive a new TLK participant token after reconnecting.
+    // Historical messages still reference the older tokens, so keep every
+    // token binding instead of collapsing an account to its newest token.
+    result[cleanToken] = profile;
+  }
+
+  return result;
+}
+
 function normalizeState(input = {}) {
   return {
-    byToken: input?.byToken && typeof input.byToken === "object" ? input.byToken : {}
+    byToken: pruneDuplicateIdentities(input?.byToken && typeof input?.byToken === "object" ? input.byToken : {})
   };
 }
 
@@ -40,7 +56,12 @@ function rebuildIndexes(state) {
       list.push(cleanToken);
       cache.tokensByUserId.set(userId, list);
     }
-    if (username) cache.byUsername.set(username, { token: cleanToken, profile });
+    if (username) {
+      const existing = cache.byUsername.get(username);
+      if (!existing || Number(profile?.updatedAt || 0) >= Number(existing.profile?.updatedAt || 0)) {
+        cache.byUsername.set(username, { token: cleanToken, profile });
+      }
+    }
   }
 }
 
@@ -52,29 +73,77 @@ function updateCache(state, mtimeMs = cache.mtimeMs) {
 }
 
 function readState(force = false) {
-  ensureFile();
+  // A pending in-memory write is newer than the disk copy. Do not let a
+  // transient OneDrive/antivirus lock replace it with stale or empty data.
+  if (cache.dirty) return cache.state;
   try {
+    ensureFile();
     const stats = fs.statSync(FILE);
     if (!force && cache.mtimeMs === stats.mtimeMs) {
       return cache.state;
     }
     const raw = fs.readFileSync(FILE, "utf8");
     const parsed = JSON.parse(raw || "{}");
-    return updateCache(parsed, stats.mtimeMs);
+    const normalized = normalizeState(parsed);
+    if (JSON.stringify(parsed || {}) !== JSON.stringify(normalized)) {
+      writeState(normalized);
+      return cache.state;
+    }
+    return updateCache(normalized, stats.mtimeMs);
   } catch (_err) {
-    return updateCache({ byToken: {} }, -1);
+    // Identity decoration is important to message ownership, but a temporary
+    // file lock must never make joining a room fail or erase the live cache.
+    return cache.state;
   }
 }
 
-function writeState(state) {
+function persistState(nextState) {
   ensureFile();
-  const nextState = normalizeState(state);
-  fs.writeFileSync(FILE, JSON.stringify(nextState, null, 2), "utf8");
+  const payload = JSON.stringify(nextState, null, 2);
+  const temporaryFile = `${FILE}.${process.pid}.tmp`;
   try {
+    fs.writeFileSync(temporaryFile, payload, "utf8");
+    try {
+      fs.renameSync(temporaryFile, FILE);
+    } catch (_renameError) {
+      // Windows can briefly hold the destination open. A direct write often
+      // still succeeds and is preferable to dropping the updated identity.
+      fs.writeFileSync(FILE, payload, "utf8");
+      try { fs.unlinkSync(temporaryFile); } catch {}
+    }
     const stats = fs.statSync(FILE);
     updateCache(nextState, stats.mtimeMs);
-  } catch (_err) {
-    updateCache(nextState, Date.now());
+    cache.dirty = false;
+  } catch (error) {
+    try { fs.unlinkSync(temporaryFile); } catch {}
+    throw error;
+  }
+}
+
+function schedulePersistRetry() {
+  if (cache.retryTimer) return;
+  cache.retryTimer = setTimeout(() => {
+    cache.retryTimer = null;
+    if (!cache.dirty) return;
+    try {
+      persistState(cache.state);
+    } catch {
+      schedulePersistRetry();
+    }
+  }, 750);
+  cache.retryTimer.unref?.();
+}
+
+function writeState(state) {
+  const nextState = normalizeState(state);
+  updateCache(nextState, Date.now());
+  cache.dirty = true;
+  try {
+    persistState(nextState);
+  } catch {
+    // Keep serving the coherent in-memory indexes and retry persistence in the
+    // background. Callers should not turn a local file lock into an API 502.
+    schedulePersistRetry();
   }
 }
 
@@ -88,7 +157,13 @@ function bindToken(token, profile) {
     name: profile.name || null,
     avatar: profile.avatar || null,
     role: profile.role || null,
+    is_owner: !!(profile.is_owner),
+    is_premium: !!(profile.is_premium),
+    is_booster: !!(profile.is_booster),
     equippedEffect: profile.equippedEffect || "none",
+    equippedAvatarEffect: profile.equippedAvatarEffect || "none",
+    equippedTag: profile.equippedTag || "none",
+    equippedProfileEffect: profile.equippedProfileEffect || "none",
     updatedAt: Date.now()
   };
   writeState(state);

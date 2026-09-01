@@ -9,11 +9,15 @@
   let argonSwInitPromise = null;
 
   function normalizeProxyChoice(value) {
-    return value === "argon" || value === "sj" ? "ag" : value;
+    return value === "argon" ? "ag" : value;
   }
 
   function buildSearchEngineUrl(query) {
     const encodedQuery = encodeURIComponent(String(query || "").trim());
+    const proxy = normalizeProxyChoice(localStorage.getItem("proxy")) || "ag";
+    if (proxy === "ag") {
+      return `https://duckduckgo.com/?q=${encodedQuery}`;
+    }
     const engine = (localStorage.getItem("searchEngine") || "duckduckgo").toLowerCase();
     switch (engine) {
       case "google":
@@ -37,7 +41,6 @@
   function encodeArgonRoute(inputUrl) {
     const normalized = normalizeUrlLike(inputUrl);
     if (!normalized || normalized.startsWith("/")) return normalized;
-
     try {
       const u = new URL(normalized);
       if (u.protocol !== "http:" && u.protocol !== "https:") return normalized;
@@ -48,33 +51,20 @@
   }
 
   async function ensureArgonServiceWorker() {
+    if (typeof window.ensureArgonWorkerForTarget === "function") {
+      return window.ensureArgonWorkerForTarget(location.href);
+    }
     if (argonSwInitPromise) return argonSwInitPromise;
     argonSwInitPromise = (async () => {
       if (!("serviceWorker" in navigator)) return false;
-      const scriptUrl =
-        "/argon_service_worker.js?proxy_real_protocol=" +
-        encodeURIComponent(location.protocol.replace(":", "")) +
-        "&proxy_real_host=" +
-        encodeURIComponent(location.host);
-
       try {
-        const registration = await navigator.serviceWorker.register(scriptUrl, {
-          scope: "/ag/",
-          updateViaCache: "none",
-        });
-        if (!registration.active && (registration.installing || registration.waiting)) {
-          const worker = registration.installing || registration.waiting;
-          await new Promise((resolve) => {
-            const done = () => resolve();
-            const timer = setTimeout(done, 4000);
-            worker.addEventListener("statechange", () => {
-              if (worker.state === "activated" || worker.state === "redundant") {
-                clearTimeout(timer);
-                done();
-              }
-            });
-          });
-        }
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => {
+          const worker = registration.active || registration.waiting || registration.installing;
+          return worker?.scriptURL.includes("/argon_service_worker.js")
+            ? registration.unregister()
+            : Promise.resolve(false);
+        }));
         return true;
       } catch {
         return false;
@@ -171,6 +161,11 @@
       host === "tlk.io" ||
       host.endsWith(".tlk.io")
     );
+  }
+
+  function shouldForceArgonForUrl(inputUrl) {
+    const rules = window.NebuloProxyHostRules;
+    return Boolean(rules?.shouldForceArgonForUrl?.(inputUrl));
   }
 
   // Sites that break under Scramjet (typically SPA routers treating /scramjet/* as a real route).
@@ -320,10 +315,7 @@
     await ensureProxyRuntimeReady();
 
     const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-    const forced = (!overrideProxy && (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(normalized)) ? "sj" : null;
-    let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || "uv";
-    if (forced) proxy = forced;
-    if (proxy === "sj" && shouldAvoidScramjetForUrl(normalized)) proxy = "uv";
+    const proxy = shouldForceArgonForUrl(normalized) ? "ag" : (savedProxy || "ag");
 
     if (proxy === "ag") {
       await ensureArgonServiceWorker();
@@ -333,9 +325,7 @@
     if (proxy === "sj") {
       const scram = await ensureScramjetController();
       if (scram && typeof scram.encodeUrl === "function") return scram.encodeUrl(normalized);
-      if (forced === "sj") return encodeScramjetRoute(normalized);
-      const uvFallback = encodeViaUv(normalized);
-      return uvFallback || normalized;
+      return encodeScramjetRoute(normalized);
     }
 
     if (proxy === "ec") {

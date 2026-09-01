@@ -6,7 +6,10 @@ const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 
-// Load environment variables
+// Load environment variables. The main Nebulo wrapper uses the repo-root
+// .env.local, so load it here too when running chat-git-main directly.
+dotenv.config({ path: path.resolve(__dirname, '..', '.env.local'), override: false });
+dotenv.config({ path: path.resolve(__dirname, '.env'), override: false });
 dotenv.config();
 
 // Initialize Express app

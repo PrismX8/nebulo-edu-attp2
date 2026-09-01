@@ -78,13 +78,12 @@ let scramjetControllerPromise = null;
 let argonServiceWorkerPromise = null;
 
 function normalizeProxyChoice(value) {
-  return value === "argon" || value === "sj" ? "ag" : value;
+  return value === "argon" ? "ag" : value;
 }
 
 function encodeArgonRoute(inputUrl) {
   const raw = (typeof inputUrl === "string" ? inputUrl : String(inputUrl || "")).trim();
   if (!raw) return raw;
-
   try {
     const u = new URL(raw);
     if (u.protocol !== "http:" && u.protocol !== "https:") return raw;
@@ -94,34 +93,21 @@ function encodeArgonRoute(inputUrl) {
   }
 }
 
-async function ensureArgonServiceWorker() {
+async function ensureArgonServiceWorker(targetUrl) {
+  if (typeof window.ensureArgonWorkerForTarget === "function") {
+    return window.ensureArgonWorkerForTarget(targetUrl);
+  }
   if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
   argonServiceWorkerPromise = (async () => {
     if (!("serviceWorker" in navigator)) return false;
-    const scriptUrl =
-      "/argon_service_worker.js?proxy_real_protocol=" +
-      encodeURIComponent(location.protocol.replace(":", "")) +
-      "&proxy_real_host=" +
-      encodeURIComponent(location.host);
-
     try {
-      const registration = await navigator.serviceWorker.register(scriptUrl, {
-        scope: "/ag/",
-        updateViaCache: "none",
-      });
-      if (!registration.active && (registration.installing || registration.waiting)) {
-        const worker = registration.installing || registration.waiting;
-        await new Promise((resolve) => {
-          const done = () => resolve();
-          const timer = setTimeout(done, 4000);
-          worker.addEventListener("statechange", () => {
-            if (worker.state === "activated" || worker.state === "redundant") {
-              clearTimeout(timer);
-              done();
-            }
-          });
-        });
-      }
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => {
+        const worker = registration.active || registration.waiting || registration.installing;
+        return worker?.scriptURL.includes("/argon_service_worker.js")
+          ? registration.unregister()
+          : Promise.resolve(false);
+      }));
       return true;
     } catch {
       return false;
@@ -156,7 +142,7 @@ function encodeViaUv(url) {
   if (typeof __uv$config !== "undefined" && __uv$config?.encodeUrl) {
     return __uv$config.prefix + __uv$config.encodeUrl(url);
   }
-  return url;
+  return null;
 }
 
 function encodeViaEc(url) {
@@ -198,6 +184,11 @@ function shouldForceScramjetForUrl(inputUrl) {
     host === "tlk.io" ||
     host.endsWith(".tlk.io")
   );
+}
+
+function shouldForceArgonForUrl(inputUrl) {
+  const rules = window.NebuloProxyHostRules;
+  return Boolean(rules?.shouldForceArgonForUrl?.(inputUrl));
 }
 
 function shouldAvoidScramjetForUrl(inputUrl) {
@@ -322,41 +313,46 @@ async function encodeWithSelectedProxy(absoluteUrl, overrideProxy) {
   if (isAlreadyProxied) return raw;
 
   const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-  const forced = (!overrideProxy && (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(raw)) ? "sj" : null;
-  const isForcedSj = forced === "sj";
-  let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || "uv";
-  if (forced) proxy = forced;
-  if (proxy === "sj" && shouldAvoidScramjetForUrl(raw)) proxy = "uv";
+  const proxy = shouldForceArgonForUrl(absoluteUrl) ? "ag" : (savedProxy || "ag");
 
   if (proxy === "ag") {
-    await ensureArgonServiceWorker();
+    await ensureArgonServiceWorker(raw);
     return encodeArgonRoute(raw);
   }
 
   if (proxy === "sj") {
     const scram = await ensureScramjetController();
     if (scram && typeof scram.encodeUrl === "function") return scram.encodeUrl(raw);
-    // If scramjet is forced for this domain, do NOT fall back to UV.
-    if (isForcedSj) return encodeScramjetRoute(raw);
-    return encodeViaUv(raw);
+    return encodeScramjetRoute(raw);
   }
 
   if (proxy === "ec") {
     const encoded = encodeViaEc(raw);
     if (encoded) return encoded;
-    return encodeViaUv(raw);
+    throw new Error("Eclipse is selected but its encoder is unavailable.");
   }
 
-  // default uv
-  return encodeViaUv(raw);
+  if (proxy === "uv") {
+    const encoded = encodeViaUv(raw);
+    if (encoded) return encoded;
+    throw new Error("Ultraviolet is selected but its encoder is unavailable.");
+  }
+
+  throw new Error(`Unsupported proxy selection: ${proxy}`);
 }
 
 async function run(url) {
   const raw = (typeof url === "string" ? url : String(url || "")).trim();
   if (!raw) return;
 
-  const encodedUrl = await encodeWithSelectedProxy(raw);
-  localStorage.setItem("url", encodedUrl);
-  sessionStorage.setItem("Url", encodedUrl);
-  window.location.href = encodedUrl;
+  try {
+    const encodedUrl = await encodeWithSelectedProxy(raw);
+    localStorage.setItem("url", encodedUrl);
+    sessionStorage.setItem("Url", encodedUrl);
+    window.location.href = encodedUrl;
+  } catch (error) {
+    console.error("Could not launch app with the selected proxy:", error);
+    const selected = normalizeProxyChoice(localStorage.getItem("proxy")) || "ag";
+    alert(`Could not launch this app through the selected PRØXY (${selected.toUpperCase()}).`);
+  }
 }

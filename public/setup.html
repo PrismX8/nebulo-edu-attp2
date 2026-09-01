@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Choose how Nebulo starts.">
+  <title>Nebulo Setup</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --black: #020409;
+      --bg: #05070b;
+      --graphite: #080d14;
+      --panel: #0b1018;
+      --panel-2: #0d131d;
+      --text: #f7f9fc;
+      --white: #ffffff;
+      --muted: #93a4b8;
+      --soft: #b7c3d2;
+      --line: rgba(147, 164, 184, .18);
+      --line-strong: rgba(63, 140, 255, .28);
+      --blue: #3f8cff;
+      --blue-2: #3498db;
+      --shadow: rgba(0, 0, 0, .54);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background: var(--black);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    button { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: clamp(18px, 4vw, 42px) 16px;
+      isolation: isolate;
+    }
+
+    .page::before {
+      content: "NEBULO";
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 0;
+      width: 100vw;
+      transform: translate(-50%, -57%);
+      color: rgba(63, 140, 255, .115);
+      font-size: clamp(84px, 22vw, 280px);
+      font-weight: 950;
+      line-height: .78;
+      letter-spacing: -.11em;
+      text-align: center;
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    @media (max-width: 920px) {
+      .page::before {
+        color: rgba(63, 140, 255, .15);
+        font-size: clamp(98px, 25vw, 190px);
+        letter-spacing: -.12em;
+        transform: translate(-50%, -61%);
+      }
+    }
+
+    .setup-card {
+      position: relative;
+      z-index: 1;
+      width: min(680px, 100%);
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 150px),
+        var(--graphite);
+      box-shadow: 0 28px 80px var(--shadow), inset 0 1px rgba(255,255,255,.05);
+      overflow: hidden;
+      isolation: isolate;
+      animation: panel-in 360ms cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .terminal-bar {
+      position: relative;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 4, 9, .62);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .terminal-bar::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(63, 140, 255, .72), transparent);
+    }
+
+    .terminal-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .terminal-brand::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 16px rgba(63, 140, 255, .55);
+    }
+
+    .terminal-code {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .terminal-code::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 14px currentColor;
+      animation: live-pulse 1.7s ease-out infinite;
+    }
+
+    .content {
+      padding: clamp(24px, 5vw, 38px);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.3;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 560px;
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -.045em;
+      text-wrap: balance;
+    }
+
+    .subtext {
+      max-width: 560px;
+      margin: 13px 0 26px;
+      color: var(--soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mode {
+      --accent: var(--blue);
+      --accent-dark: rgba(63, 140, 255, .1);
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.035), transparent),
+        var(--panel);
+      box-shadow: inset 3px 0 0 rgba(63, 140, 255, .68);
+      transition: border-color 150ms ease, background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+      overflow: hidden;
+    }
+
+    .mode::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: linear-gradient(90deg, var(--accent-dark), transparent 48%);
+      opacity: .9;
+    }
+
+    .mode > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .mode:hover {
+      transform: translateY(-1px);
+      border-color: rgba(63, 140, 255, .54);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.045), transparent),
+        #0f1723;
+      box-shadow: inset 3px 0 0 var(--blue), 0 14px 28px rgba(0,0,0,.18);
+    }
+
+    .mode[data-accent="chat"] {
+      --accent: var(--blue);
+      --accent-dark: rgba(63,140,255,.1);
+      border-color: rgba(63, 140, 255, .24);
+    }
+
+    .mode[data-accent="chat"]:hover {
+      border-color: rgba(63, 140, 255, .62);
+    }
+
+    .mode[data-accent="full"] {
+      --accent: var(--blue);
+      --accent-dark: rgba(52,152,219,.09);
+      border-color: var(--line);
+    }
+
+    .mode[data-accent="games"] {
+      --accent: var(--blue);
+      --accent-dark: rgba(63,140,255,.07);
+      border-color: var(--line);
+    }
+
+    .mode-kicker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 7px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .mode-kicker::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 12px rgba(63, 140, 255, .45);
+    }
+
+    .mode-name {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(18px, 3vw, 24px);
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: -.03em;
+    }
+
+    .mode-description {
+      margin: 8px 0 0;
+      color: var(--soft);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .status-list li {
+      min-height: 24px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 9px;
+      border: 1px solid rgba(147, 164, 184, .18);
+      border-radius: 4px;
+      color: var(--muted);
+      background: rgba(255,255,255,.025);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    form { margin: 0; }
+
+    .select {
+      position: relative;
+      min-width: 160px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 15px;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      background: rgba(63, 140, 255, .92);
+      color: #020409;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 10px 22px rgba(63, 140, 255, .16);
+      transition: transform 130ms ease, filter 130ms ease, background 130ms ease, color 130ms ease, box-shadow 130ms ease;
+    }
+
+    .mode[data-accent="games"] .select {
+      border-color: var(--blue);
+      background: rgba(63, 140, 255, .88);
+      color: #020409;
+    }
+
+    .mode[data-accent="chat"] .select {
+      border-color: var(--blue);
+      background: rgba(63, 140, 255, .96);
+      color: #05070b;
+    }
+
+    .select:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 14px 28px rgba(63, 140, 255, .22);
+    }
+    .select:active { transform: translateY(1px); }
+    .select:disabled { cursor: wait; filter: grayscale(.55); opacity: .75; }
+    .select:focus-visible { outline: 3px solid rgba(63, 140, 255, .5); outline-offset: 3px; }
+
+    .arrow { font: 900 14px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .footer-note {
+      margin: 18px 0 0;
+      color: #75859a;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.5;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    @keyframes live-pulse {
+      0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent), 0 0 14px currentColor; }
+      70% { box-shadow: 0 0 0 8px transparent, 0 0 14px currentColor; }
+      100% { box-shadow: 0 0 0 0 transparent, 0 0 14px currentColor; }
+    }
+
+    @keyframes panel-in {
+      from { opacity: 0; transform: translateY(10px) scale(.992); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 680px) {
+      .page::before {
+        color: rgba(63, 140, 255, .17);
+        font-size: clamp(104px, 32vw, 142px);
+        letter-spacing: -.13em;
+        transform: translate(-50%, -68%);
+      }
+      .setup-card { box-shadow: 0 22px 60px var(--shadow); }
+      .terminal-bar { align-items: flex-start; flex-direction: column; padding: 13px 16px; }
+      .mode { grid-template-columns: 1fr; padding: 16px; }
+      .select { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="ac558ad5-a729-416f-846e-d59a418f77ac"></script>
+</head>
+<body>
+  <main class="page">
+    <section class="setup-card" aria-labelledby="setup-title">
+      <div class="terminal-bar">
+        <span class="terminal-brand">NEBULO / SETUP</span>
+        <span class="terminal-code" id="boot-status">READY</span>
+      </div>
+      <div class="content">
+        <p class="eyebrow">Pick your setup</p>
+        <h1 id="setup-title">Choose how Nebulo starts.</h1>
+        <p class="subtext">Select the full workspace or open the local library only.</p>
+
+        <div class="choices" aria-label="Setup options">
+          <article class="mode" data-accent="chat">
+            <div>
+              <p class="mode-kicker">Community</p>
+              <h2 class="mode-name">CHAT</h2>
+              <p class="mode-description">Open Nebulo chat directly without selecting a setup mode.</p>
+            </div>
+            <a class="select" href="/kchat?from=setup" aria-label="Open Nebulo chat">
+              <span>Open chat</span><span class="arrow" aria-hidden="true">-&gt;</span>
+            </a>
+          </article>
+
+          <article class="mode" data-accent="full">
+            <div>
+              <p class="mode-kicker">Complete workspace</p>
+              <h2 class="mode-name">PRØXY + GΛMΞS</h2>
+              <p class="mode-description">The normal Nebulo session with browser tools and the local library.</p>
+              <ul class="status-list" aria-hidden="true">
+                <li>Workspace on</li>
+                <li>Library on</li>
+              </ul>
+            </div>
+            <form action="/setup/mode" method="post" data-mode="full">
+              <input type="hidden" name="mode" value="full">
+              <button class="select" type="submit" aria-label="Select PRØXY plus GΛMΞS mode">
+                <span>Open setup</span><span class="arrow" aria-hidden="true">-&gt;</span>
+              </button>
+            </form>
+          </article>
+
+          <article class="mode" data-accent="games">
+            <div>
+              <p class="mode-kicker">Local library</p>
+              <h2 class="mode-name">GΛMΞS</h2>
+              <p class="mode-description">A cleaner session for the local library without the browser workspace.</p>
+              <ul class="status-list" aria-hidden="true">
+                <li>Library on</li>
+                <li>Workspace off</li>
+              </ul>
+            </div>
+            <form action="/setup/mode" method="post" data-mode="games">
+              <input type="hidden" name="mode" value="games">
+              <button class="select" type="submit" aria-label="Select GΛMΞS mode">
+                <span>Open library</span><span class="arrow" aria-hidden="true">-&gt;</span>
+              </button>
+            </form>
+          </article>
+        </div>
+
+        <p class="footer-note">This choice resets each time the root address is opened.</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const gamesForm = document.querySelector('form[data-mode="games"]');
+      const buttons = Array.from(document.querySelectorAll('.select'));
+      const status = document.getElementById('boot-status');
+      const clearOldRuntime = async () => {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+      };
+      gamesForm.addEventListener('submit', async (event) => {
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        status.textContent = 'PREPARING GΛMΞS';
+        buttons.forEach((button) => { button.disabled = true; });
+        try { await clearOldRuntime(); } catch (_) {}
+        gamesForm.submit();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -4,6 +4,49 @@ import { createChatUi } from './modules/chat-ui.js';
 (() => {
   injectAppStyles();
 
+  const showConsoleSafetyWarning = () => {
+    const warning = 'DO NOT TYPE IN HERE. DOING SO MIGHT GET YOU BANNED PERMANENTLY.';
+    const style = [
+      'color:#fff',
+      'background:#c40000',
+      'font-size:32px',
+      'font-weight:900',
+      'line-height:1.35',
+      'padding:14px 18px',
+      'border:4px solid #ff3b3b',
+      'border-radius:6px',
+      'text-shadow:0 2px 0 rgba(0,0,0,.35)'
+    ].join(';');
+    console.log(`%c${warning}`, style);
+  };
+
+  if (!window.__ubgConsoleSafetyWarningInstalled) {
+    window.__ubgConsoleSafetyWarningInstalled = true;
+    showConsoleSafetyWarning();
+    setInterval(showConsoleSafetyWarning, 15000);
+    window.addEventListener('focus', showConsoleSafetyWarning);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) showConsoleSafetyWarning();
+    });
+  }
+
+  let trustedUiActionUntil = 0;
+  const uiActionToken = `ui-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+  const markTrustedUiAction = (event) => {
+    if (event?.isTrusted === false) return;
+    trustedUiActionUntil = Date.now() + 120_000;
+  };
+  ['pointerdown', 'keydown', 'touchstart', 'submit'].forEach((eventName) => {
+    window.addEventListener(eventName, markTrustedUiAction, { capture: true, passive: true });
+  });
+
+  const addUiActionHeader = (headers, method) => {
+    const verb = String(method || 'GET').toUpperCase();
+    if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(verb)) return;
+    headers['x-ubg-ui-action'] = uiActionToken;
+    headers['x-ubg-ui-action-at'] = String(Date.now());
+  };
+
   /* ═══════════════════════════════════════════════════════════════
      EXTRA GOLDEN SYSTEM MESSAGE STYLES (injected directly)
   ═══════════════════════════════════════════════════════════════ */
@@ -90,7 +133,14 @@ import { createChatUi } from './modules/chat-ui.js';
     apiBase: '',
     apiBaseResolved: false,
     apiBasePromise: null,
-    user: null,
+    user: (() => {
+      try {
+        const saved = sessionStorage.getItem('user') || localStorage.getItem('user');
+        return saved ? JSON.parse(saved) : null;
+      } catch {
+        return null;
+      }
+    })(),
     channels: [],
     currentChannel: null,
     messages: [],
@@ -110,11 +160,13 @@ import { createChatUi } from './modules/chat-ui.js';
     messagesPromise: null,
     messagesRoomKey: '',
     messagesFetchMode: '',
+    lastMessagesRoomKey: '',
     presencePromise: null,
     alertsPromise: null,
     mentionTimeout: null,
     roomEffect: null,
     roomEffectTimer: null,
+    lockdownActive: false,
     lastFlashbangKey: '',
     flashbangCleanupTimer: null,
     routeNonce: 0,
@@ -137,20 +189,29 @@ import { createChatUi } from './modules/chat-ui.js';
     { cmd: '/banfromall', usage: '/banfromall <target> <reason>', desc: 'Global ban across all servers',     roles: ['owner'] },
     { cmd: '/unban',      usage: '/unban <target>',               desc: 'Unban a user',                      roles: ['admin', 'owner'] },
     { cmd: '/clearwarns', usage: '/clearwarns <target>',          desc: 'Reset warning count',               roles: ['admin', 'owner'] },
-    { cmd: '/slowmode',   usage: '/slowmode <seconds>',           desc: 'Set global chat slowmode',          roles: ['admin', 'owner'] },
+    { cmd: '/slowmode',   usage: '/slowmode <seconds>',           desc: 'Set current room slowmode',         roles: ['admin', 'owner'] },
+    { cmd: '/slowmode-room', usage: '/slowmode-room <seconds>',   desc: 'Set current room slowmode',         roles: ['admin', 'owner'] },
+    { cmd: '/slowmode-global', usage: '/slowmode-global <seconds>', desc: 'Set public-room global slowmode', roles: ['admin', 'owner'] },
     { cmd: '/global',     usage: '/global <effectId>',           desc: 'Activate a global chat effect',      roles: ['owner'] },
     { cmd: '/clearchat',  usage: '/clearchat [reason]',           desc: 'Clear room messages',               roles: ['owner'] }
   ];
 
   const fallbackEffects = [
     { id: 'none',       name: 'None',       price: 0,  description: 'No message effect.' },
-    { id: 'flashbang',  name: 'Flashbang',  price: 6,  description: 'A blinding full-screen flash slams into the room.' },
-    { id: 'scramble',   name: 'Scramble',   price: 8,  description: 'Glitchy jitter with broken neon shadows.' },
-    { id: 'embers',     name: 'Embers',     price: 9,  description: 'A hot orange glow with pulsing heat.' },
-    { id: 'frostbyte',  name: 'Frostbyte',  price: 10, description: 'Icy highlights and a pale blue shimmer.' },
-    { id: 'matrix',     name: 'Matrix',     price: 12, description: 'Green terminal glow with digital flicker.' },
-    { id: 'starlight',  name: 'Starlight',  price: 14, description: 'Soft cosmic shimmer with a brighter edge.' },
-    { id: 'duck',       name: 'Duck Quack', price: 5,  description: 'A loud duck quack plays on everyone\'s screen globally.' }
+    { id: 'flashbang',  name: 'Flashbang',  price: 150, description: 'Blasts the room with whiteout, blur, and a hard reset flash.' },
+    { id: 'scramble',   name: 'Scramble',   price: 150, description: 'Corrupts the room with scanlines, RGB tearing, and glitch shadows.' },
+    { id: 'embers',     name: 'Embers',     price: 150, description: 'Sends hot sparks upward with a molten orange message treatment.' },
+    { id: 'frostbyte',  name: 'Frostbyte',  price: 150, description: 'Coats the room in icy panes, sparkles, and cold glass highlights.' },
+    { id: 'matrix',     name: 'Matrix',     price: 150, description: 'Drops terminal rain, green scan sweeps, and monospace code bubbles.' },
+    { id: 'starlight',  name: 'Starlight',  price: 150, description: 'Adds star fields, slow aurora motion, and cosmic message glow.' },
+    { id: 'duck',       name: 'Duck Quack', price: 150, description: 'Floats goofy duck silhouettes and golden ripples through the room.', scope: 'room' },
+    { id: 'neon',       name: 'Neon Sign',  price: 150, description: 'Electric cyan/pink glow with a subtle flicker and moving light grid.', scope: 'message' },
+    { id: 'gold',       name: 'Gold Leaf',  price: 150, description: 'Polished gold plate with brushed texture and a sweeping shine.', scope: 'message' },
+    { id: 'bubblegum',  name: 'Bubblegum',  price: 150, description: 'Candy colors with floating bubble highlights and soft bounce.', scope: 'message' },
+    { id: 'shadow',     name: 'Shadow Ink', price: 150, description: 'Dark ink card with a breathing violet edge and heavier shadow.', scope: 'message' },
+    { id: 'rainbow',    name: 'Rainbow Wave', price: 150, description: 'Animated rainbow border that flows around a clean dark bubble.', scope: 'message' },
+    { id: 'plasma',     name: 'Plasma',     price: 150, description: 'Blue-purple plasma fields that drift and pulse inside the bubble.', scope: 'message' },
+    { id: 'public_message', name: 'Public Message', price: 150, description: 'Broadcast a styled public message to everyone on all screens.', scope: 'global' }
   ];
 
   /* ═══════════════════════════════════════════════════════════════
@@ -192,6 +253,13 @@ import { createChatUi } from './modules/chat-ui.js';
     normalizeEffectId(message?.equippedEffect || message?.sender?.equippedEffect || 'none');
 
   const deactivateRoomEffect = () => {
+    const roomSlug = String(
+      state.roomEffect?.room ||
+      state.currentChannel?.room ||
+      state.currentChannel?.slug ||
+      state.currentChannel?.name ||
+      'global'
+    ).trim().replace(/^#/, '');
     state.roomEffect = null;
     if (state.roomEffectTimer) {
       clearTimeout(state.roomEffectTimer);
@@ -200,7 +268,6 @@ import { createChatUi } from './modules/chat-ui.js';
     document.body.classList.remove('flashbang-active');
     document.body.style.removeProperty('--flashbang-duration');
 
-    const roomSlug = state.currentChannel?.slug || state.currentChannel?.name || 'global';
     api(`/api/chat-effects/rooms/${encodeURIComponent(roomSlug)}/deactivate`, { method: 'POST' })
       .catch(() => {});
 
@@ -295,6 +362,26 @@ import { createChatUi } from './modules/chat-ui.js';
 
     const previousEffectId = getActiveRoomEffectId();
     const normalizedId = normalizeEffectId(roomEffect?.effectId);
+    const now = Date.now();
+    const expiresAt = Number(roomEffect?.expiresAt || 0);
+    const activatedAt = Number(roomEffect?.activatedAt || 0);
+    const durationMs = Number(roomEffect?.durationMs || 0);
+    let remainingMs = 0;
+
+    if (expiresAt > now) {
+      remainingMs = expiresAt - now;
+    } else if (durationMs > 0 && activatedAt > 0) {
+      const endTime = activatedAt + durationMs;
+      if (endTime > now) remainingMs = endTime - now;
+    }
+
+    if (normalizedId !== 'none' && durationMs > 0 && remainingMs <= 0) {
+      state.roomEffect = null;
+      updateCoinDisplays();
+      renderRoomEffectStage();
+      return null;
+    }
+
     const nextFlashbangKey = normalizedId === 'flashbang'
       ? [
           normalizedId,
@@ -308,7 +395,7 @@ import { createChatUi } from './modules/chat-ui.js';
       : { ...roomEffect, effectId: normalizedId };
 
     if (normalizedId === 'flashbang' && nextFlashbangKey && nextFlashbangKey !== state.lastFlashbangKey) {
-      const duration = Math.max(15000, Number(roomEffect?.durationMs) || 15000);
+      const duration = Math.max(1000, remainingMs || durationMs || 15000);
       triggerFlashbang(duration, roomEffect?.triggeredByName || '');
       state.lastFlashbangKey = nextFlashbangKey;
     } else if (normalizedId !== 'none' && normalizedId !== previousEffectId) {
@@ -321,21 +408,6 @@ import { createChatUi } from './modules/chat-ui.js';
     renderRoomEffectStage();
 
     if (state.roomEffect && normalizedId !== 'flashbang') {
-      const now = Date.now();
-      const expiresAt = Number(state.roomEffect.expiresAt || 0);
-      const activatedAt = Number(state.roomEffect.activatedAt || 0);
-      const durationMs = Number(state.roomEffect.durationMs || 0);
-      let remainingMs = 0;
-
-      if (expiresAt > now) {
-        remainingMs = expiresAt - now;
-      } else if (durationMs > 0 && activatedAt > 0) {
-        const endTime = activatedAt + durationMs;
-        if (endTime > now) {
-          remainingMs = endTime - now;
-        }
-      }
-
       if (remainingMs > 0) {
         state.roomEffectTimer = window.setTimeout(() => {
           state.roomEffectTimer = null;
@@ -351,6 +423,17 @@ import { createChatUi } from './modules/chat-ui.js';
 
   const applyUserSnapshot = (user) => {
     state.user = user || null;
+    // Save to sessionStorage for reload recovery and localStorage for tab reopen
+    if (user) {
+      try {
+        const serialized = JSON.stringify(user);
+        sessionStorage.setItem('user', serialized);
+        localStorage.setItem('user', serialized);
+      } catch {}
+    } else {
+      sessionStorage.removeItem('user');
+      localStorage.removeItem('user');
+    }
     state.avatarVersion = Date.now();
     updateCoinDisplays();
     refreshSidebarAvatar();
@@ -363,9 +446,18 @@ import { createChatUi } from './modules/chat-ui.js';
     img.src = withAvatarVersion(state.user.avatar, state.avatarVersion);
   };
 
+  const formatCoins = (value) => {
+    const coins = Math.max(0, Math.round(Number(value || 0) * 100) / 100);
+    return Number.isInteger(coins) ? String(coins) : coins.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  };
+
+  const formatCoinLabel = (value) => {
+    const coins = Number(formatCoins(value));
+    return `${formatCoins(value)} coin${coins === 1 ? '' : 's'}`;
+  };
+
   const updateCoinDisplays = () => {
-    const coins = Math.max(0, Number(state.user?.coins || 0));
-    const label = `${coins} coin${coins === 1 ? '' : 's'}`;
+    const label = formatCoinLabel(state.user?.coins);
     const sidebarCoins = document.getElementById('sidebar-coins');
     if (sidebarCoins) sidebarCoins.textContent = label;
     const settingsCoins = document.getElementById('settings-coins-balance');
@@ -486,11 +578,14 @@ import { createChatUi } from './modules/chat-ui.js';
   };
 
   const api = async (url, options = {}) => {
-    const requestUrl = /^https?:\/\//i.test(String(url || ''))
-      ? String(url)
-      : `${await resolveApiBase()}${String(url || '')}`;
+    const normalizedUrl = String(url || '').replace(/^\/api\/chat-effects(?=\/|$)/, '/api/tlk/chat-effects');
+    const requestUrl = /^https?:\/\//i.test(normalizedUrl)
+      ? normalizedUrl
+      : `${await resolveApiBase()}${normalizedUrl}`;
     const headers = Object.assign({}, options.headers || {});
-    if (state.token) headers['x-auth-token'] = state.token;
+    // Use token from state, but fallback to localStorage if needed
+    const token = state.token || localStorage.getItem('token');
+    if (token) headers['x-auth-token'] = token;
 
     if (/\/api\/chat-effects\//.test(String(url || ''))) {
       let clientId = state.clientId || localStorage.getItem('tlkClientId');
@@ -507,6 +602,7 @@ import { createChatUi } from './modules/chat-ui.js';
 
     let method = options.method || 'GET';
     if (/\/api\/chat-effects\/rooms\/[^/]+\/activate$/.test(String(url || ''))) method = 'POST';
+    addUiActionHeader(headers, method);
 
     const res = await fetch(requestUrl, {
       method,
@@ -519,7 +615,17 @@ import { createChatUi } from './modules/chat-ui.js';
     });
 
     if (!res.ok) {
-      const err = new Error(await parseError(res, `Request failed (${res.status})`));
+      const message = await parseError(res, `Request failed (${res.status})`);
+      if (res.status === 401 && /token is not valid|authorization denied|no token/i.test(message)) {
+        setToken('');
+        applyUserSnapshot(null);
+        sessionStorage.removeItem('user');
+        localStorage.removeItem('user');
+        if (!isPublicRoute(getHashPath())) {
+          navigate('/login');
+        }
+      }
+      const err = new Error(message);
       err.status = res.status;
       throw err;
     }
@@ -550,6 +656,7 @@ import { createChatUi } from './modules/chat-ui.js';
     loadUser,
     loadChannels,
     getCurrentChannel,
+    getPreferredLaunchChannelId,
     renderLogin,
     renderRegister,
     layoutShell,
@@ -580,6 +687,11 @@ import { createChatUi } from './modules/chat-ui.js';
     normalizeEffectId,
     renderRoomEffectStage
   });
+
+  const navigateToLaunchChannel = async () => {
+    const defaultChannelId = await getPreferredLaunchChannelId();
+    navigate(`/channels/${encodeURIComponent(defaultChannelId || '')}`);
+  };
 
   /* ═══════════════════════════════════════════════════════════════
      Click‑to‑mention & avatar error fallback
@@ -663,6 +775,12 @@ import { createChatUi } from './modules/chat-ui.js';
               <div class="field">
                 <label>Username</label>
                 <input name="username" value="${esc(state.user?.username || '')}" class="inp" readonly />
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">Your sign-in and friend handle. It stays stable so existing rooms and friendships keep working.</div>
+              </div>
+              <div class="field">
+                <label>Display name</label>
+                <input name="displayName" value="${esc(state.user?.name || state.user?.username || '')}" class="inp" required minlength="2" maxlength="32" autocomplete="nickname" />
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">Shown beside your messages. Spaces, punctuation, symbols, and emoji are welcome.</div>
               </div>
               <div class="field">
                 <label>Avatar image</label>
@@ -677,12 +795,13 @@ import { createChatUi } from './modules/chat-ui.js';
               <div class="settings-balance">
                 <div>
                   <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Current balance</div>
-                  <strong>${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}</strong>
+                  <strong>${formatCoinLabel(state.user?.coins)}</strong>
                 </div>
                 <div style="text-align:right;font-size:12px;color:var(--text-3)">Coins come from sending chat messages and can be gifted below.</div>
               </div>
               <div>
                 <button class="btn btn-primary" type="submit">Save Profile</button>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:7px">Updates your public chat identity without changing your login details.</div>
               </div>
             </form>
           </div>
@@ -697,27 +816,28 @@ import { createChatUi } from './modules/chat-ui.js';
               </div>
               <div class="field">
                 <label>Amount</label>
-                <input name="amount" type="number" min="1" step="1" placeholder="How many coins?" class="inp" />
+                <input name="amount" type="number" min="0.5" step="0.5" placeholder="How many coins?" class="inp" />
               </div>
               <div>
                 <button class="btn btn-primary" type="submit">Send Coins</button>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:7px">Transfers are immediate and use the recipient’s stable username.</div>
               </div>
             </form>
           </div>
 
           <div class="card">
-            <div class="card-title">Chat Effects</div>
+            <div class="card-title">Message Style Shop</div>
             <div class="settings-balance" style="margin-bottom:14px">
               <div>
                 <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Balance</div>
-                <strong id="settings-coins-balance">${Math.max(0, Number(state.user?.coins || 0))} coin${Number(state.user?.coins || 0) === 1 ? '' : 's'}</strong>
+                <strong id="settings-coins-balance">${formatCoinLabel(state.user?.coins)}</strong>
               </div>
               <div style="text-align:right">
                 <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Equipped</div>
                 <div id="settings-equipped-effect" style="font-family:var(--font-head);font-size:16px;letter-spacing:0.06em;color:var(--text-1)">${esc(getEffectMeta(state.user?.equippedEffect).name)}</div>
               </div>
             </div>
-            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:14px">You earn 1 coin per sent chat message. Prices stay low so effects are easy to unlock.</p>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:14px">Buy cosmetics with coins, then equip one to style every message you send.</p>
             <div id="effects-grid" class="effect-grid"></div>
           </div>
 
@@ -730,16 +850,23 @@ import { createChatUi } from './modules/chat-ui.js';
               </div>
               <div class="field">
                 <label>New password</label>
-                <input name="newPassword" type="password" placeholder="At least 6 characters" required minlength="6" class="inp" />
+                <input name="newPassword" type="password" placeholder="At least 8 characters" required minlength="8" class="inp" />
               </div>
               <div class="field">
                 <label>Confirm new password</label>
-                <input name="confirmPassword" type="password" placeholder="Repeat new password" required minlength="6" class="inp" />
+                <input name="confirmPassword" type="password" placeholder="Repeat new password" required minlength="8" class="inp" />
               </div>
               <div>
                 <button class="btn btn-primary" type="submit">Update Password</button>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:7px">Use a unique password with at least eight characters.</div>
               </div>
             </form>
+          </div>
+
+          <div class="card" style="border-color:rgba(229,62,62,.35)">
+            <div class="card-title" style="color:var(--danger)">Danger Zone</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:14px">Delete this account and remove its friendships. This cannot be undone.</p>
+            <button id="delete-account-btn" class="btn btn-danger" type="button">Delete Account</button>
           </div>
         </div>
       </div>
@@ -863,6 +990,11 @@ import { createChatUi } from './modules/chat-ui.js';
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
+        const displayName = String(fd.get('displayName') || '').normalize('NFKC').replace(/\s+/g, ' ').trim();
+        if ([...displayName].length < 2 || [...displayName].length > 32 || /[\u0000-\u001F\u007F]/.test(displayName)) {
+          showErr('Display name must be 2–32 visible characters.');
+          return;
+        }
         let avatar = null;
 
         if (selectedAvatarFile) {
@@ -880,7 +1012,22 @@ import { createChatUi } from './modules/chat-ui.js';
         }
 
         try {
-          const data = await api('/api/users/profile', { method: 'PUT', body: { avatar } });
+          const applyAccountSnapshot = (data) => {
+            const nextToken = String(data?.token || data?.user?.token || '').trim();
+            if (nextToken) setToken(nextToken);
+            if (data?.user) applyUserSnapshot(data.user);
+          };
+          let profileMessage = '';
+          if (displayName !== String(state.user?.name || state.user?.username || '').trim()) {
+            const nameData = await api('/api/account/profile/display-name', { method: 'PUT', body: { displayName } });
+            applyAccountSnapshot(nameData);
+            profileMessage = nameData?.msg || 'Display name updated';
+          }
+          if (avatar !== null) {
+            const avatarData = await api('/api/account/profile/avatar', { method: 'PUT', body: { avatar } });
+            applyAccountSnapshot(avatarData);
+            profileMessage = avatarData?.msg || profileMessage || 'Profile updated successfully';
+          }
           await loadUser();
 
           selectedAvatarFile = null;
@@ -906,7 +1053,7 @@ import { createChatUi } from './modules/chat-ui.js';
 
           refreshSidebarAvatar();
           renderMessages();
-          showMsg(data?.msg || 'Profile updated successfully');
+          showMsg(profileMessage || 'Profile is already up to date');
         } catch (err) {
           console.error('Profile save error:', err);
           showErr(err.message || 'Failed to update profile');
@@ -916,7 +1063,8 @@ import { createChatUi } from './modules/chat-ui.js';
 
     document.getElementById('coin-transfer-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd = new FormData(e.currentTarget);
+      const form = e.currentTarget;
+      const fd = new FormData(form);
       const username = String(fd.get('username') || '').trim();
       const amount = Math.max(0, Number(fd.get('amount') || 0));
       if (!username) { showErr('Recipient username is required'); return; }
@@ -925,7 +1073,7 @@ import { createChatUi } from './modules/chat-ui.js';
         const data = await api('/api/users/transfer-coins', { method: 'POST', body: { username, amount } });
         if (data?.user) applyUserSnapshot(data.user);
         renderEffectsGrid();
-        e.currentTarget.reset();
+        form?.reset();
         showMsg(data?.msg || 'Coins sent successfully');
       } catch (err) {
         showErr(err.message);
@@ -934,16 +1082,47 @@ import { createChatUi } from './modules/chat-ui.js';
 
     document.getElementById('password-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd = new FormData(e.currentTarget);
+      const form = e.currentTarget;
+      const fd = new FormData(form);
       const currentPassword = String(fd.get('currentPassword') || '');
       const newPassword = String(fd.get('newPassword') || '');
       const confirmPassword = String(fd.get('confirmPassword') || '');
       if (newPassword !== confirmPassword) { showErr('New passwords do not match'); return; }
+      if (newPassword.length < 8 || newPassword.length > 128) { showErr('New password must be 8–128 characters.'); return; }
       try {
-        const data = await api('/api/users/password', { method: 'PUT', body: { currentPassword, newPassword } });
+        const data = await api('/api/account/profile/password', { method: 'PUT', body: { currentPassword, newPassword } });
+        const nextToken = String(data?.token || data?.user?.token || '').trim();
+        if (nextToken) setToken(nextToken);
+        if (data?.user) applyUserSnapshot(data.user);
         showMsg(data?.msg || 'Password updated successfully');
-        e.currentTarget.reset();
+        form?.reset();
       } catch (err) { showErr(err.message); }
+    });
+
+    document.getElementById('delete-account-btn')?.addEventListener('click', async () => {
+      const username = String(state.user?.username || '').trim();
+      const typed = window.prompt(`Type ${username} to delete your account.`);
+      if (typed !== username) {
+        showErr('Account deletion cancelled.');
+        return;
+      }
+      const password = window.prompt('Enter your password to confirm account deletion.');
+      if (!password) {
+        showErr('Password is required to delete your account.');
+        return;
+      }
+      try {
+        await api('/api/users/me', { method: 'DELETE', body: { password } });
+        setToken('');
+        applyUserSnapshot(null);
+        sessionStorage.removeItem('user');
+        localStorage.removeItem('user');
+        localStorage.removeItem('tlkParticipantToken');
+        showMsg('Account deleted.');
+        navigate('/login');
+      } catch (err) {
+        showErr(err.message || 'Failed to delete account.');
+      }
     });
   };
 
@@ -952,7 +1131,7 @@ import { createChatUi } from './modules/chat-ui.js';
   ═══════════════════════════════════════════════════════════════ */
   const renderAdminPage = async () => {
     const role = String(state.user?.role || '').toLowerCase();
-    if (!['owner', 'admin'].includes(role)) { navigate('/channels/global'); return; }
+    if (!['owner', 'admin'].includes(role)) { await navigateToLaunchChannel(); return; }
 
     layoutShell(`
       <div class="page-scroll">
@@ -965,39 +1144,42 @@ import { createChatUi } from './modules/chat-ui.js';
           <div id="admin-error" class="banner banner-error hidden"></div>
 
           <div class="card">
-            <div class="card-title">System Status</div>
-            <div id="ob-status" class="status-line" style="margin-bottom:14px">
-              <span class="status-dot" style="background:var(--text-3)"></span>
-              <span>Loading status…</span>
+            <div class="card-title">Lockdown Control</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">Activate lockdown to disable all effects and sound triggers until you turn it back off.</p>
+            <div id="lockdown-status" class="status-line" style="margin-bottom:14px">
+              <span class="status-dot" style="background:var(--success)"></span>
+              <span id="lockdown-status-text">Lockdown is not active.</span>
             </div>
             <div class="btn-bar" style="margin-bottom:14px">
-              <button id="btn-auto-refresh" class="btn btn-ghost btn-sm">Refresh Status</button>
-              <button id="btn-auto-start"   class="btn btn-primary btn-sm">Start Automation</button>
-              <button id="btn-auto-stop"    class="btn btn-danger btn-sm">Stop Automation</button>
+              <button id="btn-lockdown-toggle" class="btn btn-danger btn-sm">Activate Lockdown</button>
             </div>
-            <pre id="auto-active" class="code-block" style="font-size:11.5px;max-height:160px;overflow-y:auto"></pre>
+            <div id="lockdown-admin-note" style="font-size:12px;color:var(--text-3)">Only admins and owners can change lockdown.</div>
           </div>
 
           <div class="card">
-            <div class="card-title">Moderation Lists</div>
-            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">One item per line or comma-separated</p>
-            <div class="form-stack">
-              <div class="field">
-                <label>Banned User Tokens</label>
-                <textarea id="mod-users" rows="4" class="inp" style="font-family:var(--font-mono);font-size:12px"></textarea>
-              </div>
-              <div class="field">
-                <label>Banned Accounts (User IDs)</label>
-                <textarea id="mod-accounts" rows="4" class="inp" style="font-family:var(--font-mono);font-size:12px"></textarea>
-              </div>
-              <div class="field">
-                <label>Banned Devices</label>
-                <textarea id="mod-devices" rows="4" class="inp" style="font-family:var(--font-mono);font-size:12px"></textarea>
-              </div>
-              <div>
-                <button id="btn-mod-save" class="btn btn-primary">Save Moderation Lists</button>
-              </div>
+            <div class="card-title">Ban User by ID</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">Manually ban a user by their ID.</p>
+            <div style="display:grid;gap:8px;margin-bottom:12px">
+              <input id="admin-ban-user-id" type="text" placeholder="User ID" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-input);color:var(--text-normal);padding:10px 12px;font-family:var(--font-mono);font-size:12px;" />
+              <textarea id="admin-ban-reason" placeholder="Reason for ban" rows="2" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-input);color:var(--text-normal);padding:10px 12px;font-family:inherit;font-size:12px;resize:vertical;" maxlength="200"></textarea>
+              <button id="admin-ban-submit" class="btn btn-danger btn-sm" type="button">Ban User</button>
             </div>
+            <div id="admin-ban-status" style="font-size:12px;color:var(--text-3)"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Banned Users</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">Users currently banned from the server.</p>
+            <div id="admin-banned-list" style="display:grid;gap:8px">
+              <div style="color:var(--text-3);padding:16px 0">Loading banned users…</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">User Warnings</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">
+              Warn users from the list below. Warning counts are stored on the server and can be cleared individually.
+            </p>
           </div>
 
           <div class="card">
@@ -1009,12 +1191,31 @@ import { createChatUi } from './modules/chat-ui.js';
                     <th>Username</th>
                     ${role === 'owner' ? '<th>User ID</th>' : ''}
                     <th>Role</th>
+                    <th>Warnings</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="${role === 'owner' ? '3' : '2'}" style="color:var(--text-3);padding:16px 0">Loading users…</td></tr>
+                  <tr><td colspan="${role === 'owner' ? '5' : '4'}" style="color:var(--text-3);padding:16px 0">Loading users…</td></tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Direct Message Monitoring</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">Admin view of direct message rooms. Expand a room to see participants and open it for review.</p>
+            <div id="admin-dm-error" class="banner banner-error hidden"></div>
+            <div id="admin-dm-rooms" style="display:grid;gap:12px">
+              <div style="color:var(--text-3);padding:16px 0">Loading DM rooms…</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Group Chat Monitoring</div>
+            <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px">Admin view of group chats, members, and current room activity.</p>
+            <div id="admin-gc-error" class="banner banner-error hidden"></div>
+            <div id="admin-gc-rooms" style="display:grid;gap:12px">
+              <div style="color:var(--text-3);padding:16px 0">Loading group chats…</div>
             </div>
           </div>
         </div>
@@ -1027,25 +1228,51 @@ import { createChatUi } from './modules/chat-ui.js';
       errEl.textContent = msg;
       errEl.classList.remove('hidden');
     };
-    const parseList = (v) => String(v || '').split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
 
-    const refreshAutomation = async () => {
-      try {
-        const [status, active] = await Promise.all([api('/api/openbullet/status'), api('/api/openbullet/automation/status')]);
-        const online = status?.ok || status?.online;
-        document.getElementById('ob-status').innerHTML = `
-          <span class="status-dot ${online ? 'status-online' : ''}" style="${!online ? 'background:var(--danger)' : ''}"></span>
-          <span>OpenBullet: ${online ? 'online' : (status?.msg || 'offline')}</span>
-        `;
-        document.getElementById('auto-active').textContent = JSON.stringify(active || {}, null, 2);
-      } catch (err) {
-        document.getElementById('ob-status').innerHTML =
-          `<span class="status-dot" style="background:var(--danger)"></span><span>OpenBullet unavailable: ${esc(err.message)}</span>`;
+    const updateLockdownUi = () => {
+      const statusText = document.getElementById('lockdown-status-text');
+      const statusDot = document.querySelector('#lockdown-status .status-dot');
+      const toggleBtn = document.getElementById('btn-lockdown-toggle');
+      const banner = document.getElementById('lockdown-banner');
+      const effectsBtn = document.getElementById('effects-btn');
+      const soundBtn = document.getElementById('sound-btn');
+      const active = !!state.lockdownActive;
+
+      if (statusText) {
+        statusText.textContent = active ? 'Lockdown is active.' : 'Lockdown is not active.';
       }
+      if (statusDot) {
+        statusDot.style.background = active ? 'var(--danger)' : 'var(--success)';
+      }
+      if (toggleBtn) {
+        toggleBtn.textContent = active ? 'Deactivate Lockdown' : 'Activate Lockdown';
+        toggleBtn.className = active ? 'btn btn-primary btn-sm' : 'btn btn-danger btn-sm';
+      }
+      if (banner) {
+        banner.textContent = active ? 'LOCKDOWN activated — no effects will play until lockdown is up.' : '';
+        banner.classList.toggle('hidden', !active);
+      }
+      const applyLockdownButtonStyle = (btn) => {
+        if (!btn) return;
+        btn.disabled = active;
+        if (active) {
+          btn.style.background = 'var(--danger)';
+          btn.style.color = 'white';
+          btn.style.border = '1px solid var(--danger)';
+          btn.style.cursor = 'not-allowed';
+        } else {
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.border = '';
+          btn.style.cursor = '';
+        }
+      };
+      applyLockdownButtonStyle(effectsBtn);
+      applyLockdownButtonStyle(soundBtn);
     };
 
     let users = [];
-    let moderation = { bannedUsers: [], bannedAccounts: [], bannedDevices: [] };
+    let moderation = { bannedUsers: [], bannedAccounts: [], bannedDevices: [], warnings: {}, warningLimit: 3, lockdownActive: false };
 
     try {
       try {
@@ -1057,6 +1284,8 @@ import { createChatUi } from './modules/chat-ui.js';
 
       try {
         moderation = await api('/api/network/moderation');
+        state.lockdownActive = !!moderation.lockdownActive;
+        updateLockdownUi();
       } catch (modErr) {
         if (modErr.status === 403) setError('You do not have permission to view moderation lists.');
         else setError('Could not load moderation lists: ' + modErr.message);
@@ -1064,27 +1293,169 @@ import { createChatUi } from './modules/chat-ui.js';
 
       document.getElementById('admin-users').querySelector('tbody').innerHTML =
         (!Array.isArray(users) || users.length === 0)
-          ? `<tr><td colspan="${role === 'owner' ? '4' : '3'}" style="color:var(--text-3);padding:16px 0">No users found</td></tr>`
+          ? `<tr><td colspan="${role === 'owner' ? '5' : '4'}" style="color:var(--text-3);padding:16px 0">No users found</td></tr>`
           : users.map((u) => {
               const r = String(u.role || 'user').toLowerCase();
               const roleClass = r === 'owner' ? 'role-owner' : r === 'admin' ? 'role-admin' : 'role-user';
+              const warningCount = Number(moderation?.warnings?.[u._id] || 0);
               return `
                 <tr>
                   <td style="font-family:var(--font-mono);font-size:12.5px">${esc(u.username || '')}</td>
                   ${role === 'owner' ? `<td style="font-family:var(--font-mono);font-size:12.5px;display:flex;align-items:center;gap:8px"><span>${esc(u._id || '')}</span><button type="button" data-copy-user-id="${esc(u._id || '')}" class="copy-id-btn">Copy</button></td>` : ''}
                   <td><span class="role-badge ${roleClass}">${esc(r)}</span></td>
+                  <td style="font-family:var(--font-mono);font-size:12.5px;display:flex;flex-direction:column;gap:6px">
+                    <div>${warningCount} warning${warningCount === 1 ? '' : 's'}</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <button type="button" class="btn btn-secondary btn-sm admin-warn-user" data-admin-user-id="${esc(u._id || '')}">Warn</button>
+                      <button type="button" class="btn btn-secondary btn-sm admin-clear-warnings" data-admin-user-id="${esc(u._id || '')}" ${warningCount ? '' : 'disabled'}>Clear</button>
+                    </div>
+                  </td>
                 </tr>
               `;
             }).join('');
 
-      document.getElementById('mod-users').value    = (moderation?.bannedUsers    || []).join('\n');
-      document.getElementById('mod-accounts').value = (moderation?.bannedAccounts || []).join('\n');
-      document.getElementById('mod-devices').value  = (moderation?.bannedDevices  || []).join('\n');
+      // Render banned users list
+      const renderBannedUsers = () => {
+        const container = document.getElementById('admin-banned-list');
+        if (!container) return;
+        const bannedUsers = Array.isArray(moderation?.bannedUsers) ? moderation.bannedUsers : [];
+        
+        if (bannedUsers.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-3);padding:16px 0">No banned users.</div>';
+          return;
+        }
+
+        container.innerHTML = bannedUsers.map((userId) => {
+          const user = users.find((u) => String(u._id) === String(userId));
+          const label = user ? `${esc(user.username || 'Unknown user')} (${esc(userId)})` : esc(userId);
+          return `
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg)">
+            <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-1)">${label}</span>
+            <button type="button" class="btn btn-secondary btn-sm admin-unban-user" data-admin-user-to-unban="${esc(userId)}">Unban</button>
+          </div>
+        `;
+        }).join('');
+
+        container.querySelectorAll('.admin-unban-user').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const userId = String(btn.getAttribute('data-admin-user-to-unban') || '').trim();
+            if (!userId) return;
+            try {
+              await api('/api/network/mod/actions', {
+                method: 'POST',
+                body: { action: 'unban', target: `user:${userId}`, reason: 'Admin unban' }
+              });
+              showToast('User unbanned', 'success');
+              window.location.reload();
+            } catch (err) {
+              showToast(err.message || 'Failed to unban user', 'error');
+            }
+          });
+        });
+      };
+
+      renderBannedUsers();
+
+      // No banned account list widget in this admin panel; warnings are managed per user.
+
+      const renderAdminRoomMonitor = (rooms, options = {}) => {
+        const type = options.type || 'dm';
+        const container = document.getElementById(options.containerId);
+        const errorEl = document.getElementById(options.errorId);
+        if (!container) return;
+        errorEl?.classList.add('hidden');
+        const roomList = Array.isArray(rooms) ? rooms : [];
+
+        if (!roomList.length) {
+          container.innerHTML = `<div style="color:var(--text-3);padding:16px 0">${esc(options.emptyText || 'No rooms found.')}</div>`;
+          return;
+        }
+
+        container.innerHTML = roomList.map((room) => `
+          <details class="admin-room-monitor" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg);">
+            <summary style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:12px;font-weight:600;font-size:14px;color:var(--text-1);">
+              <span>${esc(room.label || room.name || room.room)}</span>
+              <span style="font-size:12px;color:var(--text-3);">${Number(room.count) > 0 ? `${Number(room.count)} online` : 'No users online'}</span>
+            </summary>
+            <div style="margin-top:12px;display:grid;gap:8px;font-size:13px;color:var(--text-3);">
+              <div>Room ID: <span style="font-family:var(--font-mono);color:var(--text-1);">${esc(room.room)}</span></div>
+              ${type === 'group'
+                ? `<div>Members: ${esc(Array.isArray(room.members) && room.members.length ? room.members.join(', ') : 'No members')}</div><div>${Number(room.memberCount || 0)} member${Number(room.memberCount || 0) === 1 ? '' : 's'}</div>`
+                : `<div>Participants: ${esc(Array.isArray(room.participants) && room.participants.length ? room.participants.join(', ') : 'Unknown')}</div>`}
+              <div>${room.hasRoomMeta ? 'TLK room exists' : 'No TLK room created yet'}</div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-secondary btn-sm admin-open-room" data-admin-room-id="${esc(room.room)}">Open room</button>
+                <button type="button" class="btn btn-danger btn-sm admin-delete-room" data-admin-room-id="${esc(room.room)}" data-admin-room-type="${esc(type)}">Delete</button>
+              </div>
+            </div>
+          </details>
+        `).join('');
+
+        container.querySelectorAll('.admin-open-room').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const roomId = btn.getAttribute('data-admin-room-id');
+            if (!roomId) return;
+            navigate(`/channels/${encodeURIComponent(roomId)}`);
+          });
+        });
+
+        container.querySelectorAll('.admin-delete-room').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const roomId = btn.getAttribute('data-admin-room-id');
+            const roomType = btn.getAttribute('data-admin-room-type') || type;
+            if (!roomId) return;
+            const label = roomType === 'group' ? 'group chat' : 'direct message room';
+            if (!window.confirm(`Delete this ${label} from monitoring? This removes local tracking for ${roomId}.`)) return;
+            try {
+              btn.disabled = true;
+              btn.textContent = 'Deleting...';
+              await api(`/api/tlk/admin/rooms/${encodeURIComponent(roomId)}?type=${encodeURIComponent(roomType)}`, { method: 'DELETE' });
+              showToast(`${roomType === 'group' ? 'Group chat' : 'DM room'} deleted`, 'success');
+              await loadAdminRoomMonitors();
+            } catch (err) {
+              btn.disabled = false;
+              btn.textContent = 'Delete';
+              showToast(err.message || 'Failed to delete room', 'error');
+            }
+          });
+        });
+      };
+
+      const loadAdminRoomMonitors = async () => {
+        try {
+          const data = await api('/api/tlk/admin/rooms');
+          const allRooms = Array.isArray(data?.rooms) ? data.rooms : [];
+          renderAdminRoomMonitor(Array.isArray(data?.dmRooms) ? data.dmRooms : allRooms.filter((room) => room.isDm), {
+            type: 'dm',
+            containerId: 'admin-dm-rooms',
+            errorId: 'admin-dm-error',
+            emptyText: 'No direct message rooms found.'
+          });
+          renderAdminRoomMonitor(Array.isArray(data?.groupRooms) ? data.groupRooms : allRooms.filter((room) => room.isGroup), {
+            type: 'group',
+            containerId: 'admin-gc-rooms',
+            errorId: 'admin-gc-error',
+            emptyText: 'No group chats found.'
+          });
+        } catch (err) {
+          ['dm', 'gc'].forEach((prefix) => {
+            const container = document.getElementById(`admin-${prefix}-rooms`);
+            if (container) container.innerHTML = '<div style="color:var(--text-3);padding:16px 0">Unable to load room monitoring.</div>';
+            const errorEl = document.getElementById(`admin-${prefix}-error`);
+            if (errorEl) {
+              errorEl.textContent = err.message || 'Failed to load room monitoring';
+              errorEl.classList.remove('hidden');
+            }
+          });
+        }
+      };
+
+      await loadAdminRoomMonitors();
     } catch (err) {
       setError('Admin panel failed to initialise: ' + err.message);
     }
 
-    await refreshAutomation();
+    updateLockdownUi();
 
     document.querySelectorAll('[data-copy-user-id]').forEach((btn) => {
       btn.addEventListener('click', async () => {
@@ -1105,28 +1476,98 @@ import { createChatUi } from './modules/chat-ui.js';
       });
     });
 
-    document.getElementById('btn-auto-refresh')?.addEventListener('click', async () => { await refreshAutomation(); showToast('Status refreshed'); });
-    document.getElementById('btn-auto-start')?.addEventListener('click', async () => {
-      try { await api('/api/openbullet/automation/start', { method: 'POST' }); await refreshAutomation(); showToast('Automation started'); }
-      catch (err) { setError(err.message); }
-    });
-    document.getElementById('btn-auto-stop')?.addEventListener('click', async () => {
-      try { await api('/api/openbullet/automation/stop', { method: 'POST' }); await refreshAutomation(); showToast('Automation stopped'); }
-      catch (err) { setError(err.message); }
-    });
-    document.getElementById('btn-mod-save')?.addEventListener('click', async () => {
+    const adminWarningAction = async (action, userId) => {
+      if (!userId) return;
       try {
-        await api('/api/network/moderation', {
-          method: 'PUT',
-          body: {
-            bannedUsers:    parseList(document.getElementById('mod-users')?.value),
-            bannedAccounts: parseList(document.getElementById('mod-accounts')?.value),
-            bannedDevices:  parseList(document.getElementById('mod-devices')?.value)
-          }
-        });
-        showToast('Moderation lists saved');
-      } catch (err) { setError(err.message); }
+        if (action === 'warn') {
+          const reason = window.prompt('Enter warning reason:', 'Manual moderation warning');
+          if (reason === null) return;
+          await api('/api/network/mod/actions', {
+            method: 'POST',
+            body: { action: 'warn', target: `user:${userId}`, reason: String(reason).trim() || 'Manual moderation warning' }
+          });
+          showToast('Warning added', 'success');
+        } else {
+          await api('/api/network/mod/actions', {
+            method: 'POST',
+            body: { action: 'clearwarns', target: `user:${userId}`, reason: 'Admin cleared warnings' }
+          });
+          showToast('Warnings cleared', 'success');
+        }
+        window.location.reload();
+      } catch (err) {
+        showToast(err.message || 'Failed to update warnings', 'error');
+      }
+    };
+
+    document.querySelectorAll('.admin-warn-user').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const userId = String(btn.getAttribute('data-admin-user-id') || '').trim();
+        void adminWarningAction('warn', userId);
+      });
     });
+
+    document.querySelectorAll('.admin-clear-warnings').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const userId = String(btn.getAttribute('data-admin-user-id') || '').trim();
+        void adminWarningAction('clearwarns', userId);
+      });
+    });
+
+    const adminBanButton = document.getElementById('admin-ban-submit');
+    if (adminBanButton) {
+      adminBanButton.addEventListener('click', async () => {
+        const userId = String(document.getElementById('admin-ban-user-id')?.value || '').trim();
+        const reason = String(document.getElementById('admin-ban-reason')?.value || '').trim() || 'Manual ban';
+        const statusEl = document.getElementById('admin-ban-status');
+
+        if (!userId) {
+          if (statusEl) statusEl.textContent = 'Enter a user ID';
+          return;
+        }
+
+        try {
+          if (statusEl) statusEl.textContent = 'Banning...';
+          await api('/api/network/mod/actions', {
+            method: 'POST',
+            body: { action: 'ban', target: `user:${userId}`, reason }
+          });
+          if (statusEl) statusEl.textContent = 'User banned successfully';
+          if (statusEl) statusEl.style.color = 'var(--text-success)';
+          document.getElementById('admin-ban-user-id').value = '';
+          document.getElementById('admin-ban-reason').value = '';
+          setTimeout(() => {
+            if (statusEl) {
+              statusEl.textContent = '';
+              statusEl.style.color = 'var(--text-3)';
+            }
+          }, 3000);
+        } catch (err) {
+          if (statusEl) {
+            statusEl.textContent = 'Ban failed: ' + (err.message || 'Unknown error');
+            statusEl.style.color = 'var(--text-error)';
+          }
+        }
+      });
+    }
+
+    document.getElementById('btn-lockdown-toggle')?.addEventListener('click', async () => {
+      try {
+        const enable = !state.lockdownActive;
+        const updated = await api('/api/network/moderation', {
+          method: 'PUT',
+          body: { lockdownActive: enable }
+        });
+
+        state.lockdownActive = !!updated.lockdownActive;
+        updateLockdownUi();
+        showToast(enable ? 'Lockdown activated' : 'Lockdown deactivated', 'success');
+      } catch (err) {
+        showToast(err.message || 'Failed to update lockdown state', 'error');
+      }
+    });
+
+
   };
 
   /* ═══════════════════════════════════════════════════════════════
@@ -1323,18 +1764,29 @@ import { createChatUi } from './modules/chat-ui.js';
      ROUTER
   ═══════════════════════════════════════════════════════════════ */
   const ensureAuthAndData = async () => {
+    const token = state.token || localStorage.getItem('token') || '';
+    if (!token) {
+      setToken('');
+      applyUserSnapshot(null);
+      navigate('/login');
+      return false;
+    }
     if (!state.user) await loadUser();
     if (!state.user) { navigate('/login'); return false; }
     if (!state.channels.length) await loadChannels().catch(() => { state.channels = []; });
     if (typeof refreshFriends === 'function') await refreshFriends();
+    if (!state.user) { navigate('/login'); return false; }
     return true;
   };
 
   const router = async () => {
     const path = getHashPath();
+    // Always try to load user from API if we have a token but no user data
     if (!state.user && state.token) await loadUser();
+    // If still no user and not on a public route, redirect to login
     if (!state.user && !isPublicRoute(path)) { navigate('/login'); return; }
-    if ( state.user &&  isPublicRoute(path)) { navigate('/channels/global'); return; }
+    // If user is logged in and on a public route, redirect to home
+    if (state.user && isPublicRoute(path)) { await navigateToLaunchChannel(); return; }
 
     if (path.startsWith('/login'))    { renderLogin();    return; }
     if (path.startsWith('/register')) { renderRegister(); return; }
@@ -1342,7 +1794,7 @@ import { createChatUi } from './modules/chat-ui.js';
     if (!(await ensureAuthAndData())) return;
 
     if (path.startsWith('/channels/')) {
-      await renderChatPage(decodeURIComponent(path.split('/')[2] || 'global'));
+      await renderChatPage(decodeURIComponent(path.split('/')[2] || ''));
       setupMentionClicks();
       return;
     }
@@ -1352,13 +1804,13 @@ import { createChatUi } from './modules/chat-ui.js';
       await renderDirectMessagesPage(); 
       return; 
     }
-    if (path === '/' || path === '/channels' || path === '/dashboard') { navigate('/channels/global'); return; }
+    if (path === '/' || path === '/channels' || path === '/dashboard') { await navigateToLaunchChannel(); return; }
     if (path.startsWith('/settings'))    { cleanupChatTimers(); await renderSettingsPage();    return; }
     if (path.startsWith('/admin'))       { cleanupChatTimers(); await renderAdminPage();       return; }
     if (path.startsWith('/shop'))        { cleanupChatTimers(); await renderShopPage();        return; }
     if (path.startsWith('/marketplace')) { cleanupChatTimers(); await renderMarketplacePage(); return; }
 
-    navigate('/channels/global');
+    await navigateToLaunchChannel();
   };
 
   const onRouteError = (err) => {

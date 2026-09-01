@@ -1,36 +1,20 @@
 (function () {
   "use strict";
 
-  const FORCE_SCRAMJET_HOSTS = [
-    "crazygames.com",
-    ".crazygames.com",
-    "play.geforcenow.com",
-    ".geforcenow.com",
-    "tlk.io",
-    ".tlk.io",
-    "poki.com",
-    ".poki.com",
-    "poki-gdn.com",
-    ".poki-gdn.com",
-    "sentinel.home.kg",
+  // The user's selected proxy is authoritative for every site except YouTube.
+  // YouTube keeps its dedicated Argon compatibility path.
+  const FORCE_SCRAMJET_HOSTS = [];
+
+  const FORCE_ARGON_HOSTS = [
+    "youtube.com",
+    ".youtube.com",
+    "youtu.be",
+    ".youtu.be",
+    "youtube-nocookie.com",
+    ".youtube-nocookie.com",
   ];
 
-  const AVOID_SCRAMJET_HOSTS = [
-    "polybuzz.ai",
-    ".polybuzz.ai",
-    "tiktok.com",
-    ".tiktok.com",
-    "tiktokv.us",
-    ".tiktokv.us",
-    "tiktokw.us",
-    ".tiktokw.us",
-    "tiktokcdn-us.com",
-    ".tiktokcdn-us.com",
-    "tiktokcdn.com",
-    ".tiktokcdn.com",
-    "x-network.lol",
-    ".x-network.lol",
-  ];
+  const AVOID_SCRAMJET_HOSTS = [];
 
   function hostMatches(host, rule) {
     if (!host || !rule) return false;
@@ -63,6 +47,12 @@
     return FORCE_SCRAMJET_HOSTS.some((rule) => hostMatches(host, rule));
   }
 
+  function shouldForceArgonForUrl(inputUrl) {
+    const host = extractHostname(inputUrl);
+    if (!host) return false;
+    return FORCE_ARGON_HOSTS.some((rule) => hostMatches(host, rule));
+  }
+
   function shouldAvoidScramjetForUrl(inputUrl) {
     const host = extractHostname(inputUrl);
     if (!host) return false;
@@ -71,9 +61,11 @@
 
   window.NebuloProxyHostRules = {
     FORCE_SCRAMJET_HOSTS,
+    FORCE_ARGON_HOSTS,
     AVOID_SCRAMJET_HOSTS,
     extractHostname,
     shouldForceScramjetForUrl,
+    shouldForceArgonForUrl,
     shouldAvoidScramjetForUrl,
   };
 
@@ -83,5 +75,8 @@
   }
   if (typeof window.shouldAvoidScramjetForUrl !== "function") {
     window.shouldAvoidScramjetForUrl = shouldAvoidScramjetForUrl;
+  }
+  if (typeof window.shouldForceArgonForUrl !== "function") {
+    window.shouldForceArgonForUrl = shouldForceArgonForUrl;
   }
 })();
