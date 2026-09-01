@@ -2106,6 +2106,16 @@
       return typeof url === 'string' && /(?:youtube\.com|youtu\.be)/i.test(url);
     }
 
+    function isVideoStreamingSite(url) {
+      if (typeof url !== 'string') return false;
+      const hosts = [
+        'sflix2.me', 'sflix6.me', 'flixr.me', 'sflixhd.to', 'sflixhd.io', 'cineby.gd', 'cineby.at',
+        'vidfast.vc', '123moviesfree.com', 'f2movies.to', 'putlockers.li',
+        'gomoviez.to', 'yesmovieshd2.com', '123moviesfree.page'
+      ];
+      return hosts.some(host => url.includes(host));
+    }
+
     function isYouTubeWatchUrl(url) {
       return typeof url === 'string' && /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/)/i.test(url);
     }
@@ -2683,7 +2693,7 @@
 
     async function initServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
-      await navigator.serviceWorker.register('/sw.js?v=20260831-tiktok-fast-feed-cache-26');
+      await navigator.serviceWorker.register('/sw.js?v=20260831-tiktok-fast-feed-cache-29');
       await navigator.serviceWorker.ready;
       if (!navigator.serviceWorker.controller) {
         await new Promise((resolve) => {
@@ -3376,6 +3386,11 @@
       windowEl.className = 'browser-window';
       windowEl.id = `window-${tab.id}`;
       
+      const isVideoSite = isVideoStreamingSite(tab.url);
+      const sandboxAttr = isVideoSite
+        ? ''
+        : ' sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-modals allow-pointer-lock allow-downloads allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"';
+      
       windowEl.innerHTML = `
         <div class="window-content">
           <div class="window-loading" id="loading-${tab.id}">
@@ -3384,9 +3399,8 @@
             <div class="loading-subtext">(If site takes long to load, change search engine in settings.).</div>
             <div class="loading-rotating-text"></div>
           </div>
-          <iframe src="about:blank" id="iframe-${tab.id}"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-modals allow-pointer-lock allow-downloads allow-storage-access-by-user-activation"
-            allow="autoplay; fullscreen; gamepad; clipboard-read; clipboard-write"></iframe>
+           <iframe src="about:blank" id="iframe-${tab.id}"${sandboxAttr}
+              allow="autoplay; fullscreen; gamepad; clipboard-read; clipboard-write; encrypted-media"></iframe>
         </div>
       `;
       
@@ -3495,6 +3509,16 @@
 
         tab.url = finalUrl;
         scheduleTabSessionSave();
+
+        // Video streaming sites detect the sandbox attribute and refuse to
+        // play content. For these sites, remove the sandbox entirely so the
+        // video player functions correctly. The Argon proxy already isolates
+        // these pages from the user's local origin.
+        if (typeof finalUrl === 'string' && isVideoStreamingSite(finalUrl)) {
+          iframe.sandbox = null;
+          iframe.removeAttribute('sandbox');
+        }
+
         iframe.src = finalUrl;
         
         // Set a timeout for loading

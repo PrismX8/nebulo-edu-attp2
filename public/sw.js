@@ -1,4 +1,4 @@
-const SW_VERSION = "2026-08-31-tiktok-fast-feed-cache-26";
+const SW_VERSION = "2026-08-31-tiktok-fast-feed-cache-29";
 let adBlockEnabled = true;
 
 if (navigator.userAgent.includes('Firefox')) {
@@ -123,7 +123,12 @@ const BLOCKED_THIRD_PARTY_RESOURCE_SUFFIXES = [
     "nexx360.io",
     "sharethrough.com",
     "analytics.yahoo.com",
+    "disqus.com",
+    "disquscdn.com",
     "ssp.wp.pl",
+    "addtoany.com",
+    "static.addtoany.com",
+    "src_domain",
     ...BLOCKED_AD_REDIRECT_SUFFIXES,
 ];
 
@@ -273,6 +278,27 @@ function emptyJsResponse() {
     });
 }
 
+// AD stub: neutralises common ad-network globals so the page's own scripts
+// (which may reference Banner, googletag, etc.) don't crash with ReferenceErrors
+// when the underlying ad resources are blocked.
+function adStubResponse() {
+    return new Response(`
+window.Banner = window.Banner || function(){}; window.Banner.prototype = window.Banner.prototype || { init:function(){}, show:function(){}, hide:function(){}, destroy:function(){} };
+window.runBanner = window.runBanner || function(){};
+window.loadBanner = window.loadBanner || function(){};
+window.openBanner = window.openBanner || function(){};
+window.BANNER = window.BANNER || {};
+window.AdBanner = window.AdBanner || function(){};
+window.AdBanner.prototype = window.AdBanner.prototype || { init:function(){}, show:function(){}, hide:function(){}, destroy:function(){} };
+try { if(typeof window.googletag==='undefined') window.googletag={cmd:[]}; } catch(_){}
+try { if(typeof window.adsbygoogle==='undefined') Object.defineProperty(window,'adsbygoogle',{get:function(){return function(){};},set:function(){}}); } catch(_){}
+console.debug('[nebulo-sw] ad stub loaded');
+`, {
+        status: 200,
+        headers: { "content-type": "application/javascript; charset=utf-8" },
+    });
+}
+
 // Google Publisher Tag sometimes requests an optional, versioned dictionary
 // which is not exposed by its CDN. A 404 makes GPT retry it repeatedly on any
 // site that includes the SDK. A small cacheable script is the response GPT
@@ -392,7 +418,18 @@ function isSilentAdHost(host) {
     return SILENT_AD_SUFFIXES.some((s) => hostMatchesSuffix(h, s));
 }
 
-function blockAdRequestIfNeeded(request, upstreamUrl) {
+function isVideoStreamingSite(hostname) {
+    const h = String(hostname || "").toLowerCase();
+    return h === "sflix2.me" || h.endsWith(".sflix2.me")
+        || h === "sflix6.me" || h.endsWith(".sflix6.me")
+        || h === "flixr.me" || h.endsWith(".flixr.me")
+        || h === "vidfast.vc" || h.endsWith(".vidfast.vc")
+        || h === "sflixhd.to" || h.endsWith(".sflixhd.to")
+        || h === "sflixhd.io" || h.endsWith(".sflixhd.io")
+        || h === "123moviesfree.com" || h.endsWith(".123moviesfree.com");
+}
+
+function blockAdRequestIfNeeded(request, upstreamUrl, requestingPageUrl) {
     if (!adBlockEnabled || !upstreamUrl) return null;
     try {
         const upstream = new URL(upstreamUrl);
@@ -401,8 +438,17 @@ function blockAdRequestIfNeeded(request, upstreamUrl) {
             if (!dest || ["script", "worker", "sharedworker", "serviceworker", "style"].includes(dest)) return null;
             return safeBlockedFetchResponse(request);
         }
-        if (isBlockedThirdPartyResourceHost(upstream.hostname) || isBlockedAdRedirectHost(upstream.hostname)) {
-            return blockedThirdPartyResourceResponse(request, upstream.href);
+        const dest = String(request?.destination || "");
+        const isStreamingSite = isVideoStreamingSite(
+            requestingPageUrl ? (new URL(requestingPageUrl).hostname) : null
+        );
+        const isAdNetworkHost = isBlockedThirdPartyResourceHost(upstream.hostname) || isBlockedAdRedirectHost(upstream.hostname);
+        if (isAdNetworkHost) {
+            if (hostMatchesSuffix(upstream.hostname, "src_domain") && (dest === "script" || !dest) && isStreamingSite) {
+                return adStubResponse();
+            }
+            const response = blockedThirdPartyResourceResponse(request, upstream.href);
+            if (response) return response;
         }
     } catch {}
     return null;
@@ -679,13 +725,26 @@ async function handleRequest(event) {
     // them into an /ag/ request.
     if (adBlockEnabled) {
         let upstreamForAdCheck = null;
+        let requestingPageForAdCheck = null;
         if (sameOrigin && path.startsWith('/ag/')) {
             const context = extractArgonContextFromProxyUrl(requestUrl);
-            if (context) upstreamForAdCheck = context.origin + context.resourcePath + requestUrl.search;
+            if (context) {
+                upstreamForAdCheck = context.origin + context.resourcePath + requestUrl.search;
+                requestingPageForAdCheck = context.origin + context.resourcePath;
+            }
         } else if (!sameOrigin && /^https?:$/.test(requestUrl.protocol)) {
             upstreamForAdCheck = requestUrl.href;
+            const referer = request.headers.get("referer") || request.referrer;
+            if (referer) {
+                try {
+                    const refUrl = new URL(referer, self.location.href);
+                    if (isVideoStreamingSite(refUrl.hostname)) {
+                        requestingPageForAdCheck = refUrl.href;
+                    }
+                } catch {}
+            }
         }
-        const blockedAdResponse = blockAdRequestIfNeeded(request, upstreamForAdCheck);
+        const blockedAdResponse = blockAdRequestIfNeeded(request, upstreamForAdCheck, requestingPageForAdCheck);
         if (blockedAdResponse) return blockedAdResponse;
     }
 
@@ -715,6 +774,41 @@ async function handleRequest(event) {
     );
     if (isYouTubeTelemetry) {
         return new Response(null, { status: 204, statusText: 'No Content' });
+    }
+
+    // Block Cloudflare challenge-platform endpoints. These fail (404) when
+    // proxied because the challenge is site-relative and Nebulo's origin
+    // cannot satisfy it. Returning 204 prevents the challenge JS from
+    // entering a retry loop or breaking the proxied page.
+    const isCloudflareChallenge = path.startsWith('/cdn-cgi/challenge-platform/')
+        || (sameOrigin && path.startsWith('/ag/') && (() => {
+            const ctx = extractArgonContextFromProxyUrl(requestUrl);
+            return ctx && (ctx.resourcePath || '').startsWith('/cdn-cgi/challenge-platform/');
+        })());
+    if (isCloudflareChallenge) {
+        return new Response(null, { status: 204, statusText: 'No Content' });
+    }
+
+    // Block known ad script paths on streaming sites (e.g. sflix2.me banner.js
+    // and the src_domain/sb/ ad network). These run inside the proxied page and
+    // create overlay/redirect elements that cover the video player.
+    if (sameOrigin && path.startsWith('/ag/')) {
+        const ctx = extractArgonContextFromProxyUrl(requestUrl);
+        if (ctx) {
+            const upstreamPath = ctx.resourcePath || '/';
+            const upstreamHost = ctx.host || '';
+            const isAdScriptPath = upstreamPath.includes('/script/banner.js')
+                || upstreamPath.includes('/sb/ssp/')
+                || upstreamPath.includes('/addon/addon/extension/')
+                || upstreamPath.includes('interstitial');
+            const isAdNetworkHost = hostMatchesSuffix(upstreamHost, 'src_domain');
+            if (isAdScriptPath || isAdNetworkHost) {
+                const dest = String(request?.destination || '');
+                if (dest === 'style') return emptyCssResponse();
+                if (dest === 'script' || !dest) return adStubResponse();
+                return safeBlockedFetchResponse(request);
+            }
+        }
     }
 
     if (sameOrigin && path.startsWith('/ag/')) {
@@ -830,7 +924,10 @@ async function handleRequest(event) {
             const upstream = tryDecodeUpstreamUrlFromProxiedUrl(requestUrl, uvPrefix, argonPrefix);
             if (upstream) {
                 const u = new URL(upstream);
-                const blockedAdResponse = blockAdRequestIfNeeded(request, upstream);
+                const ref = request.headers.get("referer") || request.referrer;
+                const refUpstream = ref ? tryDecodeUpstreamUrlFromProxiedUrl(ref, uvPrefix, argonPrefix) : null;
+                const refHost = refUpstream ? (new URL(refUpstream).hostname) : null;
+                const blockedAdResponse = blockAdRequestIfNeeded(request, upstream, refHost ? refUpstream : null);
                 if (blockedAdResponse) return blockedAdResponse;
             }
         }
@@ -1021,6 +1118,7 @@ function shouldRewriteRootRelativeAsset(path) {
     if (path === "/help" || path === "/tools" || path === "/links" || path === "/report" || path === "/watch" || path === "/secret") return false;
     if (path === "/chatonly" || path === "/chat-only" || path === "/chemistry" || path === "/geometry") return false;
     if (path === "/blocked" || path === "/achievements" || path === "/whatsnew") return false;
+    if (path.startsWith("/cdn-cgi/challenge-platform/")) return false;
     return true;
 }
 

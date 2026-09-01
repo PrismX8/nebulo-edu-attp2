@@ -16,7 +16,7 @@ if (typeof globalThis.addEventListener === 'undefined') {
 }
 
 const argon = require('./argon.cjs');
-const ARGON_RUNTIME_VERSION = '20260831-tiktok-runtime-cleanup-32';
+const ARGON_RUNTIME_VERSION = '20260831-tiktok-runtime-cleanup-34';
 const TIKTOK_FAST_FEED_SOURCE = fs
   .readFileSync(path.join(__dirname, '..', 'public', 'assets', 'js', 'tiktok-client.js'), 'utf8')
   .replace(/<\/script/gi, '<\\/script');
@@ -1316,8 +1316,19 @@ const navigationContainmentClient = `<script data-nebulo-navigation-containment>
 const adBlockClient = String.raw`<script data-nebulo-adblock-client>
 (function () {
   if (localStorage.getItem('nebuloAdBlock') === 'false') return;
-  var blocked = /(?:doubleclick|googlesyndication|googleadservices|adnxs|adsrvr|adform|criteo|pubmatic|rubiconproject|taboola|outbrain|exoclick|exosrv|propellerads|popads|popcash|adsterra|onclkds|onclickalgo|trafficjunky|clickadu|richinfo|subduepaler)\./i;
-  var selectors = '.adsbygoogle,[data-ad-client],[data-ad-slot],[id^="google_ads_"],[id^="div-gpt-ad"],[aria-label="Advertisement"],iframe[src*="doubleclick"],iframe[src*="googlesyndication"],iframe[src*="adservice"]';
+  var blocked = /(?:doubleclick|googlesyndication|googleadservices|adnxs|adsrvr|adform|criteo|pubmatic|rubiconproject|taboola|outbrain|exoclick|exosrv|propellerads|popads|popcash|adsterra|onclkds|onclickalgo|trafficjunky|clickadu|richinfo|subduepaler|addtoany|sflixhd)\./i;
+  var exactBlocked = /^(?:src_domain)$/i;
+  var selectors = '.adsbygoogle,[data-ad-client],[data-ad-slot],[id^="google_ads_"],[id^="div-gpt-ad"],[aria-label="Advertisement"],iframe[src*="doubleclick"],iframe[src*="googlesyndication"],iframe[src*="adservice"],[class*="banner-ads"],[id*="banner-ad"],[class*="interstitial"],[class*="ssp-modal"],[id*="ad-overlay"],[class*="ad-overlay"],[class*="ad-container"],[id*="ad-wrapper"],iframe[src*="addtoany"]';
+  // Define no-op ad globals so publisher scripts that reference them don't crash
+  ['Banner','AdBanner','Ad','AdSlot','AdManager','ads','googletag'].forEach(function(name){
+    try { if (typeof window[name] === 'undefined') { var n=function(){return{init:function(){},show:function(){},hide:function(){},destroy:function(){}};};Object.defineProperty(window,name,{get:function(){return n;set:function(){}},configurable:true}); } } catch(_){ }
+  });
+  ['runBanner','loadBanner','openBanner','initBanner','bannerRun'].forEach(function(name){
+    try { if (typeof window[name] === 'undefined') window[name]=function(){return null;}; } catch(_){ }
+  });
+  var _adHide=document.createElement('style');
+  _adHide.textContent='[class*="ad-overlay" i],[id*="ad-overlay" i],[class*="interstitial" i],[id*="interstitial" i],[class*="banner-ads" i],[id*="banner-ads" i],[class*="ssp-modal" i],[id*="ssp-modal" i],[class*="ad-container" i],[id*="ad-container" i],[class*="popup-ad" i],[id*="popup-ad" i]{display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;min-height:0!important;}';
+  (document.head||document.documentElement).appendChild(_adHide);
   function removeInstallerAds(root) {
     if (!root) return;
     var candidates = [];
@@ -1338,7 +1349,7 @@ const adBlockClient = String.raw`<script data-nebulo-adblock-client>
     removeInstallerAds(root);
   }
   function isBlocked(value) {
-    try { return blocked.test(new URL(String(value || ''), location.href).hostname); } catch (_) { return false; }
+    try { var h=new URL(String(value||''),location.href).hostname; return blocked.test(h)||exactBlocked.test(h); } catch (_) { return false; }
   }
   function isBlockedTracking(value) {
     try {
@@ -1377,6 +1388,13 @@ const adBlockClient = String.raw`<script data-nebulo-adblock-client>
     if (isBlockedTracking(input)) {
       return Promise.resolve(new Response(null, { status: 204, statusText: 'No Content' }));
     }
+    // Block Cloudflare challenge-platform requests inside proxied pages
+    try {
+      var reqUrl = typeof input === 'string' ? new URL(input, location.href) : (input && input.url ? new URL(input.url, location.href) : null);
+      if (reqUrl && reqUrl.pathname && reqUrl.pathname.indexOf('/cdn-cgi/challenge-platform/') !== -1) {
+        return Promise.resolve(new Response(null, { status: 204, statusText: 'No Content' }));
+      }
+    } catch(_) {}
     return nativeFetch.apply(this, arguments);
   };
   document.addEventListener('click', function (event) {

@@ -9,7 +9,7 @@ function shouldWarnAboutProxyError(url) {
         "/uv/uv.config.js",
         "/uv/uv.handler.js",
         "/scram/",
-        "cineby.gd",
+        "sflix2.me",
         "math.school.dovereducation.org"
     ];
     return patterns.some(pattern => url.includes(pattern));

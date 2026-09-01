@@ -521,7 +521,6 @@
     .app-card,
     .app-card.app-card-games,
     .app-card.app-card-danger,
-    .app-card.app-card-spotify,
     .app-card.app-card-youtube {
       --app-rgb: 169, 196, 255;
       display: flex;
@@ -548,7 +547,6 @@
     .app-card.app-card-games { --app-rgb: 125, 211, 252; }
     .app-card.app-card-danger { --app-rgb: 252, 165, 165; }
     .app-card.app-card-tiktok { --app-rgb: 103, 232, 249; }
-    .app-card.app-card-spotify { --app-rgb: 134, 239, 172; }
     .app-card.app-card-youtube { --app-rgb: 252, 165, 165; }
     .app-card:nth-child(3) { --app-rgb: 196, 181, 253; }
     .app-card:nth-child(6) { --app-rgb: 253, 230, 138; }
@@ -599,11 +597,10 @@
       border-color: var(--accent-light);
     }
 
-    .app-icon,
-    .app-card.app-card-games .app-icon,
-    .app-card.app-card-danger .app-icon,
-    .app-card.app-card-spotify .app-icon,
-    .app-card.app-card-youtube .app-icon {
+     .app-icon,
+     .app-card.app-card-games .app-icon,
+     .app-card.app-card-danger .app-icon,
+     .app-card.app-card-youtube .app-icon {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1279,9 +1276,8 @@
       { name: "GΛMΞS", icon: "fas fa-gamepad", url: "/chemistry", cardClass: "app-card-games" },
       { name: "TikTok", icon: "fab fa-tiktok", url: "https://www.tiktok.com/", cardClass: "app-card-tiktok" },
       { name: "Music", icon: "fas fa-headphones", url: "https://audiomack.com"},
-      { name: "Spotify", icon: "fab fa-spotify", url: "https://open.spotify.com/", cardClass: "app-card-spotify" },
       { name: "YouTube", icon: "fab fa-youtube", url: "https://www.youtube.com/", cardClass: "app-card-youtube", forceProxy: "ag" },
-      { name: "Movies", icon: "fas fa-film", url: "https://www.cineby.gd" },
+      { name: "Movies", icon: "fas fa-film", url: "https://sflix2.me/" },
       { name: "Achievements", icon: "fas fa-trophy", url: "/achievements" },
       { name: "Links", icon: "fas fa-link", url: "/links" },
       { name: "What's New", icon: "fas fa-star", url: "/whatsnew" },
@@ -1407,7 +1403,7 @@
     // Functions
     async function initServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
-      await navigator.serviceWorker.register('/sw.js?v=20260831-tiktok-fast-feed-cache-26');
+      await navigator.serviceWorker.register('/sw.js?v=20260831-tiktok-fast-feed-cache-29');
       await navigator.serviceWorker.ready;
       if (!navigator.serviceWorker.controller) {
         await new Promise((resolve) => {
