@@ -537,9 +537,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   require("./chat-git-main/integration").integrateChat({ io, mountExpressRouter });
 
-registerPlatinumGameMirrorRoutes(fastify, {
-    cacheRoot: fileURLToPath(new URL("game-cache/platinum/", import.meta.url)),
-});
+  registerPlatinumGameMirrorRoutes(fastify);
 
   // Mount proxy routes before the catch-all public static handler. Fastify's
   // root static wildcard otherwise claims /ag/* first and turns valid proxy
