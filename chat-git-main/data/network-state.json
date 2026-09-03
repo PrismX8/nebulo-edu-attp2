@@ -55,8 +55,17 @@
         "metadata": {},
         "at": 1788043883158
       }
+    ],
+    "aa40e77f-8935-4c8c-8dd1-97b012fec17f": [
+      {
+        "id": "e1455156-5a02-46cf-87f6-0ad12b3b60a0",
+        "type": "warn",
+        "message": "You were warned by moderation (1/3). Reason: dont try to say n word",
+        "metadata": {},
+        "at": 1788402651930
+      }
     ]
   },
-  "slowmodeMs": 3000,
+  "slowmodeMs": 2000,
   "lockdownActive": false
 }

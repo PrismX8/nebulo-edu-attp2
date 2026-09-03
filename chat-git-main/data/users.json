@@ -1252,6 +1252,21 @@
       ],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
+    },
+    {
+      "_id": "aa40e77f-8935-4c8c-8dd1-97b012fec17f",
+      "username": "Hologramrick",
+      "role": "user",
+      "avatar": null,
+      "coins": 0,
+      "ownedEffects": [
+        "none"
+      ],
+      "equippedEffect": "none",
+      "equippedAvatarEffect": "none",
+      "friends": [],
+      "friendRequestsSent": [],
+      "friendRequestsReceived": []
     }
   ]
 }

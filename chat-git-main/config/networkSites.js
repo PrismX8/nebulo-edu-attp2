@@ -14,7 +14,18 @@ const defaultSites = [
     url: "https://platniumunblocker.com",
     room: "platnium",
     aiName: "Platinum AI",
-    verifiedOwners: ["platinum_owner"]
+    verifiedOwners: ["platinum_owner"],
+    persistMessagesToDb: true
+  },
+  {
+    id: "overcloaked",
+    name: "Overcloaked",
+    url: "https://overcloaked.local",
+    channelName: "overcloaked",
+    room: "ovrkld7q3zr",
+    aiName: "Overcloaked AI",
+    verifiedOwners: ["overcloaked_owner"],
+    persistMessagesToDb: true
   }
 ];
 

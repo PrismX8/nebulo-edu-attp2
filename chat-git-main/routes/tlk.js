@@ -22,6 +22,8 @@ const dmStore = require('../services/chat/dmStore');
 const receiptStore = require('../services/chat/receiptStore');
 const messageCosmeticStore = require('../services/chat/messageCosmeticStore');
 const messageFeatureStore = require('../services/chat/messageFeatureStore');
+const chatMessagesStore = require('../services/db/chatMessagesStore');
+const { sites: networkSites } = require('../config/networkSites');
 const { moderatePublicMessage } = require('../services/moderation/publicMessage');
 const uploadRoute = require('./upload');
 
@@ -50,6 +52,12 @@ const focusRewardRateLimit = security.rateLimit({ prefix: 'focus-reward', window
 const customTagAdminRateLimit = security.rateLimit({ prefix: 'custom-tag-admin', windowMs: 60_000, max: 30 });
 
 const isDmRoomId = (room) => typeof room === 'string' && room.length === 8 && /^[a-z]+$/.test(room);
+
+const findSiteForRoom = (room) => {
+  const target = String(room || '').trim().toLowerCase();
+  if (!target) return null;
+  return (Array.isArray(networkSites) ? networkSites : []).find((site) => String(site?.room || '').trim().toLowerCase() === target) || null;
+};
 const computeDmRoomId = (usernameA, usernameB) => {
   const a = String(usernameA || '').trim().toLowerCase();
   const b = String(usernameB || '').trim().toLowerCase();
@@ -1667,6 +1675,18 @@ async function sendRoomMessageOnce({
       try {
         await messageCosmeticStore.save(normalizedRoom, enrichedMessage);
         messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply, attachments });
+        const siteConfig = findSiteForRoom(normalizedRoom);
+        if (siteConfig?.persistMessagesToDb) {
+          try {
+            await chatMessagesStore.persistChatMessage({
+              room: normalizedRoom,
+              siteId: siteConfig.id || siteConfig.channelName,
+              message: enrichedMessage
+            });
+          } catch (error) {
+            console.warn('DB message persistence failed:', error?.message || error);
+          }
+        }
         if ((authUser?._id || authUser?.id) && !DISABLE_MESSAGE_COIN_REWARD) {
           const coinsEarned = earnsReplyReward ? 2 : 1;
           const rewardedUser = await grantRewardCoins(authUser, coinsEarned);
@@ -2262,6 +2282,47 @@ router.get('/rooms/:room/messages', auth, async (req, res) => {
     });
     console.error('TLK messages error:', error?.message || error);
     return res.status(502).json({ msg: error?.message || 'TLK messages failed' });
+  }
+});
+
+// @route   GET /api/tlk/rooms/:room/db-messages
+// @desc    Return the latest messages stored in the external profile database
+//          for rooms that opt into local persistence (configured via
+//          networkSites.js). This is the read path for persisted rooms.
+// @access  Private
+router.get('/rooms/:room/db-messages', auth, async (req, res) => {
+  const room = String(req.params.room || '').trim().toLowerCase();
+  if (!room) return res.status(400).json({ msg: 'Room is required' });
+  const siteConfig = findSiteForRoom(room);
+  if (!siteConfig?.persistMessagesToDb) {
+    return res.status(404).json({ msg: 'Room does not persist messages to the database' });
+  }
+  const limit = Math.max(1, Math.min(200, Number(req.query.limit) || 80));
+  const beforeId = req.query.beforeId ? Number(req.query.beforeId) || null : null;
+  try {
+    const rows = await chatMessagesStore.getRecentChatMessages({ room, limit, beforeId });
+    return res.json({
+      room,
+      siteId: siteConfig.id || siteConfig.channelName,
+      messages: rows.map((row) => ({
+        id: row.message_id ? String(row.message_id) : `db-${row.id}`,
+        _id: row.message_id ? String(row.message_id) : `db-${row.id}`,
+        roomId: row.room,
+        dbId: Number(row.id) || null,
+        userId: row.user_id || null,
+        username: row.username || null,
+        nickname: row.nickname || row.username || 'Unknown',
+        avatar: row.avatar || null,
+        role: row.role || 'user',
+        body: row.body || '',
+        clientNonce: row.client_nonce || null,
+        date: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+        persistedToDb: true
+      })),
+      hasMore: rows.length === limit
+    });
+  } catch (error) {
+    return res.status(502).json({ msg: error?.message || 'Failed to load persisted messages' });
   }
 });
 

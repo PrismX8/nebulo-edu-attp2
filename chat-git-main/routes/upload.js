@@ -4,6 +4,7 @@ const multer = require('multer');
 const axios = require('axios');
 const auth = require('../middleware/auth');
 const security = require('../middleware/security');
+const chatImageStore = require('../services/db/chatImageStore');
 
 const IMAGE_MODERATION_ENABLED = String(process.env.IMAGE_MODERATION_ENABLED || 'true').toLowerCase() !== 'false';
 const IMAGE_MODERATION_BLOCK = new Set(
@@ -12,6 +13,7 @@ const IMAGE_MODERATION_BLOCK = new Set(
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean)
 );
+const IMAGE_DB_MAX_BYTES = Math.max(64 * 1024, Number(process.env.CHAT_IMAGE_DB_MAX_BYTES || 5 * 1024 * 1024));
 const CONTENTMOD_ANALYZER_PAGE = 'https://contentmod.io/tools/free-image-analyzer';
 const CONTENTMOD_ANALYZER_ACTION = '7f2e0bf3e11b93660b302398daba2300f50476b501';
 const QUIZIZZ_UPLOAD_URL = String(
@@ -39,6 +41,127 @@ const upload = multer({
   limits: { fileSize: MAX_BYTES },
   fileFilter(_req, file, cb) {
     cb(null, ALLOWED_MIME.has(file.mimetype));
+  }
+});
+
+const dbUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: IMAGE_DB_MAX_BYTES },
+  fileFilter(_req, file, cb) {
+    cb(null, ALLOWED_MIME.has(file.mimetype));
+  }
+});
+
+// @route   POST api/upload/image-db
+// @desc    Accept a chat image, persist the binary in the external profile
+//          database, and return a local /api/upload/image/:id URL. The image
+//          is served immediately and moderated asynchronously in the
+//          background so the user gets an instant, smooth send. Blocked
+//          images stop being served by /image/:id (404).
+// @access  Private
+router.post('/image-db', auth, security.chatWriteRateLimit, dbUpload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ msg: 'No image file provided or unsupported type' });
+
+  try {
+    const authUser = req.user || {};
+    const userId = String(authUser?._id || authUser?.id || '').trim();
+    const username = String(authUser?.username || authUser?.name || '').trim();
+    const room = String(req.body?.room || '').trim().toLowerCase();
+
+    const saved = await chatImageStore.saveChatImage({
+      userId,
+      username,
+      room,
+      filename: req.file.originalname || 'image',
+      mimeType: req.file.mimetype,
+      data: req.file.buffer,
+      width: null,
+      height: null,
+      moderation: { status: 'pending' }
+    });
+
+    // Return immediately so the UI can render the optimistic message and the
+    // server can broadcast the realtime message without waiting for the slow
+    // third-party moderation round-trip. We mark moderation as pending and
+    // resolve it in the background.
+    res.json({
+      id: saved.id,
+      url: `/api/upload/image/${saved.id}`,
+      byteSize: saved.byteSize,
+      moderation: { blocked: false, provider: 'contentmod', status: 'pending' }
+    });
+
+    // Fire-and-forget background moderation. If the image is rejected, we
+    // mark it blocked so the /image/:id route will return 404 going forward.
+    void (async () => {
+      try {
+        const publicUrl = `${req.protocol}://${req.get('host') || 'localhost'}/api/upload/image/${saved.id}`;
+        const moderation = await moderateHostedImage(publicUrl);
+        const summary = {
+          provider: 'contentmod',
+          blocked: !moderation.allowed,
+          status: moderation.allowed ? 'cleared' : 'blocked',
+          category: moderation.category || null,
+          rating: moderation.result?.summary?.contentRating || null,
+          confidence: moderation.result?.confidence ?? null,
+          nsfwCategories: Array.isArray(moderation.result?.nsfwCategories) ? uniqueLabels(moderation.result?.nsfwCategories) : [],
+          rawNsfwCategories: moderation.result?.nsfwCategories || [],
+          suggestedActions: moderation.result?.suggestedActions || null,
+          riskScores: moderation.result?.riskScores || null
+        };
+        if (!moderation.allowed) {
+          try {
+            const { getPool } = require('../services/db/profileStore');
+            await getPool().query('DELETE FROM public.chat_images WHERE id = $1', [saved.id]);
+          } catch {}
+        } else {
+          try {
+            const { getPool } = require('../services/db/profileStore');
+            await getPool().query('UPDATE public.chat_images SET moderation = $1 WHERE id = $2', [
+              JSON.stringify(summary),
+              saved.id
+            ]);
+          } catch {}
+        }
+        if (globalThis.__nebuloChatIo) {
+          globalThis.__nebuloChatIo.to(room || '').emit('chat_image_moderation', {
+            id: saved.id,
+            blocked: !moderation.allowed,
+            summary
+          });
+        }
+      } catch (error) {
+        console.warn('Background image moderation failed:', error?.message || error);
+      }
+    })();
+  } catch (err) {
+    return res.status(err.status || 502).json({ msg: err.message || 'Failed to upload image' });
+  }
+});
+
+// @route   GET api/upload/image/:id
+// @desc    Stream a chat image stored in the external profile database.
+//          No auth — the image id acts as a capability. Exposes Cache-Control
+//          so the browser reuses the binary across messages.
+// @access  Public
+router.get('/image/:id', async (req, res) => {
+  const id = String(req.params.id || '').trim();
+  if (!/^[\w-]{8,64}$/.test(id)) return res.status(400).end();
+  try {
+    const row = await chatImageStore.getChatImage(id);
+    if (!row) return res.status(404).end();
+    const mime = String(row.mime_type || 'application/octet-stream');
+    const data = row.data;
+    const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data || []);
+    res.setHeader('content-type', mime);
+    res.setHeader('content-length', String(buffer.length));
+    res.setHeader('cache-control', 'public, max-age=31536000, immutable');
+    res.setHeader('x-content-type-options', 'nosniff');
+    if (row.width) res.setHeader('x-image-width', String(row.width));
+    if (row.height) res.setHeader('x-image-height', String(row.height));
+    return res.end(buffer);
+  } catch (error) {
+    return res.status(502).end();
   }
 });
 
@@ -151,11 +274,28 @@ async function moderateHostedImage(url) {
 
 function extractImageUrlsFromText(text = '') {
   const urls = [];
-  const re = /\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|([^\]]+))\]/gi;
-  let match;
-  while ((match = re.exec(String(text || '')))) {
-    const url = String(match[1] || match[2] || '').trim();
-    if (url) urls.push(url);
+  const seen = new Set();
+  const sources = [
+    /\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|([^\]]+))\]/gi,
+    /\[image:[^\]]*\]\((https?:[^)\s]+|\/api\/upload\/image\/[A-Za-z0-9_-]+)\)/gi
+  ];
+  for (const re of sources) {
+    let match;
+    while ((match = re.exec(String(text || '')))) {
+      const url = String(match[1] || match[2] || '').trim();
+      if (!url || seen.has(url)) continue;
+      if (/^\/api\/upload\/image\/[\w-]+$/i.test(url)) {
+        seen.add(url);
+        urls.push(url);
+        continue;
+      }
+      let hostname = '';
+      try { hostname = new URL(url).hostname; } catch { continue; }
+      if (QUIZIZZ_ALLOWED_IMAGE_HOSTS.has(hostname)) {
+        seen.add(url);
+        urls.push(url);
+      }
+    }
   }
   return urls;
 }
@@ -163,6 +303,11 @@ function extractImageUrlsFromText(text = '') {
 async function validateImageUrlsInText(text = '') {
   const urls = extractImageUrlsFromText(text);
   for (const url of urls) {
+    // Local DB-served images were already moderated at upload time, so we
+    // skip the third-party recheck. Only enforce the host allow-list.
+    if (/^\/api\/upload\/image\/[\w-]+$/i.test(url)) {
+      continue;
+    }
     let parsed;
     try { parsed = new URL(url); } catch {
       return { allowed: false, reason: 'Image URL is invalid', url };

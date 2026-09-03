@@ -1104,6 +1104,149 @@ export function createChatUi(deps) {
     });
 
   // Hoisted renderMessages so it's available everywhere
+  function buildMessageRenderKey(m) {
+    if (!m) return '';
+    const id = String(m?.id || m?._id || '').trim();
+    const name = m?.nickname || m?.username || m?.sender?.name || m?.sender?.username || 'Unknown';
+    const avatarSrc = String(m?.avatar || m?.avatar_url || m?.sender?.avatar || m?.sender?.avatar_url || '').trim();
+    const userId = getUserId(m);
+    const body = String(m?.body || m?.content || '');
+    const sendState = String(m?.sendState || (m?.failed ? 'failed' : (m?.pending ? 'sending' : 'sent')));
+    const isDeleted = !!m?.deleted;
+    const isSystem = !!m?.system || String(name).trim().toLowerCase() === 'system';
+    const effectId = isDeleted ? 'none' : getMessageEffect(m);
+    const rank = getRank(m);
+    const meta = getMessageMeta(m);
+    const friendTag = !isSystem && isFriendUsername(name) ? 1 : 0;
+    const mine = isMine(m);
+    const tokens = meta.reactions ? Object.entries(meta.reactions).map(([e, names]) => `${e}:${Array.isArray(names) ? names.length : 0}`).join('|') : '';
+    const reports = Array.isArray(meta.reports) ? meta.reports.length : 0;
+    const canCopy = String(state.user?.role || '').toLowerCase() === 'owner' ? 1 : 0;
+    const isMention = (() => {
+      const myUsername = String(state.user?.username || state.user?.name || '').trim();
+      return myUsername && isMentioned(m, myUsername) ? 1 : 0;
+    })();
+    return [
+      id,
+      name,
+      avatarSrc,
+      userId,
+      body,
+      sendState,
+      isDeleted ? 1 : 0,
+      isSystem ? 1 : 0,
+      effectId,
+      rank?.key || '',
+      rank?.label || '',
+      friendTag,
+      mine ? 1 : 0,
+      tokens,
+      reports,
+      canCopy,
+      isMention,
+      String(m?.user_token || m?.senderId || '').trim(),
+      fmtTime(m)
+    ].join('');
+  }
+
+  function buildMessageHtml(m) {
+    const rank = getRank(m);
+    const name = m?.nickname || m?.username || m?.sender?.name || m?.sender?.username || 'Unknown';
+    const body = String(m?.body || m?.content || '');
+    const avatarSrc = String(m?.avatar || m?.avatar_url || m?.sender?.avatar || m?.sender?.avatar_url || '').trim();
+    const avatarL = String(name || 'U').trim().charAt(0).toUpperCase() || 'U';
+    const id = String(m?.id || m?._id || '').trim();
+    const token = String(m?.user_token || m?.senderId || '').trim();
+    const isDeleted = !!m?.deleted;
+    const sendState = String(m?.sendState || (m?.failed ? 'failed' : (m?.pending || id.startsWith('temp-') ? 'sending' : 'sent')));
+    const isPending = sendState === 'queued' || sendState === 'sending';
+    const isFailed = sendState === 'failed';
+    const mine = isMine(m);
+    const isSystem = !!m?.system || String(name).trim().toLowerCase() === 'system';
+    const systemKind = isSystem
+      ? (/voice call/i.test(body) ? 'call' : /effect|sound|activated|broadcast/i.test(body) ? 'effect' : /moderation|blocked|warning|ban/i.test(body) ? 'moderation' : 'info')
+      : '';
+    const systemIcon = systemKind === 'call' ? '☎' : systemKind === 'effect' ? '✦' : systemKind === 'moderation' ? '!' : 'i';
+    const shouldAnimate = !!id && !animatedMessageIds.has(id) && !mine;
+    const enterClass = shouldAnimate ? ' msg-enter' : '';
+    const enterStyle = shouldAnimate ? ` style="--msg-enter-delay:0ms"` : '';
+    const bgStyle = `background:${avatarColor(name)}`;
+    const effectId = isDeleted ? 'none' : getMessageEffect(m);
+    const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
+    const meta = getMessageMeta(m);
+    const reactionHtml = Object.entries(meta.reactions)
+      .filter(([, names]) => Array.isArray(names) && names.length)
+      .map(([emoji, names]) => `<button type="button" class="reaction-chip" data-react-id="${esc(id)}" data-react-emoji="${esc(emoji)}">${esc(emoji)} ${names.length}</button>`)
+      .join('');
+    const replyBtn = id ? `<button type="button" data-reply-id="${esc(id)}">Reply</button>` : '';
+    const alreadyReported = Array.isArray(meta.reports) && meta.reports.some((report) =>
+      String(report.id || report.messageId || '').trim() === id &&
+      String(report.reporter || '').trim().toLowerCase() === getCurrentUsername().toLowerCase()
+    );
+    const reportBtn = id && !isSystem
+      ? `<button type="button" data-report-id="${esc(id)}" ${alreadyReported ? 'disabled' : ''}>${alreadyReported ? 'Reported' : 'Report'}</button>`
+      : '';
+
+    const deleteBtn = canDelete(m)
+      ? `<button data-delete-id="${esc(id)}" data-delete-token="${esc(token)}" class="delete-btn">Delete</button>`
+      : '';
+    const canCopyId = String(state.user?.role || '').toLowerCase() === 'owner';
+    const userId = esc(getUserId(m));
+    const copyIdBtn = canCopyId && userId
+      ? `<button data-copy-id="${userId}" class="copy-id-btn" title="Copy user ID">Copy ID</button>`
+      : '';
+    const actionsHtml = (deleteBtn || copyIdBtn || replyBtn || reportBtn)
+      ? `<div class="msg-actions">${replyBtn}<button type="button" data-quick-react="${esc(id)}" data-react-emoji="👍">👍</button><button type="button" data-quick-react="${esc(id)}" data-react-emoji="❤️">❤️</button>${reportBtn}${deleteBtn}${copyIdBtn}</div>`
+      : '';
+
+    const rankHtml = rank
+      ? `<span class="rank-chip rank-${rank.key}">${esc(rank.label)}</span>`
+      : '';
+    const friendTagHtml = !isSystem && isFriendUsername(name)
+      ? `<span class="friend-tag" style="margin-left:8px;font-size:11px;font-weight:700;color:var(--success);background:rgba(56,161,105,0.12);border:1px solid rgba(56,161,105,0.2);padding:0 6px;border-radius:9px;line-height:1.5">Friend</span>`
+      : '';
+
+    let formattedBody = renderReplyPreview(body) + renderBody(body.replace(/^> Replying to [^\n]+\n/i, ''));
+    if (!isDeleted) {
+      const myUsername = String(state.user?.username || state.user?.name || '').trim();
+      if (myUsername && isMentioned(m, myUsername)) {
+        formattedBody = highlightMention(renderBody(body), myUsername);
+      }
+    }
+    const previewHtml = !isDeleted ? `${getAttachmentPreviewHtml(body)}${getLinkPreviewHtml(body)}` : '';
+    const callInviteHtml = isSystem && /started a voice call/i.test(body)
+      ? '<button type="button" class="btn btn-primary btn-sm call-invite-join" data-join-current-call="1">Join call</button>'
+      : '';
+    const bubbleHtml = isSystem && !isDeleted
+      ? `<span class="system-note-icon">${esc(systemIcon)}</span><span class="system-note-copy">${formattedBody}</span>`
+      : (isDeleted ? '<em>Message deleted</em>' : formattedBody);
+
+    return `<div class="msg ${mine ? 'mine' : ''} ${isDeleted ? 'deleted' : ''} ${isPending ? 'pending' : ''} ${isFailed ? 'failed' : ''} ${isSystem ? `system-note system-${systemKind}` : ''}${enterClass}" data-message-id="${esc(id)}" data-message-token="${esc(token)}"${enterStyle}>
+          <div class="msg-avatar" style="${bgStyle}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">
+            ${avatarSrc ? `<img src="${esc(avatarSrc)}" alt="${esc(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" />` : esc(avatarL)}
+          </div>
+          <div class="msg-body">
+            <div class="msg-head">
+              <strong class="msg-name ${effectCls}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">${esc(isSystem ? 'System' : name)}</strong>
+              ${friendTagHtml}
+              ${rankHtml}
+              <span>${esc(fmtTime(m))}</span>
+              ${isPending ? `<span class="msg-send-state">${sendState === 'queued' ? 'Queued' : 'Sending...'}</span>` : ''}
+              ${isFailed ? `<button type="button" class="msg-send-state" data-retry-nonce="${esc(getClientNonce(m))}" style="color:var(--danger);cursor:pointer;background:transparent;border:0;padding:0;text-decoration:underline">Failed · Retry</button>` : ''}
+            </div>
+            <div class="msg-bubble ${effectCls}">${bubbleHtml}</div>
+            ${callInviteHtml}
+            ${previewHtml}
+            ${reactionHtml ? `<div class="reaction-row">${reactionHtml}</div>` : ''}
+            ${actionsHtml}
+          </div>
+        </div>`;
+  }
+
+  function buildUnreadMarkerHtml() {
+    return '<div class="unread-separator">New messages</div>';
+  }
+
   function renderMessages() {
     const root = document.getElementById('chat-messages');
     if (!root) return;
@@ -1125,7 +1268,6 @@ export function createChatUi(deps) {
       return;
     }
 
-    let enteringIndex = 0;
     const searchQuery = String(state.roomSearchQuery || '').trim().toLowerCase();
     const visibleMessages = searchQuery
       ? state.messages.filter((m) => String(m?.body || m?.content || '').toLowerCase().includes(searchQuery) || getUsername(m).toLowerCase().includes(searchQuery))
@@ -1136,105 +1278,45 @@ export function createChatUi(deps) {
       return;
     }
 
-    root.innerHTML = visibleMessages.map((m) => {
-      const rank = getRank(m);
-      const name = m?.nickname || m?.username || m?.sender?.name || m?.sender?.username || 'Unknown';
-      const body = String(m?.body || m?.content || '');
-      const avatarSrc = String(m?.avatar || m?.avatar_url || m?.sender?.avatar || m?.sender?.avatar_url || '').trim();
-      const avatarL = String(name || 'U').trim().charAt(0).toUpperCase() || 'U';
-      const id = String(m?.id || m?._id || '').trim();
-      const token = String(m?.user_token || m?.senderId || '').trim();
-      const isDeleted = !!m?.deleted;
-      const sendState = String(m?.sendState || (m?.failed ? 'failed' : (m?.pending || id.startsWith('temp-') ? 'sending' : 'sent')));
-      const isPending = sendState === 'queued' || sendState === 'sending';
-      const isFailed = sendState === 'failed';
-      const mine = isMine(m);
-      const isSystem = !!m?.system || String(name).trim().toLowerCase() === 'system';
-      const systemKind = isSystem
-        ? (/voice call/i.test(body) ? 'call' : /effect|sound|activated|broadcast/i.test(body) ? 'effect' : /moderation|blocked|warning|ban/i.test(body) ? 'moderation' : 'info')
-        : '';
-      const systemIcon = systemKind === 'call' ? '☎' : systemKind === 'effect' ? '✦' : systemKind === 'moderation' ? '!' : 'i';
-      const shouldAnimate = !!id && !animatedMessageIds.has(id);
-      const enterClass = shouldAnimate ? ' msg-enter' : '';
-      const enterStyle = shouldAnimate ? ` style="--msg-enter-delay:${Math.min(enteringIndex++ * 42, 210)}ms"` : '';
-      const bgStyle = `background:${avatarColor(name)}`;
-      const effectId = isDeleted ? 'none' : getMessageEffect(m);
-      const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
-      const meta = getMessageMeta(m);
-      const reactionHtml = Object.entries(meta.reactions)
-        .filter(([, names]) => Array.isArray(names) && names.length)
-        .map(([emoji, names]) => `<button type="button" class="reaction-chip" data-react-id="${esc(id)}" data-react-emoji="${esc(emoji)}">${esc(emoji)} ${names.length}</button>`)
-        .join('');
-      const replyBtn = id ? `<button type="button" data-reply-id="${esc(id)}">Reply</button>` : '';
-      const alreadyReported = Array.isArray(meta.reports) && meta.reports.some((report) =>
-        String(report.id || report.messageId || '').trim() === id &&
-        String(report.reporter || '').trim().toLowerCase() === getCurrentUsername().toLowerCase()
-      );
-      const reportBtn = id && !isSystem
-        ? `<button type="button" data-report-id="${esc(id)}" ${alreadyReported ? 'disabled' : ''}>${alreadyReported ? 'Reported' : 'Report'}</button>`
-        : '';
-
-      const deleteBtn = canDelete(m)
-        ? `<button data-delete-id="${esc(id)}" data-delete-token="${esc(token)}" class="delete-btn">Delete</button>`
-        : '';
-      const canCopyId = String(state.user?.role || '').toLowerCase() === 'owner';
-      const userId = esc(getUserId(m));
-      const copyIdBtn = canCopyId && userId
-        ? `<button data-copy-id="${userId}" class="copy-id-btn" title="Copy user ID">Copy ID</button>`
-        : '';
-      const actionsHtml = (deleteBtn || copyIdBtn || replyBtn || reportBtn)
-        ? `<div class="msg-actions">${replyBtn}<button type="button" data-quick-react="${esc(id)}" data-react-emoji="👍">👍</button><button type="button" data-quick-react="${esc(id)}" data-react-emoji="❤️">❤️</button>${reportBtn}${deleteBtn}${copyIdBtn}</div>`
-        : '';
-
-      const rankHtml = rank
-        ? `<span class="rank-chip rank-${rank.key}">${esc(rank.label)}</span>`
-        : '';
-      const friendTagHtml = !isSystem && isFriendUsername(name)
-        ? `<span class="friend-tag" style="margin-left:8px;font-size:11px;font-weight:700;color:var(--success);background:rgba(56,161,105,0.12);border:1px solid rgba(56,161,105,0.2);padding:0 6px;border-radius:9px;line-height:1.5">Friend</span>`
-        : '';
-
-      let formattedBody = renderReplyPreview(body) + renderBody(body.replace(/^> Replying to [^\n]+\n/i, ''));
-      if (!isDeleted) {
-        const myUsername = String(state.user?.username || state.user?.name || '').trim();
-        if (myUsername && isMentioned(m, myUsername)) {
-          formattedBody = highlightMention(renderBody(body), myUsername);
-        }
+    const existingById = new Map();
+    for (const child of Array.from(root.children)) {
+      if (child.dataset && child.dataset.messageId) {
+        existingById.set(child.dataset.messageId, child);
       }
-      const previewHtml = !isDeleted ? `${getAttachmentPreviewHtml(body)}${getLinkPreviewHtml(body)}` : '';
-      const callInviteHtml = isSystem && /started a voice call/i.test(body)
-        ? '<button type="button" class="btn btn-primary btn-sm call-invite-join" data-join-current-call="1">Join call</button>'
-        : '';
-      const unreadMarker = state.newMessagesAfterId && id === state.newMessagesAfterId
-        ? '<div class="unread-separator">New messages</div>'
-        : '';
-      const bubbleHtml = isSystem && !isDeleted
-        ? `<span class="system-note-icon">${esc(systemIcon)}</span><span class="system-note-copy">${formattedBody}</span>`
-        : (isDeleted ? '<em>Message deleted</em>' : formattedBody);
+    }
 
-      return `
-        ${unreadMarker}
-        <div class="msg ${mine ? 'mine' : ''} ${isDeleted ? 'deleted' : ''} ${isPending ? 'pending' : ''} ${isFailed ? 'failed' : ''} ${isSystem ? `system-note system-${systemKind}` : ''}${enterClass}" data-message-id="${esc(id)}" data-message-token="${esc(token)}"${enterStyle}>
-          <div class="msg-avatar" style="${bgStyle}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">
-            ${avatarSrc ? `<img src="${esc(avatarSrc)}" alt="${esc(name)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" />` : esc(avatarL)}
-          </div>
-          <div class="msg-body">
-            <div class="msg-head">
-              <strong class="msg-name ${effectCls}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">${esc(isSystem ? 'System' : name)}</strong>
-              ${friendTagHtml}
-              ${rankHtml}
-              <span>${esc(fmtTime(m))}</span>
-              ${isPending ? `<span class="msg-send-state">${sendState === 'queued' ? 'Queued' : 'Sending...'}</span>` : ''}
-              ${isFailed ? `<button type="button" class="msg-send-state" data-retry-nonce="${esc(getClientNonce(m))}" style="color:var(--danger);cursor:pointer;background:transparent;border:0;padding:0;text-decoration:underline">Failed · Retry</button>` : ''}
-            </div>
-            <div class="msg-bubble ${effectCls}">${bubbleHtml}</div>
-            ${callInviteHtml}
-            ${previewHtml}
-            ${reactionHtml ? `<div class="reaction-row">${reactionHtml}</div>` : ''}
-            ${actionsHtml}
-          </div>
-        </div>
-      `;
-    }).join('');
+    const fragment = document.createDocumentFragment();
+    let insertedUnreadMarker = false;
+    for (const m of visibleMessages) {
+      const id = String(m?.id || m?._id || '').trim();
+      const key = buildMessageRenderKey(m);
+      if (state.newMessagesAfterId && id === state.newMessagesAfterId && !insertedUnreadMarker) {
+        const markerHost = document.createElement('div');
+        markerHost.innerHTML = buildUnreadMarkerHtml();
+        while (markerHost.firstChild) fragment.appendChild(markerHost.firstChild);
+        insertedUnreadMarker = true;
+      }
+      const existing = existingById.get(id);
+      if (existing && existing.__renderKey === key) {
+        fragment.appendChild(existing);
+      } else {
+        const host = document.createElement('div');
+        host.innerHTML = buildMessageHtml(m);
+        const node = host.firstElementChild;
+        if (!node) continue;
+        node.__renderKey = key;
+        fragment.appendChild(node);
+      }
+    }
+
+    for (const child of Array.from(root.children)) {
+      if (child.dataset && child.dataset.messageId && !fragment.contains(child)) {
+        root.removeChild(child);
+      }
+    }
+
+    while (root.firstChild) root.removeChild(root.firstChild);
+    root.appendChild(fragment);
 
     state.messages.forEach((m) => {
       const id = String(m?.id || m?._id || '').trim();
@@ -1433,6 +1515,38 @@ export function createChatUi(deps) {
     return queued;
   };
 
+  const IDENTITY_FIELDS = [
+    'nickname', 'username', 'name',
+    'avatar', 'avatar_url',
+    'sender', 'senderId', 'senderUserId', 'userId', 'user_token', 'user_id',
+    'role', 'equippedEffect',
+    'system', 'date', 'timestamp', 'createdAt', 'updatedAt',
+    'roomId', 'room',
+    'clientNonce', 'client_nonce',
+    '_nebuloClientCreatedAt', '_nebuloLocalOrder'
+  ];
+  const hasValue = (value) => {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object') return Object.keys(value).length > 0;
+    return true;
+  };
+  const mergePreservingIdentity = (prev, next) => {
+    if (!prev) return next;
+    if (!next) return prev;
+    const merged = { ...prev, ...next };
+    for (const field of IDENTITY_FIELDS) {
+      if (!hasValue(next[field]) && hasValue(prev[field])) {
+        merged[field] = prev[field];
+      }
+    }
+    if ((!hasValue(merged.nickname) && !hasValue(merged.username)) && (hasValue(merged.sender?.name) || hasValue(merged.sender?.username))) {
+      merged.sender = { ...(prev.sender || {}), ...(next.sender || {}) };
+    }
+    return merged;
+  };
+
   const upsertRealtimeMessage = (message, { replaceOptimistic = false } = {}) => {
     normalizeMessageIds(message);
     const roomId = String(message?.roomId || '').trim();
@@ -1454,11 +1568,9 @@ export function createChatUi(deps) {
           if (existingIndex < optimisticIndex) optimisticIndex -= 1;
         }
         const targetIndex = shouldReplaceOptimistic && optimisticIndex >= 0 ? optimisticIndex : existingIndex;
-        state.messages.splice(targetIndex, 1, {
-          ...state.messages[targetIndex],
-          ...cleanMessage,
-          pending: false
-        });
+        const merged = mergePreservingIdentity(state.messages[targetIndex], cleanMessage);
+        merged.pending = false;
+        state.messages.splice(targetIndex, 1, merged);
         if (messageId) animatedMessageIds.add(messageId);
         state.messages = state.messages.filter((entry, index) => index === targetIndex || getMessageId(entry) !== messageId);
         normalizeMessageOrder();
@@ -1469,13 +1581,11 @@ export function createChatUi(deps) {
     }
 
     if (shouldReplaceOptimistic && optimisticIndex >= 0) {
-      state.messages.splice(optimisticIndex, 1, {
-        ...state.messages[optimisticIndex],
-        ...cleanMessage,
-        pending: false,
-        failed: false,
-        sendState: 'sent'
-      });
+      const merged = mergePreservingIdentity(state.messages[optimisticIndex], cleanMessage);
+      merged.pending = false;
+      merged.failed = false;
+      merged.sendState = 'sent';
+      state.messages.splice(optimisticIndex, 1, merged);
       if (messageId) {
         animatedMessageIds.add(messageId);
         state.messages = state.messages.filter((entry, index) => index === optimisticIndex || getMessageId(entry) !== messageId);
@@ -1487,8 +1597,19 @@ export function createChatUi(deps) {
     }
 
     if (messageId) {
-      state.messages = state.messages.filter((entry) => getMessageId(entry) !== messageId);
+      const existingIndex = state.messages.findIndex((entry) => getMessageId(entry) === messageId);
+      if (existingIndex >= 0) {
+        const merged = mergePreservingIdentity(state.messages[existingIndex], cleanMessage);
+        state.messages.splice(existingIndex, 1, merged);
+        if (messageId) animatedMessageIds.add(messageId);
+        state.messages = state.messages.filter((entry, index) => index === existingIndex || getMessageId(entry) !== messageId);
+        normalizeMessageOrder();
+        state.lastMessagesSignature = getMessagesSignature(state.messages);
+        renderMessages();
+        return true;
+      }
     }
+
     state.messages.push(cleanMessage);
     normalizeMessageOrder();
     state.lastMessagesSignature = getMessagesSignature(state.messages);
@@ -1600,8 +1721,15 @@ export function createChatUi(deps) {
       return;
     }
     el.classList.remove('hidden');
+    const att = state.pendingAttachment;
+    const hasImage = !!att.dataUrl;
+    const status = att.error
+      ? `<span class="attachment-error" style="color:var(--danger)">Upload failed: ${esc(att.error)}</span>`
+      : (att.uploaded ? '' : `<span class="attachment-uploading" style="color:var(--muted)">Uploading…</span>`);
     el.innerHTML = `
-      <span>${state.pendingAttachment.dataUrl ? 'Image' : 'File'}: <strong>${esc(state.pendingAttachment.name)}</strong></span>
+      ${hasImage ? `<img class="attachment-thumb" src="${esc(att.dataUrl)}" alt="${esc(att.name)}" />` : ''}
+      <span>${hasImage ? 'Image' : 'File'}: <strong>${esc(att.name)}</strong></span>
+      ${status}
       <button type="button" id="clear-attachment">Remove</button>
     `;
     document.getElementById('clear-attachment')?.addEventListener('click', () => {
@@ -6122,9 +6250,9 @@ export function createChatUi(deps) {
   };
 
   const getAttachmentPreviewHtml = (body) => {
-    const imageMatch = String(body || '').match(/\[image:\s*([^\]]+)\]\((data:image\/[^)]+)\)/i);
+    const imageMatch = String(body || '').match(/\[image:\s*([^\]]+)\]\(((?:data:image\/[^)]+)|(?:https?:\/\/[^)\s]+)|(?:\/api\/upload\/image\/[\w-]+))\)/i);
     if (imageMatch) {
-      return `<div class="attachment-preview"><img src="${imageMatch[2]}" alt="${esc(imageMatch[1])}" /></div>`;
+      return `<div class="attachment-preview"><img src="${esc(imageMatch[2])}" alt="${esc(imageMatch[1])}" loading="lazy" decoding="async" /></div>`;
     }
     const fileMatch = String(body || '').match(/\[file:\s*([^\]]+)\]/i);
     if (!fileMatch) return '';
@@ -6669,7 +6797,8 @@ export function createChatUi(deps) {
         entry.state = 'sending';
         const index = state.messages.findIndex((message) => getClientNonce(message) === entry.clientNonce);
         if (index >= 0) state.messages[index] = { ...state.messages[index], pending: true, failed: false, sendState: 'sending' };
-        renderMessages();
+        // Skip the full re-render — the optimistic message is already in
+        // place and the spinner is a CSS state on the existing node.
         await deliverQueuedMessage(entry);
       }
     } finally {
@@ -6698,7 +6827,26 @@ export function createChatUi(deps) {
     }
     if (state.pendingAttachment) {
       const attachment = state.pendingAttachment;
-      trimmed = `${trimmed}${trimmed ? '\n' : ''}${attachment.dataUrl ? `[image: ${attachment.name}](${attachment.dataUrl})` : `[file: ${attachment.name}]`}`;
+      if (attachment.error) {
+        throw new Error(attachment.error || 'Image upload failed');
+      }
+      if (!attachment.uploaded) {
+        // Wait for the in-flight upload so the message body has a server URL.
+        // A short timeout avoids hanging the send on a stuck request.
+        const deadline = Date.now() + 15000;
+        while (state.pendingAttachment && !state.pendingAttachment.uploaded && !state.pendingAttachment.error && Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        if (state.pendingAttachment?.error) throw new Error(state.pendingAttachment.error);
+        if (!state.pendingAttachment?.uploaded) throw new Error('Image upload timed out');
+      }
+      const finalAttachment = state.pendingAttachment;
+      const imageUrl = finalAttachment.uploadUrl || finalAttachment.dataUrl || '';
+      if (imageUrl) {
+        trimmed = `${trimmed}${trimmed ? '\n' : ''}[image: ${finalAttachment.name}](${imageUrl})`;
+      } else {
+        trimmed = `${trimmed}${trimmed ? '\n' : ''}[file: ${finalAttachment.name}]`;
+      }
       state.pendingAttachment = null;
       renderAttachmentState();
     }
@@ -6731,8 +6879,11 @@ export function createChatUi(deps) {
       role: state.user?.role || 'user',
       equippedEffect: normalizeEffectId(state.user?.equippedEffect)
     };
+    // Optimistic sends append at the end of the list and skip the full
+    // chronological re-sort. The full sort only happens when a real server
+    // response (or new history) arrives, which keeps the send feeling instant.
     state.messages.push(optimisticMsg);
-    normalizeMessageOrder();
+    if (id) animatedMessageIds.add(id);
     state.lastMessagesSignature = getMessagesSignature(state.messages);
     state.smoothNextMessageScroll = true;
     renderMessages();
@@ -7126,20 +7277,62 @@ export function createChatUi(deps) {
       fileInput.addEventListener('change', () => {
         const file = fileInput.files?.[0];
         if (!file) return;
-        if (file.size > 750 * 1024) {
-          showComposerNotice('File too large. Limit is 750 KB.', 'error', 3500);
+        if (file.size > 5 * 1024 * 1024) {
+          showComposerNotice('File too large. Limit is 5 MB.', 'error', 3500);
           fileInput.value = '';
           return;
         }
         if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            state.pendingAttachment = { name: file.name, dataUrl: String(reader.result || '') };
-            renderAttachmentState();
+          const tempId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+          const localPreviewUrl = (() => {
+            try { return URL.createObjectURL(file); } catch { return ''; }
+          })();
+          state.pendingAttachment = {
+            id: tempId,
+            name: file.name,
+            dataUrl: localPreviewUrl,
+            uploaded: false,
+            uploadUrl: null,
+            file,
+            error: null
           };
-          reader.readAsDataURL(file);
+          renderAttachmentState();
+          // Upload to the database-backed image store. The returned URL is
+          // the one we embed in the message body so the message stays small
+          // and the moderation result is consistent across recipients.
+          const room = String(state.currentChannel?.room || '').trim().toLowerCase();
+          const formData = new FormData();
+          formData.append('image', file);
+          if (room) formData.append('room', room);
+          api('/api/upload/image-db', { method: 'POST', body: formData })
+            .then((result) => {
+              if (!state.pendingAttachment || state.pendingAttachment.id !== tempId) return;
+              const url = String(result?.url || '').trim();
+              if (!url) throw new Error('Upload did not return a URL');
+              state.pendingAttachment = {
+                ...state.pendingAttachment,
+                uploaded: true,
+                uploadUrl: url,
+                dataUrl: url,
+                moderation: result?.moderation || null
+              };
+              renderAttachmentState();
+            })
+            .catch((err) => {
+              if (state.pendingAttachment && state.pendingAttachment.id === tempId) {
+                state.pendingAttachment = { ...state.pendingAttachment, error: err?.message || 'Upload failed' };
+                renderAttachmentState();
+              }
+              showComposerNotice(err?.message || 'Image upload failed', 'error', 3500);
+            })
+            .finally(() => {
+              if (localPreviewUrl) {
+                // Revoke the object URL only after the server URL replaces it.
+                setTimeout(() => URL.revokeObjectURL(localPreviewUrl), 30_000);
+              }
+            });
         } else {
-          state.pendingAttachment = { name: file.name, dataUrl: '' };
+          state.pendingAttachment = { id: `pending-${Date.now()}`, name: file.name, dataUrl: '', uploaded: true, uploadUrl: null, file: null, error: null };
           renderAttachmentState();
         }
         fileInput.value = '';
