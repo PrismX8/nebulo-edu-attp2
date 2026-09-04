@@ -4,11 +4,11 @@ const PROXY_WARNING_RETRY_MS = 15000;
 function shouldWarnAboutProxyError(url) {
     if (!url) return false;
     const patterns = [
-        "/uv/service/",
-        "/uv/uv.bundle.js",
-        "/uv/uv.config.js",
-        "/uv/uv.handler.js",
-        "/scram/",
+        "/a3/s/",
+        "/a3/uv.bundle.js",
+        "/a3/uv.config.js",
+        "/a3/uv.handler.js",
+        "/c2/",
         "sflix2.me",
         "math.school.dovereducation.org"
     ];
@@ -107,9 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	let argonServiceWorkerPromise = null;
 	const scramjet = new ScramjetController({
 		files: {
-			wasm: '/scram/scramjet.wasm.wasm',
-			all: '/scram/scramjet.all.js',
-			sync: '/scram/scramjet.sync.js',
+			wasm: '/c2/j/wasm.wasm',
+			all: '/c2/j/all.js',
+			sync: '/c2/j/sync.js',
 		},
 	});
 
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		baremuxInitPromise = (async () => {
 			try {
 				if (!baremuxConnection) {
-					baremuxConnection = new BareMux.BareMuxConnection("/baremux/worker.js?v=bw1");
+					baremuxConnection = new BareMux.BareMuxConnection("/d5/worker.js?v=bw1");
 				}
 
 				const wispUrl =
@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				localStorage.setItem("transport", transport);
 
 				const expectedTransport =
-					transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+					transport === "libcurl" ? "/f1/index.mjs" : "/e9/index.mjs";
 
 				if ((await baremuxConnection.getTransport()) !== expectedTransport) {
 					await baremuxConnection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
@@ -568,10 +568,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (u.protocol !== "http:" && u.protocol !== "https:") return raw;
 			const hash = u.hash ? u.hash.slice(1) : "";
 			u.hash = "";
-			return "/scramjet/" + encodeURIComponent(u.href) + (hash ? "#" + encodeURIComponent(hash) : "");
+			return "/c2/j/" + encodeURIComponent(u.href) + (hash ? "#" + encodeURIComponent(hash) : "");
 		} catch {
 			// Best effort: still produce a scramjet route.
-			return "/scramjet/" + encodeURIComponent(raw);
+			return "/c2/j/" + encodeURIComponent(raw);
 		}
 	}
 
@@ -646,15 +646,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		const raw = (typeof inputUrl === "string" ? inputUrl : String(inputUrl || "")).trim();
 		if (!raw) return raw;
 
-		const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
-		const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/eclipse/";
+		const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/a3/s/";
+		const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/b7/s/";
 	const isAlreadyProxiedPath = (p) =>
 		p.startsWith(uvPrefix) ||
 		p.startsWith(eclipsePrefix) ||
 		p.startsWith("/ag/") ||
-		p.startsWith("/scram/service/") ||
-		p.startsWith("/service/scramjet/") ||
-		p.startsWith("/scramjet/");
+		p.startsWith("/c2/s/") ||
+		p.startsWith("/c2/j/");
 
 		if (raw.startsWith("/") && isAlreadyProxiedPath(raw)) return raw;
 
@@ -704,9 +703,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (!raw) return raw;
 
 		// Avoid proxy-encoding local routes/assets and avoid double-encoding already-proxied URLs.
-		const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
-		const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/eclipse/";
-	const isAlreadyProxied = raw.startsWith(uvPrefix) || raw.startsWith(eclipsePrefix) || raw.startsWith("/scram/service/") || raw.startsWith("/service/scramjet/") || raw.startsWith("/scramjet/");
+		const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/a3/s/";
+		const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/b7/s/";
+	const isAlreadyProxied = raw.startsWith(uvPrefix) || raw.startsWith(eclipsePrefix) || raw.startsWith("/c2/s/") || raw.startsWith("/c2/j/");
 	const isArgonProxied = raw.startsWith("/ag/");
 	if (raw.startsWith("/") && !isAlreadyProxied && !isArgonProxied) return raw;
 	if (isAlreadyProxied || isArgonProxied) return raw;

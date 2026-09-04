@@ -6,13 +6,13 @@ const router = express.Router();
 
 const getRequestUsername = (req) => String(req.user?.username || req.user?.name || '').trim();
 
-router.get('/', auth, (req, res) => {
+router.get('/', auth, async (req, res) => {
   const username = getRequestUsername(req);
-  const groups = username ? groupChats.getGroupsForUser(username) : [];
+  const groups = username ? await groupChats.getGroupsForUser(username) : [];
   res.json({ groups, maxGroups: groupChats.MAX_GROUPS_PER_USER });
 });
 
-router.post('/', auth, (req, res) => {
+router.post('/', auth, async (req, res) => {
   const name = String(req.body?.name || '').trim();
   if (!name) {
     return res.status(400).json({ msg: 'Group name is required' });
@@ -22,7 +22,7 @@ router.post('/', auth, (req, res) => {
     return res.status(400).json({ msg: 'Username required to create group' });
   }
   try {
-    const group = groupChats.createGroup(name, username);
+    const group = await groupChats.createGroup(name, username);
     if (!group) return res.status(500).json({ msg: 'Failed to create group chat' });
     return res.json({ group });
   } catch (error) {
@@ -31,20 +31,20 @@ router.post('/', auth, (req, res) => {
   }
 });
 
-router.get('/:room', auth, (req, res) => {
+router.get('/:room', auth, async (req, res) => {
   const room = String(req.params.room || '').trim();
   // Validate room format - should be 5 lowercase letters
   if (!/^[a-z]{5}$/.test(room)) {
     return res.status(400).json({ msg: 'Invalid room format' });
   }
-  const group = groupChats.getGroup(room);
+  const group = await groupChats.getGroup(room);
   if (!group) {
     return res.status(404).json({ msg: 'Group chat not found' });
   }
   return res.json({ group });
 });
 
-router.post('/:room/join', auth, (req, res) => {
+router.post('/:room/join', auth, async (req, res) => {
   const room = String(req.params.room || '').trim();
   // Validate room format - should be 5 lowercase letters
   if (!/^[a-z]{5}$/.test(room)) {
@@ -56,7 +56,7 @@ router.post('/:room/join', auth, (req, res) => {
   }
   let group;
   try {
-    group = groupChats.joinGroup(room, username);
+    group = await groupChats.joinGroup(room, username);
     if (!group) return res.status(404).json({ msg: 'Group chat not found' });
   } catch (error) {
     if (error?.code === 'GROUP_LIMIT_REACHED') return res.status(409).json({ msg: error.message });
@@ -78,7 +78,7 @@ router.post('/:room/join', auth, (req, res) => {
   return res.json({ group });
 });
 
-router.post('/:room/leave', auth, (req, res) => {
+router.post('/:room/leave', auth, async (req, res) => {
   const room = String(req.params.room || '').trim();
   // Validate room format - should be 5 lowercase letters
   if (!/^[a-z]{5}$/.test(room)) {
@@ -88,7 +88,7 @@ router.post('/:room/leave', auth, (req, res) => {
   if (!username) {
     return res.status(400).json({ msg: 'Username required to leave group' });
   }
-  const group = groupChats.leaveGroup(room, username);
+  const group = await groupChats.leaveGroup(room, username);
   if (!group) {
     return res.status(404).json({ msg: 'Group chat not found' });
   }
@@ -108,12 +108,12 @@ router.post('/:room/leave', auth, (req, res) => {
   return res.json({ ok: true, group });
 });
 
-router.put('/:room', auth, (req, res) => {
+router.put('/:room', auth, async (req, res) => {
   const room = String(req.params.room || '').trim();
   if (!/^[a-z]{5}$/.test(room)) {
     return res.status(400).json({ msg: 'Invalid room format' });
   }
-  const group = groupChats.getGroup(room);
+  const group = await groupChats.getGroup(room);
   if (!group) return res.status(404).json({ msg: 'Group chat not found' });
   const username = getRequestUsername(req).toLowerCase();
   const creator = String(group.creator || group.members?.[0] || '').trim().toLowerCase();
@@ -121,7 +121,7 @@ router.put('/:room', auth, (req, res) => {
   if (username !== creator && !['owner', 'admin'].includes(role)) {
     return res.status(403).json({ msg: 'Only the group creator or staff can edit this group' });
   }
-  const updated = groupChats.updateGroup(room, {
+  const updated = await groupChats.updateGroup(room, {
     name: req.body?.name,
     icon: req.body?.icon
   });
@@ -131,12 +131,12 @@ router.put('/:room', auth, (req, res) => {
   return res.json({ group: updated });
 });
 
-router.post('/:room/regenerate-code', auth, (req, res) => {
+router.post('/:room/regenerate-code', auth, async (req, res) => {
   const room = String(req.params.room || '').trim();
   if (!/^[a-z]{5}$/.test(room)) {
     return res.status(400).json({ msg: 'Invalid room format' });
   }
-  const group = groupChats.getGroup(room);
+  const group = await groupChats.getGroup(room);
   if (!group) return res.status(404).json({ msg: 'Group chat not found' });
   const username = getRequestUsername(req).toLowerCase();
   const creator = String(group.creator || group.members?.[0] || '').trim().toLowerCase();
@@ -144,7 +144,7 @@ router.post('/:room/regenerate-code', auth, (req, res) => {
   if (username !== creator && !['owner', 'admin'].includes(role)) {
     return res.status(403).json({ msg: 'Only the group creator or staff can regenerate the code' });
   }
-  const updated = groupChats.regenerateRoomCode(room);
+  const updated = await groupChats.regenerateRoomCode(room);
   if (globalThis.__nebuloChatIo && updated) {
     globalThis.__nebuloChatIo.to(room).emit('group_updated', { group: updated, previousRoom: room });
   }

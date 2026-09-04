@@ -85,6 +85,37 @@ if (cluster.isPrimary && WORKERS > 1) {
   const activitiesCatalogPath = fileURLToPath(new URL("public/assets/data/activities.json", import.meta.url));
   const JWT_SECRET = process.env.JWT_SECRET;
 
+  // ===== Proxy asset obfuscation =====
+  // Short opaque URL prefixes hide the underlying proxy stack (Ultraviolet,
+  // Eclipse, Scramjet, BareMux, Epoxy, libcurl) from content-filter extensions
+  // and console inspectors that pattern match /uv, /scram, etc.
+  // The mapping is mirrored in public/sw.js, the proxy config files
+  // (public/uv/uv.config.js, public/ec/eclipse.config.js, public/assets/js/scramjet.all.js),
+  // and the client-side encoder (public/assets/js/proxy-encoder.js).
+  const PROXY_PREFIXES = Object.freeze({
+    uv: "/a3/",
+    ec: "/b7/",
+    scram: "/c2/",
+    scramjet: "/c2/j/",
+    baremux: "/d5/",
+    epoxy: "/e9/",
+    libcurl: "/f1/",
+    service: {
+      uv: "/a3/s/",
+      ec: "/b7/s/",
+      scram: "/c2/s/"
+    }
+  });
+  // Source-map files leak the original Ultraviolet/Eclipse source structure.
+  // Always return 404 for any *.js.map request.
+  const blockSourceMapRequests = async (req, reply) => {
+    const p = String(req?.url || "").split("?")[0];
+    if (p.endsWith(".js.map") || p.endsWith(".css.map") || p.endsWith(".wasm.map")) {
+      return reply.code(404).send("Not Found");
+    }
+    return undefined;
+  };
+
   const sanitizeUser = (user) => {
     const safe = chatUserStore.sanitizeUser(user);
     return safe ? { ...safe, id: safe._id || safe.id || "" } : null;
@@ -229,6 +260,9 @@ if (cluster.isPrimary && WORKERS > 1) {
     },
     rewriteUrl: (request) => {
       const requestUrl = String(request.url || "/");
+      // For scramjet, baremux, epoxy, libcurl: the files are NOT under public/,
+      // they live in node_modules. fastifyStatic with prefix: /c2/ serves them
+      // directly, so no rewrite needed.
       const requestHost = String(request.headers.host || "").toLowerCase().split(":")[0];
       if (requestHost !== "127.0.0.2") return requestUrl;
       if (requestUrl.startsWith("/nebulo/tiktok-client.js")) {
@@ -303,8 +337,8 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   const SETUP_MODE_COOKIE = "nebulo_mode";
   const FULL_ONLY_PREFIXES = [
-    "/ag/", "/uv/", "/ec/", "/eclipse/", "/scram/", "/scramjet/",
-    "/service/scramjet/", "/baremux/", "/epoxy/", "/libcurl/", "/pages/"
+    "/ag/", PROXY_PREFIXES.uv, PROXY_PREFIXES.ec, PROXY_PREFIXES.scram, PROXY_PREFIXES.scramjet,
+    PROXY_PREFIXES.baremux, PROXY_PREFIXES.epoxy, PROXY_PREFIXES.libcurl, "/pages/"
   ];
   const FULL_ONLY_PATHS = new Set([
     "/@", "/search", "/tools", "/quiz", "/settings", "/test", "/helper", "/help",
@@ -363,6 +397,29 @@ if (cluster.isPrimary && WORKERS > 1) {
     .type("text/plain; charset=utf-8")
     .send("Not Found");
 
+  // First hook: serve obfuscated proxy assets directly from disk. The public/
+  // static mount's wildcard would otherwise 404 for paths like /a3/uv.config.js
+  // because it tries to resolve them under public/a3/. Reading from disk here
+  // is the most reliable way to keep the proxy stack working. Source-map files
+  // are always 404'd to prevent leaking the original proxy source structure.
+  fastify.addHook("onRequest", async (req, reply) => {
+    const url = req.raw.url || "";
+    const path = url.split("?")[0];
+    if (path.endsWith(".js.map") || path.endsWith(".css.map") || path.endsWith(".wasm.map")) {
+      return reply.code(404).type("text/plain; charset=utf-8").send("Not Found");
+    }
+    const proxyFile = proxyFileMap.get(path);
+    if (proxyFile) {
+      reply.header("Cache-Control", "public, max-age=3600, immutable");
+      if (path.endsWith(".js") || path.endsWith(".mjs")) {
+        reply.type("application/javascript; charset=utf-8");
+      } else if (path.endsWith(".wasm")) {
+        reply.type("application/wasm");
+      }
+      return reply.send(fs.createReadStream(proxyFile));
+    }
+  });
+
   // This hook runs before static files and proxy plugins. Restricted sessions
   // cannot download proxy runtimes even when their exact paths are requested.
   fastify.addHook("onRequest", async (req, reply) => {
@@ -381,15 +438,13 @@ if (cluster.isPrimary && WORKERS > 1) {
       const localRuntimePath =
         pathname.startsWith("/ag/") ||
         pathname.startsWith("/argon-runtime/") ||
-        pathname.startsWith("/uv/") ||
-        pathname.startsWith("/ec/") ||
-        pathname.startsWith("/eclipse/") ||
-        pathname.startsWith("/scram/") ||
-        pathname.startsWith("/scramjet/") ||
-        pathname.startsWith("/service/scramjet/") ||
-        pathname.startsWith("/baremux/") ||
-        pathname.startsWith("/epoxy/") ||
-        pathname.startsWith("/libcurl/") ||
+        pathname.startsWith(PROXY_PREFIXES.uv) ||
+        pathname.startsWith(PROXY_PREFIXES.ec) ||
+        pathname.startsWith(PROXY_PREFIXES.scram) ||
+        pathname.startsWith(PROXY_PREFIXES.scramjet) ||
+        pathname.startsWith(PROXY_PREFIXES.baremux) ||
+        pathname.startsWith(PROXY_PREFIXES.epoxy) ||
+        pathname.startsWith(PROXY_PREFIXES.libcurl) ||
         pathname === "/argon-response-injected.js" ||
         pathname === "/argon_service_worker.js" ||
         pathname === "/argon-tiktok-feed-cache.json";
@@ -559,6 +614,79 @@ if (cluster.isPrimary && WORKERS > 1) {
       if (pathName.endsWith(".html")) res.setHeader("Cache-Control", "no-store");
     },
   });
+
+  // Register explicit per-file routes for the obfuscated proxy assets. We
+  // can't rely on fastifyStatic because the public/ mount at "/" claims all
+  // paths first and 404s on missing files, which shadows our proxy prefixes.
+  const uvStaticRoot = fileURLToPath(new URL("public/uv/", import.meta.url));
+  const ecStaticRoot = fileURLToPath(new URL("public/ec/", import.meta.url));
+  const eclipseStaticRoot = fileURLToPath(new URL("public/eclipse/", import.meta.url));
+  const registerProxyStaticDir = (dirOnDisk, urlPrefix) => {
+    try {
+      const items = fs.readdirSync(dirOnDisk);
+      for (const name of items) {
+        const full = path.join(dirOnDisk, name);
+        if (!fs.statSync(full).isFile()) continue;
+        fastify.get(`${urlPrefix}${name}`, (_req, reply) => {
+          reply.header("Cache-Control", "public, max-age=3600, immutable");
+          if (name.endsWith(".js") || name.endsWith(".mjs")) {
+            reply.type("application/javascript; charset=utf-8");
+          } else if (name.endsWith(".wasm")) {
+            reply.type("application/wasm");
+          } else {
+            reply.type("application/octet-stream");
+          }
+          return reply.send(fs.createReadStream(full));
+        });
+      }
+    } catch {}
+  };
+  // Directory paths for the obfuscated proxy assets. uvStaticRoot, ecStaticRoot,
+  // eclipseStaticRoot are declared just above this block.
+  registerProxyStaticDir(uvStaticRoot, PROXY_PREFIXES.uv);
+  registerProxyStaticDir(ecStaticRoot, PROXY_PREFIXES.ec);
+  registerProxyStaticDir(eclipseStaticRoot, PROXY_PREFIXES.ec);
+  // Scramjet runtime ships from node_modules; explicit routes for the well-
+  // known entrypoints. Other files (e.g. .map) are intentionally not exposed.
+  try {
+    for (const name of ["scramjet.all.js", "scramjet.bundle.js", "scramjet.sync.js", "scramjet.wasm.wasm"]) {
+      const full = path.join(scramjetPath, name);
+      if (!fs.existsSync(full)) continue;
+      const routeName = name === "scramjet.all.js" ? "all.js"
+                      : name === "scramjet.bundle.js" ? "bundle.js"
+                      : name === "scramjet.sync.js" ? "sync.js"
+                      : "wasm.wasm";
+      fastify.get(`${PROXY_PREFIXES.scramjet}${routeName}`, (_req, reply) => {
+        reply.header("Cache-Control", "public, max-age=3600, immutable");
+        if (name.endsWith(".js")) reply.type("application/javascript; charset=utf-8");
+        else if (name.endsWith(".wasm")) reply.type("application/wasm");
+        return reply.send(fs.createReadStream(full));
+      });
+    }
+  } catch {}
+  // Epoxy, libcurl, baremux: expose a small set of well-known entrypoints.
+  try {
+    for (const name of fs.readdirSync(epoxyPath)) {
+      const full = path.join(epoxyPath, name);
+      if (!fs.statSync(full).isFile()) continue;
+      fastify.get(`${PROXY_PREFIXES.epoxy}${name}`, (_req, reply) => {
+        reply.header("Cache-Control", "public, max-age=3600, immutable");
+        reply.type(name.endsWith(".js") || name.endsWith(".mjs") ? "application/javascript; charset=utf-8" : "application/octet-stream");
+        return reply.send(fs.createReadStream(full));
+      });
+    }
+  } catch {}
+  try {
+    for (const name of fs.readdirSync(libcurlPath)) {
+      const full = path.join(libcurlPath, name);
+      if (!fs.statSync(full).isFile()) continue;
+      fastify.get(`${PROXY_PREFIXES.libcurl}${name}`, (_req, reply) => {
+        reply.header("Cache-Control", "public, max-age=3600, immutable");
+        reply.type(name.endsWith(".js") || name.endsWith(".mjs") ? "application/javascript; charset=utf-8" : "application/octet-stream");
+        return reply.send(fs.createReadStream(full));
+      });
+    }
+  } catch {}
 
   fastify.register(fastifyStatic, {
     root: publicPath,
@@ -1027,7 +1155,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       const presence = chatPresence.getCounts();
       const activeClients = Object.values(presence.rooms || {}).reduce((sum, count) => sum + Number(count || 0), 0);
       return {
-        stats: { ...stats, groups: chatGroups.getGroups().length, activeClients },
+        stats: { ...stats, groups: (await chatGroups.getGroups()).length, activeClients },
         moderation: chatNetState.getModeration()
       };
     } catch (error) {
@@ -1904,17 +2032,12 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
 
-  // Override scramjet.all.js with our patched copy (no-store) so bare-mux changes
-  // take effect immediately and survive `npm install`.
-  fastify.get("/scram/scramjet.all.js", (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    reply.type("application/javascript; charset=utf-8");
-    return reply.send(fs.createReadStream(patchedScramjetAllPath));
-  });
+  // Scramjet runtime files are served by the proxyFileMap onRequest hook
+  // under the obfuscated /c2/j/ path. No explicit route needed here.
 
   fastify.register(fastifyStatic, {
     root: scramjetPath,
-    prefix: "/scram/",
+    prefix: PROXY_PREFIXES.scram,
     decorateReply: false,
     etag: true,
     maxAge: ONE_HOUR,
@@ -1934,7 +2057,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   fastify.register(fastifyStatic, {
     root: epoxyPath,
-    prefix: "/epoxy/",
+    prefix: PROXY_PREFIXES.epoxy,
     decorateReply: false,
     etag: true,
     maxAge: ONE_HOUR,
@@ -1943,22 +2066,27 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   // Override only /baremux/worker.js with our patched worker to prevent libcurl
   // "Unsupported protocol" crashes on blob:/data: requests.
-  fastify.get("/baremux/worker.js", (req, reply) => {
+  fastify.get(`${PROXY_PREFIXES.baremux}worker.js`, (req, reply) => {
     reply.header("Cache-Control", "no-store");
     reply.type("application/javascript; charset=utf-8");
-    return reply.send(fs.createReadStream(patchedBareMuxWorkerPath));
+    try {
+      return reply.send(fs.createReadStream(patchedBareMuxWorkerPath));
+    } catch (e) {
+      console.error("baremux worker stream error:", e);
+      return reply.code(500).send("Not Found");
+    }
   });
 
   // Override bare-mux index entrypoints to increase the SW-side port acquisition
   // timeout. The upstream 1s timeout is too aggressive and can cause infinite
   // retries after refresh / site-data clears.
-  fastify.get("/baremux/index.js", (req, reply) => {
+  fastify.get(`${PROXY_PREFIXES.baremux}index.js`, (req, reply) => {
     reply.header("Cache-Control", "no-store");
     reply.type("application/javascript; charset=utf-8");
     return reply.send(fs.createReadStream(patchedBareMuxIndexJsPath));
   });
 
-  fastify.get("/baremux/index.mjs", (req, reply) => {
+  fastify.get(`${PROXY_PREFIXES.baremux}index.mjs`, (req, reply) => {
     reply.header("Cache-Control", "no-store");
     reply.type("application/javascript; charset=utf-8");
     return reply.send(fs.createReadStream(patchedBareMuxIndexMjsPath));
@@ -1971,9 +2099,12 @@ if (cluster.isPrimary && WORKERS > 1) {
     return reply.send(fs.createReadStream(serviceWorkerPath));
   });
 
+  // (The obfuscated /a3/uv/* and /b7/eclipse.* mounts are registered earlier,
+  // before the public/ static mount, so the public/ wildcard doesn't shadow them.)
+
   fastify.register(fastifyStatic, {
     root: baremuxPath,
-    prefix: "/baremux/",
+    prefix: PROXY_PREFIXES.baremux,
     decorateReply: false,
     etag: true,
     maxAge: ONE_HOUR,
@@ -1982,11 +2113,34 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   fastify.register(fastifyStatic, {
     root: libcurlPath,
-    prefix: "/libcurl/",
+    prefix: PROXY_PREFIXES.libcurl,
     decorateReply: false,
     etag: true,
     maxAge: ONE_HOUR,
     setHeaders: (res) => res.setHeader("Cache-Control", "public, max-age=3600, immutable"),
+  });
+
+  // Block all *.js.map requests so the original Ultraviolet/Eclipse source structure
+  // doesn't leak to extensions or the devtools. Also 404 any request that still
+  // uses the old (now-obfuscated) proxy prefixes so extensions / sniffers that
+  // hard-code /uv/, /scram/, etc. get a clean "Not Found".
+  fastify.addHook("onRequest", async (req, reply) => {
+    console.log("[HOOK-2071] onRequest hook hit for", req?.raw?.url);
+    const rawUrl = String(req?.raw?.url || "");
+    const pathOnly = rawUrl.split("?")[0];
+    if (pathOnly.endsWith(".js.map") || pathOnly.endsWith(".css.map") || pathOnly.endsWith(".wasm.map")) {
+      return reply.code(404).type("text/plain; charset=utf-8").send("Not Found");
+    }
+    const legacyProxyPrefixes = [
+      "/uv/", "/ec/", "/eclipse/", "/scram/", "/scramjet/",
+      "/service/scramjet/", "/baremux/", "/epoxy/", "/libcurl/"
+    ];
+    if (legacyProxyPrefixes.some((prefix) => pathOnly.startsWith(prefix))) {
+      console.log("[HOOK-2071] blocking legacy path:", pathOnly);
+      return reply.code(404).type("text/plain; charset=utf-8").send("Not Found");
+    }
+    console.log("[HOOK-2071] allowing path:", pathOnly);
+    return undefined;
   });
 
   fastify.get("/argon-tiktok-feed-cache.json", (_req, reply) => {
@@ -2172,6 +2326,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   // 1) legacy hvtrs/hvttr paths -> UV service
   // 2) accidental /uv/service/assets/* and /uv/service/themes.* -> local assets
   fastify.addHook("onRequest", async (req, reply) => {
+    console.log("[HOOK-2272] onRequest hook hit for", req?.raw?.url);
     const rawUrl = String(req?.raw?.url || "");
     const qIndex = rawUrl.indexOf("?");
     const pathname = qIndex === -1 ? rawUrl : rawUrl.slice(0, qIndex);
@@ -2180,14 +2335,15 @@ if (cluster.isPrimary && WORKERS > 1) {
     let normalizedPath = pathname || "/";
     // Be careful decoding Ultraviolet XOR payloads: they can legitimately contain "%25xx"
     // sequences. Only decode when it looks like a truly double-encoded UV payload.
+    const UV_SVC = PROXY_PREFIXES.service.uv;
     try {
-      if (normalizedPath.startsWith("/uv/service/")) {
-        const payload = normalizedPath.slice("/uv/service/".length);
+      if (normalizedPath.startsWith(UV_SVC)) {
+        const payload = normalizedPath.slice(UV_SVC.length);
         const head = payload.slice(0, 48);
         const looksDoubleEncoded = head.includes("%252F") || head.includes("%253A");
         if (looksDoubleEncoded) {
           const decodedPayload = decodeURIComponent(payload);
-          if (decodedPayload) normalizedPath = "/uv/service/" + decodedPayload;
+          if (decodedPayload) normalizedPath = UV_SVC + decodedPayload;
         }
       } else {
         const decoded = decodeURIComponent(normalizedPath);
@@ -2195,15 +2351,15 @@ if (cluster.isPrimary && WORKERS > 1) {
       }
     } catch {}
 
-    if (/^\/uv\/service\/hvt(?:rs|tr)/i.test(normalizedPath)) {
-      const payload = normalizedPath.slice("/uv/service/".length);
+    if (new RegExp(`^${UV_SVC.replace(/\//g, "\\/")}hvt(?:rs|tr)`, "i").test(normalizedPath)) {
+      const payload = normalizedPath.slice(UV_SVC.length);
       const extracted = extractLegacyHvtrsPayload(payload);
       if (extracted && extracted !== payload) {
-        return reply.redirect(`/uv/service/${extracted}${search}`, 307);
+        return reply.redirect(`${UV_SVC}${extracted}${search}`, 307);
       }
       const normalizedPayload = normalizeLegacyHvtrsPayload(payload);
       if (normalizedPayload && normalizedPayload !== payload) {
-        return reply.redirect(`/uv/service/${normalizedPayload}${search}`, 307);
+        return reply.redirect(`${UV_SVC}${normalizedPayload}${search}`, 307);
       }
       // Important: don't run generic hvtrs redirects for already-routed UV paths.
       return;
@@ -2218,15 +2374,15 @@ if (cluster.isPrimary && WORKERS > 1) {
       return redirectLegacyHvtrs(req, reply);
     }
 
-    if (normalizedPath.startsWith("/uv/service/assets/")) {
-      const localAssetPath = normalizedPath.slice("/uv/service/".length);
+    if (normalizedPath.startsWith(`${UV_SVC}assets/`)) {
+      const localAssetPath = normalizedPath.slice(UV_SVC.length);
       return reply.redirect(`/${localAssetPath}${search}`, 307);
     }
 
-    if (normalizedPath === "/uv/service/themes.css") {
+    if (normalizedPath === `${UV_SVC}themes.css`) {
       return reply.redirect(`/assets/css/themes.css${search}`, 307);
     }
-    if (normalizedPath === "/uv/service/themes.js") {
+    if (normalizedPath === `${UV_SVC}themes.js`) {
       return reply.redirect(`/assets/js/themes.js${search}`, 307);
     }
   });
@@ -2244,7 +2400,7 @@ if (cluster.isPrimary && WORKERS > 1) {
     encoded = encoded.replace(/^\/+/, "");
     encoded = normalizeLegacyHvtrsPayload(encoded);
     if (!encoded) return reply.redirect("/search", 302);
-    return reply.redirect(`/uv/service/${encoded}${search}`, 307);
+    return reply.redirect(`${PROXY_PREFIXES.service.uv}${encoded}${search}`, 307);
   }
 
   function extractLegacyHvtrsPayload(pathname) {
@@ -2284,6 +2440,53 @@ if (cluster.isPrimary && WORKERS > 1) {
     return out;
   }
 
+  // Build a lookup table from obfuscated URL to on-disk file path. The
+  // onRequest hook at the top of the request pipeline serves these before
+  // fastifyStatic's wildcard can 404 them.
+  const proxyFileMap = new Map();
+  try {
+    const addDir = (dirOnDisk, urlPrefix) => {
+      for (const name of fs.readdirSync(dirOnDisk)) {
+        if (name.endsWith(".map")) continue;
+        const full = path.join(dirOnDisk, name);
+        if (!fs.statSync(full).isFile()) continue;
+        proxyFileMap.set(`${urlPrefix}${name}`, full);
+      }
+    };
+    addDir(uvStaticRoot, PROXY_PREFIXES.uv);
+    addDir(ecStaticRoot, PROXY_PREFIXES.ec);
+    addDir(eclipseStaticRoot, PROXY_PREFIXES.ec);
+    // Scramjet runtime files (served under the obfuscated /c2/j/ path)
+    for (const name of ["scramjet.all.js", "scramjet.bundle.js", "scramjet.sync.js", "scramjet.wasm.wasm"]) {
+      const full = path.join(scramjetPath, name);
+      if (!fs.existsSync(full)) continue;
+      const routeName = name === "scramjet.all.js" ? "all.js"
+                      : name === "scramjet.bundle.js" ? "bundle.js"
+                      : name === "scramjet.sync.js" ? "sync.js"
+                      : "wasm.wasm";
+      proxyFileMap.set(`${PROXY_PREFIXES.scramjet}${routeName}`, full);
+    }
+    // BareMux patched files
+    try {
+      proxyFileMap.set(`${PROXY_PREFIXES.baremux}worker.js`, patchedBareMuxWorkerPath);
+      proxyFileMap.set(`${PROXY_PREFIXES.baremux}index.js`, patchedBareMuxIndexJsPath);
+      proxyFileMap.set(`${PROXY_PREFIXES.baremux}index.mjs`, patchedBareMuxIndexMjsPath);
+    } catch {}
+    // Epoxy + libcurl
+    for (const name of fs.readdirSync(epoxyPath)) {
+      const full = path.join(epoxyPath, name);
+      if (!fs.statSync(full).isFile()) continue;
+      proxyFileMap.set(`${PROXY_PREFIXES.epoxy}${name}`, full);
+    }
+    for (const name of fs.readdirSync(libcurlPath)) {
+      const full = path.join(libcurlPath, name);
+      if (!fs.statSync(full).isFile()) continue;
+      proxyFileMap.set(`${PROXY_PREFIXES.libcurl}${name}`, full);
+    }
+  } catch (e) {
+    console.log("[proxyFileMap build error]", e.message);
+  }
+
   fastify.setNotFoundHandler((req, reply) => {
     reply.header("Cache-Control", "no-store");
     const path = req?.raw?.url ? String(req.raw.url).split("?")[0] : "";
@@ -2292,7 +2495,8 @@ if (cluster.isPrimary && WORKERS > 1) {
       const decodedPath = decodeURIComponent(path);
       if (decodedPath) normalizedPath = decodedPath;
     } catch {}
-    if (!normalizedPath.startsWith("/uv/service/")) {
+
+    if (!normalizedPath.startsWith(PROXY_PREFIXES.service.uv)) {
       const extractedPayload = extractLegacyHvtrsPayload(normalizedPath);
       if (extractedPayload) {
         return redirectLegacyHvtrs(req, reply, extractedPayload);
@@ -2318,15 +2522,14 @@ if (cluster.isPrimary && WORKERS > 1) {
     const accept = String(req.headers.accept || "");
     const userNav = String(req.headers["sec-fetch-user"] || "") === "?1";
     const proxyOrRuntimePath =
-      path.startsWith("/uv/") ||
-      path.startsWith("/ec/") ||
+      path.startsWith(PROXY_PREFIXES.uv) ||
+      path.startsWith(PROXY_PREFIXES.ec) ||
       path.startsWith("/ag/") ||
-      path.startsWith("/scram/") ||
-      path.startsWith("/scramjet/") ||
-      path.startsWith("/scram/service/") ||
-      path.startsWith("/service/scramjet/") ||
-      path.startsWith("/baremux/") ||
-      path.startsWith("/epoxy/") ||
+      path.startsWith(PROXY_PREFIXES.scram) ||
+      path.startsWith(PROXY_PREFIXES.scramjet) ||
+      path.startsWith(PROXY_PREFIXES.baremux) ||
+      path.startsWith(PROXY_PREFIXES.epoxy) ||
+      path.startsWith(PROXY_PREFIXES.libcurl) ||
       path.startsWith("/_next/") ||
       path.startsWith("/images/") ||
       path.startsWith("/unified/") ||

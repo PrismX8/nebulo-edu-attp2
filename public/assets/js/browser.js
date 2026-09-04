@@ -3,11 +3,11 @@ async function init() {
         await new Promise((resolve) => document.addEventListener("DOMContentLoaded", resolve, { once: true }));
     }
     try {
-        const connection = new BareMux.BareMuxConnection("/baremux/worker.js?v=bw1");
+        const connection = new BareMux.BareMuxConnection("/d5/worker.js?v=bw1");
         const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
         const transport = localStorage.getItem("transport") || "epoxy";
         localStorage.setItem("transport", transport);
-        const expectedTransport = transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+        const expectedTransport = transport === "libcurl" ? "/f1/index.mjs" : "/e9/index.mjs";
         if (await connection.getTransport() !== expectedTransport) {
             await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
             console.log("Using websocket transport. Wisp URL is: " + wispUrl);

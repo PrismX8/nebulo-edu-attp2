@@ -115,7 +115,7 @@ function getMessageTargetUsernames(room, senderUsername = '') {
     });
   }
 
-  const group = groupChats.getGroup(normalizedRoom);
+  const group = groupChats.getGroupSync(normalizedRoom);
   if (group && Array.isArray(group.members)) {
     group.members.forEach((username) => {
       const normalized = String(username || '').trim().toLowerCase();
@@ -138,7 +138,7 @@ function getMentionedUsernames(text = '', senderUsername = '') {
 }
 
 function isGroupMember(room, username = '', role = '') {
-  const group = groupChats.getGroup(room);
+  const group = groupChats.getGroupSync(room);
   if (!group) return true;
   if (['owner', 'admin'].includes(String(role || '').toLowerCase())) return true;
   const normalizedUsername = String(username || '').trim().toLowerCase();
@@ -150,7 +150,7 @@ function isGroupMember(room, username = '', role = '') {
 function excludesGlobalSlowmode(room = '') {
   const normalizedRoom = String(room || '').trim().toLowerCase();
   if (!normalizedRoom) return false;
-  if (groupChats.getGroup(normalizedRoom)) return true;
+  if (groupChats.getGroupSync(normalizedRoom)) return true;
   return buildDmParticipantsMap().has(normalizedRoom);
 }
 
@@ -163,7 +163,7 @@ function canUseRoomSettings(room = '', user = null, write = false) {
   const username = String(user.username || user.name || '').trim().toLowerCase();
   if (!username) return false;
 
-  const group = groupChats.getGroup(normalizedRoom);
+  const group = groupChats.getGroupSync(normalizedRoom);
   if (group) {
     return Array.isArray(group.members) &&
       group.members.some((member) => String(member || '').trim().toLowerCase() === username);
@@ -1468,7 +1468,7 @@ async function sendRoomMessageOnce({
       return { status: 403, data: { msg: 'You are not a participant in this direct message.' } };
     }
     const persistentDm = Array.isArray(dmParticipants);
-    const isPublicRoom = !persistentDm && !groupChats.getGroup(normalizedRoom);
+    const isPublicRoom = !persistentDm && !groupChats.getGroupSync(normalizedRoom);
     const callerRole = String(authUser?.role || '').toLowerCase();
     const isStaff = ['owner', 'admin'].includes(callerRole);
     if (isPublicRoom && netState.getModeration().lockdownActive && !isStaff) {
@@ -1659,7 +1659,7 @@ async function sendRoomMessageOnce({
     if (persistentDm) {
       enrichedMessage = await dmStore.addMessage(normalizedRoom, enrichedMessage, dmParticipants);
     }
-    if (persistentDm || groupChats.getGroup(normalizedRoom)) {
+    if (persistentDm || groupChats.getGroupSync(normalizedRoom)) {
       const receiptName = getReceiptUsername(authUser) || userName;
       const ids = messageIdsForReceipts([enrichedMessage]);
       receiptStore.markDelivered(normalizedRoom, ids, receiptName);
@@ -1676,11 +1676,12 @@ async function sendRoomMessageOnce({
         await messageCosmeticStore.save(normalizedRoom, enrichedMessage);
         messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply, attachments });
         const siteConfig = findSiteForRoom(normalizedRoom);
-        if (siteConfig?.persistMessagesToDb) {
+        const isGroupRoom = !!groupChats.getGroupSync(normalizedRoom);
+        if (siteConfig?.persistMessagesToDb || isGroupRoom) {
           try {
             await chatMessagesStore.persistChatMessage({
               room: normalizedRoom,
-              siteId: siteConfig.id || siteConfig.channelName,
+              siteId: (siteConfig?.id || siteConfig?.channelName) || 'group',
               message: enrichedMessage
             });
           } catch (error) {
@@ -2118,6 +2119,37 @@ router.get('/rooms/:room/messages', auth, async (req, res) => {
       return res.status(403).json({ msg: `You are banned from this chat room. ${BAN_APPEAL_TEXT}` });
     }
     if (!isGroupMember(room, requester?.username || requester?.name || '', requesterRole)) {
+      const isStaffMonitor = ['owner', 'admin'].includes(requesterRole) && req.query.monitor === '1';
+      const isDm = buildDmParticipantsMap().has(room);
+      if (isStaffMonitor && !isDm) {
+        const limit = Math.max(25, Math.min(150, Number(req.query.limit) || DEFAULT_MESSAGE_LIMIT));
+        const dbRows = await chatMessagesStore.getRecentChatMessages({ room, limit });
+        const decoratedMessages = attachMessageFeatures(
+          room,
+          await attachMessageCosmetics(room, dbRows),
+          requester
+        );
+        return res.json({
+          monitored: true,
+          room,
+          messages: decoratedMessages.map((row) => ({
+            id: row.message_id ? String(row.message_id) : `db-${row.id}`,
+            _id: row.message_id ? String(row.message_id) : `db-${row.id}`,
+            roomId: row.room,
+            dbId: Number(row.id) || null,
+            userId: row.user_id || null,
+            username: row.username || null,
+            nickname: row.nickname || row.username || 'Unknown',
+            avatar: row.avatar || null,
+            role: row.role || 'user',
+            body: row.body || '',
+            attachments: [],
+            clientNonce: row.client_nonce || null,
+            date: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+            persistedToDb: true
+          }))
+        });
+      }
       return res.status(403).json({ msg: 'Join this group before viewing messages.' });
     }
     const dmParticipants = getAuthorizedDmParticipants(room, requester);
@@ -2256,7 +2288,7 @@ router.get('/rooms/:room/messages', auth, async (req, res) => {
       await attachMessageCosmetics(room, messagesForRequest.slice(-limit)),
       requester
     );
-    const isGroupRoom = !!groupChats.getGroup(room);
+    const isGroupRoom = !!groupChats.getGroupSync(room);
     if (isGroupRoom) markMessagesSeen(room, latest, requester);
     debugMsg('success', {
       room,
@@ -2293,12 +2325,23 @@ router.get('/rooms/:room/messages', auth, async (req, res) => {
 router.get('/rooms/:room/db-messages', auth, async (req, res) => {
   const room = String(req.params.room || '').trim().toLowerCase();
   if (!room) return res.status(400).json({ msg: 'Room is required' });
+  const callerRole = String(req.user?.role || '').toLowerCase();
+  const isStaff = ['owner', 'admin'].includes(callerRole);
   const siteConfig = findSiteForRoom(room);
-  if (!siteConfig?.persistMessagesToDb) {
+  const isGroupRoom = !!groupChats.getGroupSync(room);
+  if (!siteConfig?.persistMessagesToDb && !isGroupRoom && !isStaff) {
     return res.status(404).json({ msg: 'Room does not persist messages to the database' });
   }
   const limit = Math.max(1, Math.min(200, Number(req.query.limit) || 80));
-  const beforeId = req.query.beforeId ? Number(req.query.beforeId) || null : null;
+  let beforeId = null;
+  if (req.query.beforeId !== undefined && req.query.beforeId !== null && String(req.query.beforeId).trim() !== '') {
+    const raw = String(req.query.beforeId).trim();
+    if (/^-?\d+$/.test(raw)) {
+      beforeId = Number(raw);
+    } else {
+      beforeId = await chatMessagesStore.findDbIdByMessageId({ room, messageId: raw });
+    }
+  }
   try {
     const rows = await chatMessagesStore.getRecentChatMessages({ room, limit, beforeId });
     return res.json({
@@ -2601,7 +2644,7 @@ router.get('/admin/rooms', auth, async (req, res) => {
       });
     });
 
-    groupChats.getGroups().forEach((group) => {
+    groupChats.getGroupsSync().forEach((group) => {
       if (adminHiddenRooms.has(group.room)) return;
       addRoom(group.room, {
         type: 'group',
@@ -2667,7 +2710,7 @@ router.delete('/admin/rooms/:room', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Only direct message and group chat rooms can be deleted here' });
     }
 
-    const deletedGroup = isGroup ? groupChats.deleteGroup(room) : null;
+    const deletedGroup = isGroup ? await groupChats.deleteGroup(room) : null;
     const removedRoomMeta = deleteRoomMeta(room);
     if (globalThis.__nebuloChatIo) {
       globalThis.__nebuloChatIo.to(room).emit('room_deleted', {

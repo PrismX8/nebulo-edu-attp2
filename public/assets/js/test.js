@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	async function initBareMux() {
 		try {
 			if (baremuxConnection) return baremuxConnection;
-			baremuxConnection = new BareMux.BareMuxConnection("/baremux/worker.js?v=bw1");
+			baremuxConnection = new BareMux.BareMuxConnection("/d5/worker.js?v=bw1");
 			const wispUrl =
 				(location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
 
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			localStorage.setItem("transport", transport);
 
 			const expectedTransport =
-				transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+				transport === "libcurl" ? "/f1/index.mjs" : "/e9/index.mjs";
 
 			if ((await baremuxConnection.getTransport()) !== expectedTransport) {
 				await baremuxConnection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
@@ -195,7 +195,7 @@ setInterval(function() {
 	}
 
 	async function sjEncode(url) {
-		const encodedUrl = "/scram/service/" + encodeURIComponent(url);
+		const encodedUrl = "/c2/s/" + encodeURIComponent(url);
 		logHistory(url);
 		safeStore("url", encodedUrl);
 		window.location.href = "/test";

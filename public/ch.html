@@ -4,15 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GΛMΞS Library · Nebulo</title>
+  <script src="/assets/js/identity-mask.js" defer></script>
   <!-- core scripts (preserved) -->
   <script src="/assets/js/proxy-runtime.js?v=20260830-proxy-choice-3"></script>
-  <script src="/baremux/index.js" defer></script>
-  <script src="/epoxy/index.js" defer></script>
-  <script src="/uv/uv.bundle.js" defer></script>
-  <script src="/uv/uv.config.js" defer></script>
-  <script src="/scram/scramjet.all.js" defer></script>
-  <script src="/ec/eclipse.codecs.js" defer></script>
-  <script src="/ec/eclipse.config.js" defer></script>
+  <script src="/d5/index.js" defer></script>
+  <script src="/e9/index.js" defer></script>
+  <script src="/a3/uv.bundle.js" defer></script>
+  <script src="/a3/uv.config.js" defer></script>
+  <script src="/c2/j/all.js" defer></script>
+  <script src="/b7/eclipse.codecs.js" defer></script>
+  <script src="/b7/eclipse.config.js" defer></script>
   <script src="/assets/js/proxy-host-rules.js?v=20260830-proxy-choice-3" defer></script>
   <script src="/assets/js/panic.js" defer></script>
   <script src="/assets/js/appearance.js" defer></script>
@@ -954,10 +955,10 @@
       if (!ready) throw new Error('BareMux runtime did not load in time');
 
       const wispUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/wisp/';
-      const connection = new BareMux.BareMuxConnection('/baremux/worker.js?v=bw1');
+      const connection = new BareMux.BareMuxConnection('/d5/worker.js?v=bw1');
 
       const transport = localStorage.getItem('transport') || 'epoxy';
-      const expectedTransport = transport === 'libcurl' ? '/libcurl/index.mjs' : '/epoxy/index.mjs';
+      const expectedTransport = transport === 'libcurl' ? '/f1/index.mjs' : '/e9/index.mjs';
       if ((await connection.getTransport()) !== expectedTransport) {
         await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
       }
@@ -1005,9 +1006,9 @@
         const { ScramjetController } = $scramjetLoadController();
         const controller = new ScramjetController({
           files: {
-            wasm: '/scram/scramjet.wasm.wasm',
-            all: '/scram/scramjet.all.js',
-            sync: '/scram/scramjet.sync.js',
+            wasm: '/c2/j/wasm.wasm',
+            all: '/c2/j/all.js',
+            sync: '/c2/j/sync.js',
           },
         });
         await controller.init();
@@ -1092,9 +1093,9 @@
         if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
         const hash = u.hash ? u.hash.slice(1) : '';
         u.hash = '';
-        return '/scramjet/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
+        return '/c2/j/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
       } catch {
-        return '/scramjet/' + encodeURIComponent(raw);
+        return '/c2/j/' + encodeURIComponent(raw);
       }
     }
 

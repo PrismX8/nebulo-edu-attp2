@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		baremuxInitPromise = (async () => {
 		try {
 			if (baremuxConnection) return baremuxConnection;
-			baremuxConnection = new BareMux.BareMuxConnection("/baremux/worker.js?v=bw1");
+			baremuxConnection = new BareMux.BareMuxConnection("/d5/worker.js?v=bw1");
 			const wispUrl =
 				(location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
 
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			localStorage.setItem("transport", transport);
 
 			const expectedTransport =
-				transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+				transport === "libcurl" ? "/f1/index.mjs" : "/e9/index.mjs";
 
 			if ((await baremuxConnection.getTransport()) !== expectedTransport) {
 				await baremuxConnection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
@@ -136,9 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				const { ScramjetController } = $scramjetLoadController();
 				const controller = new ScramjetController({
 					files: {
-						wasm: "/scram/scramjet.wasm.wasm",
-						all: "/scram/scramjet.all.js",
-						sync: "/scram/scramjet.sync.js",
+						wasm: "/c2/j/wasm.wasm",
+						all: "/c2/j/all.js",
+						sync: "/c2/j/sync.js",
 					},
 				});
 				await controller.init();

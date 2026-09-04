@@ -102,8 +102,25 @@ async function getRecentChatMessages({ room, limit = 50, beforeId = null } = {})
   }
 }
 
+async function findDbIdByMessageId({ room, messageId } = {}) {
+  if (!room || !messageId) return null;
+  try {
+    await ensureTable();
+    const result = await getPool().query(
+      `SELECT id FROM public.chat_messages WHERE room = $1 AND message_id = $2 ORDER BY id DESC LIMIT 1`,
+      [String(room).trim().toLowerCase(), String(messageId).trim()]
+    );
+    const row = result?.rows?.[0];
+    return row?.id ? Number(row.id) : null;
+  } catch (error) {
+    console.warn('Failed to resolve db id by message_id:', error?.message || error);
+    return null;
+  }
+}
+
 module.exports = {
   persistChatMessage,
   getRecentChatMessages,
+  findDbIdByMessageId,
   ensureTable
 };

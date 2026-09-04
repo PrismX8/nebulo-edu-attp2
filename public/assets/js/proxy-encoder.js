@@ -81,19 +81,18 @@
     const raw = (typeof rawInput === "string" ? rawInput : String(rawInput || "")).trim();
     if (!raw) return "";
 
-    const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
-    const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/ec/service/";
+    const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/a3/s/";
+    const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/b7/s/";
     const isAlreadyProxiedPath = (p) =>
       p.startsWith(uvPrefix) ||
       p.startsWith(eclipsePrefix) ||
       p.startsWith("/ag/") ||
-      p.startsWith("/scram/service/") ||
-      p.startsWith("/service/scramjet/") ||
-      p.startsWith("/scramjet/");
+      p.startsWith("/c2/s/") ||
+      p.startsWith("/c2/j/");
 
     if (raw.startsWith("/") && isAlreadyProxiedPath(raw)) return raw;
 
-    // UV payload passed directly (without /uv/service/ prefix).
+    // UV payload passed directly (without /a3/s/ prefix).
     if (!raw.startsWith("/") && raw.startsWith("hvtrs")) {
       let payload = raw;
       if (payload.includes("%")) {
@@ -168,7 +167,7 @@
     return Boolean(rules?.shouldForceArgonForUrl?.(inputUrl));
   }
 
-  // Sites that break under Scramjet (typically SPA routers treating /scramjet/* as a real route).
+  // Sites that break under Scramjet (typically SPA routers treating /c2/j/* as a real route).
   // For these, fall back to UV even if the user selected Scramjet.
   function shouldAvoidScramjetForUrl(inputUrl) {
     const rules = window.NebuloProxyHostRules;
@@ -195,9 +194,9 @@
       if (u.protocol !== "http:" && u.protocol !== "https:") return normalized;
       const hash = u.hash ? u.hash.slice(1) : "";
       u.hash = "";
-      return "/scramjet/" + encodeURIComponent(u.href) + (hash ? "#" + encodeURIComponent(hash) : "");
+      return "/c2/j/" + encodeURIComponent(u.href) + (hash ? "#" + encodeURIComponent(hash) : "");
     } catch {
-      return "/scramjet/" + encodeURIComponent(normalized);
+      return "/c2/j/" + encodeURIComponent(normalized);
     }
   }
 
@@ -208,9 +207,9 @@
       const { ScramjetController } = $scramjetLoadController();
       const controller = new ScramjetController({
         files: {
-          wasm: "/scram/scramjet.wasm.wasm",
-          all: "/scram/scramjet.all.js",
-          sync: "/scram/scramjet.sync.js",
+          wasm: "/c2/j/wasm.wasm",
+          all: "/c2/j/all.js",
+          sync: "/c2/j/sync.js",
         },
       });
       await controller.init();
@@ -223,12 +222,12 @@
     if (baremuxInitPromise) return baremuxInitPromise;
     baremuxInitPromise = (async () => {
       if (typeof BareMux === "undefined" || typeof BareMux.BareMuxConnection !== "function") return null;
-      const connection = new BareMux.BareMuxConnection("/baremux/worker.js?v=bw1");
+      const connection = new BareMux.BareMuxConnection("/d5/worker.js?v=bw1");
       const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
 
       const transport = localStorage.getItem("transport") || "epoxy";
       localStorage.setItem("transport", transport);
-      const expectedTransport = transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+      const expectedTransport = transport === "libcurl" ? "/f1/index.mjs" : "/e9/index.mjs";
 
       try {
         if ((await connection.getTransport()) !== expectedTransport) {
@@ -299,15 +298,14 @@
     if (!normalized) return normalized;
 
     // Local routes/assets should load directly.
-    const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
-    const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/ec/service/";
+    const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/a3/s/";
+    const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/b7/s/";
     const isAlreadyProxied =
       normalized.startsWith(uvPrefix) ||
       normalized.startsWith(eclipsePrefix) ||
       normalized.startsWith("/ag/") ||
-      normalized.startsWith("/scram/service/") ||
-      normalized.startsWith("/service/scramjet/") ||
-      normalized.startsWith("/scramjet/");
+      normalized.startsWith("/c2/s/") ||
+      normalized.startsWith("/c2/j/");
     if (normalized.startsWith("/") && !isAlreadyProxied) return normalized;
     if (isAlreadyProxied) return normalized;
 

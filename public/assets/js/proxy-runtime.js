@@ -130,11 +130,11 @@
     // Warm the SharedWorker early so the SW <-> client handshake completes within bare-mux's 1s timeout
     // on a fresh profile/session.
     try {
-      const warm = new SharedWorker("/baremux/worker.js?v=bw1", "bare-mux-worker");
+      const warm = new SharedWorker("/d5/worker.js?v=bw1", "bare-mux-worker");
       try { warm.port.start(); } catch {}
       // Keep a reference so the worker isn't immediately GC'd.
       window.__baremuxWarmWorker = warm;
-      try { localStorage.setItem("bare-mux-path", "/baremux/worker.js?v=bw1"); } catch {}
+      try { localStorage.setItem("bare-mux-path", "/d5/worker.js?v=bw1"); } catch {}
     } catch {}
 
     if (!(window.__baremuxActiveBridges instanceof Set)) {
@@ -150,7 +150,7 @@
         const reply = data?.port || (event?.ports && event.ports[0]);
         if (!data || data.type !== "getPort" || !reply) return;
 
-        const worker = window.__baremuxWarmWorker || new SharedWorker("/baremux/worker.js?v=bw1", "bare-mux-worker");
+        const worker = window.__baremuxWarmWorker || new SharedWorker("/d5/worker.js?v=bw1", "bare-mux-worker");
         try { worker.port.start(); } catch {}
 
         const bridge = new MessageChannel();

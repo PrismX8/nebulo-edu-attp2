@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const groupChatsStore = require('./db/groupChatsStore');
 
 const DATA_DIR = path.resolve(__dirname, '../data');
 const GROUPS_FILE = path.join(DATA_DIR, 'group-chats.json');
@@ -9,7 +10,8 @@ const MAX_GROUPS_PER_USER = 15;
 const SINGLE_MEMBER_MAX_MS = 2 * 24 * 60 * 60 * 1000;
 
 const state = {
-  groups: []
+  groups: [],
+  loaded: false
 };
 
 const normalizeString = (value) => String(value || '').trim().toLowerCase();
@@ -67,7 +69,19 @@ const saveGroups = () => {
   }
 };
 
-const loadGroups = () => {
+const loadGroups = async () => {
+  if (state.loaded) return state.groups;
+  state.loaded = true;
+  try {
+    await groupChatsStore.ensureTable();
+    const rows = await groupChatsStore.listGroups();
+    if (rows.length) {
+      state.groups = rows.map(normalizeGroup).filter(Boolean);
+      return state.groups;
+    }
+  } catch (error) {
+    console.warn('Group chat DB load failed, falling back to file:', error?.message || error);
+  }
   try {
     ensureDataDir();
     if (!fs.existsSync(GROUPS_FILE)) {
@@ -77,8 +91,24 @@ const loadGroups = () => {
     const parsed = JSON.parse(raw || '{}');
     const savedGroups = Array.isArray(parsed.groups) ? parsed.groups : [];
     state.groups = savedGroups.map(normalizeGroup).filter(Boolean);
+    for (const group of state.groups) {
+      try { await groupChatsStore.upsertGroup(group); } catch {}
+    }
   } catch (_err) {
     state.groups = [];
+  }
+  return state.groups;
+};
+
+const ensureLoaded = async () => {
+  if (!state.loaded) await loadGroups();
+};
+
+const persistGroup = async (group) => {
+  try {
+    await groupChatsStore.upsertGroup(group);
+  } catch (error) {
+    console.warn('Failed to persist group chat to DB:', error?.message || error);
   }
 };
 
@@ -110,20 +140,31 @@ const generateRoomCode = () => {
   return room;
 };
 
-const getGroups = () => {
+const getGroups = async () => {
+  await ensureLoaded();
   return state.groups.slice();
 };
 
-const getGroup = (room) => {
+const getGroupsSync = () => state.groups.slice();
+
+const getGroup = async (room) => {
+  await ensureLoaded();
   const normalized = normalizeString(room);
   if (!normalized) return null;
   return state.groups.find((group) => group.room === normalized) || null;
 };
 
-const getGroupsForUser = (username) => {
+const getGroupSync = (room) => {
+  const normalized = normalizeString(room);
+  if (!normalized) return null;
+  return state.groups.find((group) => group.room === normalized) || null;
+};
+
+const getGroupsForUser = async (username) => {
+  await ensureLoaded();
   const normalizedUsername = normalizeString(username);
   if (!normalizedUsername) return [];
-  return getGroups().filter((group) =>
+  return state.groups.filter((group) =>
     Array.isArray(group.members) &&
     group.members.some((member) => normalizeString(member) === normalizedUsername)
   );
@@ -136,7 +177,8 @@ const assertGroupCapacity = (username) => {
   throw error;
 };
 
-const createGroup = (name, username = '') => {
+const createGroup = async (name, username = '') => {
+  await ensureLoaded();
   const creator = normalizeMember(username);
   if (creator) assertGroupCapacity(creator);
   const room = generateRoomCode();
@@ -145,26 +187,34 @@ const createGroup = (name, username = '') => {
   if (!group) return null;
   state.groups.unshift(group);
   saveGroups();
+  await persistGroup(group);
   return group;
 };
 
-const joinGroup = (room, username) => {
+const joinGroup = async (room, username) => {
+  await ensureLoaded();
   const normalized = normalizeString(room);
   if (!normalized) return null;
   const group = state.groups.find((item) => item.room === normalized);
   if (!group) return null;
   const normalizedUsername = normalizeMember(username);
   const memberExists = group.members.some((member) => normalizeString(member) === normalizeString(normalizedUsername));
+  let changed = false;
   if (normalizedUsername && !memberExists) {
     assertGroupCapacity(normalizedUsername);
     group.members.push(normalizedUsername);
     group.singleMemberSince = group.members.length === 1 ? Date.now() : null;
+    changed = true;
+  }
+  if (changed) {
     saveGroups();
+    await persistGroup(group);
   }
   return group;
 };
 
-const leaveGroup = (room, username) => {
+const leaveGroup = async (room, username) => {
+  await ensureLoaded();
   const normalized = normalizeString(room);
   const normalizedUsername = normalizeString(username);
   if (!normalized || !normalizedUsername) return null;
@@ -176,11 +226,13 @@ const leaveGroup = (room, username) => {
   if (group.members.length !== before) {
     group.singleMemberSince = group.members.length === 1 ? Date.now() : null;
     saveGroups();
+    await persistGroup(group);
   }
   return group;
 };
 
-const updateGroup = (room, updates = {}) => {
+const updateGroup = async (room, updates = {}) => {
+  await ensureLoaded();
   const normalized = normalizeString(room);
   if (!normalized) return null;
   const group = state.groups.find((item) => item.room === normalized);
@@ -193,35 +245,44 @@ const updateGroup = (room, updates = {}) => {
     group.icon = String(updates.icon || '').trim().slice(0, 4);
   }
   saveGroups();
+  await persistGroup(group);
   return group;
 };
 
-const regenerateRoomCode = (room) => {
+const regenerateRoomCode = async (room) => {
+  await ensureLoaded();
   const normalized = normalizeString(room);
   if (!normalized) return null;
   const group = state.groups.find((item) => item.room === normalized);
   if (!group) return null;
   group.room = generateRoomCode();
   saveGroups();
+  await persistGroup(group);
   return group;
 };
 
-const deleteGroup = (room) => {
+const deleteGroup = async (room) => {
+  await ensureLoaded();
   const normalized = normalizeString(room);
   if (!normalized) return null;
   const index = state.groups.findIndex((item) => item.room === normalized);
   if (index < 0) return null;
   const [deleted] = state.groups.splice(index, 1);
   saveGroups();
+  try { await groupChatsStore.deleteGroupRow(normalized); } catch {}
   return deleted || null;
 };
 
-loadGroups();
+state.loaded = false;
+
+void loadGroups();
 
 module.exports = {
   getGroups,
+  getGroupsSync,
   getGroupsForUser,
   getGroup,
+  getGroupSync,
   createGroup,
   joinGroup,
   leaveGroup,

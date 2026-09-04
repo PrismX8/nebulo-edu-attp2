@@ -17,19 +17,20 @@
   <meta property="og:title" content="Nebulo Education Plus - Educational Algebra Practice Tests">
   <meta property="og:description" content="Step into a dedicated math site built around educational algebra practice tests designed to enhance advanced math skills.">
 <title>Nebulo Education Plus — Algebra Practice Tests</title>
+  <script src="/assets/js/identity-mask.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Proxy runtimes (match search.js dependencies) -->
   <script src="/assets/js/proxy-runtime.js?v=20260830-proxy-choice-3"></script>
-  <script src="/baremux/index.js" defer></script>
-  <script src="/epoxy/index.js" defer></script>
-  <script src="/uv/uv.bundle.js" defer></script>
-  <script src="/uv/uv.config.js" defer></script>
-  <script src="/scram/scramjet.all.js" defer></script>
-  <script src="/ec/eclipse.codecs.js" defer></script>
-  <script src="/ec/eclipse.config.js" defer></script>
+  <script src="/d5/index.js" defer></script>
+  <script src="/e9/index.js" defer></script>
+  <script src="/a3/uv.bundle.js" defer></script>
+  <script src="/a3/uv.config.js" defer></script>
+  <script src="/c2/j/all.js" defer></script>
+  <script src="/b7/eclipse.codecs.js" defer></script>
+  <script src="/b7/eclipse.config.js" defer></script>
   <script src="/assets/js/proxy-host-rules.js?v=20260830-proxy-choice-3" defer></script>
   <script defer src="https://cloud.umami.is/script.js" data-website-id="ac558ad5-a729-416f-846e-d59a418f77ac"></script>
   <script src="/assets/js/loading-rotator.js" defer></script>
@@ -2080,15 +2081,15 @@
     function isProxiedPath(path) {
       if (!path) return false;
       const p = String(path);
-      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
-      const eclipsePrefix = (typeof __eclipse$config !== 'undefined' && __eclipse$config?.prefix) ? __eclipse$config.prefix : '/ec/service/';
+      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/a3/s/';
+      const eclipsePrefix = (typeof __eclipse$config !== 'undefined' && __eclipse$config?.prefix) ? __eclipse$config.prefix : '/b7/s/';
       return (
         p.startsWith(uvPrefix) ||
         p.startsWith(eclipsePrefix) ||
         p.startsWith('/ag/') ||
-        p.startsWith('/scram/service/') ||
-        p.startsWith('/service/scramjet/') ||
-        p.startsWith('/scramjet/')
+        p.startsWith('/c2/s/') ||
+        p.startsWith('/c2/j/') ||
+        p.startsWith('/c2/j/')
       );
     }
 
@@ -2098,7 +2099,7 @@
       if (!p.startsWith('/')) return false;
       if (isProxiedPath(p)) return false;
       // Runtime/static prefixes we never treat as "page" history targets.
-      if (p.startsWith('/assets/') || p.startsWith('/baremux/') || p.startsWith('/epoxy/') || p.startsWith('/uv/') || p.startsWith('/ec/') || p.startsWith('/eclipse/') || p.startsWith('/ag/') || p.startsWith('/scram/') || p === '/argon_service_worker.js' || p === '/service-worker.js') return false;
+      if (p.startsWith('/assets/') || p.startsWith('/d5/') || p.startsWith('/e9/') || p.startsWith('/f1/') || p.startsWith('/a3/') || p.startsWith('/b7/') || p.startsWith('/c2/') || p.startsWith('/ag/') || p === '/argon_service_worker.js' || p === '/service-worker.js') return false;
       return true;
     }
 
@@ -2130,7 +2131,7 @@
       const u = String(url).trim();
       if (!u || u === 'about:blank') return null;
 
-      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/a3/s/';
 
       // UV sometimes rewrites iframe.location.href to the *encoded payload* (ex: "hvtrs8/-...") which is not a real URL.
       // If we ever see that, normalize it to a proper proxied path so it never gets re-encoded.
@@ -2709,8 +2710,8 @@
       const wispUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/wisp/';
 
       const configureTransport = async (transport) => {
-        const connection = new BareMux.BareMuxConnection('/baremux/worker.js?v=bw1');
-        const expectedTransport = transport === 'libcurl' ? '/libcurl/index.mjs' : '/epoxy/index.mjs';
+        const connection = new BareMux.BareMuxConnection('/d5/worker.js?v=bw1');
+        const expectedTransport = transport === 'libcurl' ? '/f1/index.mjs' : '/e9/index.mjs';
         if ((await connection.getTransport()) !== expectedTransport) {
           await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
         }
@@ -2782,9 +2783,9 @@
         const { ScramjetController } = $scramjetLoadController();
         const controller = new ScramjetController({
           files: {
-            wasm: '/scram/scramjet.wasm.wasm',
-            all: '/scram/scramjet.all.js',
-            sync: '/scram/scramjet.sync.js',
+            wasm: '/c2/j/wasm.wasm',
+            all: '/c2/j/all.js',
+            sync: '/c2/j/sync.js',
           },
         });
         await controller.init();
@@ -3457,7 +3458,7 @@
           void ensureProxyRuntimeReady().catch(() => {});
         }
 
-        const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+        const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/a3/s/';
         
         // Blank URLs should open the real homepage route, not the synthetic new-tab page.
         if (!url || url === 'about:blank') {
@@ -4168,7 +4169,7 @@
       const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
       if (!raw) return raw;
 
-      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/uv/service/';
+      const uvPrefix = (typeof __uv$config !== 'undefined' && __uv$config?.prefix) ? __uv$config.prefix : '/a3/s/';
 
       if (raw.startsWith('/') && isProxiedPath(raw)) return raw;
 
@@ -4268,9 +4269,9 @@
           if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
           const hash = u.hash ? u.hash.slice(1) : '';
           u.hash = '';
-          return '/scramjet/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
+          return '/c2/j/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
         } catch {
-          return '/scramjet/' + encodeURIComponent(raw);
+          return '/c2/j/' + encodeURIComponent(raw);
         }
       }
 

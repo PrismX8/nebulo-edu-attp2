@@ -1,5 +1,22 @@
-const SW_VERSION = "2026-08-31-tiktok-fast-feed-cache-29";
+const SW_VERSION = "2026-08-31-tiktok-fast-feed-cache-30";
 let adBlockEnabled = true;
+
+// Proxy asset URL prefixes. Kept in sync with the server-side PROXY_PREFIXES
+// constant in app.js so the SW intercepts the right paths.
+const PROXY_PREFIXES = Object.freeze({
+    uv: '/a3/',
+    ec: '/b7/',
+    scram: '/c2/',
+    scramjet: '/c2/j/',
+    baremux: '/d5/',
+    epoxy: '/e9/',
+    libcurl: '/f1/',
+    service: {
+        uv: '/a3/s/',
+        ec: '/b7/s/',
+        scram: '/c2/s/'
+    }
+});
 
 if (navigator.userAgent.includes('Firefox')) {
     Object.defineProperty(globalThis, 'crossOriginIsolated', {
@@ -8,14 +25,14 @@ if (navigator.userAgent.includes('Firefox')) {
     });
 }
 
-importScripts('uv/uv.bundle.js');
-importScripts('uv/uv.config.js');
-importScripts('uv/uv.sw.js');
-importScripts("ec/eclipse.codecs.js");
-importScripts("ec/eclipse.config.js");
-importScripts("ec/eclipse.rewrite.js");
-importScripts("ec/eclipse.worker.js");
-importScripts('/scram/scramjet.all.js');
+importScripts(`${PROXY_PREFIXES.uv}uv.bundle.js`);
+importScripts(`${PROXY_PREFIXES.uv}uv.config.js`);
+importScripts(`${PROXY_PREFIXES.uv}uv.sw.js`);
+importScripts(`${PROXY_PREFIXES.ec}eclipse.codecs.js`);
+importScripts(`${PROXY_PREFIXES.ec}eclipse.config.js`);
+importScripts(`${PROXY_PREFIXES.ec}eclipse.rewrite.js`);
+importScripts(`${PROXY_PREFIXES.ec}eclipse.worker.js`);
+importScripts(`${PROXY_PREFIXES.scram}scramjet.all.js`);
 
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 let scramjet = null;
@@ -246,7 +263,7 @@ function tryDecodeUpstreamUrlFromProxiedUrl(url, uvPrefix, argonPrefix = "/ag/")
         if (argonContext) {
             return argonContext.origin + argonContext.resourcePath + u.search;
         }
-        for (const prefix of ["/scram/service/", "/service/scramjet/", "/scramjet/"]) {
+        for (const prefix of [PROXY_PREFIXES.service.scram, PROXY_PREFIXES.scramjet]) {
             if (u.pathname.startsWith(prefix)) {
                 const encoded = u.pathname.slice(prefix.length);
                 if (!encoded) return null;
@@ -869,20 +886,19 @@ async function handleRequest(event) {
     }
 
     const isScramjetWasm = sameOrigin && (
-        path === "/scram/scramjet.wasm.wasm" || 
-        path === "/scramjet.wasm.wasm" ||
-        path === "/scram/mathjet.wasm.wasm" ||
+        path === `${PROXY_PREFIXES.scram}scramjet.wasm.wasm` ||
+        path === `${PROXY_PREFIXES.scramjet}wasm.wasm` ||
+        path === `${PROXY_PREFIXES.scram}mathjet.wasm.wasm` ||
         path === "/mathjet.wasm.wasm"
     );
     if (
         sameOrigin && (
-            requestUrl.pathname.startsWith('/baremux/') ||
-            (path.startsWith('/uv/') && !path.startsWith('/uv/service/')) ||
-            (path.startsWith('/ec/') && !path.startsWith('/ec/service/')) ||
+            requestUrl.pathname.startsWith(PROXY_PREFIXES.baremux) ||
+            (path.startsWith(PROXY_PREFIXES.uv) && !path.startsWith(PROXY_PREFIXES.service.uv)) ||
+            (path.startsWith(PROXY_PREFIXES.ec) && !path.startsWith(PROXY_PREFIXES.service.ec)) ||
             requestUrl.pathname.startsWith('/ag/') ||
-            requestUrl.pathname.startsWith('/eclipse/eclipse.') ||
-            ((path.startsWith('/scram/') && !path.startsWith('/scram/service/')) && !isScramjetWasm) ||
-            requestUrl.pathname.startsWith('/epoxy/') ||
+            ((path.startsWith(PROXY_PREFIXES.scram) && !path.startsWith(PROXY_PREFIXES.service.scram)) && !isScramjetWasm) ||
+            requestUrl.pathname.startsWith(PROXY_PREFIXES.epoxy) ||
             requestUrl.pathname.startsWith('/images/') ||
             requestUrl.pathname.startsWith('/unified/') ||
             NEBULO_LOCAL_ASSET_PREFIXES.some((prefix) => requestUrl.pathname.startsWith(prefix)) ||
@@ -898,10 +914,10 @@ async function handleRequest(event) {
         return fetch(request);
     }
 
-    const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
+    const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : PROXY_PREFIXES.service.uv;
     const argonPrefix = "/ag/";
-    const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/ec/service/";
-    const scramPrefixCandidates = ['/scram/service/', '/service/scramjet/', '/scramjet/'];
+    const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : PROXY_PREFIXES.service.ec;
+    const scramPrefixCandidates = [PROXY_PREFIXES.service.scram, PROXY_PREFIXES.scramjet];
     // Track the active proxied upstream per tab/client so relative URLs without
     // referer can still be resolved under the correct proxied origin.
     try {
@@ -1106,11 +1122,11 @@ function shouldRewriteRootRelativeAsset(path) {
     if (!path || path === "/" || path === "/sw.js") return false;
     if (path.startsWith("/api/") || path.startsWith("/filters/")) return false;
     if (path === "/themes.css" || path === "/themes.js") return false;
-    if (path.startsWith("/uv/") || path.startsWith("/ec/") || path.startsWith("/eclipse/")) return false;
+    if (path.startsWith(PROXY_PREFIXES.uv) || path.startsWith(PROXY_PREFIXES.ec)) return false;
     if (path.startsWith("/ag/") || path.startsWith("/argon-runtime/") || path === "/argon_service_worker.js" || path === "/argon-response-injected.js" || path === "/argon-tiktok-feed-cache.json" || path === "/service-worker.js") return false;
-    if (path.startsWith("/scram/") || path.startsWith("/scramjet/")) return false;
+    if (path.startsWith(PROXY_PREFIXES.scram) || path.startsWith(PROXY_PREFIXES.scramjet)) return false;
     if (path.startsWith("/images/") || path.startsWith("/unified/")) return false;
-    if (path.startsWith("/baremux/") || path.startsWith("/epoxy/") || path.startsWith("/vendor/")) return false;
+    if (path.startsWith(PROXY_PREFIXES.baremux) || path.startsWith(PROXY_PREFIXES.epoxy) || path.startsWith(PROXY_PREFIXES.libcurl) || path.startsWith("/vendor/")) return false;
     if (NEBULO_LOCAL_GAME_PREFIXES.some((prefix) => path.startsWith(prefix))) return false;
     if (NEBULO_LOCAL_ASSET_PREFIXES.some((prefix) => path.startsWith(prefix))) return false;
     if (path === "/assets/youtube-player-handoff.html") return false;

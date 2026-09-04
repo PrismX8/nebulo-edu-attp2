@@ -1,21 +1,21 @@
 /*global Ultraviolet*/
 self.__uv$config = {
-    prefix: '/uv/service/',
+    prefix: '/a3/s/',
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
-    handler: '/uv/uv.handler.js',
-    client: '/uv/uv.client.js',
-    bundle: '/uv/uv.bundle.js',
-    config: '/uv/uv.config.js',
-    sw: '/uv/uv.sw.js',
+    handler: '/a3/uv.handler.js',
+    client: '/a3/uv.client.js',
+    bundle: '/a3/uv.bundle.js',
+    config: '/a3/uv.config.js',
+    sw: '/a3/uv.sw.js',
     // Inject the bare-mux port bridge into all proxied documents so the SW can
     // obtain a SharedWorker MessagePort even when the user navigates directly
-    // to a /uv/service/* page (no local UI scripts loaded yet).
+    // to a /a3/s/* page (no local UI scripts loaded yet).
     inject: [
         {
             host: ".*",
             injectTo: "head",
-            html: '<script src="/assets/js/baremux-port-bridge.js"></script>',
+            html: '<script src="/assets/js/x1p7b.js"></script>',
         },
     ],
 };

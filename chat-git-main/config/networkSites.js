@@ -6,7 +6,8 @@ const defaultSites = [
     channelName: "nebulo",
     room: "rxrhcicz",
     aiName: "Nebulo AI",
-    verifiedOwners: ["prism8x", "nebulo_owner"]
+    verifiedOwners: ["prism8x", "nebulo_owner"],
+    persistMessagesToDb: true
   },
   {
     id: "platinum",

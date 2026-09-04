@@ -1881,7 +1881,7 @@ function renderBody(raw) {
   let text = raw;
 
   // 1. Extract [img:...] — TLK may have converted the URL to <a href="URL">...</a>
-  text = text.replace(/\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|((?:https?:\/\/|\/api\/upload\/local\/)[^\]]+))\]/g, (_, hrefUrl, rawUrl) => {
+text = text.replace(/\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|((?:https?:\/\/|\/api\/upload\/(?:image|local)\/)[^\]]+))\]/g, (_, hrefUrl, rawUrl) => {
     imgUrls.push(hrefUrl || rawUrl);
     return `\x01IMG${imgUrls.length - 1}\x01`;
   });
@@ -1952,11 +1952,13 @@ function renderBody(raw) {
 
 function extractImageUrlFromText(value = '') {
   const text = String(value || '');
-  const match = text.match(/\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|((?:https?:\/\/|\/api\/upload\/local\/)[^\]]+))\]/i);
+  const match = text.match(/\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|((?:https?:\/\/|\/api\/upload\/(?:image|local)\/)[^\]]+))\]/i);
   return match ? (match[1] || match[2] || '').trim() : '';
 }
 
 function proxiedImageSrc(url = '') {
+  if (!url) return '';
+  if (/^\/api\/upload\/image\//i.test(url) || /^data:/i.test(url)) return url;
   return `/api/upload/proxy?url=${encodeURIComponent(url)}`;
 }
 
@@ -2423,13 +2425,21 @@ async function loadOlderMessages() {
   const firstId = getMessageId(S.lastMsgs[0]);
   if (!firstId) return;
   const container = document.getElementById('messages-container');
-  const previousHeight = container?.scrollHeight || 0;
+  if (!container) return;
+  const anchorRect = pickAnchorRect(container);
+  const previousScrollTop = container.scrollTop;
   const roomAtStart = String(S.room);
   S.loadingOlderMessages = true;
   document.getElementById('history-loading')?.classList.add('visible');
   try {
     const query = new URLSearchParams({ beforeId: String(firstId), limit: '60' });
-    const data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomAtStart)}/messages?${query}`);
+    let data;
+    try {
+      data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomAtStart)}/db-messages?${query}`);
+    } catch (err) {
+      if (err?.status !== 404) throw err;
+      data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomAtStart)}/messages?${query}`);
+    }
     if (roomAtStart !== String(S.room)) return;
     const older = Array.isArray(data) ? data : (data?.messages || []);
     const existing = new Set(S.lastMsgs.map(message => String(getMessageId(message))));
@@ -2441,9 +2451,8 @@ async function loadOlderMessages() {
     if (fresh.length) {
       S.lastMsgs = mergeMessageBatch(fresh.map(withLocalMessageIdentity), S.lastMsgs);
       renderMessages(S.lastMsgs);
-      requestAnimationFrame(() => {
-        if (container) container.scrollTop += container.scrollHeight - previousHeight;
-      });
+      restoreAnchor(container, anchorRect, previousScrollTop);
+      void restoreAfterImages(container, anchorRect, previousScrollTop, 1500);
     }
   } catch {
     toast('Could not load older messages', 'error');
@@ -2451,6 +2460,57 @@ async function loadOlderMessages() {
     S.loadingOlderMessages = false;
     document.getElementById('history-loading')?.classList.remove('visible');
   }
+}
+
+function pickAnchorRect(container) {
+  const list = document.getElementById('messages-list');
+  if (!list) return null;
+  const items = list.querySelectorAll('.msg-virtual-item');
+  const containerTop = container.getBoundingClientRect().top;
+  for (const item of items) {
+    const rect = item.getBoundingClientRect();
+    if (rect.bottom > containerTop + 4) {
+      return {
+        id: item.dataset.messageId || '',
+        offset: rect.top - containerTop
+      };
+    }
+  }
+  return null;
+}
+
+function restoreAnchor(container, anchorRect, fallbackScrollTop) {
+  requestAnimationFrame(() => {
+    if (!container) return;
+    const target = findAnchorElement(container, anchorRect);
+    if (target) {
+      const newTop = target.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
+      container.scrollTop += (newTop - containerTop) - (anchorRect?.offset ?? 0);
+    } else {
+      container.scrollTop = fallbackScrollTop;
+    }
+  });
+}
+
+function findAnchorElement(container, anchorRect) {
+  if (!anchorRect?.id) return null;
+  const list = document.getElementById('messages-list');
+  const item = list?.querySelector(`.msg-virtual-item[data-message-id="${CSS.escape(anchorRect.id)}"]`);
+  if (item) return item;
+  const items = list?.querySelectorAll('.msg-virtual-item');
+  return items?.[0] || null;
+}
+
+function restoreAfterImages(container, anchorRect, fallbackScrollTop, durationMs = 1500) {
+  if (!container) return;
+  const start = Date.now();
+  const tick = () => {
+    if (Date.now() - start > durationMs) return;
+    restoreAnchor(container, anchorRect, fallbackScrollTop);
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 function updateUnreadBadges() {
@@ -3765,7 +3825,7 @@ const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'im
 function uploadImageWithProgress(form, token, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload/image');
+    xhr.open('POST', '/api/upload/image-db');
     if (token) xhr.setRequestHeader('x-auth-token', token);
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
@@ -4113,6 +4173,7 @@ async function processOutgoingQueue() {
 }
 
 async function sendMessage() {
+  if (S.monitorMode) { toast('Monitor mode is read-only', 'error'); return; }
   const input = document.getElementById('message-input');
   if (!input || !S.room) return;
   if (S.lockdownActive && S.roomMeta?.type === 'channel' && !isStaff()) {
@@ -4163,7 +4224,9 @@ async function sendMessage() {
     __localSequence: ++S.localMessageSequence,
     __pending: true
   });
-  handleRealtimeMessage({ roomId: S.room, message: optimisticMessage });
+handleRealtimeMessage({ roomId: S.room, message: optimisticMessage });
+  scrollBottomSoon({ force: true });
+  updateJumpToLatest();
   queueOutgoingMessage({
     roomId: S.room,
     rawText,
@@ -4612,6 +4675,74 @@ function renderTotalOnline(total) {
 }
 
 // ─── Room Joining ─────────────────────────────────────────────────────────────
+async function openMonitorRoom(roomId, type) {
+  const loadSeq = ++S.roomLoadSeq;
+  setVoiceStageVisible(false);
+  if (S.room) {
+    saveCurrentDraft();
+    stopTypingNow(S.room);
+    S.socket?.emit('leave_room', S.room);
+  }
+  S.room = roomId;
+  S.roomMeta = { id: roomId, type, name: `${type === 'dm' ? 'DM' : 'Group'} ${roomId} · monitor` };
+  S.lastMsgs = []; S.typingUsers.clear();
+  S.roomState = { read: null, pinned: [], bookmarkIds: [] };
+  S.hasOlderMessages = false;
+  S.loadingOlderMessages = false;
+  S.monitorMode = true;
+  clearReply({ saveDraft: false }); clearAttachment();
+  hideMentionPanel();
+  renderTypingBar();
+
+  const iconEl = document.getElementById('header-icon');
+  const nameEl = document.getElementById('channel-header-name');
+  const inputEl = document.getElementById('message-input');
+  const headerActions = document.getElementById('header-actions');
+  if (iconEl) iconEl.textContent = type === 'dm' ? 'chat' : 'visibility';
+  if (nameEl) nameEl.textContent = S.roomMeta.name;
+  if (inputEl) {
+    inputEl.value = '';
+    inputEl.placeholder = 'Monitor mode — read only';
+    inputEl.disabled = true;
+  }
+  const sendBtn = document.getElementById('send-btn');
+  if (sendBtn) sendBtn.disabled = true;
+  if (headerActions) {
+    headerActions.innerHTML = `<button class="icon-btn" title="Exit monitor" onclick="exitMonitorMode()"><span class="material-icons-round">close</span></button>`;
+  }
+
+  document.querySelectorAll('.sb-item[data-room]').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.room === roomId)
+  );
+
+  const list = document.getElementById('messages-list');
+  if (list) list.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:40px;color:#71717a;gap:7px;font-size:13px"><span class="material-icons-round spin" style="font-size:17px">refresh</span>Loading monitor view…</div>`;
+
+  try {
+    const data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomId)}/messages?limit=80&monitor=1`);
+    if (loadSeq !== S.roomLoadSeq || String(S.room) !== String(roomId)) return;
+    const msgs = (data && Array.isArray(data.messages)) ? data.messages : (Array.isArray(data) ? data : []);
+    S.lastMsgs = mergeMessageBatch([], msgs.map(withLocalMessageIdentity));
+    S.hasOlderMessages = msgs.length > 0;
+    renderMessages(S.lastMsgs, { forceScroll: true });
+    scheduleMarkRead();
+  } catch (error) {
+    if (list) list.innerHTML = `<div style="text-align:center;color:#f87171;font-size:13px;padding:40px">${esc(error.data?.msg || 'Could not open monitor view')}</div>`;
+  }
+}
+
+window.exitMonitorMode = function exitMonitorMode() {
+  S.monitorMode = false;
+  const inputEl = document.getElementById('message-input');
+  if (inputEl) {
+    inputEl.disabled = false;
+    inputEl.placeholder = inputEl.dataset.roomPlaceholder || 'Type a message';
+  }
+  const sendBtn = document.getElementById('send-btn');
+  if (sendBtn) sendBtn.disabled = false;
+  renderSection('channels');
+};
+
 async function joinRoom(roomId, type, name) {
   const loadSeq = ++S.roomLoadSeq;
   setVoiceStageVisible(false);
@@ -4620,6 +4751,7 @@ async function joinRoom(roomId, type, name) {
     stopTypingNow(S.room);
     S.socket?.emit('leave_room', S.room);
   }
+  S.monitorMode = false;
   S.room = roomId; S.roomMeta = { id: roomId, type, name };
   S.lastMsgs = []; S.typingUsers.clear();
   S.roomState = { read: null, pinned: [], bookmarkIds: [] };
@@ -4644,6 +4776,7 @@ async function joinRoom(roomId, type, name) {
   if (iconEl) iconEl.textContent = type === 'dm' ? 'chat' : type === 'group' ? 'group' : 'tag';
   if (nameEl) nameEl.textContent = name || roomId;
   if (inputEl) {
+    inputEl.disabled = false;
     inputEl.dataset.roomPlaceholder = `Message ${type === 'channel' ? '#' : ''}${name || roomId}`;
     inputEl.placeholder = inputEl.dataset.roomPlaceholder;
   }
@@ -5050,11 +5183,12 @@ async function renderAdmin() {
   const action = document.getElementById('section-action');
   if (!list) return;
   list.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:7px;padding:30px;color:#71717a;font-size:12px"><span class="material-icons-round spin" style="font-size:16px">refresh</span>Loading admin panel…</div>`;
-  try {
-    const [overview, directory, reportData] = await Promise.all([
+try {
+    const [overview, directory, reportData, adminRooms] = await Promise.all([
       api('/api/admin/overview'),
       api('/api/admin/users?limit=20&offset=0'),
-      api('/api/network/reports?status=all&limit=100').catch(error => ({ reports: [], error: error.data?.msg || 'Reports unavailable' }))
+      api('/api/network/reports?status=all&limit=100').catch(error => ({ reports: [], error: error.data?.msg || 'Reports unavailable' })),
+      api('/api/tlk/admin/rooms').catch(error => ({ rooms: [], dmRooms: [], groupRooms: [], error: error.data?.msg || 'Rooms unavailable' }))
     ]);
     const stats = overview?.stats || {};
     const moderation = overview?.moderation || {};
@@ -5110,6 +5244,18 @@ async function renderAdmin() {
         <input id="admin-user-search" class="modal-input" placeholder="Search users…" style="margin-bottom:7px">
         <div id="admin-user-results" style="max-height:260px;overflow-y:auto"></div>
       </div>
+
+      <div class="admin-card">
+        <div class="admin-card-title"><span class="material-icons-round">forum</span>Direct messages</div>
+        <div style="font-size:10px;color:#71717a;margin-bottom:6px">All DM conversations across the network. Click to monitor.</div>
+        <div id="admin-dm-list" style="max-height:260px;overflow-y:auto"></div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-title"><span class="material-icons-round">groups</span>Group chat monitor</div>
+        <div style="font-size:10px;color:#71717a;margin-bottom:6px">Open any group chat in monitor mode (read-only). Click a row to open it.</div>
+        <div id="admin-group-monitor-list" style="max-height:260px;overflow-y:auto"></div>
+      </div>
     </div>`;
 
     const renderReportQueue = filter => {
@@ -5162,6 +5308,56 @@ async function renderAdmin() {
       }));
     };
     renderAdminUsers(users);
+
+    const dmHost = document.getElementById('admin-dm-list');
+    if (dmHost) {
+      const dmRooms = Array.isArray(adminRooms?.dmRooms) ? adminRooms.dmRooms : [];
+      const totalUsers = new Set();
+      dmRooms.forEach(room => Array.isArray(room.participants) && room.participants.forEach(p => totalUsers.add(String(p).toLowerCase())));
+      const summary = dmRooms.length
+        ? `<div style="font-size:10px;color:#71717a;margin-bottom:6px">${dmRooms.length} DM room${dmRooms.length === 1 ? '' : 's'} · ${totalUsers.size} participant${totalUsers.size === 1 ? '' : 's'}</div>`
+        : '';
+      const list = dmRooms.length
+        ? dmRooms.map(room => {
+          const participants = Array.isArray(room.participants) ? room.participants : [];
+          const names = participants.map(p => esc(p)).join(' <span style="color:#52525b;font-size:10px">⇄</span> ');
+          return `<button class="admin-user-row" data-admin-monitor-room="${esc(room.room)}" data-admin-monitor-type="dm">
+            <span style="width:27px;height:27px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#312e81;font-size:10px;font-weight:700;color:#c7d2fe">DM</span>
+            <span style="flex:1;min-width:0"><strong style="display:block;overflow:hidden;text-overflow:ellipsis">${names || esc(room.label || room.room)}</strong><span style="font-size:9px;color:#71717a">${participants.length} participant${participants.length === 1 ? '' : 's'} · ${Number(room.count || 0)} online</span></span>
+            <span class="material-icons-round" style="font-size:14px;color:#52525b">visibility</span>
+          </button>`;
+        }).join('')
+        : (adminRooms?.error ? `<div class="admin-inline-error">${esc(adminRooms.error)}</div>` : `<div style="padding:15px;text-align:center;color:#52525b;font-size:11px">No DM conversations yet</div>`);
+      dmHost.innerHTML = summary + list;
+    }
+
+    const groupHost = document.getElementById('admin-group-monitor-list');
+    if (groupHost) {
+      const groupRooms = Array.isArray(adminRooms?.groupRooms) ? adminRooms.groupRooms : [];
+      const list = groupRooms.length
+        ? groupRooms.map(room => {
+          const memberCount = Number(room.memberCount || (Array.isArray(room.members) ? room.members.length : 0));
+          const color = avatarColor(room.name || room.room);
+          return `<button class="admin-user-row" data-admin-monitor-room="${esc(room.room)}" data-admin-monitor-type="group">
+            <span style="width:27px;height:27px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${color};font-size:10px;font-weight:700;color:#fff">${esc(avatarInitials(room.name || room.room))}</span>
+            <span style="flex:1;min-width:0"><strong style="display:block;overflow:hidden;text-overflow:ellipsis">${esc(room.name || room.room)}</strong><span style="font-size:9px;color:#71717a">${memberCount} member${memberCount === 1 ? '' : 's'} · ${Number(room.count || 0)} online · ${esc(room.room)}</span></span>
+            <span class="material-icons-round" style="font-size:14px;color:#52525b">visibility</span>
+          </button>`;
+        }).join('')
+        : (adminRooms?.error ? `<div class="admin-inline-error">${esc(adminRooms.error)}</div>` : `<div style="padding:15px;text-align:center;color:#52525b;font-size:11px">No group chats yet</div>`);
+      groupHost.innerHTML = list;
+    }
+
+    const monitorRoom = async (roomId, type) => {
+      try {
+        await openMonitorRoom(roomId, type);
+      } catch (error) {
+        toast(error.data?.msg || 'Could not open monitor view', 'error');
+      }
+    };
+    document.querySelectorAll('[data-admin-monitor-room]').forEach(button => {
+      button.addEventListener('click', () => monitorRoom(button.dataset.adminMonitorRoom, button.dataset.adminMonitorType));
+    });
 
     let adminSearchTimer = null;
     document.getElementById('admin-user-search')?.addEventListener('input', event => {
