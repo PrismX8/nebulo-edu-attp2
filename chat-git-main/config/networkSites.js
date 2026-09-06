@@ -3,9 +3,11 @@ const defaultSites = [
     id: "nebulo",
     name: "Nebulo",
     url: "https://adc.school.dovereducation.org",
-    room: "nebulo",
+    channelName: "nebulo",
+    room: "rxrhcicz",
     aiName: "Nebulo AI",
-    verifiedOwners: ["prism8x", "nebulo_owner"]
+    verifiedOwners: ["prism8x", "nebulo_owner"],
+    persistMessagesToDb: true
   },
   {
     id: "platinum",
@@ -13,7 +15,18 @@ const defaultSites = [
     url: "https://platniumunblocker.com",
     room: "platnium",
     aiName: "Platinum AI",
-    verifiedOwners: ["platinum_owner"]
+    verifiedOwners: ["platinum_owner"],
+    persistMessagesToDb: true
+  },
+  {
+    id: "overcloaked",
+    name: "Overcloaked",
+    url: "https://overcloaked.local",
+    channelName: "overcloaked",
+    room: "ovrkld7q3zr",
+    aiName: "Overcloaked AI",
+    verifiedOwners: ["overcloaked_owner"],
+    persistMessagesToDb: true
   }
 ];
 

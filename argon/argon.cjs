@@ -3356,7 +3356,7 @@ var _0x58329e = async (_0x3612e1, _0xc5d1c, _0x20b009 = {}) => {
                 }
             } catch (_0x4b4e0d) {}
         }
-        console.error("Fetch error occurred:", _0x1d35e3.message, "Proxy URL:", _0x4679fc, "Method:", _0x3612e1.req.method);
+        console.error("Browsing request failed:", _0x1d35e3.message, "Method:", _0x3612e1.req.method);
         _0x3612e1.res = new Response("Proxy fetch error", {
             status: 502
         });
@@ -4292,7 +4292,7 @@ if (_0x3cd507()) {
         }));
         _0x51be68.use("*", async (_0x918251, _0x1caa59) => {
         if (_0x918251.req.path.endsWith("argon-response-injected.js")) {
-            return _0x918251.text(_0x5db2a1 + _0x21fc3f + _0x5d4e2a + _0xampfix + _0xpokifix, {
+            return _0x918251.text(_0x5db2a1 + _0x21fc3f + _0xampfix + _0xpokifix, {
                 headers: {
                     "Content-Type": "application/javascript",
                     "Cache-Control": "no-store, no-cache, must-revalidate"
@@ -4350,7 +4350,7 @@ if (_0x3cd507()) {
     }));
     _0x51be68.use("*", async (_0x415e58, _0x1fdeca) => {
         if (_0x415e58.req.path.endsWith("argon-response-injected.js")) {
-            return _0x415e58.text(_0x5db2a1 + _0x21fc3f + _0x5d4e2a + _0xampfix + _0xpokifix, {
+            return _0x415e58.text(_0x5db2a1 + _0x21fc3f + _0xampfix + _0xpokifix, {
                 headers: {
                     "Content-Type": "application/javascript",
                     "Cache-Control": "no-store, no-cache, must-revalidate"

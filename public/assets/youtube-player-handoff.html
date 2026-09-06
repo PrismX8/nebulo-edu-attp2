@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opening player</title>
+</head>
+<body>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const videoId = params.get("v") || "";
+    const requestedReturn = params.get("return") || "";
+    const returnPath = requestedReturn.startsWith("/ag/") ? requestedReturn : "";
+    const playerPath = params.get("shorts") === "1" ? "/youtube-shorts" : "/youtube-player";
+    const destination = /^[A-Za-z0-9_-]{11}$/.test(videoId)
+      ? `${playerPath}?v=${encodeURIComponent(videoId)}${returnPath ? `&return=${encodeURIComponent(returnPath)}` : ""}`
+      : "/tools";
+    location.replace(destination);
+  </script>
+</body>
+</html>

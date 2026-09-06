@@ -8,7 +8,9 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "mirror:games": "node scripts/mirrorPlatinumGames.mjs --repair-cache --entries-only --rewrite-catalog",
+    "mirror:games:full": "node scripts/mirrorPlatinumGames.mjs --rewrite-catalog"
   },
   "author": "Fluxion24",
   "license": "MIT",
@@ -30,10 +32,14 @@
     "axios": "^1.6.5",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dashjs": "^5.0.3",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "fastify": "^5.8.5",
+    "gsap": "^3.15.0",
+    "html2canvas": "^1.4.1",
+    "image-moderation": "github:ModerateContent/image-moderation",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.1",
     "multer": "^1.4.5-lts.1",
@@ -42,9 +48,14 @@
     "pg": "^8.11.2",
     "socket.io": "^4.8.3",
     "telegraf": "^4.16.3",
-    "ws": "^8.18.3"
+    "three": "^0.184.0",
+    "ws": "^8.18.3",
+    "youtube-dl-exec": "^3.1.12",
+    "youtubei.js": "^17.2.0"
   },
   "devDependencies": {
-    "eslint": "^9.28.0"
+    "esbuild": "^0.28.1",
+    "eslint": "^9.28.0",
+    "nodemon": "^3.1.14"
   }
 }

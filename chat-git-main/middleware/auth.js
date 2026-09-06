@@ -1,23 +1,20 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
+const { verifyToken } = require('../services/auth/remoteAuth');
 
-module.exports = function(req, res, next) {
-  // Get token from header
+module.exports = async function(req, res, next) {
   const token = req.header('x-auth-token');
-
-  // Check if no token
   if (!token) {
     return res.status(401).json({ msg: 'No token, authorization denied' });
   }
 
   try {
-    // Verify token
-    const decoded = jwt.verify(token, config.jwtSecret || process.env.JWT_SECRET || 'secret');
-
-    // Add user from payload
-    req.user = decoded.user;
-    next();
-  } catch (err) {
-    res.status(401).json({ msg: 'Token is not valid' });
+    const user = await verifyToken(token);
+    if (!user) {
+      return res.status(401).json({ msg: 'Token is not valid' });
+    }
+    req.user = user;
+    req.authToken = token;
+    return next();
+  } catch (_err) {
+    return res.status(401).json({ msg: 'Token is not valid' });
   }
 };

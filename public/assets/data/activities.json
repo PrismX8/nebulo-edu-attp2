@@ -1,862 +1,5734 @@
 [
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/1/index.html",
-    "image": "/assets/imgs/1.png",
-    "name": "1"
+    "id": "platinum-0",
+    "name": "baw",
+    "description": "",
+    "url": "/games/platinum/cdn/baw/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/baw.jpg",
+    "_cat": [
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/1v1space/index.html",
-    "image": "/assets/imgs/1v1.space.png",
-    "name": "1v1.space"
+    "id": "platinum-1",
+    "name": "cannon basketball",
+    "description": "",
+    "url": "/games/platinum/cdn/cannon%20basketball/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cannon%20basketball.jpg",
+    "_cat": [
+      "sports",
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/2048/index.html",
-    "image": "/assets/imgs/2048.png",
-    "name": "2048"
+    "id": "platinum-2",
+    "name": "cannon basketball 2",
+    "description": "",
+    "url": "/games/platinum/cdn/cannon%20basketball%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cannon%20basketball%202.jpg",
+    "_cat": [
+      "sports",
+      "puzzle"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/9007199254740992/index.html",
-    "image": "/assets/imgs/9007199254740992.png",
-    "name": "9007199254740992"
+    "id": "platinum-3",
+    "name": "cannon basketball 3",
+    "description": "",
+    "url": "/games/platinum/cdn/cannon%20basketball%203/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cannon%20basketball%203.jpg",
+    "_cat": [
+      "sports",
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/achievementunlocked/index.html",
-    "image": "/assets/imgs/Achievement_Unlocked.png",
-    "name": "Achievement Unlocked"
+    "id": "platinum-4",
+    "name": "trafficmania",
+    "description": "",
+    "url": "/games/platinum/cdn/trafficmania/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/trafficmania.jpg",
+    "_cat": [
+      "racing",
+      "strategy"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/adrenalinechallenge/index.html",
-    "image": "/assets/imgs/Adrenaline_Challenge.png",
-    "name": "Adrenaline Challenge"
+    "id": "platinum-5",
+    "name": "red ball 4",
+    "description": "",
+    "url": "/games/platinum/cdn/red%20ball%204/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/red%20ball%204.jpg",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
   },
   {
-    "url": "https://fnaf1.io/amanda-the-adventurer.embed",
-    "name": "Amanda The Adventurer",
-    "image": "/assets/imgs/amanda-the-adventurer.jpg"
+    "id": "platinum-6",
+    "name": "candy clicker",
+    "description": "",
+    "url": "/games/platinum/cdn/candy%20clicker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/candy%20clicker.jpg",
+    "_cat": [
+      "idle"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/among-us/index.html",
-    "image": "/assets/imgs/Among_Us.png",
-    "name": "Among Us"
+    "id": "platinum-7",
+    "name": "babel tower",
+    "description": "",
+    "url": "/games/platinum/cdn/babel%20tower/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/babel%20tower.jpg",
+    "_cat": [
+      "puzzle",
+      "platformer"
+    ]
   },
   {
-    "url": "https://arras.io",
-    "image": "/assets/imgs/arras.io.jpg",
-    "name": "arras.io"
+    "id": "platinum-8",
+    "name": "top speed 3d",
+    "description": "",
+    "url": "/games/platinum/cdn/top%20speed%203d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/top%20speed%203d.jpg",
+    "_cat": [
+      "racing"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/avalanche/index.html",
-    "image": "/assets/imgs/Avalanche.png",
-    "name": "Avalanche"
+    "id": "platinum-9",
+    "name": "time shooter 3",
+    "description": "",
+    "url": "/games/platinum/cdn/time%20shooter%203/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/time%20shooter%203.jpg",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/backrooms/index.html",
-    "image": "/assets/imgs/Backrooms.png",
-    "name": "Backrooms"
+    "id": "platinum-10",
+    "name": "timber man",
+    "description": "",
+    "url": "/games/platinum/cdn/timber%20man/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/timber%20man.png",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/6d68b33aa7d1267d71d5b6a63733dd367c2b7a19/basketrandom/index.html",
+    "id": "platinum-11",
+    "name": "tap tap shots",
+    "description": "",
+    "url": "/games/platinum/cdn/tap%20tap%20shots/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tap%20tap%20shots.jpg",
+    "_cat": [
+      "sports",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-12",
+    "name": "idle ants",
+    "description": "",
+    "url": "/games/platinum/cdn/idle%20ants/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/idle%20ants.jpg",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-13",
+    "name": "tennis random",
+    "description": "",
+    "url": "/games/platinum/cdn/tennis%20random/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tennis%20random.jpg",
+    "_cat": [
+      "sports",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-14",
+    "name": "zuck vs musk beatdown",
+    "description": "",
+    "url": "/games/platinum/cdn/zuck%20vs%20musk%20beatdown/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/zuck%20vs%20musk%20beatdown.jpg",
+    "_cat": [
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-15",
+    "name": "ultimate offroad simulator",
+    "description": "",
+    "url": "/games/platinum/cdn/ultimate%20offroad%20simulator/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ultimate%20offroad%20simulator.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-16",
+    "name": "turn turn",
+    "description": "",
+    "url": "/games/platinum/cdn/turn%20turn/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/turn%20turn.jpg",
+    "_cat": [
+      "strategy",
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-17",
+    "name": "tube clicker",
+    "description": "",
+    "url": "/games/platinum/cdn/tube%20clicker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tube%20clicker.jpg",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-18",
+    "name": "block shooter frenzy",
+    "description": "",
+    "url": "/games/platinum/cdn/block%20shooter%20frenzy/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/block%20shooter%20frenzy.jpg",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-19",
+    "name": "three goblets",
+    "description": "",
+    "url": "/games/platinum/cdn/three%20goblets/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/three%20goblets.png",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-20",
+    "name": "super pickleball adventure",
+    "description": "",
+    "url": "/games/platinum/cdn/super%20pickleball%20adventure/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/super%20pickleball%20adventure.png",
+    "_cat": [
+      "sports",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-21",
+    "name": "squareX",
+    "description": "",
+    "url": "/games/platinum/cdn/squareX/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/squarex.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-22",
+    "name": "metrocubevania",
+    "description": "",
+    "url": "/games/platinum/cdn/metrocubevania/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/metrocubevania.png",
+    "_cat": [
+      "platformer",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-23",
+    "name": "knightin",
+    "description": "",
+    "url": "/games/platinum/cdn/knightin/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/knightin.jpg",
+    "_cat": [
+      "platformer",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-24",
+    "name": "ISLANDER",
+    "description": "",
+    "url": "/games/platinum/cdn/ISLANDER/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ISLANDER.png",
+    "_cat": [
+      "strategy",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-25",
+    "name": "final earth 2",
+    "description": "",
+    "url": "/games/platinum/cdn/final%20earth%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/finalearth2.png",
+    "_cat": [
+      "strategy",
+      "adventure",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-26",
+    "name": "delia the traveling witch",
+    "description": "",
+    "url": "/games/platinum/cdn/delia%20the%20traveling%20witch/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/delia%20the%20traveling%20witch.png",
+    "_cat": [
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-27",
+    "name": "dark tomb",
+    "description": "",
+    "url": "/games/platinum/cdn/dark%20tomb/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/dark%20tomb.jpg",
+    "_cat": [
+      "adventure",
+      "action",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-28",
+    "name": "another gentlemans adventure",
+    "description": "",
+    "url": "/games/platinum/cdn/another%20gentlemans%20adventure/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/another%20gentlemans%20adventure.jpg",
+    "_cat": [
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-29",
+    "name": "Throw a Potato",
+    "description": "",
+    "url": "/games/platinum/cdn/Throw%20a%20Potato/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Throw%20a%20Potato.png",
+    "_cat": [
+      "action",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-30",
+    "name": "westoon",
+    "description": "",
+    "url": "/games/platinum/cdn/westoon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/westoon.jpg",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-31",
+    "name": "thumb fighter christmas",
+    "description": "",
+    "url": "/games/platinum/cdn/thumb%20fighter%20christmas/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/thumb%20fighter%20christmas.jpg",
+    "_cat": [
+      "fighting",
+      "action",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-32",
+    "name": "sink it",
+    "description": "",
+    "url": "/games/platinum/cdn/sink%20it/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sink%20it.jpg",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-33",
+    "name": "minibattles",
+    "description": "",
+    "url": "/games/platinum/cdn/minibattles/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/minibattles.jpg",
+    "_cat": [
+      "io",
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-34",
+    "name": "gunspin",
+    "description": "",
+    "url": "/games/platinum/cdn/gunspin/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gunspin.jpg",
+    "_cat": [
+      "action",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-35",
+    "name": "blocky snakes",
+    "description": "",
+    "url": "/games/platinum/cdn/blocky%20snakes/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/blocky%20snakes.jpg",
+    "_cat": [
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-36",
+    "name": "tiny heist",
+    "description": "",
+    "url": "/games/platinum/cdn/tiny%20heist/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tiny%20heist.jpg",
+    "_cat": [
+      "action",
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-37",
+    "name": "poker",
+    "description": "",
+    "url": "/games/platinum/cdn/poker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/poker.jpg",
+    "_cat": [
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-38",
+    "name": "blackjack",
+    "description": "",
+    "url": "/games/platinum/cdn/blackjack/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/blackjack.jpg",
+    "_cat": [
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-39",
+    "name": "we become what we behold",
+    "description": "",
+    "url": "/games/platinum/cdn/we%20become%20what%20we%20behold/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/we%20become%20what%20we%20behold.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-40",
+    "name": "idle lumber inc",
+    "description": "",
+    "url": "/games/platinum/cdn/idle%20lumber%20inc/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/idle%20lumber%20inc.jpg",
+    "_cat": [
+      "idle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-41",
+    "name": "idle digging tycoon",
+    "description": "",
+    "url": "/games/platinum/cdn/idle%20digging%20tycoon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/idle%20digging%20tycoon.jpg",
+    "_cat": [
+      "idle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-42",
+    "name": "blumgi paintball",
+    "description": "",
+    "url": "/games/platinum/cdn/blumgi%20paintball/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/blumgi%20paintball.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-43",
+    "name": "badegg.io",
+    "description": "",
+    "url": "/games/platinum/cdn/badegg.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/badegg.io.jpg",
+    "_cat": [
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-44",
+    "name": "terretorial.io",
+    "description": "",
+    "url": "/games/platinum/cdn/terretorial.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/terretorial.io.jpeg",
+    "_cat": [
+      "io",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-45",
+    "name": "just passing 2",
+    "description": "",
+    "url": "/games/platinum/cdn/just%20passing%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/just%20passing%202.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-46",
+    "name": "Pre Civilization Bronze Age",
+    "description": "",
+    "url": "/games/platinum/cdn/Pre%20Civilization%20Bronze%20Age/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Pre%20Civilization%20Bronze%20Age.jpg",
+    "_cat": [
+      "strategy",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-47",
+    "name": "shipo.io",
+    "description": "",
+    "url": "/games/platinum/cdn/shipo.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/shipo.io.jpg",
+    "_cat": [
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-48",
+    "name": "conq.io",
+    "description": "",
+    "url": "/games/platinum/cdn/conq.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/conq.io.jpg",
+    "_cat": [
+      "io",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-49",
+    "name": "sheep party",
+    "description": "",
+    "url": "/games/platinum/cdn/sheep%20party/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sheep%20party.jpg",
+    "_cat": [
+      "action",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-50",
+    "name": "friday night funkin",
+    "description": "",
+    "url": "/games/platinum/cdn/friday%20night%20funkin/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/friday%20night%20funkin.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-51",
+    "name": "tanko.io",
+    "description": "",
+    "url": "/games/platinum/cdn/tanko.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tanko.io.jpg",
+    "_cat": [
+      "io",
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-52",
+    "name": "tag",
+    "description": "",
+    "url": "/games/platinum/cdn/tag/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tag.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-53",
+    "name": "level devil",
+    "description": "",
+    "url": "/games/platinum/cdn/level%20devil/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/level%20devil.jpg",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-54",
+    "name": "checkers",
+    "description": "",
+    "url": "/games/platinum/cdn/checkers/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/checkers.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-55",
+    "name": "gladihoppers",
+    "description": "",
+    "url": "/games/platinum/cdn/gladihoppers/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gladdihoppers.jfif",
+    "_cat": [
+      "platformer",
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-56",
+    "name": "water color sort",
+    "description": "",
+    "url": "/games/platinum/cdn/water%20color%20sort/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/water%20color%20sort.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-57",
+    "name": "fireboy and watergirl 6",
+    "description": "",
+    "url": "/games/platinum/cdn/fireboy%20and%20watergirl%206/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fireboy%20and%20watergirl%206.jfif",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-58",
+    "name": "Fireboy and Watergirl 5",
+    "description": "",
+    "url": "/games/platinum/cdn/Fireboy%20and%20Watergirl%205/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Fireboy%20and%20Watergirl%205.webp",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-59",
+    "name": "Fireboy and Watergirl 4",
+    "description": "",
+    "url": "/games/platinum/cdn/Fireboy%20and%20Watergirl%204/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Fireboy%20and%20Watergirl%204.jfif",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-60",
+    "name": "Fireboy and Watergirl 3",
+    "description": "",
+    "url": "/games/platinum/cdn/Fireboy%20and%20Watergirl%203/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Fireboy%20and%20Watergirl%203.jfif",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-61",
+    "name": "Fireboy and Watergirl 2",
+    "description": "",
+    "url": "/games/platinum/cdn/Fireboy%20and%20Watergirl%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Fireboy%20and%20Watergirl%202.jfif",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-62",
+    "name": "Fireboy and Watergirl 1",
+    "description": "",
+    "url": "/games/platinum/cdn/Fireboy%20and%20Watergirl%201/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Fireboy%20and%20Watergirl%201.jfif",
+    "_cat": [
+      "platformer",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-63",
+    "name": "paper minecraft ender dragon",
+    "description": "",
+    "url": "/games/platinum/cdn/paper%20minecraft%20ender%20dragon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/paper%20minecraft%20ender%20dragon.jfif",
+    "_cat": [
+      "adventure",
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-64",
+    "name": "grindcraft",
+    "description": "",
+    "url": "/games/platinum/cdn/grindcraft/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/grindcraft.jfif",
+    "_cat": [
+      "strategy",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-65",
+    "name": "pixwars 2",
+    "description": "",
+    "url": "/games/platinum/cdn/pixwars%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pixwars%202.jfif",
+    "_cat": [
+      "fighting",
+      "strategy",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-66",
+    "name": "traffic tour",
+    "description": "",
+    "url": "/games/platinum/cdn/traffic%20tour/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/traffic%20tour.jfif",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-67",
+    "name": "superfighters",
+    "description": "",
+    "url": "/games/platinum/cdn/superfighters/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/superfighters.jfif",
+    "_cat": [
+      "fighting",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-68",
+    "name": "super liquid soccer",
+    "description": "",
+    "url": "/games/platinum/cdn/super%20liquid%20soccer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/supper%20liquid%20soccer.jfif",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-69",
+    "name": "spelunky",
+    "description": "",
+    "url": "/games/platinum/cdn/spelunky/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/spelunky.jfif",
+    "_cat": [
+      "platformer",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-70",
+    "name": "rabbit samurai 2",
+    "description": "",
+    "url": "/games/platinum/cdn/rabbit%20samurai%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/rabbit%20samurai%202.jfif",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-71",
+    "name": "rabbit samurai",
+    "description": "",
+    "url": "/games/platinum/cdn/rabbit%20samurai/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/rabbit%20samurai.jfif",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-72",
+    "name": "quake",
+    "description": "",
+    "url": "/games/platinum/cdn/quake/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/quake.jfif",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-73",
+    "name": "pizza tower",
+    "description": "",
+    "url": "/games/platinum/cdn/pizza%20tower/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pizza%20tower.jfif",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-74",
+    "name": "party project",
+    "description": "",
+    "url": "/games/platinum/cdn/party%20project/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/party%20project.jfif",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-75",
+    "name": "onion boy",
+    "description": "",
+    "url": "/games/platinum/cdn/onion%20boy/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/onion%20boy.jfif",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-76",
+    "name": "NG stars",
+    "description": "",
+    "url": "/games/platinum/cdn/NG%20stars/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/NG%20stars.jfif",
+    "_cat": [
+      "idle",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-77",
+    "name": "n-gon",
+    "description": "",
+    "url": "/games/platinum/cdn/n-gon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/n-gon.png",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-78",
+    "name": "gunnight",
+    "description": "",
+    "url": "/games/platinum/cdn/gunnight/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gunnight.jfif",
+    "_cat": [
+      "action",
+      "fighting",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-79",
+    "name": "freefall tournament",
+    "description": "",
+    "url": "/games/platinum/cdn/freefall%20tournament/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/freefall%20tournament.jfif",
+    "_cat": [
+      "racing",
+      "sports",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-80",
+    "name": "fighter aircraft piolet",
+    "description": "",
+    "url": "/games/platinum/cdn/fighter%20aircraft%20piolet/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fighter%20aircraft%20piolet.jfif",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-81",
+    "name": "die in the dungeon",
+    "description": "",
+    "url": "/games/platinum/cdn/die%20in%20the%20dungeon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/die%20in%20the%20dungeon.png",
+    "_cat": [
+      "strategy",
+      "fighting",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-82",
+    "name": "cannon basketball 4",
+    "description": "",
+    "url": "/games/platinum/cdn/cannon%20basketball%204/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cannon%20basketball.jfif",
+    "_cat": [
+      "puzzle",
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-83",
+    "name": "burrito bison",
+    "description": "",
+    "url": "/games/platinum/cdn/burrito%20bison/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/burrito%20bison.jfif",
+    "_cat": [
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-84",
+    "name": "bumpyball.io",
+    "description": "",
+    "url": "/games/platinum/cdn/bumpyball.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bumpyball.io.jfif",
+    "_cat": [
+      "io",
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-85",
+    "name": "basket legend 2020",
+    "description": "",
+    "url": "/games/platinum/cdn/basket%20legend%202020/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/basket%20legend%202020.jfif",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-86",
+    "name": "basket and ball",
+    "description": "",
+    "url": "/games/platinum/cdn/basket%20and%20ball/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/basket%20and%20ball.jfif",
+    "_cat": [
+      "sports",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-87",
+    "name": "tank trouble 2",
+    "description": "",
+    "url": "/games/platinum/cdn/tank%20trouble%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tank%20trouble%202.jfif",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-88",
+    "name": "super santa kicker",
+    "description": "",
+    "url": "/games/platinum/cdn/super%20santa%20kicker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/super%20santa%20kicker.png",
+    "_cat": [
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-89",
+    "name": "solitaire",
+    "description": "",
+    "url": "/games/platinum/cdn/solitaire/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/solitaire.jfif",
+    "_cat": [
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-90",
+    "name": "nitroclash.io",
+    "description": "",
+    "url": "/games/platinum/cdn/nitroclash.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/nitroclash.io.jfif",
+    "_cat": [
+      "io",
+      "racing",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-91",
+    "name": "gravity soccer",
+    "description": "",
+    "url": "/games/platinum/cdn/gravity%20soccer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gravity%20soccer.jfif",
+    "_cat": [
+      "sports",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-92",
+    "name": "going balls",
+    "description": "",
+    "url": "/games/platinum/cdn/going%20balls/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/going%20balls.jfif",
+    "_cat": [
+      "platformer",
+      "action",
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-93",
+    "name": "falling fox",
+    "description": "",
+    "url": "/games/platinum/cdn/falling%20fox/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/falling%20fox.jfif",
+    "_cat": [
+      "platformer",
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-94",
+    "name": "draw the hill",
+    "description": "",
+    "url": "/games/platinum/cdn/draw%20the%20hill/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/draw%20the%20hill.jfif",
+    "_cat": [
+      "puzzle",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-95",
+    "name": "color switch",
+    "description": "",
+    "url": "/games/platinum/cdn/color%20switch/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/color%20switch.png",
+    "_cat": [
+      "puzzle",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-96",
+    "name": "brawlguys.io",
+    "description": "",
+    "url": "/games/platinum/cdn/brawlguys.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/brawlguys.io.jfif",
+    "_cat": [
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-97",
+    "name": "basketbros.io",
+    "description": "",
+    "url": "/games/platinum/cdn/basketbros.io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/basketbros.io.jfif",
+    "_cat": [
+      "sports",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-98",
+    "name": "ballistic",
+    "description": "",
+    "url": "/games/platinum/cdn/ballistic/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ballistic.jfif",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-99",
+    "name": "death run 3d",
+    "description": "",
+    "url": "/games/platinum/cdn/death-run-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/death-run-3d.jfif",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-101",
+    "name": "sleepy knight",
+    "description": "",
+    "url": "/games/platinum/cdn/sleepy%20knight/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sleepy%20knight.png",
+    "_cat": [
+      "adventure",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-102",
+    "name": "greedy mimic",
+    "description": "",
+    "url": "/games/platinum/cdn/greedy%20mimic/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/greedy%20mimic.png",
+    "_cat": [
+      "adventure",
+      "puzzle",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-103",
+    "name": "sticky sourcerer",
+    "description": "",
+    "url": "/games/platinum/cdn/sticky%20sorcerer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sticky%20sourcerer.png",
+    "_cat": [
+      "io",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-104",
+    "name": "yarne",
+    "description": "",
+    "url": "/games/platinum/cdn/yarne/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/yarne.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-105",
+    "name": "two timin towers",
+    "description": "",
+    "url": "/games/platinum/cdn/two%20timin%20towers/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/two%20timin%20towers.jpg",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-106",
+    "name": "slimoban 2",
+    "description": "",
+    "url": "/games/platinum/cdn/slimoban%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slimoban%202.jpg",
+    "_cat": [
+      "puzzle",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-107",
+    "name": "slide fill",
+    "description": "",
+    "url": "/games/platinum/cdn/slide%20fill/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slide%20fill.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-108",
+    "name": "sheep",
+    "description": "",
+    "url": "/games/platinum/cdn/sheep/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sheep.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-109",
+    "name": "roll merge 3d",
+    "description": "",
+    "url": "/games/platinum/cdn/roll%20merge%203d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/roll%20merge%203d.jpg",
+    "_cat": [
+      "puzzle",
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-110",
+    "name": "ordeals of december",
+    "description": "",
+    "url": "/games/platinum/cdn/ordeals%20of%20december/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ordeals%20of%20december.jpg",
+    "_cat": [
+      "adventure",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-111",
+    "name": "one screen run 2",
+    "description": "",
+    "url": "/games/platinum/cdn/one%20screen%20run%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/one%20screen%20run%202.png",
+    "_cat": [
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-112",
+    "name": "indestructotank gb",
+    "description": "",
+    "url": "/games/platinum/cdn/indestructotank%20gb/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/indestructotank%20gb.jpg",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-113",
+    "name": "gaia",
+    "description": "",
+    "url": "/games/platinum/cdn/gaia/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gaia.webp",
+    "_cat": [
+      "strategy",
+      "adventure",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-114",
+    "name": "bokdown",
+    "description": "",
+    "url": "/games/platinum/cdn/bokdown/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bokdown.png",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-115",
+    "name": "yin and yang",
+    "description": "",
+    "url": "/games/platinum/cdn/yin%20and%20yang/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/yin%20and%20yang.jpg",
+    "_cat": [
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-116",
+    "name": "top outpost",
+    "description": "",
+    "url": "/games/platinum/cdn/top%20outpost/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/top%20outpost.jpg",
+    "_cat": [
+      "strategy",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-117",
+    "name": "spirit dungeons",
+    "description": "",
+    "url": "/games/platinum/cdn/spirit%20dungeons/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/spirit%20dungeons.webp",
+    "_cat": [
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-118",
+    "name": "pixel tap dungeon",
+    "description": "",
+    "url": "/games/platinum/cdn/pixel%20tap%20dungeon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pixel%20tap%20dungeon.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-119",
+    "name": "out of ctrl",
+    "description": "",
+    "url": "/games/platinum/cdn/out%20of%20ctrl/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/out%20of%20ctrl.jpg",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-120",
+    "name": "mad pirate skeleton",
+    "description": "",
+    "url": "/games/platinum/cdn/mad%20pirate%20skeleton/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mad%20pirate%20skeleton.jpg",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-121",
+    "name": "kity builder prototype",
+    "description": "",
+    "url": "/games/platinum/cdn/kity%20builder%20prototype/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/kity%20builder%20prototype.png",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-122",
+    "name": "jetscout boot camp",
+    "description": "",
+    "url": "/games/platinum/cdn/jetscout%20boot%20camp/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/jetscout%20boot%20camp.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-123",
+    "name": "idle fill factory",
+    "description": "",
+    "url": "/games/platinum/cdn/idle%20fill%20factory/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/idle%20fill%20factory.jpg",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-124",
+    "name": "find a way out",
+    "description": "",
+    "url": "/games/platinum/cdn/find%20a%20way%20out/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/find%20a%20way%20out.jpg",
+    "_cat": [
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-125",
+    "name": "cursed travels flame of the banshee",
+    "description": "",
+    "url": "/games/platinum/cdn/cursed%20travels%20flame%20of%20the%20banshee/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cursed%20travels%20flame%20of%20the%20banshee.png",
+    "_cat": [
+      "adventure",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-126",
+    "name": "cognite",
+    "description": "",
+    "url": "/games/platinum/cdn/cognite/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cognite.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-127",
+    "name": "white pen road",
+    "description": "",
+    "url": "/games/platinum/cdn/white%20pen%20road/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/white%20pen%20road.webp",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-128",
+    "name": "space cowboy",
+    "description": "",
+    "url": "/games/platinum/cdn/space%20cowboy/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/space%20cowboy.jpg",
+    "_cat": [
+      "adventure",
+      "action",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-129",
+    "name": "rail connect",
+    "description": "",
+    "url": "/games/platinum/cdn/rail%20connect/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/rail%20connect.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-130",
+    "name": "put a ring on it",
+    "description": "",
+    "url": "/games/platinum/cdn/put%20a%20ring%20on%20it/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/put%20a%20ring%20on%20it.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-131",
+    "name": "mutual destruction",
+    "description": "",
+    "url": "/games/platinum/cdn/mutual%20destruction/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mutual%20destruction.jpg",
+    "_cat": [
+      "strategy",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-132",
+    "name": "mini bubbles",
+    "description": "",
+    "url": "/games/platinum/cdn/mini%20bubbles/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mini%20bubbles.jpg",
+    "_cat": [
+      "puzzle",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-133",
+    "name": "leapoid",
+    "description": "",
+    "url": "/games/platinum/cdn/leapoid/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/leapoid.jpg",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-134",
+    "name": "keyholder",
+    "description": "",
+    "url": "/games/platinum/cdn/keyholder/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/keyholder.jpg",
+    "_cat": [
+      "other",
+      "horror",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-135",
+    "name": "icy north",
+    "description": "",
+    "url": "/games/platinum/cdn/icy%20north/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/icy%20north.png",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-136",
+    "name": "evolutionary psychol",
+    "description": "",
+    "url": "/games/platinum/cdn/evolutionary%20psychol/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/evolutionary%20psychology.jpg",
+    "_cat": [
+      "strategy",
+      "other",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-137",
+    "name": "escape kid",
+    "description": "",
+    "url": "/games/platinum/cdn/escape%20kid/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/escape%20kid.webp",
+    "_cat": [
+      "platformer",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-138",
+    "name": "cursed travels the shattered labyrinth",
+    "description": "",
+    "url": "/games/platinum/cdn/cursed%20travels%20the%20shattered%20labyrinth/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cursed%20travels%20the%20shattered%20labyrinth.png",
+    "_cat": [
+      "adventure",
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-139",
+    "name": "crystal wizards",
+    "description": "",
+    "url": "/games/platinum/cdn/crystal%20wizards/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/crystal%20wizards.jpg",
+    "_cat": [
+      "strategy",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-140",
+    "name": "calturin",
+    "description": "",
+    "url": "/games/platinum/cdn/calturin/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/calturin.jpg",
+    "_cat": [
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-141",
+    "name": "binary",
+    "description": "",
+    "url": "/games/platinum/cdn/binary/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/binary.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-142",
+    "name": "are you human",
+    "description": "",
+    "url": "/games/platinum/cdn/areyouhuman/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/are%20you%20human.webp",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-143",
+    "name": "anyek the keyboard puzzle",
+    "description": "",
+    "url": "/games/platinum/cdn/anyek%20the%20keyboard%20puzzle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/anyek%20the%20keyboard%20puzzle.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-144",
+    "name": "shaky structure",
+    "description": "",
+    "url": "/games/platinum/cdn/shaky%20structure/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/shaky%20structure.webp",
+    "_cat": [
+      "puzzle",
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-145",
+    "name": "orb of creation",
+    "description": "",
+    "url": "/games/platinum/cdn/orb%20of%20creation/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/orb%20of%20creation.jpg",
+    "_cat": [
+      "strategy",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-146",
+    "name": "incub8",
+    "description": "",
+    "url": "/games/platinum/cdn/incub8/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/incub8.png",
+    "_cat": [
+      "idle",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-147",
+    "name": "tryh4rd",
+    "description": "",
+    "url": "/games/platinum/cdn/tryh4rd/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tryh4rd.jpg",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-148",
+    "name": "runick",
+    "description": "",
+    "url": "/games/platinum/cdn/runick/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/runick.jpg",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-149",
+    "name": "laqueus escape chapter 5",
+    "description": "",
+    "url": "/games/platinum/cdn/laqueus%20escape%20chapter%205/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/laqueus%20escape%20chapter%205.jpg",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-150",
+    "name": "drag box",
+    "description": "",
+    "url": "/games/platinum/cdn/drag%20box/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/drag%20box.jpg",
+    "_cat": [
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-151",
+    "name": "cloudhopper",
+    "description": "",
+    "url": "/games/platinum/cdn/cloudhopper/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cloudhopper.webp",
+    "_cat": [
+      "platformer",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-152",
+    "name": "yarn untangled",
+    "description": "",
+    "url": "/games/platinum/cdn/yarn%20untangled/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/yarn%20untangled.jpg",
+    "_cat": [
+      "puzzle",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-153",
+    "name": "towerland",
+    "description": "",
+    "url": "/games/platinum/cdn/towerland/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/towerland.jpg",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-154",
+    "name": "the mage",
+    "description": "",
+    "url": "/games/platinum/cdn/the%20mage/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/the%20mage.jpg",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-155",
+    "name": "telepobox 2",
+    "description": "",
+    "url": "/games/platinum/cdn/telepobox%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/telepobox2.jpg",
+    "_cat": [
+      "io",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-156",
+    "name": "snail trail",
+    "description": "",
+    "url": "/games/platinum/cdn/snail%20trail/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/snail%20trail.webp",
+    "_cat": [
+      "strategy",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-157",
+    "name": "robox",
+    "description": "",
+    "url": "/games/platinum/cdn/robox/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/robox.jpg",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-158",
+    "name": "reel deep",
+    "description": "",
+    "url": "/games/platinum/cdn/reel%20deep/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/reel%20deep.webp",
+    "_cat": [
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-159",
+    "name": "planet d4rk",
+    "description": "",
+    "url": "/games/platinum/cdn/planet%20d4rk/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/planet%20d4rk.png",
+    "_cat": [
+      "io",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-160",
+    "name": "moosha",
+    "description": "",
+    "url": "/games/platinum/cdn/moosha/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/moosha.jpg",
+    "_cat": [
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-161",
+    "name": "may i have your attention, please",
+    "description": "",
+    "url": "/games/platinum/cdn/may%20i%20have%20your%20attention,%20please/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/may%20i%20have%20your%20attention,%20please.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-162",
+    "name": "laqueus escape chapter 6",
+    "description": "",
+    "url": "/games/platinum/cdn/laqueus%20escape%20chapter%206/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/laqueus%20escape%20chapter%206.avif",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-163",
+    "name": "house pusher",
+    "description": "",
+    "url": "/games/platinum/cdn/house%20pusher/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/house%20pusher.png",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-164",
+    "name": "gobo desert of cubes",
+    "description": "",
+    "url": "/games/platinum/cdn/gobo%20desert%20of%20cubes/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gobo%20desert%20of%20cubes.jpg",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-165",
+    "name": "forward winds",
+    "description": "",
+    "url": "/games/platinum/cdn/forward%20winds/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/forward%20winds.png",
+    "_cat": [
+      "adventure",
+      "strategy",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-166",
+    "name": "fluctuoid",
+    "description": "",
+    "url": "/games/platinum/cdn/fluctuoid/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fluctuoid.webp",
+    "_cat": [
+      "io",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-167",
+    "name": "cursed travels a forgotten seal",
+    "description": "",
+    "url": "/games/platinum/cdn/cursed%20travels%20a%20forgotten%20seal/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cursed%20travels%20a%20forgotten%20seal.png",
+    "_cat": [
+      "adventure",
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-168",
+    "name": "blacken slash demo",
+    "description": "",
+    "url": "/games/platinum/cdn/blacken%20slash%20demo/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/blacken%20slash.jpg",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-169",
+    "name": "magirune",
+    "description": "",
+    "url": "/games/platinum/cdn/magirune/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/magirune.jpg",
+    "_cat": [
+      "strategy",
+      "idle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-170",
+    "name": "logica emotica",
+    "description": "",
+    "url": "/games/platinum/cdn/logica%20emotica/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/logica%20emotica.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-171",
+    "name": "hall of palettes",
+    "description": "",
+    "url": "/games/platinum/cdn/hall%20of%20palettes/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/hall%20of%20palettes.png",
+    "_cat": [
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-172",
+    "name": "nova cloudwalkers",
+    "description": "",
+    "url": "/games/platinum/cdn/nova%20cloudwalkers/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/nova%20cloudwalkers.jpg",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-173",
+    "name": "notebook jam",
+    "description": "",
+    "url": "/games/platinum/cdn/notebook%20jam/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/notebook%20jam.jpg",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-174",
+    "name": "gods of defense",
+    "description": "",
+    "url": "/games/platinum/cdn/gods%20of%20defense/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gods%20of%20defense.jpg",
+    "_cat": [
+      "strategy",
+      "fighting",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-175",
+    "name": "slide box",
+    "description": "",
+    "url": "/games/platinum/cdn/slide%20box/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slide%20box.png",
+    "_cat": [
+      "puzzle",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-176",
+    "name": "sector 01",
+    "description": "",
+    "url": "/games/platinum/cdn/sector%2001/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sector%2001.jpg",
+    "_cat": [
+      "action",
+      "adventure",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-177",
+    "name": "erase box",
+    "description": "",
+    "url": "/games/platinum/cdn/erase%20box/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/erase%20box.jpg",
+    "_cat": [
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-178",
+    "name": "sum lines",
+    "description": "",
+    "url": "/games/platinum/cdn/sum%20lines/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sum%20lines.webp",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-179",
+    "name": "strg snek",
+    "description": "",
+    "url": "/games/platinum/cdn/strg%20snek/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/strg%20snek.png",
+    "_cat": [
+      "strategy",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-180",
+    "name": "rotate box",
+    "description": "",
+    "url": "/games/platinum/cdn/rotate%20box/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/rotate%20box.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-181",
+    "name": "red scarf platformer",
+    "description": "",
+    "url": "/games/platinum/cdn/red%20scarf%20platformer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/red%20scarf%20platformer.jpg",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-182",
+    "name": "peeper reaper",
+    "description": "",
+    "url": "/games/platinum/cdn/peeper%20reaper/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/peeper%20reaper.jpg",
+    "_cat": [
+      "action",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-183",
+    "name": "ninja auto run",
+    "description": "",
+    "url": "/games/platinum/cdn/ninja%20auto%20run/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ninja%20auto%20run.webp",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-184",
+    "name": "murder is game over",
+    "description": "",
+    "url": "/games/platinum/cdn/murder%20is%20game%20over/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/murder%20is%20game%20over.jpg",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-185",
+    "name": "mirror wizard",
+    "description": "",
+    "url": "/games/platinum/cdn/mirror%20wizard/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mirror%20wizard.jpg",
+    "_cat": [
+      "puzzle",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-186",
+    "name": "mini swim",
+    "description": "",
+    "url": "/games/platinum/cdn/mini%20swim/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mini%20swim.jpg",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-187",
+    "name": "mini flips",
+    "description": "",
+    "url": "/games/platinum/cdn/mini%20flips/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mini%20flips.jpg",
+    "_cat": [
+      "platformer",
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-188",
+    "name": "marcus osnail",
+    "description": "",
+    "url": "/games/platinum/cdn/marcus%20osnail/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/marcus%20osnail.png",
+    "_cat": [
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-189",
+    "name": "knights blade",
+    "description": "",
+    "url": "/games/platinum/cdn/knights%20blade/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/knights%20blade.webp",
+    "_cat": [
+      "action",
+      "adventure",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-190",
+    "name": "infinite night the cunning princess",
+    "description": "",
+    "url": "/games/platinum/cdn/infinite%20night%20the%20cunning%20princess/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/infinite%20night%20the%20cunning%20princess.jpg",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-191",
+    "name": "in space",
+    "description": "",
+    "url": "/games/platinum/cdn/in%20space/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/in%20space.jpg",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-192",
+    "name": "hummin out",
+    "description": "",
+    "url": "/games/platinum/cdn/hummin%20out/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/hummin%20out.webp",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-193",
+    "name": "haunted rooms",
+    "description": "",
+    "url": "/games/platinum/cdn/haunted%20rooms/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/haunted%20rooms.webp",
+    "_cat": [
+      "horror",
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-194",
+    "name": "darkraid delilah",
+    "description": "",
+    "url": "/games/platinum/cdn/darkraid%20delilah/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/darkraid%20delilah.jpg",
+    "_cat": [
+      "action",
+      "horror",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-195",
+    "name": "cordovan",
+    "description": "",
+    "url": "/games/platinum/cdn/cordovan/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cordovan.webp",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-196",
+    "name": "contractomaton",
+    "description": "",
+    "url": "/games/platinum/cdn/contractomaton/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/contractomaton.jpg",
+    "_cat": [
+      "strategy",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-197",
+    "name": "arrow box",
+    "description": "",
+    "url": "/games/platinum/cdn/arrow%20box/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/arrow%20box.webp",
+    "_cat": [
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-198",
+    "name": "viscous ventures",
+    "description": "",
+    "url": "/games/platinum/cdn/viscous%20ventures/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/viscous%20ventures.jpg",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-199",
+    "name": "steel and claw",
+    "description": "",
+    "url": "/games/platinum/cdn/steel%20and%20claw/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/steel%20and%20claw.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-200",
+    "name": "slime knight",
+    "description": "",
+    "url": "/games/platinum/cdn/slime%20knight/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slime%20knight.avif",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-201",
+    "name": "platformation",
+    "description": "",
+    "url": "/games/platinum/cdn/platformation/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/platformation.jpg",
+    "_cat": [
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-202",
+    "name": "path of arrows",
+    "description": "",
+    "url": "/games/platinum/cdn/path%20of%20arrows/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/path%20of%20arrows.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-203",
+    "name": "ninja kite",
+    "description": "",
+    "url": "/games/platinum/cdn/ninja%20kite/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ninja%20kite.jpg",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-204",
+    "name": "mutato potato",
+    "description": "",
+    "url": "/games/platinum/cdn/mutato%20potato/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mutato%20potato.avif",
+    "_cat": [
+      "puzzle",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-205",
+    "name": "mini rocket",
+    "description": "",
+    "url": "/games/platinum/cdn/mini%20rocket/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mini%20rocket.avif",
+    "_cat": [
+      "racing",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-206",
+    "name": "magnet master redux",
+    "description": "",
+    "url": "/games/platinum/cdn/magnet%20master%20redux/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/magnet%20master%20redux.jpg",
+    "_cat": [
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-207",
+    "name": "inversion",
+    "description": "",
+    "url": "/games/platinum/cdn/inversion/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/inversion.jpg",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-208",
+    "name": "handle",
+    "description": "",
+    "url": "/games/platinum/cdn/handle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/handle.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-209",
+    "name": "dispersal vectors",
+    "description": "",
+    "url": "/games/platinum/cdn/dispersal%20vectors/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/dispersal%20vectors.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-210",
+    "name": "cata catapult",
+    "description": "",
+    "url": "/games/platinum/cdn/cata%20catapult/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cata%20catapult.png",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-211",
+    "name": "astro steve adventure",
+    "description": "",
+    "url": "/games/platinum/cdn/astro%20steve%20adventure/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/astro%20steve%20adventure.jpg",
+    "_cat": [
+      "adventure",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-212",
+    "name": "the designer",
+    "description": "",
+    "url": "/games/platinum/cdn/the%20designer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/the%20designer.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-213",
+    "name": "stress chess",
+    "description": "",
+    "url": "/games/platinum/cdn/stress%20chess/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/stress%20chess.jpg",
+    "_cat": [
+      "strategy",
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-214",
+    "name": "specters of the sun",
+    "description": "",
+    "url": "/games/platinum/cdn/specters%20of%20the%20sun/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/specters%20of%20the%20sun.jpg",
+    "_cat": [
+      "adventure",
+      "action",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-215",
+    "name": "space order mine",
+    "description": "",
+    "url": "/games/platinum/cdn/space%20order%20mine/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/space%20order%20mine.jpg",
+    "_cat": [
+      "strategy",
+      "idle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-216",
+    "name": "scraplegs",
+    "description": "",
+    "url": "/games/platinum/cdn/scraplegs/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/scraplegs.webp",
+    "_cat": [
+      "fighting",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-217",
+    "name": "last plant on earth",
+    "description": "",
+    "url": "/games/platinum/cdn/last%20plant%20on%20earth/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/last%20plant%20on%20earth.webp",
+    "_cat": [
+      "adventure",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-218",
+    "name": "gloop",
+    "description": "",
+    "url": "/games/platinum/cdn/gloop/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gloop.webp",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-219",
+    "name": "doubleup",
+    "description": "",
+    "url": "/games/platinum/cdn/doubleup/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/doubleup.webp",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-220",
+    "name": "toms trial",
+    "description": "",
+    "url": "/games/platinum/cdn/toms%20trial/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/toms%20trial.jpg",
+    "_cat": [
+      "racing",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-221",
+    "name": "knights blade",
+    "description": "",
+    "url": "/games/platinum/cdn/knights%20blade/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/knights%20blade.webp",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-222",
+    "name": "jetpack kiwi",
+    "description": "",
+    "url": "/games/platinum/cdn/jetpack%20kiwi/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/jetpack%20kiwi.jpg",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-223",
+    "name": "dungeon scroller",
+    "description": "",
+    "url": "/games/platinum/cdn/dungeon%20scroller/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/dongeon%20scroller.jpg",
+    "_cat": [
+      "action",
+      "platformer",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-224",
+    "name": "a maniac",
+    "description": "",
+    "url": "/games/platinum/cdn/a%20maniac/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/a%20maniac.webp",
+    "_cat": [
+      "horror",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-225",
+    "name": "Pixel shooter",
+    "description": "",
+    "url": "/games/platinum/cdn/pixelshooter/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pixelshooter.jpeg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-228",
+    "name": "agar.io",
+    "description": "",
+    "url": "/games/platinum/cdn/jptragar/web/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/agar.jpeg",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-229",
+    "name": "giraffes volleyball",
+    "description": "",
+    "url": "/games/platinum/cdn/giraffe/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/giraffe.png",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-230",
+    "name": "un evergreen",
+    "description": "",
+    "url": "/games/platinum/cdn/un%20evergreen/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/un%20evergreen.png",
+    "_cat": [
+      "adventure",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-231",
+    "name": "super gauntlent",
+    "description": "",
+    "url": "/games/platinum/cdn/super%20gauntlent/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/super%20gauntlent.jpg",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-232",
+    "name": "slis",
+    "description": "",
+    "url": "/games/platinum/cdn/slis/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slis.webp",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-233",
+    "name": "mini magbot",
+    "description": "",
+    "url": "/games/platinum/cdn/mini%20magbot/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mini%20magbot.jpg",
+    "_cat": [
+      "platformer",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-234",
+    "name": "driftmania",
+    "description": "",
+    "url": "/games/platinum/cdn/driftmania/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/driftmania.png",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-235",
+    "name": "club tycoon",
+    "description": "",
+    "url": "/games/platinum/cdn/club%20tycoon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/club%20tycoon.jpg",
+    "_cat": [
+      "strategy",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-236",
+    "name": "blasting marbles",
+    "description": "",
+    "url": "/games/platinum/cdn/blasting%20marbles/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/blasting%20marbles.jpg",
+    "_cat": [
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-237",
+    "name": "deepest sword",
+    "description": "",
+    "url": "/games/platinum/cdn/deepest%20sword/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/deepest%20sword.jpg",
+    "_cat": [
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-238",
+    "name": "sort the court",
+    "description": "",
+    "url": "/games/platinum/cdn/sort%20the%20court/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sort%20the%20court.jpg",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-239",
+    "name": "Resent client (mc)",
+    "description": "",
+    "url": "/games/platinum/cdn/resent/Resent-4.0-Patch-2-English.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/resent.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-240",
+    "name": "Erase Box",
+    "description": "",
+    "url": "/games/platinum/cdn/erase%20box/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/erase%20box.jpg",
+    "_cat": [
+      "puzzle",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-241",
+    "name": "Crossy Road",
+    "description": "",
+    "url": "/games/platinum/cdn/crossyroad/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/crossyroad.jpg",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-242",
+    "name": "Drive Mad 200 levels",
+    "description": "",
+    "url": "/games/platinum/cdn/drivemad200/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/drivemad.png",
+    "_cat": [
+      "racing",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-243",
+    "name": "1",
+    "description": "",
+    "url": "/games/platinum/cdn/1/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/1.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-245",
+    "name": "2048",
+    "description": "",
+    "url": "/games/platinum/cdn/2048/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/2048.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-246",
+    "name": "9007199254740992",
+    "description": "",
+    "url": "/games/platinum/cdn/9007199254740992/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/9007199254740992.png",
+    "_cat": [
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-247",
+    "name": "Achievement Unlocked",
+    "description": "",
+    "url": "/games/platinum/cdn/achievementunlocked/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Achievement_Unlocked.png",
+    "_cat": [
+      "idle",
+      "other",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-248",
+    "name": "Adrenaline Challenge",
+    "description": "",
+    "url": "/games/platinum/cdn/adrenalinechallenge/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Adrenaline_Challenge.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-249",
+    "name": "Among Us",
+    "description": "",
+    "url": "/games/platinum/cdn/among-us/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Among_Us.png",
+    "_cat": [
+      "strategy",
+      "io",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-250",
+    "name": "Avalanche",
+    "description": "",
+    "url": "/games/platinum/cdn/avalanche/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Avalanche.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-251",
+    "name": "Backrooms",
+    "description": "",
+    "url": "/games/platinum/cdn/backrooms/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Backrooms.png",
+    "_cat": [
+      "horror",
+      "adventure",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-252",
+    "name": "Basketball Stars",
+    "description": "",
+    "url": "/games/platinum/cdn/basketball-stars/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Basketball_Stars.png",
+    "_cat": [
+      "sports",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-253",
+    "name": "Battle for Gondor",
+    "description": "",
+    "url": "/games/platinum/cdn/battleforgondor/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Battle_for_Gondor.png",
+    "_cat": [
+      "strategy",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-254",
+    "name": "Big Red Button",
+    "description": "",
+    "url": "/games/platinum/cdn/bigredbutton/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Big_Red_Button.png",
+    "_cat": [
+      "action",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-255",
+    "name": "Black Knight",
+    "description": "",
+    "url": "/games/platinum/cdn/blackknight/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Black_Knight.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-256",
+    "name": "Bloons TD",
+    "description": "",
+    "url": "/games/platinum/cdn/bloonstd/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Bloons_TD.png",
+    "_cat": [
+      "strategy",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-257",
+    "name": "Bloons TD 2",
+    "description": "",
+    "url": "/games/platinum/cdn/bloonstd2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Bloons_TD_2.png",
+    "_cat": [
+      "strategy",
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-258",
+    "name": "Bloxors",
+    "description": "",
+    "url": "/games/platinum/cdn/bloxors/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Bloxors.png",
+    "_cat": [
+      "io",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-259",
+    "name": "Box Head",
+    "description": "",
+    "url": "/games/platinum/cdn/boxhead2play/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Box_Head.png",
+    "_cat": [
+      "action",
+      "platformer",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-260",
+    "name": "Henry Stickmin - Breaking the Bank",
+    "description": "",
+    "url": "/games/platinum/cdn/breakingthebank/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Breaking_the_Bank.png",
+    "_cat": [
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-261",
+    "name": "Big Tower Tiny Square",
+    "description": "",
+    "url": "/games/platinum/cdn/btts/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Big_Tower_Tiny_Square.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-262",
+    "name": "Cannon Basketball 4",
+    "description": "",
+    "url": "/games/platinum/cdn/cannon-basketball-4/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cannon_Basketball_4.png",
+    "_cat": [
+      "sports",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-263",
+    "name": "Canyon Defense",
+    "description": "",
+    "url": "/games/platinum/cdn/canyondefense/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Canyon_Defense.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-264",
+    "name": "Cell Machine",
+    "description": "",
+    "url": "/games/platinum/cdn/cell-machine/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cell_Machine.png",
+    "_cat": [
+      "io",
+      "strategy",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-265",
+    "name": "Champion Archer",
+    "description": "",
+    "url": "/games/platinum/cdn/championarcher/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Champion_Archer.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-266",
+    "name": "Chrome Dino",
+    "description": "",
+    "url": "/games/platinum/cdn/chrome-dino/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Chrome_Dino.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-267",
+    "name": "circlO",
+    "description": "",
+    "url": "/games/platinum/cdn/circlo/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/circlO.png",
+    "_cat": [
+      "io",
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-268",
+    "name": "Connect 3",
+    "description": "",
+    "url": "/games/platinum/cdn/connect3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Connect_3.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-269",
+    "name": "Cookie Clicker",
+    "description": "",
+    "url": "/games/platinum/cdn/cookieeclicker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cookie_Clicker.png",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-270",
+    "name": "Cookie Clicker Modded",
+    "description": "",
+    "url": "/games/platinum/cdn/cookieeclicker/modded.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cookie_Clicker.png",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-271",
+    "name": "CraftMine",
+    "description": "",
+    "url": "/games/platinum/cdn/craftmine/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/CraftMine.png",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-272",
+    "name": "Creative Kill Chamber",
+    "description": "",
+    "url": "/games/platinum/cdn/creativekillchamber/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Creative_Kill_Chamber.png",
+    "_cat": [
+      "action",
+      "fighting",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-273",
+    "name": "CS:GO Clicker",
+    "description": "",
+    "url": "/games/platinum/cdn/csgo-clicker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/CS_GO_Clicker.png",
+    "_cat": [
+      "idle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-274",
+    "name": "Cut the Rope",
+    "description": "",
+    "url": "/games/platinum/cdn/ctr/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cut_the_Rope.png",
+    "_cat": [
+      "puzzle",
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-275",
+    "name": "Cut the Rope Holiday",
+    "description": "",
+    "url": "/games/platinum/cdn/ctr-holiday/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cut_the_Rope_Holiday.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-276",
+    "name": "Cut the Rope Time Travel",
+    "description": "",
+    "url": "/games/platinum/cdn/ctr-tr/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cut_the_Rope_Time_Travel.png",
+    "_cat": [
+      "puzzle",
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-277",
+    "name": "Cubefield",
+    "description": "",
+    "url": "/games/platinum/cdn/cubefield/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cubefield.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-278",
+    "name": "Cupcake 2048",
+    "description": "",
+    "url": "/games/platinum/cdn/cupcake2048/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Cupcake_2048.png",
+    "_cat": [
+      "puzzle",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-279",
+    "name": "Deal or No Deal",
+    "description": "",
+    "url": "/games/platinum/cdn/deal-or-no-deal/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Deal_or_No_Deal.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-280",
+    "name": "Death Run 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/death-run-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Death_Run_3D.png",
+    "_cat": [
+      "platformer",
+      "action",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-281",
+    "name": "Defend the Tank",
+    "description": "",
+    "url": "/games/platinum/cdn/defend-the-tank/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Defend_the_Tank.png",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-282",
+    "name": "Doge 2048",
+    "description": "",
+    "url": "/games/platinum/cdn/doge2048/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Doge_2048.png",
+    "_cat": [
+      "puzzle",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-283",
+    "name": "Doge Miner",
+    "description": "",
+    "url": "/games/platinum/cdn/DogeMiner/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Doge_Miner.png",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-284",
+    "name": "Doodle Jump",
+    "description": "",
+    "url": "/games/platinum/cdn/doodle-jump/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Doodle_Jump.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-285",
+    "name": "Double Wires",
+    "description": "",
+    "url": "/games/platinum/cdn/doublewires/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Double_Wires.png",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-286",
+    "name": "Draw the Hill",
+    "description": "",
+    "url": "/games/platinum/cdn/draw-the-hill/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Draw_the_Hill.png",
+    "_cat": [
+      "racing",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-287",
+    "name": "Duck Life",
+    "description": "",
+    "url": "/games/platinum/cdn/ducklife1/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Duck_Life.png",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-288",
+    "name": "Duck Life 2",
+    "description": "",
+    "url": "/games/platinum/cdn/ducklife2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Duck_Life_2.png",
+    "_cat": [
+      "platformer",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-289",
+    "name": "Duck Life 3",
+    "description": "",
+    "url": "/games/platinum/cdn/ducklife3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Duck_Life_3.png",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-290",
+    "name": "Edge Not Found",
+    "description": "",
+    "url": "/games/platinum/cdn/edgenotfound/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Edge_Not_Found.png",
+    "_cat": [
+      "platformer",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-291",
+    "name": "Elastic Man",
+    "description": "",
+    "url": "/games/platinum/cdn/elasticman/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Elastic_Man.png",
+    "_cat": [
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-292",
+    "name": "Endless War 3",
+    "description": "",
+    "url": "/games/platinum/cdn/endlesswar3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Endless_War_3.png",
+    "_cat": [
+      "action",
+      "fighting",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-293",
+    "name": "Evil Glitch",
+    "description": "",
+    "url": "/games/platinum/cdn/evil-glitch/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Evil_Glitch.png",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-294",
+    "name": "Exo",
+    "description": "",
+    "url": "/games/platinum/cdn/exo/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Exo.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-295",
+    "name": "Factory Balls Forever",
+    "description": "",
+    "url": "/games/platinum/cdn/factoryballs/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Factory_Balls_Forever.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-296",
+    "name": "Fake Virus",
+    "description": "",
+    "url": "/games/platinum/cdn/fake-virus/icon.png?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Fake_Virus.png",
+    "_cat": [
+      "io",
+      "other",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-297",
+    "name": "Flappy 2048",
+    "description": "",
+    "url": "/games/platinum/cdn/flappy-2048/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Flappy_2048.png",
+    "_cat": [
+      "puzzle",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-298",
+    "name": "Flappy Bird",
+    "description": "",
+    "url": "/games/platinum/cdn/flappy-bird/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Flappy_Bird.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-299",
+    "name": "Flash Tetris",
+    "description": "",
+    "url": "/games/platinum/cdn/flashtetris/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Flash_Tetris.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-300",
+    "name": "Game Inside a Game Inside a Game...",
+    "description": "",
+    "url": "/games/platinum/cdn/game-inside/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Game_Inside_a_Game_Inside_a_Game....png",
+    "_cat": [
+      "puzzle",
+      "adventure",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-301",
+    "name": "Gimme the Airpod",
+    "description": "",
+    "url": "/games/platinum/cdn/gimme-the-airpod/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Gimme_the_Airpod.png",
+    "_cat": [
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-302",
+    "name": "Glass City",
+    "description": "",
+    "url": "/games/platinum/cdn/glass-city/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Glass_City.png",
+    "_cat": [
+      "adventure",
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-303",
+    "name": "Google Snake",
+    "description": "",
+    "url": "/games/platinum/cdn/google-snake/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Google_Snake.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-304",
+    "name": "Grind Craft",
+    "description": "",
+    "url": "/games/platinum/cdn/grindcraft/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Grind_Craft.png",
+    "_cat": [
+      "idle",
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-305",
+    "name": "Hacker Typer",
+    "description": "",
+    "url": "/games/platinum/cdn/hackertype/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Hacker_Typer.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-306",
+    "name": "Helicopter",
+    "description": "",
+    "url": "/games/platinum/cdn/helicopter/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Helicopter.png",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-307",
+    "name": "HexGL",
+    "description": "",
+    "url": "/games/platinum/cdn/HexGL/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/HexGL.png",
+    "_cat": [
+      "racing",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-308",
+    "name": "Hextris",
+    "description": "",
+    "url": "/games/platinum/cdn/hextris/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Hextris.png",
+    "_cat": [
+      "puzzle",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-309",
+    "name": "Idle Breakout",
+    "description": "",
+    "url": "/games/platinum/cdn/idle-breakout/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Idle_Breakout.png",
+    "_cat": [
+      "idle",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-310",
+    "name": "Idle Shark",
+    "description": "",
+    "url": "/games/platinum/cdn/idle-shark/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Idle_Shark.png",
+    "_cat": [
+      "idle",
+      "other",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-311",
+    "name": "Impossible Quiz",
+    "description": "",
+    "url": "/games/platinum/cdn/impossiblequiz/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Impossible_Quiz.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-312",
+    "name": "Just One Boss",
+    "description": "",
+    "url": "/games/platinum/cdn/just-one-boss/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Just_One_Boss.png",
+    "_cat": [
+      "idle",
+      "strategy",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-313",
+    "name": "Kitten Cannon",
+    "description": "",
+    "url": "/games/platinum/cdn/kittencannon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Kitten_Cannon.png",
+    "_cat": [
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-314",
+    "name": "Krunker",
+    "description": "",
+    "url": "/games/platinum/cdn/krunker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Krunker.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-315",
+    "name": "Mario",
+    "description": "",
+    "url": "/games/platinum/cdn/mario/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Mario.png",
+    "_cat": [
+      "platformer",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-316",
+    "name": "Matrix Rampage",
+    "description": "",
+    "url": "/games/platinum/cdn/matrixrampage/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Matrix_Rampage.png",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-317",
+    "name": "Meme 2048",
+    "description": "",
+    "url": "/games/platinum/cdn/meme2048/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Meme_2048.png",
+    "_cat": [
+      "puzzle",
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-318",
+    "name": "Minecraft Classic",
+    "description": "",
+    "url": "/games/platinum/cdn/minecraft-classic/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Minecraft_Classic.png",
+    "_cat": [
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-319",
+    "name": "Minesweeper",
+    "description": "",
+    "url": "/games/platinum/cdn/minesweeper/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Minesweeper.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-320",
+    "name": "Mini-putt",
+    "description": "",
+    "url": "/games/platinum/cdn/miniputt/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Mini-putt.png",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-321",
+    "name": "Missiles",
+    "description": "",
+    "url": "/games/platinum/cdn/missiles/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Missiles.png",
+    "_cat": [
+      "action",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-322",
+    "name": "MotoX3M",
+    "description": "",
+    "url": "/games/platinum/cdn/motox3m/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/MotoX3M.jpg",
+    "_cat": [
+      "racing",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-323",
+    "name": "MotoX3M Pool",
+    "description": "",
+    "url": "/games/platinum/cdn/motox3m-pool/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/MotoX3M_Pool.jpg",
+    "_cat": [
+      "racing",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-324",
+    "name": "MotoX3M Spooky",
+    "description": "",
+    "url": "/games/platinum/cdn/motox3m-spooky/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/MotoX3M_Spooky.jpeg",
+    "_cat": [
+      "racing",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-325",
+    "name": "MotoX3M Winter",
+    "description": "",
+    "url": "/games/platinum/cdn/motox3m-winter/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/MotoX3M_Winter.jpeg",
+    "_cat": [
+      "racing",
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-326",
+    "name": "n-gon",
+    "description": "",
+    "url": "/games/platinum/cdn/n-gon/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/n-gon.png",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-327",
+    "name": "NS-Shaft",
+    "description": "",
+    "url": "/games/platinum/cdn/ns-shaft/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/NS-Shaft.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-328",
+    "name": "Om Nom Bounce",
+    "description": "",
+    "url": "/games/platinum/cdn/om-bounce/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Om_Nom_Bounce.jpeg",
+    "_cat": [
+      "platformer",
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-329",
+    "name": "Pandemic 2",
+    "description": "",
+    "url": "/games/platinum/cdn/pandemic2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Pandemic_2.png",
+    "_cat": [
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-330",
+    "name": "Papa's Pizzaria",
+    "description": "",
+    "url": "/games/platinum/cdn/papaspizzaria/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Papa_s_Pizzaria.jpg",
+    "_cat": [
+      "idle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-331",
+    "name": "Paper.io 2",
+    "description": "",
+    "url": "/games/platinum/cdn/paperio2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Paper.io_2.png",
+    "_cat": [
+      "io",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-332",
+    "name": "Papery Planes",
+    "description": "",
+    "url": "/games/platinum/cdn/papery-planes/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Papery_Planes.jpg",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-333",
+    "name": "Particle Clicker",
+    "description": "",
+    "url": "/games/platinum/cdn/particle-clicker/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Particle_Clicker.png",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "platinum-334",
+    "name": "PolyBranch",
+    "description": "",
+    "url": "/games/platinum/cdn/polybranch/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/PolyBranch.png",
+    "_cat": [
+      "puzzle",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-335",
+    "name": "Portal (Flash)",
+    "description": "",
+    "url": "/games/platinum/cdn/portalflash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Portal_Flash.jpg",
+    "_cat": [
+      "puzzle",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-336",
+    "name": "Precision Client (Eaglercraft)",
+    "description": "",
+    "url": "/games/platinum/cdn/precision-client/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Precision_Client_Eaglercraft.png",
+    "_cat": [
+      "io",
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-337",
+    "name": "Push The Square",
+    "description": "",
+    "url": "/games/platinum/cdn/push-the-square/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Push_The_Square.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-338",
+    "name": "Push Your Luck",
+    "description": "",
+    "url": "/games/platinum/cdn/push-your-luck/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Push_Your_Luck.png",
+    "_cat": [
+      "idle",
+      "io",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-339",
+    "name": "Retro Bowl",
+    "description": "",
+    "url": "/games/platinum/cdn/retro-bowl/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Retro_Bowl.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-340",
+    "name": "Rolly Vortex",
+    "description": "",
+    "url": "/games/platinum/cdn/rolly-vortex/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Rolly_Vortex.png",
+    "_cat": [
+      "platformer",
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-341",
+    "name": "Rooftop Snipers",
+    "description": "",
+    "url": "/games/platinum/cdn/rooftop-snipers/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Rooftop_Snipers.png",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-342",
+    "name": "Sand Game",
+    "description": "",
+    "url": "/games/platinum/cdn/sand-game/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Sand_Game.png",
+    "_cat": [
+      "puzzle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-343",
+    "name": "Slope",
+    "description": "",
+    "url": "/games/platinum/cdn/slope/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Slope.jpeg",
+    "_cat": [
+      "platformer",
+      "action",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-344",
+    "name": "Super Mario 64",
+    "description": "",
+    "url": "/games/platinum/cdn/sm64/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Super_Mario_64.png",
+    "_cat": [
+      "platformer",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-345",
+    "name": "Smash Carts",
+    "description": "",
+    "url": "/games/platinum/cdn/smashkarts/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Smash_Carts.png",
+    "_cat": [
+      "racing",
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-346",
+    "name": "Smoking Barrels",
+    "description": "",
+    "url": "/games/platinum/cdn/smokingbarrels/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Smoking_Barrels.jpg",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-347",
+    "name": "Snowbattle",
+    "description": "",
+    "url": "/games/platinum/cdn/snowbattle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Snowbattle.png",
+    "_cat": [
+      "action",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-348",
+    "name": "Soilder Legend",
+    "description": "",
+    "url": "/games/platinum/cdn/soldier-legend/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Soilder_Legend.jpeg",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-349",
+    "name": "Solitare",
+    "description": "",
+    "url": "/games/platinum/cdn/solitaire/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Solitare.png",
+    "_cat": [
+      "cards"
+    ]
+  },
+  {
+    "id": "platinum-350",
+    "name": "Sort The Court",
+    "description": "",
+    "url": "/games/platinum/cdn/sort-the-court/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Sort_The_Court.png",
+    "_cat": [
+      "strategy",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-351",
+    "name": "Soundboard",
+    "description": "",
+    "url": "/games/platinum/cdn/soundboard/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Soundboard.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-352",
+    "name": "Stack",
+    "description": "",
+    "url": "/games/platinum/cdn/stack/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Stack.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-353",
+    "name": "Stack Bump 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/stack-bump-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Stack_Bump_3D.jpg",
+    "_cat": [
+      "platformer",
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-354",
+    "name": "Henry Stickmin - Stealing The Diamond",
+    "description": "",
+    "url": "/games/platinum/cdn/stealingthediamond/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Stealing_The_Diamond.jpg",
+    "_cat": [
+      "adventure",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-355",
+    "name": "Stick War",
+    "description": "",
+    "url": "/games/platinum/cdn/stickwar/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Stick_War.jpg",
+    "_cat": [
+      "strategy",
+      "action",
+      "fighting"
+    ]
+  },
+  {
+    "id": "platinum-356",
+    "name": "Storm The House 2",
+    "description": "",
+    "url": "/games/platinum/cdn/stormthehouse2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Storm_The_House_2.jpg",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-357",
+    "name": "Superhot",
+    "description": "",
+    "url": "/games/platinum/cdn/superhot/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Superhot.jpg",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-358",
+    "name": "Swerve",
+    "description": "",
+    "url": "/games/platinum/cdn/swerve/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Swerve.jpg",
+    "_cat": [
+      "action",
+      "racing",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-359",
+    "name": "Tactical Assassin 2",
+    "description": "",
+    "url": "/games/platinum/cdn/tacticalassasin2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Tactical_Assassin_2.png",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-360",
+    "name": "Temple Run 2",
+    "description": "",
+    "url": "/games/platinum/cdn/temple-run-2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Temple_Run_2.png",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-361",
+    "name": "The Battle",
+    "description": "",
+    "url": "/games/platinum/cdn/thebattle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/The_Battle.png",
+    "_cat": [
+      "fighting",
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-362",
+    "name": "The Final Earth",
+    "description": "",
+    "url": "/games/platinum/cdn/the-final-earth/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/The_Final_Earth.png",
+    "_cat": [
+      "strategy",
+      "idle",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-363",
+    "name": "There Is No Game",
+    "description": "",
+    "url": "/games/platinum/cdn/there-is-no-game/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/There_Is_No_Game.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-364",
+    "name": "This Is The Only Level",
+    "description": "",
+    "url": "/games/platinum/cdn/thisistheonlylevel/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/This_Is_The_Only_Level.png",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-365",
+    "name": "Toss The Turtle",
+    "description": "",
+    "url": "/games/platinum/cdn/tosstheturtle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Toss_The_Turtle.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-366",
+    "name": "Tube Jumpers",
+    "description": "",
+    "url": "/games/platinum/cdn/tube-jumpers/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Tube_Jumpers.png",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
+  },
+  {
+    "id": "platinum-367",
+    "name": "Tunnel Rush",
+    "description": "",
+    "url": "/games/platinum/cdn/tunnel-rush/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Tunnel_Rush.png",
+    "_cat": [
+      "action",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-368",
+    "name": "TV Static",
+    "description": "",
+    "url": "/games/platinum/cdn/tv-static/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/TV_Static.png",
+    "_cat": [
+      "horror",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-369",
+    "name": "Vex 3",
+    "description": "",
+    "url": "/games/platinum/cdn/vex3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Vex_3.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-370",
+    "name": "Vex 4",
+    "description": "",
+    "url": "/games/platinum/cdn/vex4/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Vex_4.png",
+    "_cat": [
+      "platformer",
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-371",
+    "name": "Vex 5",
+    "description": "",
+    "url": "/games/platinum/cdn/vex5/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Vex_5.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-372",
+    "name": "Vex 6",
+    "description": "",
+    "url": "/games/platinum/cdn/vex6/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Vex_6.png",
+    "_cat": [
+      "platformer",
+      "action",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-373",
+    "name": "Web Retro Local",
+    "description": "",
+    "url": "/games/platinum/cdn/webretro-local/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Web_Retro_Local.png",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-374",
+    "name": "Wolfenstein 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/wolf3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Wolfenstein_3D.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-375",
+    "name": "Wordle",
+    "description": "",
+    "url": "/games/platinum/cdn/wordle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Wordle.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-376",
+    "name": "World's Hardest Game",
+    "description": "",
+    "url": "/games/platinum/cdn/worlds-hardest-game/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/World_s_Hardest_Game.png",
+    "_cat": [
+      "platformer",
+      "puzzle",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-377",
+    "name": "World's Hardest Game 2",
+    "description": "",
+    "url": "/games/platinum/cdn/worlds-hardest-game-2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/World_s_Hardest_Game_2.png",
+    "_cat": [
+      "action",
+      "platformer",
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-378",
+    "name": "You Are Jeff Bezos",
+    "description": "",
+    "url": "/games/platinum/cdn/you-are-bezos/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/You_Are_Jeff_Bezos.png",
+    "_cat": [
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-379",
     "name": "Basket Random",
-    "image": "/assets/imgs/basketrandom.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/basketball-stars/index.html",
-    "image": "/assets/imgs/Basketball_Stars.png",
-    "name": "Basketball Stars"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/battleforgondor/index.html",
-    "image": "/assets/imgs/Battle_for_Gondor.png",
-    "name": "Battle for Gondor"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/bigredbutton/index.html",
-    "image": "/assets/imgs/Big_Red_Button.png",
-    "name": "Big Red Button"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/btts/index.html",
-    "image": "/assets/imgs/Big_Tower_Tiny_Square.png",
-    "name": "Big Tower Tiny Square"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/blackknight/index.html",
-    "image": "/assets/imgs/Black_Knight.png",
-    "name": "Black Knight"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/bloonstd/index.html",
-    "image": "/assets/imgs/Bloons_TD.png",
-    "name": "Bloons TD"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/bloonstd2/index.html",
-    "image": "/assets/imgs/Bloons_TD_2.png",
-    "name": "Bloons TD 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/bloxors/index.html",
-    "image": "/assets/imgs/Bloxors.png",
-    "name": "Bloxors"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/boxhead2play/index.html",
-    "image": "/assets/imgs/Box_Head.png",
-    "name": "Box Head"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/breakingthebank/index.html",
-    "image": "/assets/imgs/Breaking_the_Bank.png",
-    "name": "Breaking the Bank"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/cannon-basketball-4/index.html",
-    "image": "/assets/imgs/Cannon_Basketball_4.png",
-    "name": "Cannon Basketball 4"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/canyondefense/index.html",
-    "image": "/assets/imgs/Canyon_Defense.png",
-    "name": "Canyon Defense"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/cell-machine/index.html",
-    "image": "/assets/imgs/Cell_Machine.png",
-    "name": "Cell Machine"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/championarcher/index.html",
-    "image": "/assets/imgs/Champion_Archer.png",
-    "name": "Champion Archer"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/chrome-dino/index.html",
-    "image": "/assets/imgs/Chrome_Dino.png",
-    "name": "Chrome Dino"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/circlo/index.html",
-    "image": "/assets/imgs/circlO.png",
-    "name": "circlO"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/connect3/index.html",
-    "image": "/assets/imgs/Connect_3.png",
-    "name": "Connect 3"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/cookie-clicker/index.html",
-    "image": "/assets/imgs/Cookie_Clicker.png",
-    "name": "Cookie Clicker"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/craftmine/index.html",
-    "image": "/assets/imgs/CraftMine.png",
-    "name": "CraftMine"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/creativekillchamber/index.html",
-    "image": "/assets/imgs/Creative_Kill_Chamber.png",
-    "name": "Creative Kill Chamber"
-  },
-  {
-    "url": "https://11286868485713855706.playables.usercontent.goog/v/assets/index.html",
-    "image": "/assets/imgs/crossyroad.jpg",
-    "name": "Crossy Road"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/csgo-clicker/index.html",
-    "image": "/assets/imgs/CS_GO_Clicker.png",
-    "name": "CS:GO Clicker"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/cubefield/index.html",
-    "image": "/assets/imgs/Cubefield.png",
-    "name": "Cubefield"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/cupcake2048/index.html",
-    "image": "/assets/imgs/Cupcake_2048.png",
-    "name": "Cupcake 2048"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ctr/index.html",
-    "image": "/assets/imgs/Cut_the_Rope.png",
-    "name": "Cut the Rope"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ctr-holiday/index.html",
-    "image": "/assets/imgs/Cut_the_Rope_Holiday.png",
-    "name": "Cut the Rope Holiday"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ctr-tr/index.html",
-    "image": "/assets/imgs/Cut_the_Rope_Time_Travel.png",
-    "name": "Cut the Rope Time Travel"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/deal-or-no-deal/index.html",
-    "image": "/assets/imgs/Deal_or_No_Deal.png",
-    "name": "Deal or No Deal"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/death-run-3d/index.html",
-    "image": "/assets/imgs/Death_Run_3D.png",
-    "name": "Death Run 3D"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/defend-the-tank/index.html",
-    "image": "/assets/imgs/Defend_the_Tank.png",
-    "name": "Defend the Tank"
-  },
-  {
-    "url": "https://diep.io",
-    "name": "diep.io",
-    "image": "/assets/imgs/diep.jpeg"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/doge2048/index.html",
-    "image": "/assets/imgs/Doge_2048.png",
-    "name": "Doge 2048"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/DogeMiner/index.html",
-    "image": "/assets/imgs/Doge_Miner.png",
-    "name": "Doge Miner"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/doodle-jump/index.html",
-    "image": "/assets/imgs/Doodle_Jump.png",
-    "name": "Doodle Jump"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/doublewires/index.html",
-    "image": "/assets/imgs/Double_Wires.png",
-    "name": "Double Wires"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/draw-the-hill/index.html",
-    "image": "/assets/imgs/Draw_the_Hill.png",
-    "name": "Draw the Hill"
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/refs/heads/main/drivemad200/index.html",
-    "image": "/assets/imgs/drivemad.png",
-    "name": "Drive Mad 200 levels"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ducklife1/index.html",
-    "image": "/assets/imgs/Duck_Life.png",
-    "name": "Duck Life"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ducklife2/index.html",
-    "image": "/assets/imgs/Duck_Life_2.png",
-    "name": "Duck Life 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ducklife3/index.html",
-    "image": "/assets/imgs/Duck_Life_3.png",
-    "name": "Duck Life 3"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/edgenotfound/index.html",
-    "image": "/assets/imgs/Edge_Not_Found.png",
-    "name": "Edge Not Found"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/elasticman/index.html",
-    "image": "/assets/imgs/Elastic_Man.png",
-    "name": "Elastic Man"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/endlesswar3/index.html",
-    "image": "/assets/imgs/Endless_War_3.png",
-    "name": "Endless War 3"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/evil-glitch/index.html",
-    "image": "/assets/imgs/Evil_Glitch.png",
-    "name": "Evil Glitch"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/exo/index.html",
-    "image": "/assets/imgs/Exo.png",
-    "name": "Exo"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/factoryballs/index.html",
-    "image": "/assets/imgs/Factory_Balls_Forever.png",
-    "name": "Factory Balls Forever"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/fake-virus/icon.png",
-    "image": "/assets/imgs/Fake_Virus.png",
-    "name": "Fake Virus"
-  },
-  {
-    "url": "https://g.deev.is/fnaw",
-    "name": "Five Nights at Winston's",
-    "image": "/assets/imgs/fnaw.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/flappy-2048/index.html",
-    "image": "/assets/imgs/Flappy_2048.png",
-    "name": "Flappy 2048"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/flappy-bird/index.html",
-    "image": "/assets/imgs/Flappy_Bird.png",
-    "name": "Flappy Bird"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/flashtetris/index.html",
-    "image": "/assets/imgs/Flash_Tetris.png",
-    "name": "Flash Tetris"
-  },
-  {
-    "url": "https://fnaf1.io/fnaf-1.embed",
-    "name": "Fnaf 1",
-    "image": "/assets/imgs/fnaf1.jpg"
-  },
-  {
-    "url": "https://fnaf1.io/fnaf-2.embed",
-    "name": "Fnaf 2",
-    "image": "/assets/imgs/fnaf2.jpg"
-  },
-  {
-    "url": "https://fnaf1.io/fnaf-3.embed",
-    "name": "Fnaf 3",
-    "image": "/assets/imgs/fnaf3.jpg"
-  },
-  {
-    "url": "https://fnaf1.io/fnaf-4.embed",
-    "name": "Fnaf 4",
-    "image": "/assets/imgs/fnaf4.jpg"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/game-inside/index.html",
-    "image": "/assets/imgs/Game_Inside_a_Game_Inside_a_Game....png",
-    "name": "Game Inside a Game Inside a Game..."
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/06fac3b70fd0a072ce5ef91a40a370c740a7d9d1/gdlite/index.html",
-    "image": "/assets/imgs/Geometry_Dash.png",
-    "name": "Geometry Dash (Real)"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/getaway-shootout/index.html",
-    "image": "/assets/imgs/Getaway_Shootout.png",
-    "name": "Getaway Shootout"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/gimme-the-airpod/index.html",
-    "image": "/assets/imgs/Gimme_the_Airpod.png",
-    "name": "Gimme the Airpod"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/glass-city/index.html",
-    "image": "/assets/imgs/Glass_City.png",
-    "name": "Glass City"
-  },
-  {
-    "url": "https://www.google.com/logos/2019/july4th19/r6/july4th19.html",
-    "name": "Google Doodle Baseball",
-    "image": "/assets/imgs/basedoodle.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/google-snake/index.html",
-    "image": "/assets/imgs/Google_Snake.png",
-    "name": "Google Snake"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/grindcraft/index.html",
-    "image": "/assets/imgs/Grind_Craft.png",
-    "name": "Grind Craft"
-  },
-  {
-    "url": "https://db.duck.deepresearch2markdown.com/html/grow_a_garden/index.html",
-    "name": "Grow A Garden",
-    "image": "/assets/imgs/growagarden.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/hackertype/index.html",
-    "image": "/assets/imgs/Hacker_Typer.png",
-    "name": "Hacker Typer"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/helicopter/index.html",
-    "image": "/assets/imgs/Helicopter.png",
-    "name": "Helicopter"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/HexGL/index.html",
-    "image": "/assets/imgs/HexGL.png",
-    "name": "HexGL"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/hextris/index.html",
-    "image": "/assets/imgs/Hextris.png",
-    "name": "Hextris"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/idle-breakout/index.html",
-    "image": "/assets/imgs/Idle_Breakout.png",
-    "name": "Idle Breakout"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/idle-shark/index.html",
-    "image": "/assets/imgs/Idle_Shark.png",
-    "name": "Idle Shark"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/impossiblequiz/index.html",
-    "image": "/assets/imgs/Impossible_Quiz.png",
-    "name": "Impossible Quiz"
-  },
-  {
-    "url": "https://games.crazygames.com/en_US/jetpack-joyride-pcp/index.html?v=1.343",
-    "name": "Jetpack Joyride",
-    "image": "/assets/imgs/jetpack.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/just-one-boss/index.html",
-    "image": "/assets/imgs/Just_One_Boss.png",
-    "name": "Just One Boss"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/kittencannon/index.html",
-    "image": "/assets/imgs/Kitten_Cannon.png",
-    "name": "Kitten Cannon"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/krunker/index.html",
-    "image": "/assets/imgs/Krunker.png",
-    "name": "Krunker"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/learntofly/index.html",
-    "image": "/assets/imgs/Learn_To_Fly.png",
-    "name": "Learn To Fly"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/mario/index.html",
-    "image": "/assets/imgs/Mario.png",
-    "name": "Mario"
-  },
-  {
-    "url": "https://retrogamesfree.com/marvel-vs-capcom-clash-of-super-heroes-980123-euro.embed",
-    "name": "Marvel vs. Capcom",
-    "image": "/assets/imgs/pv3.webp"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/matrixrampage/index.html",
-    "image": "/assets/imgs/Matrix_Rampage.png",
-    "name": "Matrix Rampage"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/meme2048/index.html",
-    "image": "/assets/imgs/Meme_2048.png",
-    "name": "Meme 2048"
-  },
-  {
-    "url": "https://client.eaglercraft.win/eagler-files/modded/1.8/EaglyMC/index.html",
-    "name": "Minecraft 1.20.1",
-    "image": "/assets/imgs/minecraft.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/minecraft-classic/index.html",
-    "image": "/assets/imgs/Minecraft_Classic.png",
-    "name": "Minecraft Classic"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/minesweeper/index.html",
-    "image": "/assets/imgs/Minesweeper.png",
-    "name": "Minesweeper"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/miniputt/index.html",
-    "image": "/assets/imgs/Mini-putt.png",
-    "name": "Mini-putt"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/missiles/index.html",
-    "image": "/assets/imgs/Missiles.png",
-    "name": "Missiles"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/motox3m/index.html",
-    "image": "/assets/imgs/MotoX3M.jpg",
-    "name": "MotoX3M"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/motox3m-pool/index.html",
-    "image": "/assets/imgs/MotoX3M_Pool.jpg",
-    "name": "MotoX3M Pool"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/motox3m-spooky/index.html",
-    "image": "/assets/imgs/MotoX3M_Spooky.jpeg",
-    "name": "MotoX3M Spooky"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/motox3m-winter/index.html",
-    "image": "/assets/imgs/MotoX3M_Winter.jpeg",
-    "name": "MotoX3M Winter"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/n-gon/index.html",
-    "image": "/assets/imgs/n-gon.png",
-    "name": "n-gon"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/ns-shaft/index.html",
-    "image": "/assets/imgs/NS-Shaft.png",
-    "name": "NS-Shaft"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/om-bounce/index.html",
-    "image": "/assets/imgs/Om_Nom_Bounce.jpeg",
-    "name": "Om Nom Bounce"
-  },
-  {
-    "url": "https://www.mortgagecalculator.org/money-games/ovo/",
-    "name": "OvO",
-    "image": "/assets/imgs/ovo.jpeg"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/pandemic2/index.html",
-    "image": "/assets/imgs/Pandemic_2.png",
-    "name": "Pandemic 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/papaspizzaria/index.html",
-    "image": "/assets/imgs/Papa_s_Pizzaria.jpg",
-    "name": "Papa's Pizzaria"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/paperio2/index.html",
-    "image": "/assets/imgs/Paper.io_2.png",
-    "name": "Paper.io 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/papery-planes/index.html",
-    "image": "/assets/imgs/Papery_Planes.jpg",
-    "name": "Papery Planes"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/particle-clicker/index.html",
-    "image": "/assets/imgs/Particle_Clicker.png",
-    "name": "Particle Clicker"
-  },
-  {
-    "url": "https://html-classic.itch.zone/html/3576785/index.html",
-    "image": "/assets/imgs/patrick.png",
-    "name": "Patrick's Parabox"
-  },
-  {
-    "url": "https://db.duck.deepresearch2markdown.com/html/plants_vs_brainrots/",
-    "name": "Plants VS Brainrots",
-    "image": "/assets/imgs/pvb.png"
-  },
-  {
-    "url": "https://pvzol.com/static.html",
-    "name": "Plants VS Zombies",
-    "image": "/assets/imgs/pvz.jpeg"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/polybranch/index.html",
-    "image": "/assets/imgs/PolyBranch.png",
-    "name": "PolyBranch"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/portalflash/index.html",
-    "image": "/assets/imgs/Portal_Flash.jpg",
-    "name": "Portal (Flash)"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/precision-client/index.html",
-    "image": "/assets/imgs/Precision_Client_Eaglercraft.png",
-    "name": "Precision Client (Eaglercraft)"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/push-the-square/index.html",
-    "image": "/assets/imgs/Push_The_Square.png",
-    "name": "Push The Square"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/push-your-luck/index.html",
-    "image": "/assets/imgs/Push_Your_Luck.png",
-    "name": "Push Your Luck"
-  },
-  {
-    "url": "https://games.crazygames.com/en_US/ragdoll-archers/index.html?isNewUser=true&skipPrerollFirstSession=true&v=1.343",
-    "name": "Ragdoll Archers",
-    "image": "/assets/imgs/ragdoll-archers.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/bc04fbca4991251a75264a4336b77d3662a9313e/ragdoll-hit/index.html",
-    "name": "Ragdoll Hit",
-    "image": "/assets/imgs/ragdollhit.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/retro-bowl/index.html",
-    "image": "/assets/imgs/Retro_Bowl.jpg",
-    "name": "Retro Bowl"
-  },
-  {
-    "url": "https://www.easyfun.gg/cloud-games/roblox.html",
-    "name": "Roblox (Real)",
-    "image": "/assets/imgs/roblox.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/refs/heads/main/rocketpult/game.html",
-    "name": "Rocket Pult",
-    "image": "/assets/imgs/rocketpult.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/rolly-vortex/index.html",
-    "image": "/assets/imgs/Rolly_Vortex.png",
-    "name": "Rolly Vortex"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/rooftop-snipers/index.html",
-    "image": "/assets/imgs/Rooftop_Snipers.png",
-    "name": "Rooftop Snipers"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/sand-game/index.html",
-    "image": "/assets/imgs/Sand_Game.png",
-    "name": "Sand Game"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/slope/index.html",
-    "image": "/assets/imgs/Slope.jpeg",
-    "name": "Slope"
-  },
-  {
-    "url": "https://slowroads.io/",
-    "name": "slowroads.io",
-    "image": "/assets/imgs/slowroads.png"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/smashkarts/index.html",
-    "image": "/assets/imgs/Smash_Carts.png",
-    "name": "Smash Carts"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/smokingbarrels/index.html",
-    "image": "/assets/imgs/Smoking_Barrels.jpg",
-    "name": "Smoking Barrels"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/snowbattle/index.html",
-    "image": "/assets/imgs/Snowbattle.png",
-    "name": "Snowbattle"
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/6d68b33aa7d1267d71d5b6a63733dd367c2b7a19/soccerrandom/index.html",
+    "description": "",
+    "url": "/games/platinum/cdn//basketrandom/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/basketrandom.png",
+    "_cat": [
+      "sports",
+      "action",
+      "io"
+    ]
+  },
+  {
+    "id": "platinum-380",
     "name": "Soccer Random",
-    "image": "/assets/imgs/soccerrandom.png"
+    "description": "",
+    "url": "/games/platinum/cdn//soccerrandom/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/soccerrandom.png",
+    "_cat": [
+      "sports",
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/soldier-legend/index.html",
-    "image": "/assets/imgs/Soilder_Legend.jpeg",
-    "name": "Soilder Legend"
+    "id": "platinum-382",
+    "name": "Ragdoll Hit",
+    "description": "",
+    "url": "/games/platinum/cdn//ragdoll-hit/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ragdollhit.png",
+    "_cat": [
+      "action",
+      "fighting"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/solitaire/index.html",
-    "image": "/assets/imgs/Solitare.png",
-    "name": "Solitare"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/sort-the-court/index.html",
-    "image": "/assets/imgs/Sort_The_Court.png",
-    "name": "Sort The Court"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/soundboard/index.html",
-    "image": "/assets/imgs/Soundboard.png",
-    "name": "Soundboard"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/stack/index.html",
-    "image": "/assets/imgs/Stack.png",
-    "name": "Stack"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/stack-bump-3d/index.html",
-    "image": "/assets/imgs/Stack_Bump_3D.jpg",
-    "name": "Stack Bump 3D"
-  },
-  {
-    "url": "https://db.duck.deepresearch2markdown.com/html/steal_a_brainrot_2",
-    "image": "/assets/imgs/rot.avif",
-    "name": "Steal A Brainrot"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/stealingthediamond/index.html",
-    "image": "/assets/imgs/Stealing_The_Diamond.jpg",
-    "name": "Stealing The Diamond"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/stickwar/index.html",
-    "image": "/assets/imgs/Stick_War.jpg",
-    "name": "Stick War"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/stormthehouse2/index.html",
-    "image": "/assets/imgs/Storm_The_House_2.jpg",
-    "name": "Storm The House 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/refs/heads/main/subway_surfers_classic/index.html",
+    "id": "platinum-383",
     "name": "Subway Surfers",
-    "image": "/assets/imgs/sub.png"
+    "description": "",
+    "url": "/games/platinum/cdn//subway_surfers_classic/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sub.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/sm64/index.html",
-    "image": "/assets/imgs/Super_Mario_64.png",
-    "name": "Super Mario 64"
+    "id": "platinum-384",
+    "name": "Rocket Pult",
+    "description": "",
+    "url": "/games/platinum/cdn//rocketpult/game.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/rocketpult.png",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/superhot/index.html",
-    "image": "/assets/imgs/Superhot.jpg",
-    "name": "Superhot"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/swerve/index.html",
-    "image": "/assets/imgs/Swerve.jpg",
-    "name": "Swerve"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/tacticalassasin2/index.html",
-    "image": "/assets/imgs/Tactical_Assassin_2.png",
-    "name": "Tactical Assassin 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/tanuki-sunset/index.html",
-    "image": "/assets/imgs/Tanuki_Sunset.png",
-    "name": "Tanuki Sunset"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/temple-run-2/index.html",
-    "image": "/assets/imgs/Temple_Run_2.png",
-    "name": "Temple Run 2"
-  },
-  {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/thebattle/index.html",
-    "image": "/assets/imgs/The_Battle.png",
-    "name": "The Battle"
-  },
-  {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/refs/heads/main/bindingofissac1/index.html",
+    "id": "platinum-385",
     "name": "The Binding of Isaac",
-    "image": "/assets/imgs/bindingofissac.png"
+    "description": "",
+    "url": "/games/platinum/cdn//bindingofissac1/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bindingofissac.png",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/the-final-earth/index.html",
-    "image": "/assets/imgs/The_Final_Earth.png",
-    "name": "The Final Earth"
+    "id": "platinum-386",
+    "name": "Block Blast",
+    "description": "",
+    "url": "/games/platinum/cdn/blockblast/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/blockblast.png",
+    "_cat": [
+      "puzzle",
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/there-is-no-game/index.html",
-    "image": "/assets/imgs/There_Is_No_Game.png",
-    "name": "There Is No Game"
+    "id": "platinum-389",
+    "name": "Geometry Dash",
+    "description": "",
+    "url": "/games/platinum/cdn/gdlite2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Geometry_Dash.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/thisistheonlylevel/index.html",
-    "image": "/assets/imgs/This_Is_The_Only_Level.png",
-    "name": "This Is The Only Level"
+    "id": "platinum-390",
+    "name": "Five Nights at Epsteins",
+    "description": "",
+    "url": "/games/platinum/cdn/fnae/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fnae.png",
+    "_cat": [
+      "horror"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/tosstheturtle/index.html",
-    "image": "/assets/imgs/Toss_The_Turtle.png",
-    "name": "Toss The Turtle"
+    "id": "platinum-392",
+    "name": "Pokemon Sapphire",
+    "description": "",
+    "url": "/games/platinum/cdn/Pokemon%20Sapphire/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Pokemon_Sapphire.png",
+    "_cat": [
+      "other"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/tube-jumpers/index.html",
-    "image": "/assets/imgs/Tube_Jumpers.png",
-    "name": "Tube Jumpers"
+    "id": "platinum-393",
+    "name": "Five Nights at Winston's",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaw/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fnaw.png",
+    "_cat": [
+      "horror"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/tunnel-rush/index.html",
-    "image": "/assets/imgs/Tunnel_Rush.png",
-    "name": "Tunnel Rush"
+    "id": "platinum-394",
+    "name": "Bee swarm simulator",
+    "description": "",
+    "url": "/games/platinum/cdn/Bee%20swarm%20simulator/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/beeswarm.png",
+    "_cat": [
+      "idle",
+      "other"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/tv-static/index.html",
-    "image": "/assets/imgs/TV_Static.png",
-    "name": "TV Static"
+    "id": "platinum-395",
+    "name": "Space Waves",
+    "description": "",
+    "url": "/games/platinum/cdn/Spacewaves/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/spacewaves.png",
+    "_cat": [
+      "action",
+      "platformer"
+    ]
   },
   {
-    "url": "https://jcw87.github.io/c2-sans-fight/",
+    "id": "platinum-396",
+    "name": "Among Us Online",
+    "description": "",
+    "url": "/games/platinum/cdn/among%20us%20online/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Among_Us.png",
+    "_cat": [
+      "action",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-397",
+    "name": "Escape Road",
+    "description": "",
+    "url": "/games/platinum/cdn/escape%20road/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/escaperoad.png",
+    "_cat": [
+      "action",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-398",
+    "name": "Shapez",
+    "description": "",
+    "url": "/games/platinum/cdn/shapez/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/shapez.png",
+    "_cat": [
+      "puzzle",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-399",
+    "name": "Escape Road 2",
+    "description": "",
+    "url": "/games/platinum/cdn/escape%20road2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/escape-road2.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-400",
+    "name": "Cluster Rush",
+    "description": "",
+    "url": "/games/platinum/cdn/cluster/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cluster-rush.png",
+    "_cat": [
+      "platformer",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-401",
+    "name": "BitLife",
+    "description": "",
+    "url": "/games/platinum/cdn/bitlife/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bitlife.png",
+    "_cat": [
+      "strategy",
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-402",
+    "name": "Granny",
+    "description": "",
+    "url": "/games/platinum/cdn/GRANNY/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Grannyicon.webp",
+    "_cat": [
+      "horror",
+      "adventure",
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-403",
+    "name": "Half Life",
+    "description": "",
+    "url": "/games/platinum/cdn/half%20life/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/half_life.png",
+    "_cat": [
+      "action",
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-404",
+    "name": "Half Life: Opposing Force",
+    "description": "",
+    "url": "/games/platinum/cdn/Half%20Life%20Opposing%20Force/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/half_life_op.png",
+    "_cat": [
+      "action",
+      "adventure",
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-405",
+    "name": "Schoolboy Runaway",
+    "description": "",
+    "url": "/games/platinum/cdn/schoolboy-runaway/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/schoolboy-runaway.png",
+    "_cat": [
+      "adventure",
+      "horror"
+    ]
+  },
+  {
+    "id": "platinum-406",
+    "name": "Age of War",
+    "description": "",
+    "url": "/games/platinum/cdn/Age%20of%20War/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ageofwar.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-407",
+    "name": "Art of War",
+    "description": "",
+    "url": "/games/platinum/cdn/Art%20of%20War/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/artofwar.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-408",
+    "name": "Castle Hero",
+    "description": "",
+    "url": "/games/platinum/cdn/Castle%20Hero/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/caslehero.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-409",
+    "name": "Duck Life 4",
+    "description": "",
+    "url": "/games/platinum/cdn/Duck%20Life%204/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Duck_Life.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-410",
+    "name": "Henry Stickmin - Escaping the Prison",
+    "description": "",
+    "url": "/games/platinum/cdn/Henry%20Stickmin%20-%20Escaping%20the%20Prison/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/henryprison.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-411",
+    "name": "Henry Stickmin - Fleeing the Complex",
+    "description": "",
+    "url": "/games/platinum/cdn/Henry%20Stickmin%20-%20Fleeing%20the%20Complex/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/henrycomplex.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-412",
+    "name": "Henry Stickmin - Infiltrating the Airship",
+    "description": "",
+    "url": "/games/platinum/cdn/Henry%20Stickmin%20-%20Infiltrating%20the%20Airship/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/henryairship.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-413",
+    "name": "Interactive Buddy",
+    "description": "",
+    "url": "/games/platinum/cdn/Interactive%20Buddy/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/interactivebuddy.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-414",
+    "name": "Mario Kart Flash",
+    "description": "",
+    "url": "/games/platinum/cdn/Mario%20Kart%20Flash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Super_Mario_64.png",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-415",
+    "name": "Minecraft TD",
+    "description": "",
+    "url": "/games/platinum/cdn/Minecraft%20TD/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/Minecraft_Classic.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-416",
+    "name": "Motherload",
+    "description": "",
+    "url": "/games/platinum/cdn/Motherload/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/motherload.png",
+    "_cat": [
+      "other"
+    ]
+  },
+  {
+    "id": "platinum-417",
+    "name": "Pac Man",
+    "description": "",
+    "url": "/games/platinum/cdn/Pacman/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pacman.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-418",
+    "name": "PC Breakdown",
+    "description": "",
+    "url": "/games/platinum/cdn/PC%20Breakdown/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pcbreakdown.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-419",
+    "name": "QWOP",
+    "description": "",
+    "url": "/games/platinum/cdn/QWOP/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/qwop.png",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-420",
+    "name": "Riddle School",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddleschool.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-421",
+    "name": "Riddle School 2",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddle-school-2.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-422",
+    "name": "Riddle School 3",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School%203/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddleschool3.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-423",
+    "name": "Riddle School 4",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School%204/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddleschool4.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-424",
+    "name": "Riddle School 5",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School%205/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddleschool5.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-425",
+    "name": "Riddle School - Transfer",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School%20-%20Transfer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddletransfer.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-426",
+    "name": "Riddle School - Transfer 2",
+    "description": "",
+    "url": "/games/platinum/cdn/Riddle%20School%20-%20Transfer%202/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/riddletransfer2.png",
+    "_cat": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "platinum-427",
+    "name": "3D Bowling",
+    "description": "",
+    "url": "/games/platinum/cdn/3d-bowling/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/3d-bowling.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-428",
+    "name": "8 Ball Billiards Classic",
+    "description": "",
+    "url": "/games/platinum/cdn/8-ball-classic/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/8-ball-classic.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-429",
+    "name": "99 Balls 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/99-balls-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/99-balls-3d.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-430",
+    "name": "AMAZE!",
+    "description": "",
+    "url": "/games/platinum/cdn/amaze/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/amaze.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-431",
+    "name": "Angry Birds Showdown",
+    "description": "",
+    "url": "/games/platinum/cdn/angry-birds-showdown/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/angry-birds-showdown.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-432",
+    "name": "Archery World Tour",
+    "description": "",
+    "url": "/games/platinum/cdn/archery-world-tour/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/archery-world-tour.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-433",
+    "name": "Attack Hole",
+    "description": "",
+    "url": "/games/platinum/cdn/attack-hole/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/attack-hole.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-434",
+    "name": "Ball Blast",
+    "description": "",
+    "url": "/games/platinum/cdn/ball-blast/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/ball-blast.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-435",
+    "name": "Basket Battle",
+    "description": "",
+    "url": "/games/platinum/cdn/basket-battle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/basket-battle.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-436",
+    "name": "Basketball FRVR",
+    "description": "",
+    "url": "/games/platinum/cdn/basketball-frvr/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/basketball-frvr.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-437",
+    "name": "Bazooka Boy",
+    "description": "",
+    "url": "/games/platinum/cdn/bazooka-boy/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bazooka-boy.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-438",
+    "name": "Bolly Beat",
+    "description": "",
+    "url": "/games/platinum/cdn/bolly-beat/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bolly-beat.jpg",
+    "_cat": [
+      "music"
+    ]
+  },
+  {
+    "id": "platinum-439",
+    "name": "Bottle Jump 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/bottle-jump-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bottle-jump-3d.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-440",
+    "name": "Bowmasters",
+    "description": "",
+    "url": "/games/platinum/cdn/bowmasters/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bowmasters.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-441",
+    "name": "Bridge Race",
+    "description": "",
+    "url": "/games/platinum/cdn/bridge-race/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bridge-race.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-442",
+    "name": "Build a Queen",
+    "description": "",
+    "url": "/games/platinum/cdn/build-a-queen/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/build-a-queen.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-443",
+    "name": "Cannon Balls 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/cannon-balls-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cannon-balls-3d.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-444",
+    "name": "Carrom Clash",
+    "description": "",
+    "url": "/games/platinum/cdn/carrom-clash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/carrom-clash.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-445",
+    "name": "Chess Classic",
+    "description": "",
+    "url": "/games/platinum/cdn/chess-classic/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/chess-classic.jpg",
+    "_cat": [
+      "card"
+    ]
+  },
+  {
+    "id": "platinum-446",
+    "name": "Color Burst 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/color-burst-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/color-burst-3d.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-447",
+    "name": "Color Match",
+    "description": "",
+    "url": "/games/platinum/cdn/color-match/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/color-match.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-448",
+    "name": "Color Water Sort 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/color-water-sort-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/color-water-sort-3d.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-449",
+    "name": "Crossy Road",
+    "description": "",
+    "url": "/games/platinum/cdn/crossy-road/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/crossy-road.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-450",
+    "name": "Dig Deep",
+    "description": "",
+    "url": "/games/platinum/cdn/dig-deep/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/dig-deep.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-451",
+    "name": "Draw The Line",
+    "description": "",
+    "url": "/games/platinum/cdn/draw-the-line/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/draw-the-line.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-452",
+    "name": "Fashion Battle",
+    "description": "",
+    "url": "/games/platinum/cdn/fashion-battle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fashion-battle.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-453",
+    "name": "Find the Alien",
+    "description": "",
+    "url": "/games/platinum/cdn/find-the-alien/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/find-the-alien.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-454",
+    "name": "Flappy Dunk",
+    "description": "",
+    "url": "/games/platinum/cdn/flappy%20dunk/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/flappy-dunk.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-455",
+    "name": "Fork N Sausage",
+    "description": "",
+    "url": "/games/platinum/cdn/fork-n-sausage/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fork-n-sausage.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-456",
+    "name": "Freekick Football",
+    "description": "",
+    "url": "/games/platinum/cdn/freekick-football/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/freekick-football.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-457",
+    "name": "Go Escape!",
+    "description": "",
+    "url": "/games/platinum/cdn/go-escape/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/go-escape.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-458",
+    "name": "Guess Their Answer",
+    "description": "",
+    "url": "/games/platinum/cdn/guess-their-answer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/guess-their-answer.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-459",
+    "name": "Gym Stack",
+    "description": "",
+    "url": "/games/platinum/cdn/gym-stack/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/gym-stack.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-460",
+    "name": "Harvest.io",
+    "description": "",
+    "url": "/games/platinum/cdn/harvest-io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/harvest-io.jpg",
+    "_cat": [
+      "simulation"
+    ]
+  },
+  {
+    "id": "platinum-461",
+    "name": "Hide N Seek",
+    "description": "",
+    "url": "/games/platinum/cdn/hide-n-seek/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/hide-n-seek.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-462",
+    "name": "Hill Climb Racing Lite",
+    "description": "",
+    "url": "/games/platinum/cdn/hill-climb-racing-lite/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/hill-climb-racing-lite.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-463",
+    "name": "Kitchen Bazar",
+    "description": "",
+    "url": "/games/platinum/cdn/kitchen-bazar/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/kitchen-bazar.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-464",
+    "name": "Maze Speedrun",
+    "description": "",
+    "url": "/games/platinum/cdn/maze-speedrun/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/maze-speedrun.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-465",
+    "name": "Mob Control HTML5",
+    "description": "",
+    "url": "/games/platinum/cdn/mob-control-html5/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mob-control-html5.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-466",
+    "name": "Om Nom Run",
+    "description": "",
+    "url": "/games/platinum/cdn/om-nom-run/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/om-nom-run.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-467",
+    "name": "Pac-Man SuperFast",
+    "description": "",
+    "url": "/games/platinum/cdn/pac-man-superfast/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pac-man-superfast.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-468",
+    "name": "Parking Rush",
+    "description": "",
+    "url": "/games/platinum/cdn/parking-rush/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/parking-rush.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-469",
+    "name": "Pokey Ball",
+    "description": "",
+    "url": "/games/platinum/cdn/pokey-ball/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pokey-ball.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-470",
+    "name": "Pou",
+    "description": "",
+    "url": "/games/platinum/cdn/pou/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/pou.jpg",
+    "_cat": [
+      "simulation"
+    ]
+  },
+  {
+    "id": "platinum-471",
+    "name": "Race Master 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/race-master-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/race-master-3d.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-472",
+    "name": "Room Sort",
+    "description": "",
+    "url": "/games/platinum/cdn/room-sort/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/room-sort.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-473",
+    "name": "Scooter Xtreme",
+    "description": "",
+    "url": "/games/platinum/cdn/scooter-xtreme/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/scooter-xtreme.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-474",
+    "name": "Slice It All!",
+    "description": "",
+    "url": "/games/platinum/cdn/slice-it-all/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slice-it-all.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-475",
+    "name": "Slime.io",
+    "description": "",
+    "url": "/games/platinum/cdn/slime-io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slime-io.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-476",
+    "name": "Stacky Dash",
+    "description": "",
+    "url": "/games/platinum/cdn/stacky-dash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/stacky-dash.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-477",
+    "name": "State.io",
+    "description": "",
+    "url": "/games/platinum/cdn/state%20io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/state-io.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-478",
+    "name": "Stealth Master",
+    "description": "",
+    "url": "/games/platinum/cdn/stealth-master/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/stealth-master.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-479",
+    "name": "Supreme Duelist",
+    "description": "",
+    "url": "/games/platinum/cdn/supreme-duelist/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/supreme-duelist.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-480",
+    "name": "Sushi Roll",
+    "description": "",
+    "url": "/games/platinum/cdn/sushi-roll/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sushi-roll.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-481",
+    "name": "Sword Play",
+    "description": "",
+    "url": "/games/platinum/cdn/sword-play/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sword-play.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-482",
+    "name": "Table Tennis World Tour",
+    "description": "",
+    "url": "/games/platinum/cdn/table-tennis/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/table-tennis.jpg",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-483",
+    "name": "Tall Man Run",
+    "description": "",
+    "url": "/games/platinum/cdn/tall-man-run/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tall-man-run.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-484",
+    "name": "Texas Hold'em Poker",
+    "description": "",
+    "url": "/games/platinum/cdn/texas-holdem/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/texas-holdem.jpg",
+    "_cat": [
+      "card"
+    ]
+  },
+  {
+    "id": "platinum-485",
+    "name": "Tiletopia",
+    "description": "",
+    "url": "/games/platinum/cdn/tiletopia/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tiletopia.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-486",
+    "name": "Tower Crash 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/tower-crash-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tower-crash-3d.jpg",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-487",
+    "name": "Trivia Crack",
+    "description": "",
+    "url": "/games/platinum/cdn/trivia-crack/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/trivia-crack.jpg",
+    "_cat": [
+      "word"
+    ]
+  },
+  {
+    "id": "platinum-488",
+    "name": "Turbo Stars",
+    "description": "",
+    "url": "/games/platinum/cdn/turbo-stars/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/turbo-stars.jpg",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-489",
+    "name": "Aquapark Io",
+    "description": "",
+    "url": "/games/platinum/cdn/aquapark-io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/aquapark-io.jpg",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-490",
+    "name": "Balloon Paradise",
+    "description": "",
+    "url": "/games/platinum/cdn/balloon-paradise/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/balloon-paradise.jpg",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-491",
+    "name": "Bouncemasters",
+    "description": "",
+    "url": "/games/platinum/cdn/bouncemasters/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/bouncemasters-1ek3v.avif",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "platinum-492",
+    "name": "City Smash",
+    "description": "",
+    "url": "/games/platinum/cdn/city-smash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/city-smash.webp",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-493",
+    "name": "Dan The Man",
+    "description": "",
+    "url": "/games/platinum/cdn/dan-the-man/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/dan.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-494",
+    "name": "Fill The Fridge",
+    "description": "",
+    "url": "/games/platinum/cdn/fill-the-fridge/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/fridge.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-495",
+    "name": "Magic Tiles 3",
+    "description": "",
+    "url": "/games/platinum/cdn/magic-tiles-3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mg3.png",
+    "_cat": [
+      "music"
+    ]
+  },
+  {
+    "id": "platinum-496",
+    "name": "Match Triple 3D",
+    "description": "",
+    "url": "/games/platinum/cdn/match-triple-3d/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tmatch.png",
+    "_cat": [
+      "puzzle"
+    ]
+  },
+  {
+    "id": "platinum-497",
+    "name": "Mr Racer",
+    "description": "",
+    "url": "/games/platinum/cdn/mr-racer/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/mracer.png",
+    "_cat": [
+      "racing"
+    ]
+  },
+  {
+    "id": "platinum-498",
+    "name": "Royal Towers Medieval Td",
+    "description": "",
+    "url": "/games/platinum/cdn/royal-towers-medieval-td/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/royalwarstd.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-499",
+    "name": "Soccer Dash",
+    "description": "",
+    "url": "/games/platinum/cdn/soccer-dash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/soccer-dash.png",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "platinum-500",
+    "name": "Solar Smash",
+    "description": "",
+    "url": "/games/platinum/cdn/solar-smash/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/solarsmash.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "platinum-501",
+    "name": "Stick War Legacy",
+    "description": "",
+    "url": "/games/platinum/cdn/stick-war-legacy/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/stick-war-legacy.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "platinum-502",
+    "name": "Tall Io",
+    "description": "",
+    "url": "/games/platinum/cdn/tall-io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/tallio.png",
+    "_cat": [
+      "arcade"
+    ]
+  },
+  {
+    "id": "b638fb2c-53ec-4471-bf10-dba2e64181e3",
+    "name": "3D Bolt Master",
+    "description": "",
+    "url": "/games/platinum/cdn/3d-bolt-master/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/3d_bolt_master_1773109393902.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "c318ec53-8454-4f5c-86f6-8be7e075247c",
+    "name": "Baldi's Basics Plus",
+    "description": "",
+    "url": "/games/platinum/cdn/baldi-plus/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/baldi_s_basics_plus_1773110728089.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "b6a0f763-5aa8-4a50-bee6-c50561c3dd4b",
+    "name": "Baldi's Basics",
+    "description": "",
+    "url": "/games/platinum/cdn/baldis-basics/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/baldi_s_basics_1773145449466.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "eab1a01f-db7f-4313-872b-3802d6e65621",
+    "name": "Baldi's Basics Classic Remastered",
+    "description": "",
+    "url": "/games/platinum/cdn/baldi-remaster/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/baldi_s_basics_classic_remastered_1773146135186.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "bc7d4d4d-4c9b-42d2-9703-ee90b70bfad1",
+    "name": "Hollow Knight",
+    "description": "",
+    "url": "/games/platinum/cdn/hollow-knight/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/hollow_knight_1773146937189.png",
+    "_cat": [
+      "fighting"
+    ]
+  },
+  {
+    "id": "834b132d-5ce6-4c7b-a951-e00b28a12520",
+    "name": "Cuphead",
+    "description": "Cuphead is a classic run and gun action game heavily focused on boss battles. Inspired by cartoons of the 1930s, the visuals and audio are painstakingly created with the same techniques of the era, i.e. traditional hand drawn cel animation, watercolor backgrounds, and original jazz recordings.",
+    "url": "/games/platinum/cdn/cuphead/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/cuphead_1773150536454.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "92cab1f6-1692-4fc8-88c4-e39d5d10ccc8",
+    "name": "Five Nights at Freddy's",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf1/index.html?v=20260819-game-assets-1",
+    "image": "/chemistry-games/images/game-site.svg",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "c38f1988-7064-411c-ad20-78ae7e942931",
+    "name": "Five Nights at Freddy's 2",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_freddy_s_2.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "4ab69ae3-911e-420d-9a45-3ade7df05610",
+    "name": "Five Nights at Freddy's 3",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_freddy_s_3.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "c2d64482-e609-4a7a-a4a1-de4f062e66bf",
+    "name": "Five Nights at Freddy's 4",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf4/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_freddy_s_4.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "c4aa72fd-ebbe-40c5-abfb-4d0b16db3b64",
+    "name": "Five Nights at Freddy's World",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf-world/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_freddy_s_world.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "3a42425b-3d8e-41bb-9048-da23dcc71992",
+    "name": "Five Nights at Freddy's: Sister Location",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf-sl/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_freddy_s_sister_location.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "74e33340-91de-474d-8246-5cf6c6262a84",
+    "name": "Five Nights at Freddy's: Freddy Fazbear's Pizzeria Simulator",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf-ps/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/freddy_fazbear_s_pizzeria_simulator.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "708a2571-c211-4c14-9d6f-c188902af553",
+    "name": "Five Nights at Freddy's: Ultimate Custom Night",
+    "description": "",
+    "url": "/games/platinum/cdn/fnaf-ucn/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_freddy_s_ultimate_custom_night.png",
+    "_cat": [
+      "horror"
+    ]
+  },
+  {
+    "id": "6f115dc7-59df-4827-807c-dd4795b16c37",
+    "name": "Speed Stars",
+    "description": "",
+    "url": "/games/platinum/cdn/speedstars/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/speed_stars.png",
+    "_cat": [
+      "sports"
+    ]
+  },
+  {
+    "id": "2533f6de-9497-49ad-bdf5-e4289a576ce9",
     "name": "Undertale",
-    "image": "/assets/imgs/undertaile.jpeg"
+    "description": "",
+    "url": "/games/platinum/cdn/undertale/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/undertale.jpg",
+    "_cat": [
+      "horror"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/vex3/index.html",
-    "image": "/assets/imgs/Vex_3.png",
-    "name": "Vex 3"
+    "id": "add3bafd-5a11-4548-a829-1a515476c380",
+    "name": "Undertale Yellow",
+    "description": "",
+    "url": "/games/platinum/cdn/undertale-yellow/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/undertale_yellow.png",
+    "_cat": [
+      "horror"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/vex4/index.html",
-    "image": "/assets/imgs/Vex_4.png",
-    "name": "Vex 4"
+    "id": "23b55bb5-1357-4e51-9a4d-5fc214c4b7bf",
+    "name": "People Playground",
+    "description": "",
+    "url": "/games/platinum/cdn/people-playground/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/people_playground.png",
+    "_cat": [
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/vex5/index.html",
-    "image": "/assets/imgs/Vex_5.png",
-    "name": "Vex 5"
+    "id": "a7f7b781-915f-44ab-bda4-f889bf412d9b",
+    "name": "Five Nights at Diddys",
+    "description": "",
+    "url": "/games/platinum/cdn/fnad/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/five_nights_at_diddys.png",
+    "_cat": [
+      "horror"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/vex6/index.html",
-    "image": "/assets/imgs/Vex_6.png",
-    "name": "Vex 6"
+    "id": "43c77057-0c10-413d-a435-c806fbf5a6c7",
+    "name": "Learn To Fly",
+    "description": "",
+    "url": "/games/platinum/cdn/Learn_to_fly/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/learn_to_fly_1.png",
+    "_cat": [
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/thefluxion/CDN/6d68b33aa7d1267d71d5b6a63733dd367c2b7a19/volleyrandom/index.html",
-    "name": "Volley Random",
-    "image": "/assets/imgs/volleyrandom.png"
+    "id": "53a25e80-ccd4-4d2a-871a-76977c3e1433",
+    "name": "Learn To Fly 2",
+    "description": "",
+    "url": "/games/platinum/cdn/Learn2Fly/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/learn_to_fly_2.png",
+    "_cat": [
+      "action"
+    ]
   },
   {
-    "url": "https://html-classic.itch.zone/html/7627512/index.html",
-    "name": "VSCS-I",
-    "image": "/assets/imgs/vscs.png"
+    "id": "1f721583-80ef-4616-bf39-cb8cc57e4579",
+    "name": "Learn To Fly 3",
+    "description": "",
+    "url": "/games/platinum/cdn/learn-to-fly-3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/learn_to_fly_3.png",
+    "_cat": [
+      "action"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/webretro-local/index.html",
-    "image": "/assets/imgs/Web_Retro_Local.png",
-    "name": "Web Retro Local"
+    "id": "67893766-2536-4de2-b203-2d9b9c92d67a",
+    "name": "Run",
+    "description": "",
+    "url": "/games/platinum/cdn/Run/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/run.png",
+    "_cat": [
+      "platformer"
+    ]
   },
   {
-    "url": "https://webmc.xyz",
-    "image": "/assets/imgs/webmc.png",
-    "name": "WebMC"
+    "id": "1b99117a-8775-4230-8df1-2c5f5abd0ea6",
+    "name": "Run 2",
+    "description": "",
+    "url": "/games/platinum/cdn/Run2/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/run_2.png",
+    "_cat": [
+      "platformer"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/wolf3d/index.html",
-    "image": "/assets/imgs/Wolfenstein_3D.png",
-    "name": "Wolfenstein 3D"
+    "id": "b5a114b3-4458-476b-afef-899f4d0e866f",
+    "name": "Run 3",
+    "description": "",
+    "url": "/games/platinum/cdn/Run3/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/run_3.png",
+    "_cat": [
+      "platformer"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/wordle/index.html",
-    "image": "/assets/imgs/Wordle.png",
-    "name": "Wordle"
+    "id": "7ea010e7-aba4-426d-b992-2f8c24bd40a0",
+    "name": "Ultrakill",
+    "description": "",
+    "url": "/games/platinum/cdn/ultrakill/index.html?v=20260819-game-assets-1",
+    "image": "/chemistry-games/images/game-site.svg",
+    "_cat": [
+      "other"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/worlds-hardest-game/index.html",
-    "image": "/assets/imgs/World_s_Hardest_Game.png",
-    "name": "World's Hardest Game"
+    "id": "27f2859f-78d3-4070-954d-9fb5fbed2807",
+    "name": "Google space",
+    "description": "",
+    "url": "/games/platinum/cdn/Google%20space/index.html?v=20260819-game-assets-1",
+    "image": "/chemistry-games/images/game-site.svg",
+    "_cat": [
+      "other"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/worlds-hardest-game-2/index.html",
-    "image": "/assets/imgs/World_s_Hardest_Game_2.png",
-    "name": "World's Hardest Game 2"
+    "id": "3a5fda5c-212c-4887-a589-75619430b2da",
+    "name": "Balatro",
+    "description": "The poker roguelike. Balatro is a hypnotically satisfying deckbuilder where you play illegal poker hands, discover game-changing jokers, and trigger adrenaline-pumping, outrageous combos.",
+    "url": "/games/platinum/cdn/balatro/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/balatro.png",
+    "_cat": [
+      "cards"
+    ]
   },
   {
-    "url": "https://rawcdn.githack.com/3kho/3kho.github.io/refs/heads/main/projects/you-are-bezos/index.html",
-    "image": "/assets/imgs/You_Are_Jeff_Bezos.png",
-    "name": "You Are Jeff Bezos"
+    "id": "ea0aaacf-936d-4ae4-aed5-9737b7ebed8d",
+    "name": "Sonic Mania",
+    "description": "Sonic Mania is an all-new adventure with Sonic, Tails, and Knuckles full of unique bosses, rolling 2D landscapes, and fun classic gameplay.",
+    "url": "/games/platinum/cdn/sonic_mania/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/sonic_mania.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "187cae3e-882d-4db4-bd6d-7ef492581a62",
+    "name": "Slime Rancher",
+    "description": "",
+    "url": "/games/platinum/cdn/slime_rancher/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slime_rancher_1.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "84219456-9b6d-4575-aef7-00480b12b1e1",
+    "name": "Flying Gorilla",
+    "description": "",
+    "url": "/games/platinum/cdn/flying_gorilla/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/flying_gorilla.png",
+    "_cat": [
+      "action"
+    ]
+  },
+  {
+    "id": "a288d983-7339-4d2c-ae36-58e0714384fc",
+    "name": "Doomed.io",
+    "description": "Doomed.io is a multiplayer survival game where players gather resources, craft tools, build bases, and fight to survive in a dynamic and hostile world.",
+    "url": "/games/platinum/cdn/doomed_io/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/doomed_io.png",
+    "_cat": [
+      "strategy"
+    ]
+  },
+  {
+    "id": "9f69dc08-0c86-4248-9b92-51cedf0f0414",
+    "name": "Revolution Idle",
+    "description": "Join an experience where each revolution takes you further into the unknown! Revolution Idle challenges you to multiply your accumulators to reach unimaginable heights. Will you manage to reach infinity?",
+    "url": "/games/platinum/cdn/revolution_idle/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/revolution_idle_1.png",
+    "_cat": [
+      "idle"
+    ]
+  },
+  {
+    "id": "de27297b-47b8-44c3-930f-3cfd9daa6d53",
+    "name": "Slither.io (real)",
+    "description": "Play against other people online! Can you become the longest slither?\n\nIf your head touches another player, you will explode and then it's game over. But if others run into YOU, then THEY will explode, and you can eat their remains!\n\nIn slither.io, you have a chance to win even if you're tiny. You can swerve in front of a much larger player to defeat them, no matter how big you are!",
+    "url": "/games/platinum/cdn/slither_io_real_/index.html?v=20260819-game-assets-1",
+    "image": "/games/platinum/cover/slither_io_real_.png",
+    "_cat": [
+      "io"
+    ]
   }
 ]

@@ -1,13 +1,13 @@
 (() => { // webpackBootstrap
 var __webpack_exports__ = {};
 self.__eclipse$config = {
-    prefix: "/eclipse/",
+    prefix: "/b7/s/",
     codec: self.__eclipse$codecs.xor,
-    codecs: "/eclipse/eclipse.codecs.js",
-    config: "/eclipse/eclipse.config.js",
-    rewrite: "/eclipse/eclipse.rewrite.js",
-    worker: "/eclipse/eclipse.worker.js",
-    client: "/eclipse/eclipse.client.js"
+    codecs: "/b7/eclipse.codecs.js",
+    config: "/b7/eclipse.config.js",
+    rewrite: "/b7/eclipse.rewrite.js",
+    worker: "/b7/eclipse.worker.js",
+    client: "/b7/eclipse.client.js"
 };
 
 })()

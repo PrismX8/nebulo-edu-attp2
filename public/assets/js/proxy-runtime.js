@@ -10,6 +10,12 @@
   "use strict";
 
   const SESSION_GUARD_KEY = "proxy_runtime_hard_repair_done";
+  const argonWorkerPromises = new Map();
+  let legacyArgonCleanupPromise = null;
+
+  // Older builds routed TikTok through a separate 127.0.0.2 origin. Clear the
+  // old launcher hook so every entry now uses the standard /ag/ URL.
+  try { delete window.getTikTokProxyAlias; } catch { window.getTikTokProxyAlias = undefined; }
 
   function safeLower(x) {
     try {
@@ -22,15 +28,16 @@
   function ensureDefaults() {
     // One-time migration: if an older build saved "libcurl" (currently flaky on some setups),
     // switch to epoxy once. Users can still manually select libcurl later.
-    const MIGRATION_KEY = "proxy_defaults_migrated_v2";
+    const MIGRATION_KEY = "proxy_speed_defaults_migrated_v3";
     const migrated = localStorage.getItem(MIGRATION_KEY) === "1";
     try {
       const t = localStorage.getItem("transport");
       if (!t) localStorage.setItem("transport", "epoxy");
       else if (!migrated && t === "libcurl") localStorage.setItem("transport", "epoxy");
 
-      const p = localStorage.getItem("proxy");
-      if (!p) localStorage.setItem("proxy", "ag");
+      // Set Argon only when no preference exists. Never overwrite a user's
+      // explicit proxy selection during a runtime migration.
+      if (!localStorage.getItem("proxy")) localStorage.setItem("proxy", "ag");
 
       if (!migrated) localStorage.setItem(MIGRATION_KEY, "1");
     } catch {}
@@ -48,6 +55,72 @@
     }
   }
 
+  function parseArgonWorkerTarget(inputUrl) {
+    const raw = (typeof inputUrl === "string" ? inputUrl : String(inputUrl || "")).trim();
+    if (!raw) return null;
+    try {
+      const parsed = new URL(raw, location.origin);
+      const proxied = parsed.pathname.match(/^\/ag\/(https?)\/([^/]+)(?:\/|$)/i);
+      if (proxied) {
+        return { protocol: proxied[1].toLowerCase(), host: decodeURIComponent(proxied[2]).toLowerCase() };
+      }
+      if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.origin !== location.origin) {
+        return { protocol: parsed.protocol.slice(0, -1), host: parsed.host.toLowerCase() };
+      }
+    } catch {}
+    return null;
+  }
+
+  function removeLegacyArgonWorkers() {
+    if (legacyArgonCleanupPromise) return legacyArgonCleanupPromise;
+    legacyArgonCleanupPromise = (async () => {
+      if (!("serviceWorker" in navigator)) return false;
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      const removals = registrations.map((registration) => {
+        const isArgon = registration.active?.scriptURL.includes("/argon_service_worker.js")
+          || registration.installing?.scriptURL.includes("/argon_service_worker.js")
+          || registration.waiting?.scriptURL.includes("/argon_service_worker.js");
+        return isArgon ? registration.unregister() : Promise.resolve(false);
+      });
+      await Promise.allSettled(removals);
+      return true;
+    })().catch((error) => {
+      console.warn("Could not remove a legacy Argon worker", error);
+      return false;
+    });
+    return legacyArgonCleanupPromise;
+  }
+
+  async function ensureArgonWorkerForTarget(inputUrl) {
+    if (!("serviceWorker" in navigator)) return false;
+    const target = parseArgonWorkerTarget(inputUrl);
+    if (!target) return false;
+
+    const scope = `/ag/${target.protocol}/${target.host}/`;
+    if (argonWorkerPromises.has(scope)) return argonWorkerPromises.get(scope);
+
+    const pending = (async () => {
+      await removeLegacyArgonWorkers();
+      // Argon is mounted as a Fastify route in this app. Registering Argon's
+      // browser worker makes refreshes pass an already-proxied URL through the
+      // proxy a second time. The injected runtime still rewrites dynamic URLs.
+      return true;
+    })().catch((error) => {
+      console.warn("Could not prepare the browsing worker", error?.message || "runtime error");
+      return false;
+    }).finally(() => {
+      argonWorkerPromises.delete(scope);
+    });
+
+    argonWorkerPromises.set(scope, pending);
+    return pending;
+  }
+
+  window.ensureArgonWorkerForTarget = ensureArgonWorkerForTarget;
+
+  // Clean up workers left by older builds before the next proxied navigation.
+  void removeLegacyArgonWorkers();
+
   function installBareMuxPortBridge() {
     // bare-mux SW asks a client for a MessagePort by posting {type:"getPort", port:<MessagePort>}.
     // We reply by creating the SharedWorker and transferring its port back over event.data.port.
@@ -57,11 +130,11 @@
     // Warm the SharedWorker early so the SW <-> client handshake completes within bare-mux's 1s timeout
     // on a fresh profile/session.
     try {
-      const warm = new SharedWorker("/baremux/worker.js?v=bw1", "bare-mux-worker");
+      const warm = new SharedWorker("/d5/worker.js?v=bw1", "bare-mux-worker");
       try { warm.port.start(); } catch {}
       // Keep a reference so the worker isn't immediately GC'd.
       window.__baremuxWarmWorker = warm;
-      try { localStorage.setItem("bare-mux-path", "/baremux/worker.js?v=bw1"); } catch {}
+      try { localStorage.setItem("bare-mux-path", "/d5/worker.js?v=bw1"); } catch {}
     } catch {}
 
     if (!(window.__baremuxActiveBridges instanceof Set)) {
@@ -77,7 +150,7 @@
         const reply = data?.port || (event?.ports && event.ports[0]);
         if (!data || data.type !== "getPort" || !reply) return;
 
-        const worker = window.__baremuxWarmWorker || new SharedWorker("/baremux/worker.js?v=bw1", "bare-mux-worker");
+        const worker = window.__baremuxWarmWorker || new SharedWorker("/d5/worker.js?v=bw1", "bare-mux-worker");
         try { worker.port.start(); } catch {}
 
         const bridge = new MessageChannel();
@@ -187,7 +260,7 @@
     }
 
     // eslint-disable-next-line no-console
-    console.warn("proxy-runtime: running automatic repair:", reason);
+    console.warn("Browsing runtime: running automatic repair");
     await clearProxyRuntimeData();
 
     // Hard reload to ensure SW + workers are recreated cleanly.

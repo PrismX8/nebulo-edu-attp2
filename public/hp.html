@@ -1,163 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Nebulo Education Plus is a math-focused experience offering educational algebra practice tests to strengthen advanced math skills.">
-  <meta name="keywords" content="math, algebra, advanced math practice test, educational exercises, study tools">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Nebulo Education Plus - Educational Algebra Practice Tests">
-  <meta property="og:description" content="Step into a dedicated math site built around educational algebra practice tests designed to enhance advanced math skills.">
-<title>Nebulo Help</title>
-  <link rel="stylesheet" href="/assets/css/themes.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Nebulo help hub for setup, chat, browsing, games, settings, and troubleshooting."><title>Help · Nebulo</title>
+  <script src="/assets/js/identity-mask.js" defer></script>
+  <link rel="stylesheet" href="/assets/css/themes.css"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="/assets/js/panic.js" defer></script><script src="/assets/js/appearance.js" defer></script><script src="/assets/js/cloaking.js" defer></script>
   <style>
-    :root {
-      --bg: #030712;
-      --card: #111827;
-      --accent: #7dd3c0;
-      --text: #f8fafc;
-      --muted: rgba(248, 250, 252, 0.75);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, rgba(125, 211, 192, 0.25), transparent 45%), var(--bg);
-      font-family: "Inter", system-ui, sans-serif;
-      color: var(--text);
-      padding: 2rem 1rem;
-      display: flex;
-      justify-content: center;
-    }
-    main {
-      width: min(1100px, 100%);
-    }
-    header {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    header h1 {
-      margin: 0;
-      font-size: clamp(2.25rem, 4vw, 3rem);
-    }
-    header p {
-      color: var(--muted);
-      margin-top: 0.5rem;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-    }
-    article {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 1.25rem;
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: 0 18px 45px rgba(0,0,0,0.4);
-    }
-    article h2 {
-      margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 1.1rem;
-      color: var(--accent);
-    }
-    article ul {
-      margin: 0;
-      padding-left: 1rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    article ul li {
-      margin-bottom: 0.5rem;
-    }
-    .note {
-      margin-top: 1rem;
-      padding: 0.85rem;
-      border-radius: 10px;
-      background: rgba(125, 211, 192, 0.08);
-      border: 1px solid rgba(125, 211, 192, 0.4);
-      color: #a7f3d0;
-    }
+    :root{--bg:#050a12;--panel:#0d1624;--panel-strong:#101d2e;--line:rgba(166,197,232,.15);--ink:#edf6ff;--muted:#95a6bd;--blue:#75baff;--mint:#80e6cf}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 70% 37% at 7% 0,rgba(33,113,210,.18),transparent 72%),var(--bg);color:var(--ink);font:15px/1.55 Manrope,system-ui,sans-serif}.wrap{width:min(1160px,calc(100% - 40px));margin:auto;padding:28px 0 70px}.top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font:500 12px/1 'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase}.top a{color:inherit;text-decoration:none}.top strong{color:var(--ink)}.top a:hover,.top a:focus-visible{color:var(--mint)}h1,h2,h3,p{margin:0}.intro{display:grid;grid-template-columns:1.25fr .75fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:34px}.intro-copy{padding:clamp(28px,5vw,62px);background:linear-gradient(145deg,#0d1b2d,#0a101a)}.kicker{font:500 11px/1 'DM Mono',monospace;letter-spacing:.12em;color:var(--mint);text-transform:uppercase}.intro h1{font-size:clamp(42px,7vw,82px);line-height:.96;letter-spacing:-.075em;margin:16px 0}.intro p{max-width:620px;color:var(--muted);font-size:17px}.quick{display:flex;flex-direction:column;justify-content:center;gap:1px;background:var(--line)}.quick a{background:var(--panel);padding:18px 22px;color:var(--ink);text-decoration:none;display:flex;justify-content:space-between;align-items:center;transition:background .2s,padding .2s}.quick a:hover,.quick a:focus-visible{background:var(--panel-strong);padding-left:27px}.quick small{font:500 10px/1 'DM Mono',monospace;color:var(--blue);letter-spacing:.08em;text-transform:uppercase}.destinations{display:grid;grid-template-columns:180px repeat(4,1fr);gap:1px;margin-top:1px;background:var(--line);border:1px solid var(--line)}.destinations-label,.destinations a{min-height:72px;padding:14px 18px;display:flex;align-items:center}.destinations-label{background:#09111d;color:var(--muted);font:500 10px/1.45 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase}.destinations a{background:var(--panel);color:var(--ink);font-size:13px;font-weight:700;text-decoration:none;justify-content:space-between;transition:background .2s,color .2s}.destinations a span{color:var(--blue);font-size:16px}.destinations a:hover,.destinations a:focus-visible{background:var(--panel-strong);color:var(--mint)}.main-grid{display:grid;grid-template-columns:230px 1fr;gap:52px;margin-top:60px}.toc{position:sticky;top:20px;align-self:start;border-left:1px solid var(--line);padding-left:16px}.toc b{font:500 10px/1 'DM Mono',monospace;letter-spacing:.11em;color:var(--mint);text-transform:uppercase}.toc a{display:block;margin-top:13px;color:var(--muted);font-size:13px;text-decoration:none}.toc a:hover,.toc a:focus-visible{color:var(--ink)}.section{padding:0 0 39px;margin-bottom:39px;border-bottom:1px solid var(--line);scroll-margin-top:20px}.section:last-child{border-bottom:0}.section h2{font-size:28px;letter-spacing:-.05em}.section>p{max-width:720px;color:var(--muted);margin-top:7px}.steps{margin-top:23px;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}.step{background:var(--panel);padding:20px 21px;display:grid;grid-template-columns:42px 1fr;gap:15px}.step-n{color:var(--blue);font:500 12px/1.5 'DM Mono',monospace}.step h3{font-size:15px}.step p{margin-top:4px;color:var(--muted);font-size:13px}.note{margin-top:20px;padding:17px 19px;background:rgba(128,230,207,.065);border-left:2px solid var(--mint);color:#bbd4d8;font-size:13px}.troubleshoot{margin-top:23px}.trouble{padding:18px 0;border-bottom:1px solid var(--line)}.trouble:first-child{border-top:1px solid var(--line)}.trouble h3{font-size:15px}.trouble p{color:var(--muted);font-size:13px;margin-top:4px}.footer{border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between}.footer a{color:inherit;text-decoration:none}.footer a:hover{color:var(--ink)}@media(max-width:760px){.wrap{width:min(100% - 28px,1160px);padding-top:18px}.intro{grid-template-columns:1fr}.quick{display:grid;grid-template-columns:1fr 1fr}.destinations{grid-template-columns:1fr 1fr}.destinations-label{grid-column:1/-1;min-height:auto;padding:12px 16px}.main-grid{display:block;margin-top:45px}.toc{display:none}.section{margin-bottom:31px;padding-bottom:31px}.footer{display:block}.footer a{display:inline-block;margin-top:8px}}@media(max-width:450px){.quick,.destinations{grid-template-columns:1fr}.intro-copy{padding:33px 24px}.step{grid-template-columns:30px 1fr}}
   </style>
-  <script src="/assets/js/panic.js" defer></script>
-  <script src="/assets/js/appearance.js" defer></script>
-  <script src="/assets/js/cloaking.js" defer></script>
-<meta name="classification" content="Mathematics Education">
-<meta name="subject" content="Mathematics">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
-<script type="application/ld+json" data-site-math-seo>
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Nebulo Education Plus",
-  "url": "https://nebulo.network",
-  "inLanguage": "en",
-  "about": ["Mathematics", "Algebra", "Geometry", "STEM Education"],
-  "educationalUse": "Practice",
-  "keywords": "mathematics, algebra, geometry, educational practice"
-}
-</script>
 </head>
-<body>
-  <main>
-    <header>
-      <h1>Nebulo OS Help</h1>
-      <p>Step-by-step reminders on keeping your workspace moving smoothly.</p>
-    </header>
-    <div class="grid">
-      <article>
-        <h2>Launching Apps</h2>
-        <ul>
-          <li>Click an icon on the desktop to open it in a new window. Double-clicking brings it to focus.</li>
-          <li>Use the taskbar at the bottom to reopen or minimize any running window.</li>
-          <li>The start menu mirrors the same list—tap a card to launch the corresponding app.</li>
-        </ul>
-      </article>
-      <article>
-        <h2>Window Controls</h2>
-        <ul>
-          <li>The window header contains minimize, maximize, and close controls. Hover to see the tooltips.</li>
-          <li>You can move windows by dragging the header and resize them from the edges or corners.</li>
-          <li>If something blocks a window, you can refresh the entire desktop with the tray refresh button.</li>
-        </ul>
-      </article>
-      <article>
-        <h2>Organizing Icons</h2>
-        <ul>
-          <li>Drag icons on the desktop to rearrange them. If you accidentally start dragging, just release and click again.</li>
-          <li>Position data is saved automatically so your layout stays consistent across sessions.</li>
-          <li>Right-click an icon for options like pinning it to the taskbar for quick access.</li>
-        </ul>
-      </article>
-      <article>
-        <h2>Settings & Preferences</h2>
-        <ul>
-          <li>Open Settings to switch themes, set a panic key, or update your background image.</li>
-          <li>Any changes dispatch live events so running apps can react to fresh preferences.</li>
-          <li>Export/Import lets you back up cookies, localStorage, and theme settings for safekeeping.</li>
-        </ul>
-      </article>
-    </div>
-    <section class="note">
-      Keep this page bookmarked in the help app for quick reminders when you reboot the environment.
-    </section>
-  </main>
-
-<!-- hidden-math-essay -->
-<section hidden aria-hidden="true" data-hidden-math-essay>
-  <h2>Essay on Mathematics</h2>
-  <p>
-    Mathematics is a language of patterns, logic, and structure. It allows people to describe change,
-    measure uncertainty, and model real-world systems from finance to physics. Learning math develops
-    precise thinking, because every claim must be justified step by step. Algebra teaches abstraction,
-    geometry builds spatial reasoning, statistics improves decision-making, and calculus explains motion
-    and growth. Beyond school, math supports technology, engineering, medicine, economics, and computer
-    science. Strong mathematical habits, such as checking assumptions and testing solutions, help with
-    everyday problem-solving as well. In this way, mathematics is not only a subject, but also a practical
-    method for understanding the world.
-  </p>
-</section>
-
-</body>
-</html>
+<body><main class="wrap"><header class="top"><a href="/@"><strong>Nebulo</strong> / help center</a><a href="/whatsnew">What’s new ↗</a></header>
+  <section class="intro"><div class="intro-copy"><span class="kicker">A practical guide</span><h1>Find your way around Nebulo.</h1><p>Quick answers for the home space, browsing, games, global chat, local cosmetics, and the controls that keep the experience yours.</p></div><nav class="quick" aria-label="Popular help links"><a href="#setup"><span>Choose a setup mode</span><small>01</small></a><a href="#chat"><span>Message status</span><small>02</small></a><a href="#controls"><span>Privacy & controls</span><small>03</small></a><a href="#fixes"><span>Fix a problem</span><small>04</small></a></nav></section>
+  <nav class="destinations" aria-label="Open a Nebulo space"><span class="destinations-label">Open a Nebulo space</span><a href="/kchat"><span>Chat</span><span aria-hidden="true">↗</span></a><a href="/games"><span>Games</span><span aria-hidden="true">↗</span></a><a href="/achievements"><span>Achievements</span><span aria-hidden="true">↗</span></a><a href="/settings"><span>Settings</span><span aria-hidden="true">↗</span></a></nav>
+  <div class="main-grid"><aside class="toc"><b>On this page</b><a href="#setup">Setup modes</a><a href="#home">Home & search</a><a href="#browse">Tabs & proxy</a><a href="#games">Games</a><a href="#chat">Global Chat</a><a href="#rewards">Achievements</a><a href="#controls">Settings & privacy</a><a href="#fixes">Troubleshooting</a></aside><div>
+    <section id="setup" class="section"><h2>Setup modes</h2><p>The opening setup is a shortcut, not a permanent restriction. Use the mode that suits the session you want.</p><div class="steps"><article class="step"><span class="step-n">01</span><div><h3>Chat-only</h3><p>Opens Global Chat directly for a focused community experience.</p></div></article><article class="step"><span class="step-n">02</span><div><h3>Proxy + Games</h3><p>Gives you the full Nebulo home: search, tabs, proxy options, games, and chat.</p></div></article><article class="step"><span class="step-n">03</span><div><h3>Games-only</h3><p>Starts with the game library when that is all you need.</p></div></article></div><div class="note">Use the back arrow or Change setup option where it appears to return to setup. It should keep the same complete set of available choices.</div></section>
+    <section id="home" class="section"><h2>Home, search, and Quick Access</h2><p>The Nebulo home is the quickest route to common destinations. Quick Access buttons open trusted shortcuts, while the search box uses the search engine chosen in Settings.</p><div class="steps"><article class="step"><span class="step-n">→</span><div><h3>Open a shortcut</h3><p>Select any Quick Access button. A new Nebulo tab opens when the destination uses the in-site browser.</p></div></article><article class="step"><span class="step-n">→</span><div><h3>Change the search engine</h3><p>Open Settings, select a search engine, then return to Home. The change applies to future searches.</p></div></article></div></section>
+    <section id="browse" class="section"><h2>Browser tabs and proxy modes</h2><p>Use the tab strip to switch, close, or revisit pages. The proxy choice in Settings controls which supported browsing engine a new proxy tab uses.</p><div class="steps"><article class="step"><span class="step-n">A</span><div><h3>Start a new page</h3><p>Enter a search or address from Home, then use the tab bar to keep more than one page open.</p></div></article><article class="step"><span class="step-n">B</span><div><h3>If a page needs a refresh</h3><p>Reload the tab once. If it still fails, try another available proxy mode from Settings and reopen the page.</p></div></article></div></section>
+    <section id="games" class="section"><h2>Games</h2><p>Browse the organized game library, launch a title, and use the game page controls to return to the library or change setup when needed.</p><div class="note">A game’s loading behavior comes from the game host. If one title does not launch, return to the library and try it again later rather than opening multiple copies.</div></section>
+    <section id="chat" class="section"><h2>Global Chat and message status</h2><p>Messages show up immediately, then settle into their saved state. The text box stays available for the next message; small sends are held in a short, ordered outbox so a slow network does not freeze the composer.</p><div class="steps"><article class="step"><span class="step-n">●</span><div><h3>Sending</h3><p>The message is visible locally while it is being delivered. A healthy live connection is used first.</p></div></article><article class="step"><span class="step-n">✓</span><div><h3>Sent</h3><p>The canonical message has been accepted and shared with connected people in the room.</p></div></article><article class="step"><span class="step-n">!</span><div><h3>Failed</h3><p>Use Retry on that message after checking your connection. Nebulo keeps the same message ID for that retry so it cannot post twice.</p></div></article></div><div class="note">Chat remains moderated and can enforce room permissions and slowmode. A failed or blocked message is not automatically retried repeatedly.</div></section>
+    <section id="rewards" class="section"><h2>Achievements and cosmetics</h2><p>The achievement deck tracks activity on this browser and device. Unlocks can include custom cursors, accent colors, and a quiet stars effect.</p><div class="steps"><article class="step"><span class="step-n">01</span><div><h3>Earn normally</h3><p>Visit areas of Nebulo, use Quick Access, customize settings, and explore the site to progress.</p></div></article><article class="step"><span class="step-n">02</span><div><h3>Equip from the deck</h3><p>Choose an unlocked cosmetic. It applies right away and remains after refresh on this device.</p></div></article></div><div class="note">Achievement progress and cosmetics are local browser data, not an account-wide inventory. Clearing site storage can remove them.</div></section>
+    <section id="controls" class="section"><h2>Settings, ad blocker, and privacy controls</h2><p>Settings contains the practical controls for how Nebulo behaves: theme, particles, proxy mode, search engine, ad blocker, cloaking, and panic key.</p><div class="steps"><article class="step"><span class="step-n">01</span><div><h3>Appearance</h3><p>Choose a theme, reduce particles, and equip local cosmetics for a calmer or more expressive workspace.</p></div></article><article class="step"><span class="step-n">02</span><div><h3>Ad blocker</h3><p>Turn the site-wide blocker on or off in Settings. Some embedded sites can still behave differently because they control their own page content.</p></div></article><article class="step"><span class="step-n">03</span><div><h3>Cloaking and panic key</h3><p>Configure these controls before you need them. Test the key once after changing it so you know the selection saved.</p></div></article></div></section>
+    <section id="fixes" class="section"><h2>Common fixes</h2><div class="troubleshoot"><article class="trouble"><h3>My page looks old or an update is missing</h3><p>Close the affected Nebulo tab and reopen it. A normal reload is usually enough for the current page scripts to load.</p></article><article class="trouble"><h3>A chat message says Failed</h3><p>Check that the chat tab is still connected, then select Retry. Do not repeatedly resend the same text; Retry uses the original delivery ID.</p></article><article class="trouble"><h3>Chat messages are not arriving</h3><p>Reload Global Chat once. The live connection reconnects automatically; if it cannot, the chat falls back to slower checks without flooding the network.</p></article><article class="trouble"><h3>A game or proxied page will not load</h3><p>Reload once, then return to Home or the game list and reopen it. For proxy pages, try another available proxy selection in Settings.</p></article><article class="trouble"><h3>My cosmetics disappeared</h3><p>They are stored locally in this browser. Check that site data was not cleared, then revisit Achievements to equip an unlocked item again.</p></article></div></section>
+  </div></div><footer class="footer"><span>Need a quick feature summary?</span><a href="/whatsnew">Read What’s New →</a></footer>
+</main></body></html>

@@ -1,0 +1,4523 @@
+{
+  "description": "Automated startup samples, not full gameplay certification. Baseline contains failures observed before repairs; retest is the final selected 13-entry sample. Some failed requests are optional ads or icons.",
+  "baseline": [
+    {
+      "id": "platinum-0",
+      "name": "baw",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-1",
+      "name": "cannon basketball",
+      "status": 200,
+      "errors": [
+        "Uncaught TypeError: Cannot assign to read only property 'name' of function 'function(){return r(this)&&u(this).source||l(this)}'"
+      ],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-2",
+      "name": "cannon basketball 2",
+      "status": 200,
+      "errors": [
+        "Uncaught TypeError: Cannot assign to read only property 'name' of function 'function(){return r(this)&&u(this).source||l(this)}'"
+      ],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-3",
+      "name": "cannon basketball 3",
+      "status": 200,
+      "errors": [
+        "Uncaught TypeError: Cannot assign to read only property 'name' of function 'function(){return r(this)&&u(this).source||l(this)}'"
+      ],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-5",
+      "name": "red ball 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-4",
+      "name": "trafficmania",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-7",
+      "name": "babel tower",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-6",
+      "name": "candy clicker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-8",
+      "name": "top speed 3d",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-9",
+      "name": "time shooter 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-10",
+      "name": "timber man",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-11",
+      "name": "tap tap shots",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-12",
+      "name": "idle ants",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of undefined (reading 'MUpgradeButton_Event3_Act1')"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-13",
+      "name": "tennis random",
+      "status": 200,
+      "errors": [
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-15",
+      "name": "ultimate offroad simulator",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-14",
+      "name": "zuck vs musk beatdown",
+      "status": 200,
+      "errors": [
+        "Uncaught (in promise) false"
+      ],
+      "failedRequests": 7,
+      "surfaces": 8
+    },
+    {
+      "id": "platinum-16",
+      "name": "turn turn",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-18",
+      "name": "block shooter frenzy",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-17",
+      "name": "tube clicker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-19",
+      "name": "three goblets",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-20",
+      "name": "super pickleball adventure",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-22",
+      "name": "metrocubevania",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-21",
+      "name": "squareX",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-23",
+      "name": "knightin",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-24",
+      "name": "ISLANDER",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-25",
+      "name": "final earth 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-26",
+      "name": "delia the traveling witch",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-28",
+      "name": "another gentlemans adventure",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-29",
+      "name": "Throw a Potato",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-27",
+      "name": "dark tomb",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-30",
+      "name": "westoon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-31",
+      "name": "thumb fighter christmas",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-32",
+      "name": "sink it",
+      "status": 200,
+      "errors": [
+        "play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-33",
+      "name": "minibattles",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-34",
+      "name": "gunspin",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-36",
+      "name": "tiny heist",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-35",
+      "name": "blocky snakes",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-37",
+      "name": "poker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-38",
+      "name": "blackjack",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-39",
+      "name": "we become what we behold",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-40",
+      "name": "idle lumber inc",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-41",
+      "name": "idle digging tycoon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-42",
+      "name": "blumgi paintball",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-44",
+      "name": "terretorial.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-45",
+      "name": "just passing 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-43",
+      "name": "badegg.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 4
+    },
+    {
+      "id": "platinum-47",
+      "name": "shipo.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-46",
+      "name": "Pre Civilization Bronze Age",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-49",
+      "name": "sheep party",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 5
+    },
+    {
+      "id": "platinum-50",
+      "name": "friday night funkin",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'appendChild')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-52",
+      "name": "tag",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-51",
+      "name": "tanko.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 5
+    },
+    {
+      "id": "platinum-48",
+      "name": "conq.io",
+      "status": 200,
+      "errors": [
+        "SecurityError: Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag."
+      ],
+      "failedRequests": 0,
+      "surfaces": 4
+    },
+    {
+      "id": "platinum-54",
+      "name": "checkers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-55",
+      "name": "gladihoppers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 6,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-53",
+      "name": "level devil",
+      "status": 200,
+      "errors": [
+        "Unexpected identifier 'Content'"
+      ],
+      "failedRequests": 17,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-57",
+      "name": "fireboy and watergirl 6",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-58",
+      "name": "Fireboy and Watergirl 5",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-56",
+      "name": "water color sort",
+      "status": 200,
+      "errors": [
+        "SecurityError: Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag."
+      ],
+      "failedRequests": 0,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-59",
+      "name": "Fireboy and Watergirl 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-60",
+      "name": "Fireboy and Watergirl 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-61",
+      "name": "Fireboy and Watergirl 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-62",
+      "name": "Fireboy and Watergirl 1",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-63",
+      "name": "paper minecraft ender dragon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-65",
+      "name": "pixwars 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 8,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-66",
+      "name": "traffic tour",
+      "status": 200,
+      "errors": [
+        "SyntaxError: Identifier 'canvas' has already been declared"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-64",
+      "name": "grindcraft",
+      "status": 200,
+      "errors": [
+        "SecurityError: Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag."
+      ],
+      "failedRequests": 0,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-69",
+      "name": "spelunky",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-68",
+      "name": "super liquid soccer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-67",
+      "name": "superfighters",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-70",
+      "name": "rabbit samurai 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-71",
+      "name": "rabbit samurai",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-73",
+      "name": "pizza tower",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-74",
+      "name": "party project",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-75",
+      "name": "onion boy",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-77",
+      "name": "n-gon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-76",
+      "name": "NG stars",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-72",
+      "name": "quake",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-78",
+      "name": "gunnight",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 4,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-79",
+      "name": "freefall tournament",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-80",
+      "name": "fighter aircraft piolet",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 4,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-81",
+      "name": "die in the dungeon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-82",
+      "name": "cannon basketball 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-83",
+      "name": "burrito bison",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-84",
+      "name": "bumpyball.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-85",
+      "name": "basket legend 2020",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-86",
+      "name": "basket and ball",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-87",
+      "name": "tank trouble 2",
+      "status": 200,
+      "errors": [
+        "ReferenceError: check is not defined",
+        "A call to screen.orientation.lock() or screen.orientation.unlock() canceled this call.",
+        "screen.orientation.lock() is not available on this device.",
+        "Unable to decode audio data"
+      ],
+      "failedRequests": 2,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-88",
+      "name": "super santa kicker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-89",
+      "name": "solitaire",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-90",
+      "name": "nitroclash.io",
+      "status": 200,
+      "errors": [
+        "Uncaught (in promise) false",
+        "dialog: Error loading game images, please reload the page. Clear your browser cache if this happens repeatedly."
+      ],
+      "failedRequests": 8,
+      "surfaces": 9
+    },
+    {
+      "id": "platinum-91",
+      "name": "gravity soccer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-92",
+      "name": "going balls",
+      "status": 200,
+      "errors": [
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message",
+        "Uncaught (in promise) Error: No parent to post message"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-93",
+      "name": "falling fox",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-94",
+      "name": "draw the hill",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-95",
+      "name": "color switch",
+      "status": 200,
+      "errors": [
+        "ErrnoError"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-96",
+      "name": "brawlguys.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-97",
+      "name": "basketbros.io",
+      "status": 200,
+      "errors": [
+        "Uncaught (in promise) p: OneSignal: This web push config can only be used on https://basketbros.io. Your current origin is http://127.0.0.1:4010."
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-98",
+      "name": "ballistic",
+      "status": 200,
+      "errors": [
+        "Cannot read properties of null (reading 'armature')"
+      ],
+      "failedRequests": 4,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-99",
+      "name": "death run 3d",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-101",
+      "name": "sleepy knight",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-102",
+      "name": "greedy mimic",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-103",
+      "name": "sticky sourcerer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-104",
+      "name": "yarne",
+      "status": 200,
+      "errors": [
+        "play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-105",
+      "name": "two timin towers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-107",
+      "name": "slide fill",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-108",
+      "name": "sheep",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-106",
+      "name": "slimoban 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-109",
+      "name": "roll merge 3d",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-110",
+      "name": "ordeals of december",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-111",
+      "name": "one screen run 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-112",
+      "name": "indestructotank gb",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-113",
+      "name": "gaia",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-114",
+      "name": "bokdown",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-115",
+      "name": "yin and yang",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-116",
+      "name": "top outpost",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-117",
+      "name": "spirit dungeons",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 25,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-119",
+      "name": "out of ctrl",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-118",
+      "name": "pixel tap dungeon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-120",
+      "name": "mad pirate skeleton",
+      "status": 200,
+      "errors": [
+        "Failed to set the 'domain' property on 'Document': 'armorgames.com' is not a suffix of '127.0.0.1'."
+      ],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-122",
+      "name": "jetscout boot camp",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-121",
+      "name": "kity builder prototype",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-124",
+      "name": "find a way out",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-123",
+      "name": "idle fill factory",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-125",
+      "name": "cursed travels flame of the banshee",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-127",
+      "name": "white pen road",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-126",
+      "name": "cognite",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-128",
+      "name": "space cowboy",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-129",
+      "name": "rail connect",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-130",
+      "name": "put a ring on it",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-131",
+      "name": "mutual destruction",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-132",
+      "name": "mini bubbles",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-133",
+      "name": "leapoid",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-134",
+      "name": "keyholder",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-135",
+      "name": "icy north",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-136",
+      "name": "evolutionary psychol",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-137",
+      "name": "escape kid",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-138",
+      "name": "cursed travels the shattered labyrinth",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-139",
+      "name": "crystal wizards",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-140",
+      "name": "calturin",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-142",
+      "name": "are you human",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-141",
+      "name": "binary",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 6,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-143",
+      "name": "anyek the keyboard puzzle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-144",
+      "name": "shaky structure",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-145",
+      "name": "orb of creation",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-146",
+      "name": "incub8",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-148",
+      "name": "runick",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-149",
+      "name": "laqueus escape chapter 5",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-147",
+      "name": "tryh4rd",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-150",
+      "name": "drag box",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-152",
+      "name": "yarn untangled",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-151",
+      "name": "cloudhopper",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-153",
+      "name": "towerland",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-154",
+      "name": "the mage",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-155",
+      "name": "telepobox 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-156",
+      "name": "snail trail",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-157",
+      "name": "robox",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-158",
+      "name": "reel deep",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-160",
+      "name": "moosha",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-161",
+      "name": "may i have your attention, please",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-159",
+      "name": "planet d4rk",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-162",
+      "name": "laqueus escape chapter 6",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-164",
+      "name": "gobo desert of cubes",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-163",
+      "name": "house pusher",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-165",
+      "name": "forward winds",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-166",
+      "name": "fluctuoid",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-169",
+      "name": "magirune",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-167",
+      "name": "cursed travels a forgotten seal",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-168",
+      "name": "blacken slash demo",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-170",
+      "name": "logica emotica",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-172",
+      "name": "nova cloudwalkers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-171",
+      "name": "hall of palettes",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-173",
+      "name": "notebook jam",
+      "status": 200,
+      "errors": [
+        "ErrnoError"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-174",
+      "name": "gods of defense",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-175",
+      "name": "slide box",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-176",
+      "name": "sector 01",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-177",
+      "name": "erase box",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-178",
+      "name": "sum lines",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-179",
+      "name": "strg snek",
+      "status": 200,
+      "errors": [
+        "missing ) after argument list"
+      ],
+      "failedRequests": 1,
+      "surfaces": 4
+    },
+    {
+      "id": "platinum-180",
+      "name": "rotate box",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-182",
+      "name": "peeper reaper",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-181",
+      "name": "red scarf platformer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-183",
+      "name": "ninja auto run",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-184",
+      "name": "murder is game over",
+      "status": 200,
+      "errors": [
+        "ReferenceError: Skill_Sequencer is not defined",
+        "Invalid or unexpected token"
+      ],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-185",
+      "name": "mirror wizard",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-186",
+      "name": "mini swim",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-187",
+      "name": "mini flips",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-188",
+      "name": "marcus osnail",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-189",
+      "name": "knights blade",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-190",
+      "name": "infinite night the cunning princess",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-191",
+      "name": "in space",
+      "status": 200,
+      "errors": [
+        "NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'http://127.0.0.1:4010/games/platinum/cdn/in%20space/redblackset.js' failed to load."
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-192",
+      "name": "hummin out",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-193",
+      "name": "haunted rooms",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-195",
+      "name": "cordovan",
+      "status": 200,
+      "errors": [
+        "play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-194",
+      "name": "darkraid delilah",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-196",
+      "name": "contractomaton",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-197",
+      "name": "arrow box",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-198",
+      "name": "viscous ventures",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-199",
+      "name": "steel and claw",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-200",
+      "name": "slime knight",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-201",
+      "name": "platformation",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-202",
+      "name": "path of arrows",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-203",
+      "name": "ninja kite",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-204",
+      "name": "mutato potato",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-205",
+      "name": "mini rocket",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-206",
+      "name": "magnet master redux",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-207",
+      "name": "inversion",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-208",
+      "name": "handle",
+      "status": 200,
+      "errors": [
+        "ReferenceError: deck is not defined"
+      ],
+      "failedRequests": 3,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-209",
+      "name": "dispersal vectors",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-210",
+      "name": "cata catapult",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-211",
+      "name": "astro steve adventure",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-212",
+      "name": "the designer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-213",
+      "name": "stress chess",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-214",
+      "name": "specters of the sun",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-215",
+      "name": "space order mine",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-216",
+      "name": "scraplegs",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-217",
+      "name": "last plant on earth",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-218",
+      "name": "gloop",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-219",
+      "name": "doubleup",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-220",
+      "name": "toms trial",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-221",
+      "name": "knights blade",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-222",
+      "name": "jetpack kiwi",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-223",
+      "name": "dungeon scroller",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-224",
+      "name": "a maniac",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-225",
+      "name": "Pixel shooter",
+      "status": 200,
+      "errors": [
+        "Invalid regular expression: /,\"&lt;\"));c&&c.unescapeHtmlEntities&&(a=a.replace(/: Unmatched ')'",
+        "TypeError: Cannot read properties of undefined (reading 'csi')"
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-228",
+      "name": "agar.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 7,
+      "surfaces": 5
+    },
+    {
+      "id": "platinum-229",
+      "name": "giraffes volleyball",
+      "status": 200,
+      "errors": [
+        "dialog: An error occured running the Unity content on this page. See your browser's JavaScript console for more info. The error was:",
+        "ErrnoError"
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-230",
+      "name": "un evergreen",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-231",
+      "name": "super gauntlent",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-232",
+      "name": "slis",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-234",
+      "name": "driftmania",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-233",
+      "name": "mini magbot",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-235",
+      "name": "club tycoon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-236",
+      "name": "blasting marbles",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-237",
+      "name": "deepest sword",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-238",
+      "name": "sort the court",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-240",
+      "name": "Erase Box",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-241",
+      "name": "Crossy Road",
+      "status": 200,
+      "errors": [
+        "Identifier 'isYouTubeAudioEnabled' has already been declared",
+        "Error: Ajax error for audio.zip : 404 Not Found"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-239",
+      "name": "Resent client (mc)",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-242",
+      "name": "Drive Mad 200 levels",
+      "status": 200,
+      "errors": [
+        "Error: Unexpected error while handling : http://127.0.0.1:4010/games/platinum/cdn/drivemad200/webapp/index.data Error: Unexpected error while handling : http://127.0.0.1:4010/games/platinum/cdn/drivem"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-243",
+      "name": "1",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-245",
+      "name": "2048",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-246",
+      "name": "9007199254740992",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-247",
+      "name": "Achievement Unlocked",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-248",
+      "name": "Adrenaline Challenge",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-249",
+      "name": "Among Us",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-250",
+      "name": "Avalanche",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-253",
+      "name": "Battle for Gondor",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-252",
+      "name": "Basketball Stars",
+      "status": 200,
+      "errors": [
+        "SyntaxError: Invalid regular expression: /[Ã€-ÃŸ][Â€-Â¿]|[Ã -Ã¯][Â€-Â¿]{2}|[Ã°-Ã·][Â€-Â¿]{3}/g: Range out of order in character class"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-251",
+      "name": "Backrooms",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-254",
+      "name": "Big Red Button",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-255",
+      "name": "Black Knight",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-256",
+      "name": "Bloons TD",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-257",
+      "name": "Bloons TD 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-258",
+      "name": "Bloxors",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-259",
+      "name": "Box Head",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-260",
+      "name": "Henry Stickmin - Breaking the Bank",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-262",
+      "name": "Cannon Basketball 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-261",
+      "name": "Big Tower Tiny Square",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-263",
+      "name": "Canyon Defense",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-264",
+      "name": "Cell Machine",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-265",
+      "name": "Champion Archer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-266",
+      "name": "Chrome Dino",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-268",
+      "name": "Connect 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-267",
+      "name": "circlO",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-269",
+      "name": "Cookie Clicker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 22
+    },
+    {
+      "id": "platinum-270",
+      "name": "Cookie Clicker Modded",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 22
+    },
+    {
+      "id": "platinum-271",
+      "name": "CraftMine",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-272",
+      "name": "Creative Kill Chamber",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-273",
+      "name": "CS:GO Clicker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-274",
+      "name": "Cut the Rope",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 6
+    },
+    {
+      "id": "platinum-275",
+      "name": "Cut the Rope Holiday",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 30,
+      "surfaces": 6
+    },
+    {
+      "id": "platinum-276",
+      "name": "Cut the Rope Time Travel",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 6
+    },
+    {
+      "id": "platinum-277",
+      "name": "Cubefield",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-278",
+      "name": "Cupcake 2048",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-279",
+      "name": "Deal or No Deal",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-280",
+      "name": "Death Run 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 6,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-281",
+      "name": "Defend the Tank",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-282",
+      "name": "Doge 2048",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 11,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-283",
+      "name": "Doge Miner",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 8,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-284",
+      "name": "Doodle Jump",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-285",
+      "name": "Double Wires",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-286",
+      "name": "Draw the Hill",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-287",
+      "name": "Duck Life",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-288",
+      "name": "Duck Life 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-289",
+      "name": "Duck Life 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-290",
+      "name": "Edge Not Found",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-291",
+      "name": "Elastic Man",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-292",
+      "name": "Endless War 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-293",
+      "name": "Evil Glitch",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-294",
+      "name": "Exo",
+      "status": 200,
+      "errors": [
+        "dialog: Heyo!",
+        "play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-295",
+      "name": "Factory Balls Forever",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-296",
+      "name": "Fake Virus",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-297",
+      "name": "Flappy 2048",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-299",
+      "name": "Flash Tetris",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-298",
+      "name": "Flappy Bird",
+      "status": 200,
+      "errors": [
+        "play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      ],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-300",
+      "name": "Game Inside a Game Inside a Game...",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-301",
+      "name": "Gimme the Airpod",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-302",
+      "name": "Glass City",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-303",
+      "name": "Google Snake",
+      "status": 200,
+      "errors": [
+        "ReferenceError: s_a is not defined",
+        "ReferenceError: s_a is not defined"
+      ],
+      "failedRequests": 2,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-305",
+      "name": "Hacker Typer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-304",
+      "name": "Grind Craft",
+      "status": 200,
+      "errors": [
+        "SecurityError: Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag."
+      ],
+      "failedRequests": 1,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-306",
+      "name": "Helicopter",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-307",
+      "name": "HexGL",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-308",
+      "name": "Hextris",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-310",
+      "name": "Idle Shark",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-309",
+      "name": "Idle Breakout",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 12,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-311",
+      "name": "Impossible Quiz",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-312",
+      "name": "Just One Boss",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-313",
+      "name": "Kitten Cannon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-314",
+      "name": "Krunker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-316",
+      "name": "Matrix Rampage",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-315",
+      "name": "Mario",
+      "status": 200,
+      "errors": [
+        "play() failed because the user didn't interact with the document first. https://goo.gl/xX8pDD"
+      ],
+      "failedRequests": 30,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-317",
+      "name": "Meme 2048",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-318",
+      "name": "Minecraft Classic",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 3,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-319",
+      "name": "Minesweeper",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-320",
+      "name": "Mini-putt",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 6,
+      "surfaces": 6
+    },
+    {
+      "id": "platinum-321",
+      "name": "Missiles",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-322",
+      "name": "MotoX3M",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 5
+    },
+    {
+      "id": "platinum-323",
+      "name": "MotoX3M Pool",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'addEventListener')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-324",
+      "name": "MotoX3M Spooky",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'addEventListener')"
+      ],
+      "failedRequests": 6,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-326",
+      "name": "n-gon",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-325",
+      "name": "MotoX3M Winter",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'addEventListener')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-327",
+      "name": "NS-Shaft",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-328",
+      "name": "Om Nom Bounce",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-329",
+      "name": "Pandemic 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-330",
+      "name": "Papa's Pizzaria",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-332",
+      "name": "Papery Planes",
+      "status": 200,
+      "errors": [
+        "ReferenceError: poki is not defined",
+        "Event"
+      ],
+      "failedRequests": 7,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-331",
+      "name": "Paper.io 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 5,
+      "surfaces": 6
+    },
+    {
+      "id": "platinum-333",
+      "name": "Particle Clicker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-335",
+      "name": "Portal (Flash)",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-334",
+      "name": "PolyBranch",
+      "status": 200,
+      "errors": [
+        "ReferenceError: check is not defined"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-337",
+      "name": "Push The Square",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-336",
+      "name": "Precision Client (Eaglercraft)",
+      "status": 200,
+      "errors": [
+        "dialog: Choose a texture pack to equip:",
+        "TypeError: Cannot read properties of null (reading 'data')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-338",
+      "name": "Push Your Luck",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-340",
+      "name": "Rolly Vortex",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-341",
+      "name": "Rooftop Snipers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-339",
+      "name": "Retro Bowl",
+      "status": 200,
+      "errors": [
+        "ReferenceError: cpd is not defined",
+        "ReferenceError: check is not defined"
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-342",
+      "name": "Sand Game",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-343",
+      "name": "Slope",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 7,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-344",
+      "name": "Super Mario 64",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-346",
+      "name": "Smoking Barrels",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-345",
+      "name": "Smash Carts",
+      "status": 200,
+      "errors": [
+        "Uncaught (in promise) p: OneSignal: This web push config can only be used on https://smashkarts.io. Your current origin is http://127.0.0.1:4010.",
+        "Uncaught (in promise) false"
+      ],
+      "failedRequests": 5,
+      "surfaces": 7
+    },
+    {
+      "id": "platinum-347",
+      "name": "Snowbattle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 11,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-349",
+      "name": "Solitare",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-350",
+      "name": "Sort The Court",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-348",
+      "name": "Soilder Legend",
+      "status": 200,
+      "errors": [
+        "Unable to decode audio data"
+      ],
+      "failedRequests": 2,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-351",
+      "name": "Soundboard",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-352",
+      "name": "Stack",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-353",
+      "name": "Stack Bump 3D",
+      "status": 200,
+      "errors": [
+        "dialog: An error occurred running the Unity content on this page. See your browser JavaScript console for more info. The error was:",
+        "ReferenceError: check is not defined"
+      ],
+      "failedRequests": 9,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-355",
+      "name": "Stick War",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-356",
+      "name": "Storm The House 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-354",
+      "name": "Henry Stickmin - Stealing The Diamond",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-358",
+      "name": "Swerve",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-357",
+      "name": "Superhot",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-359",
+      "name": "Tactical Assassin 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-361",
+      "name": "The Battle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-360",
+      "name": "Temple Run 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-362",
+      "name": "The Final Earth",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-363",
+      "name": "There Is No Game",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-364",
+      "name": "This Is The Only Level",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-365",
+      "name": "Toss The Turtle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-367",
+      "name": "Tunnel Rush",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-368",
+      "name": "TV Static",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-366",
+      "name": "Tube Jumpers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-369",
+      "name": "Vex 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 8,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-370",
+      "name": "Vex 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 8,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-371",
+      "name": "Vex 5",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 4,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-372",
+      "name": "Vex 6",
+      "status": 200,
+      "errors": [
+        "Invalid regular expression: /^[Î‘-ÏŽ]+$/i: Range out of order in character class"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-373",
+      "name": "Web Retro Local",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-374",
+      "name": "Wolfenstein 3D",
+      "status": 200,
+      "errors": [
+        "TypeError: Failed to execute 'webkitRequestFullScreen' on 'Element': The provided value is not of type 'FullscreenOptions'."
+      ],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-375",
+      "name": "Wordle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-376",
+      "name": "World's Hardest Game",
+      "status": 200,
+      "errors": [
+        "TypeError: window.parent.maeExportApis_ is not a function"
+      ],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-377",
+      "name": "World's Hardest Game 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-378",
+      "name": "You Are Jeff Bezos",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-379",
+      "name": "Basket Random",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-380",
+      "name": "Soccer Random",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-382",
+      "name": "Ragdoll Hit",
+      "status": 200,
+      "errors": [
+        "Unexpected token '<'"
+      ],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-383",
+      "name": "Subway Surfers",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-384",
+      "name": "Rocket Pult",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-385",
+      "name": "The Binding of Isaac",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-386",
+      "name": "Block Blast",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-390",
+      "name": "Five Nights at Epsteins",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-389",
+      "name": "Geometry Dash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-392",
+      "name": "Pokemon Sapphire",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-394",
+      "name": "Bee swarm simulator",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 6
+    },
+    {
+      "id": "platinum-393",
+      "name": "Five Nights at Winston's",
+      "status": 200,
+      "errors": [
+        "ReferenceError: as is not defined"
+      ],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-395",
+      "name": "Space Waves",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-398",
+      "name": "Shapez",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-397",
+      "name": "Escape Road",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-399",
+      "name": "Escape Road 2",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'addEventListener')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-400",
+      "name": "Cluster Rush",
+      "status": 200,
+      "errors": [
+        "dialog: An error occurred running the Unity content on this page. See your browser's JavaScript console for more info. The error was:",
+        "ErrnoError"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-396",
+      "name": "Among Us Online",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-402",
+      "name": "Granny",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-401",
+      "name": "BitLife",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-403",
+      "name": "Half Life",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-405",
+      "name": "Schoolboy Runaway",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-404",
+      "name": "Half Life: Opposing Force",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-406",
+      "name": "Age of War",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-407",
+      "name": "Art of War",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-408",
+      "name": "Castle Hero",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-409",
+      "name": "Duck Life 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-410",
+      "name": "Henry Stickmin - Escaping the Prison",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-411",
+      "name": "Henry Stickmin - Fleeing the Complex",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-412",
+      "name": "Henry Stickmin - Infiltrating the Airship",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-413",
+      "name": "Interactive Buddy",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-414",
+      "name": "Mario Kart Flash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-415",
+      "name": "Minecraft TD",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-416",
+      "name": "Motherload",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-417",
+      "name": "Pac Man",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-418",
+      "name": "PC Breakdown",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-419",
+      "name": "QWOP",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-420",
+      "name": "Riddle School",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-421",
+      "name": "Riddle School 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-422",
+      "name": "Riddle School 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-423",
+      "name": "Riddle School 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-424",
+      "name": "Riddle School 5",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-425",
+      "name": "Riddle School - Transfer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-426",
+      "name": "Riddle School - Transfer 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-427",
+      "name": "3D Bowling",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-428",
+      "name": "8 Ball Billiards Classic",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-429",
+      "name": "99 Balls 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-432",
+      "name": "Archery World Tour",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-431",
+      "name": "Angry Birds Showdown",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-430",
+      "name": "AMAZE!",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-434",
+      "name": "Ball Blast",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 23,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-435",
+      "name": "Basket Battle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-433",
+      "name": "Attack Hole",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-436",
+      "name": "Basketball FRVR",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-437",
+      "name": "Bazooka Boy",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-439",
+      "name": "Bottle Jump 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-438",
+      "name": "Bolly Beat",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'parentElement')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-440",
+      "name": "Bowmasters",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-441",
+      "name": "Bridge Race",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'SendMessage')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-442",
+      "name": "Build a Queen",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'SendMessage')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-443",
+      "name": "Cannon Balls 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-444",
+      "name": "Carrom Clash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 20,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-445",
+      "name": "Chess Classic",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-446",
+      "name": "Color Burst 3D",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'parentElement')"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-447",
+      "name": "Color Match",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'SendMessage')"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-448",
+      "name": "Color Water Sort 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-449",
+      "name": "Crossy Road",
+      "status": 200,
+      "errors": [
+        "Identifier 'isYouTubeAudioEnabled' has already been declared"
+      ],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-450",
+      "name": "Dig Deep",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-452",
+      "name": "Fashion Battle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-451",
+      "name": "Draw The Line",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-455",
+      "name": "Fork N Sausage",
+      "status": 200,
+      "errors": [
+        "Error: [ReadHuffmanCodeLengths] space = 22528"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-453",
+      "name": "Find the Alien",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-454",
+      "name": "Flappy Dunk",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-458",
+      "name": "Guess Their Answer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-457",
+      "name": "Go Escape!",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-456",
+      "name": "Freekick Football",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-461",
+      "name": "Hide N Seek",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-460",
+      "name": "Harvest.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-459",
+      "name": "Gym Stack",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-462",
+      "name": "Hill Climb Racing Lite",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-463",
+      "name": "Kitchen Bazar",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-464",
+      "name": "Maze Speedrun",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-466",
+      "name": "Om Nom Run",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-465",
+      "name": "Mob Control HTML5",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-467",
+      "name": "Pac-Man SuperFast",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 18,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-468",
+      "name": "Parking Rush",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-470",
+      "name": "Pou",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-469",
+      "name": "Pokey Ball",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-471",
+      "name": "Race Master 3D",
+      "status": 200,
+      "errors": [
+        "Error: [ReadHuffmanCodeLengths] space = 22528"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-473",
+      "name": "Scooter Xtreme",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-472",
+      "name": "Room Sort",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-474",
+      "name": "Slice It All!",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 3
+    },
+    {
+      "id": "platinum-475",
+      "name": "Slime.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-477",
+      "name": "State.io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-478",
+      "name": "Stealth Master",
+      "status": 200,
+      "errors": [
+        "Error: [ReadHuffmanCodeLengths] space = 22528"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-476",
+      "name": "Stacky Dash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-479",
+      "name": "Supreme Duelist",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-480",
+      "name": "Sushi Roll",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-481",
+      "name": "Sword Play",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-482",
+      "name": "Table Tennis World Tour",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-483",
+      "name": "Tall Man Run",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-485",
+      "name": "Tiletopia",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-484",
+      "name": "Texas Hold'em Poker",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-486",
+      "name": "Tower Crash 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-487",
+      "name": "Trivia Crack",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "platinum-488",
+      "name": "Turbo Stars",
+      "status": 200,
+      "errors": [
+        "Error: [ReadHuffmanCodeLengths] space = 22528"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-489",
+      "name": "Aquapark Io",
+      "status": 200,
+      "errors": [
+        "Unknown data format (id=\"k\")"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-490",
+      "name": "Balloon Paradise",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-491",
+      "name": "Bouncemasters",
+      "status": 200,
+      "errors": [
+        "TypeError: r.split is not a function"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-492",
+      "name": "City Smash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-493",
+      "name": "Dan The Man",
+      "status": 200,
+      "errors": [
+        "Error: Unexpected data size: game.projectc, expected size: 4426, actual size: 4199"
+      ],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-495",
+      "name": "Magic Tiles 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-496",
+      "name": "Match Triple 3D",
+      "status": 200,
+      "errors": [
+        "RangeError: Offset is outside the bounds of the DataView"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-494",
+      "name": "Fill The Fridge",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-497",
+      "name": "Mr Racer",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-498",
+      "name": "Royal Towers Medieval Td",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-499",
+      "name": "Soccer Dash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-500",
+      "name": "Solar Smash",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-501",
+      "name": "Stick War Legacy",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-502",
+      "name": "Tall Io",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "b638fb2c-53ec-4471-bf10-dba2e64181e3",
+      "name": "3D Bolt Master",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "c318ec53-8454-4f5c-86f6-8be7e075247c",
+      "name": "Baldi's Basics Plus",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "b6a0f763-5aa8-4a50-bee6-c50561c3dd4b",
+      "name": "Baldi's Basics",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "eab1a01f-db7f-4313-872b-3802d6e65621",
+      "name": "Baldi's Basics Classic Remastered",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "bc7d4d4d-4c9b-42d2-9703-ee90b70bfad1",
+      "name": "Hollow Knight",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "834b132d-5ce6-4c7b-a951-e00b28a12520",
+      "name": "Cuphead",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "92cab1f6-1692-4fc8-88c4-e39d5d10ccc8",
+      "name": "Five Nights at Freddy's",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "c38f1988-7064-411c-ad20-78ae7e942931",
+      "name": "Five Nights at Freddy's 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "4ab69ae3-911e-420d-9a45-3ade7df05610",
+      "name": "Five Nights at Freddy's 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "c2d64482-e609-4a7a-a4a1-de4f062e66bf",
+      "name": "Five Nights at Freddy's 4",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "c4aa72fd-ebbe-40c5-abfb-4d0b16db3b64",
+      "name": "Five Nights at Freddy's World",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "3a42425b-3d8e-41bb-9048-da23dcc71992",
+      "name": "Five Nights at Freddy's: Sister Location",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "74e33340-91de-474d-8246-5cf6c6262a84",
+      "name": "Five Nights at Freddy's: Freddy Fazbear's Pizzeria Simulator",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "708a2571-c211-4c14-9d6f-c188902af553",
+      "name": "Five Nights at Freddy's: Ultimate Custom Night",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "6f115dc7-59df-4827-807c-dd4795b16c37",
+      "name": "Speed Stars",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 2,
+      "surfaces": 0
+    },
+    {
+      "id": "2533f6de-9497-49ad-bdf5-e4289a576ce9",
+      "name": "Undertale",
+      "status": 200,
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'textContent')"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "add3bafd-5a11-4548-a829-1a515476c380",
+      "name": "Undertale Yellow",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "23b55bb5-1357-4e51-9a4d-5fc214c4b7bf",
+      "name": "People Playground",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "43c77057-0c10-413d-a435-c806fbf5a6c7",
+      "name": "Learn To Fly",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "53a25e80-ccd4-4d2a-871a-76977c3e1433",
+      "name": "Learn To Fly 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "1f721583-80ef-4616-bf39-cb8cc57e4579",
+      "name": "Learn To Fly 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "a7f7b781-915f-44ab-bda4-f889bf412d9b",
+      "name": "Five Nights at Diddys",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "67893766-2536-4de2-b203-2d9b9c92d67a",
+      "name": "Run",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "1b99117a-8775-4230-8df1-2c5f5abd0ea6",
+      "name": "Run 2",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "b5a114b3-4458-476b-afef-899f4d0e866f",
+      "name": "Run 3",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "7ea010e7-aba4-426d-b992-2f8c24bd40a0",
+      "name": "Ultrakill",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "27f2859f-78d3-4070-954d-9fb5fbed2807",
+      "name": "Google space",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 0
+    },
+    {
+      "id": "ea0aaacf-936d-4ae4-aed5-9737b7ebed8d",
+      "name": "Sonic Mania",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "187cae3e-882d-4db4-bd6d-7ef492581a62",
+      "name": "Slime Rancher",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "84219456-9b6d-4575-aef7-00480b12b1e1",
+      "name": "Flying Gorilla",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "3a5fda5c-212c-4887-a589-75619430b2da",
+      "name": "Balatro",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "a288d983-7339-4d2c-ae36-58e0714384fc",
+      "name": "Doomed.io",
+      "status": 200,
+      "errors": [
+        "Error: [Loader.load] Failed to load http://127.0.0.1:4010/games/platinum/cdn/doomed_io/f6b0809dd1f395240bc4.ttf.",
+        "TurnstileError: [Cloudflare Turnstile] Error: 110200."
+      ],
+      "failedRequests": 7,
+      "surfaces": 7
+    },
+    {
+      "id": "9f69dc08-0c86-4248-9b92-51cedf0f0414",
+      "name": "Revolution Idle",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "de27297b-47b8-44c3-930f-3cfd9daa6d53",
+      "name": "Slither.io (real)",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 7
+    }
+  ],
+  "retest": [
+    {
+      "id": "platinum-87",
+      "name": "tank trouble 2",
+      "status": 200,
+      "errors": [
+        "A call to screen.orientation.lock() or screen.orientation.unlock() canceled this call.",
+        "screen.orientation.lock() is not available on this device.",
+        "Unable to decode audio data"
+      ],
+      "failedRequests": 24,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-241",
+      "name": "Crossy Road",
+      "status": 200,
+      "errors": [
+        "Error: Ajax error for audio.zip : 404 Not Found"
+      ],
+      "failedRequests": 1,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-252",
+      "name": "Basketball Stars",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 4,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-323",
+      "name": "MotoX3M Pool",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-324",
+      "name": "MotoX3M Spooky",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 6,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-325",
+      "name": "MotoX3M Winter",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-334",
+      "name": "PolyBranch",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-353",
+      "name": "Stack Bump 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 10,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-438",
+      "name": "Bolly Beat",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-449",
+      "name": "Crossy Road",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 2
+    },
+    {
+      "id": "platinum-446",
+      "name": "Color Burst 3D",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "platinum-491",
+      "name": "Bouncemasters",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 0,
+      "surfaces": 1
+    },
+    {
+      "id": "2533f6de-9497-49ad-bdf5-e4289a576ce9",
+      "name": "Undertale",
+      "status": 200,
+      "errors": [],
+      "failedRequests": 1,
+      "surfaces": 1
+    }
+  ]
+}

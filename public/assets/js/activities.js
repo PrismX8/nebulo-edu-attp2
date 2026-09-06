@@ -23,7 +23,7 @@ fetch('/assets/data/activities.json')
 
     // Setup search input
     searchInput.type = 'text';
-    searchInput.placeholder = 'Search games...';
+    searchInput.placeholder = 'Search GΛMΞS...';
     if (searchInput.parentNode !== appsContainer.parentNode) {
       appsContainer.parentNode.insertBefore(searchInput, appsContainer);
     }
@@ -76,7 +76,7 @@ let scramjetControllerPromise = null;
 let argonServiceWorkerPromise = null;
 
 function normalizeProxyChoice(value) {
-  return value === "argon" || value === "sj" ? "ag" : value;
+  return value === "argon" ? "ag" : value;
 }
 
 function encodeArgonRoute(inputUrl) {
@@ -92,7 +92,10 @@ function encodeArgonRoute(inputUrl) {
   }
 }
 
-async function ensureArgonServiceWorker() {
+async function ensureArgonServiceWorker(targetUrl) {
+  if (typeof window.ensureArgonWorkerForTarget === "function") {
+    return window.ensureArgonWorkerForTarget(targetUrl);
+  }
   if (argonServiceWorkerPromise) return argonServiceWorkerPromise;
   argonServiceWorkerPromise = (async () => {
     if (!("serviceWorker" in navigator)) return false;
@@ -139,9 +142,9 @@ async function ensureScramjetController() {
     const { ScramjetController } = $scramjetLoadController();
     const controller = new ScramjetController({
       files: {
-        wasm: "/scram/scramjet.wasm.wasm",
-        all: "/scram/scramjet.all.js",
-        sync: "/scram/scramjet.sync.js",
+        wasm: "/c2/j/wasm.wasm",
+        all: "/c2/j/all.js",
+        sync: "/c2/j/sync.js",
       },
     });
     await controller.init();
@@ -196,6 +199,11 @@ function shouldForceScramjetForUrl(inputUrl) {
   );
 }
 
+function shouldForceArgonForUrl(inputUrl) {
+  const rules = window.NebuloProxyHostRules;
+  return Boolean(rules?.shouldForceArgonForUrl?.(inputUrl));
+}
+
 function shouldAvoidScramjetForUrl(inputUrl) {
   const rules = window.NebuloProxyHostRules;
   if (rules && typeof rules.shouldAvoidScramjetForUrl === "function") {
@@ -227,15 +235,15 @@ function normalizeExistingProxyTarget(inputUrl) {
   const raw = (typeof inputUrl === "string" ? inputUrl : String(inputUrl || "")).trim();
   if (!raw) return raw;
 
-  const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
-  const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/eclipse/";
+  const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/a3/s/";
+  const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/b7/s/";
   const isAlreadyProxiedPath = (p) =>
     p.startsWith(uvPrefix) ||
     p.startsWith(eclipsePrefix) ||
     p.startsWith("/ag/") ||
-    p.startsWith("/scram/service/") ||
-    p.startsWith("/service/scramjet/") ||
-    p.startsWith("/scramjet/");
+    p.startsWith("/c2/s/") ||
+    p.startsWith("/c2/j/") ||
+    p.startsWith("/c2/j/");
 
   if (raw.startsWith("/") && isAlreadyProxiedPath(raw)) return raw;
 
@@ -268,9 +276,9 @@ function encodeScramjetRoute(inputUrl) {
     if (u.protocol !== "http:" && u.protocol !== "https:") return raw;
     const hash = u.hash ? u.hash.slice(1) : "";
     u.hash = "";
-    return "/scramjet/" + encodeURIComponent(u.href) + (hash ? "#" + encodeURIComponent(hash) : "");
+    return "/c2/j/" + encodeURIComponent(u.href) + (hash ? "#" + encodeURIComponent(hash) : "");
   } catch {
-    return "/scramjet/" + encodeURIComponent(raw);
+    return "/c2/j/" + encodeURIComponent(raw);
   }
 }
 
@@ -278,35 +286,30 @@ async function encodeWithSelectedProxy(absoluteUrl, overrideProxy) {
   const raw = normalizeExistingProxyTarget(absoluteUrl);
   if (!raw) return raw;
 
-  const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/uv/service/";
-  const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/eclipse/";
+  const uvPrefix = (typeof __uv$config !== "undefined" && __uv$config?.prefix) ? __uv$config.prefix : "/a3/s/";
+  const eclipsePrefix = (typeof __eclipse$config !== "undefined" && __eclipse$config?.prefix) ? __eclipse$config.prefix : "/b7/s/";
   const isAlreadyProxied =
     raw.startsWith(uvPrefix) ||
     raw.startsWith(eclipsePrefix) ||
     raw.startsWith("/ag/") ||
-    raw.startsWith("/scram/service/") ||
-    raw.startsWith("/service/scramjet/") ||
-    raw.startsWith("/scramjet/");
+    raw.startsWith("/c2/s/") ||
+    raw.startsWith("/c2/j/") ||
+    raw.startsWith("/c2/j/");
   if (raw.startsWith("/") && !isAlreadyProxied) return raw;
   if (isAlreadyProxied) return raw;
 
   const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-  const forced = (!overrideProxy && (!savedProxy || savedProxy === "sj") && shouldForceScramjetForUrl(raw)) ? "sj" : null;
-  const isForcedSj = forced === "sj";
-  let proxy = normalizeProxyChoice(overrideProxy) || savedProxy || "uv";
-  if (forced) proxy = forced;
-  if (proxy === "sj" && shouldAvoidScramjetForUrl(raw)) proxy = "uv";
+  const proxy = shouldForceArgonForUrl(absoluteUrl) ? "ag" : (savedProxy || "ag");
 
   if (proxy === "ag") {
-    await ensureArgonServiceWorker();
+    await ensureArgonServiceWorker(raw);
     return encodeArgonRoute(raw);
   }
 
   if (proxy === "sj") {
-    const scram = await ensureScramjetController();
-    if (scram && typeof scram.encodeUrl === "function") return scram.encodeUrl(raw);
-    if (isForcedSj) return encodeScramjetRoute(raw);
-    return encodeViaUv(raw);
+      const scram = await ensureScramjetController();
+      if (scram && typeof scram.encodeUrl === "function") return scram.encodeUrl(raw);
+      return encodeScramjetRoute(raw);
   }
 
   if (proxy === "ec") {

@@ -1,8 +1,22 @@
 const dotenv = require('dotenv');
 const path = require('path');
+const crypto = require('crypto');
 
 // Load environment variables from .env file
 dotenv.config();
+
+const weakJwtSecrets = new Set(['secret', 'default_secret', 'change_me', 'changeme', 'password']);
+const configuredJwtSecret = String(process.env.JWT_SECRET || '').trim();
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isProduction && (!configuredJwtSecret || weakJwtSecrets.has(configuredJwtSecret.toLowerCase()) || configuredJwtSecret.length < 32)) {
+  throw new Error('JWT_SECRET must be set to a strong random value in production.');
+}
+
+const jwtSecret = configuredJwtSecret || crypto.randomBytes(48).toString('hex');
+if (!configuredJwtSecret && !isProduction) {
+  console.warn('JWT_SECRET is not set. Using a temporary development secret for this server process.');
+}
 
 module.exports = {
   // Server Configuration
@@ -13,54 +27,12 @@ module.exports = {
   mongoURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/k-chat',
   
   // JWT Configuration
-  jwtSecret: process.env.JWT_SECRET,
+  jwtSecret,
   jwtExpiration: '24h',
   
   // File Storage Configuration
   uploadPath: process.env.UPLOAD_PATH || './uploads',
-  
-  // Azure Blob Storage Configuration
-  azure: {
-    storageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
-    blobContainer: process.env.AZURE_BLOB_CONTAINER,
-  },
-  
-  // OpenAI Configuration for AI Integration
-  openai: {
-    endpoint: process.env.AZURE_OPENAI_ENDPOINT,
-    apiKey: process.env.AZURE_OPENAI_API_KEY,
-    deploymentGpt4o: process.env.AZURE_OPENAI_DEPLOYMENT_GPT4O,
-    deploymentO3Mini: process.env.AZURE_OPENAI_DEPLOYMENT_O3MINI,
-    apiVersion: process.env.AZURE_OPENAI_API_VERSION,
-  },
-  
-  // Telegram Bot Configuration
-  telegram: {
-    apiId: process.env.API_ID,
-    apiHash: process.env.API_HASH,
-    botToken: process.env.BOT_TOKEN,
-  },
-  
-  // Azure Search Configuration
-  azureSearch: {
-    endpoint: process.env.AZURE_SEARCH_ENDPOINT,
-    key: process.env.AZURE_SEARCH_KEY,
-    index: process.env.AZURE_SEARCH_INDEX,
-  },
-  
-  // Azure Cosmos DB Configuration
-  cosmos: {
-    url: process.env.COSMOS_URL,
-    key: process.env.COSMOS_KEY,
-    database: process.env.COSMOS_DB,
-    container: process.env.COSMOS_DB_CONTAINER,
-  },
-  
-  // Azure Key Vault Configuration
-  keyVault: {
-    url: process.env.KEY_VAULT_URL,
-  },
-  
+
   // GitHub Configuration
   github: {
     token: process.env.GITHUB_TOKEN,

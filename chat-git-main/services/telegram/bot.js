@@ -52,11 +52,11 @@ async function startBot(messageHandler) {
 
   // Handle commands
   bot.command('start', async (ctx) => {
-    await ctx.reply('Welcome to K-Chat! Send me a message to get started.');
+    await ctx.reply('Welcome to UBG Chat! Send me a message to get started.');
   });
 
   bot.command('help', async (ctx) => {
-    await ctx.reply('K-Chat Bot Help:\n\n' +
+    await ctx.reply('UBG Chat Bot Help:\n\n' +
       'Just send me any message to chat.\n' +
       'Use /start to restart the conversation.\n' +
       'Use /help to see this message.');

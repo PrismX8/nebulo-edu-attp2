@@ -4,7 +4,7 @@
 // we fall back to native fetch (when possible) or return a synthetic 204/400 response
 // instead of throwing (which spams the console and breaks page loads).
 //
-// Served at /baremux/worker.js via an explicit Fastify route (see app.js).
+// Served at /d5/worker.js via an explicit Fastify route (see app.js).
 
 /* eslint-disable no-console */
 

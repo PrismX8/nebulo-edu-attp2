@@ -6,9 +6,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // OpenBullet2 API configuration
-const apiBaseUrl = process.env.OPENBULLET_API_URL || 'http://localhost:5000/api';
+const apiBaseUrl = process.env.OPENBULLET_API_URL || 'http://localhost:5000';
 const apiKey = process.env.OPENBULLET_API_KEY;
 const webhookSecret = process.env.OPENBULLET_WEBHOOK_SECRET;
+
+if (!process.env.OPENBULLET_API_URL) {
+  console.warn('OPENBULLET_API_URL not configured, defaulting OpenBullet2 API base URL to http://localhost:5000');
+}
 
 // Configure axios instance
 const obApi = axios.create({

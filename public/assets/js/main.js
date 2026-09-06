@@ -5,11 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	let scramjet = null;
 	let scramjetInitPromise = null;
 	let argonServiceWorkerPromise = null;
+	let baremuxInitPromise = null;
+	let serviceWorkerInitPromise = null;
 
 	let baremuxConnection = null;
 
 	function normalizeProxyChoice(value) {
-		return value === "argon" || value === "sj" ? "ag" : value;
+		return value === "argon" ? "ag" : value;
 	}
 
 	function encodeArgonRoute(url) {
@@ -73,9 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// === BareMux init (only once per session) ===
 	async function initBareMux() {
+		if (baremuxInitPromise) return baremuxInitPromise;
+		baremuxInitPromise = (async () => {
 		try {
 			if (baremuxConnection) return baremuxConnection;
-			baremuxConnection = new BareMux.BareMuxConnection("/baremux/worker.js?v=bw1");
+			baremuxConnection = new BareMux.BareMuxConnection("/d5/worker.js?v=bw1");
 			const wispUrl =
 				(location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
 
@@ -83,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			localStorage.setItem("transport", transport);
 
 			const expectedTransport =
-				transport === "libcurl" ? "/libcurl/index.mjs" : "/epoxy/index.mjs";
+				transport === "libcurl" ? "/f1/index.mjs" : "/e9/index.mjs";
 
 			if ((await baremuxConnection.getTransport()) !== expectedTransport) {
 				await baremuxConnection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
@@ -95,20 +99,32 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		} catch (err) {
 			console.error("An error occurred while setting up BareMux:", err);
+			baremuxConnection = null;
+			baremuxInitPromise = null;
 		}
+		return baremuxConnection;
+		})();
+		return baremuxInitPromise;
 	}
 
 	// === Service Worker (register once if missing) ===
 	async function initServiceWorker() {
+		if (serviceWorkerInitPromise) return serviceWorkerInitPromise;
+		serviceWorkerInitPromise = (async () => {
 		try {
-			const reg = await navigator.serviceWorker.getRegistration();
-			if (!reg) {
-				navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" });
+			let reg = await navigator.serviceWorker.getRegistration();
+			if (!reg || !reg.active || !reg.active.scriptURL.includes("/sw.js")) {
+				reg = await navigator.serviceWorker.register("/sw.js", { updateViaCache: "all" });
 				console.log("Registering service worker...");
 			}
+			return reg;
 		} catch (err) {
 			console.error("Service worker registration failed:", err);
+			serviceWorkerInitPromise = null;
+			return null;
 		}
+		})();
+		return serviceWorkerInitPromise;
 	}
 
 	async function ensureScramjet() {
@@ -120,9 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				const { ScramjetController } = $scramjetLoadController();
 				const controller = new ScramjetController({
 					files: {
-						wasm: "/scram/scramjet.wasm.wasm",
-						all: "/scram/scramjet.all.js",
-						sync: "/scram/scramjet.sync.js",
+						wasm: "/c2/j/wasm.wasm",
+						all: "/c2/j/all.js",
+						sync: "/c2/j/sync.js",
 					},
 				});
 				await controller.init();
@@ -319,8 +335,12 @@ if (form && input) {
 
 		// --- Search engine fallback ---
 		if (!isUrl(url)) {
-			const engine = localStorage.getItem("searchEngine") || "duckduckgo";
-			switch (engine) {
+			const proxy = normalizeProxyChoice(localStorage.getItem("proxy")) || "ag";
+			if (proxy === "ag") {
+				url = "https://duckduckgo.com/?q=" + encodeURIComponent(url);
+			} else {
+				const engine = localStorage.getItem("searchEngine") || "duckduckgo";
+				switch (engine) {
 				case "brave":
 					url = "https://search.brave.com/search?q=" + url;
 					break;
@@ -345,6 +365,7 @@ if (form && input) {
 				default:
 					url = "https://duckduckgo.com/?t=h_&q=" + url;
 					break;
+				}
 			}
 		} else if (!url.startsWith("https://") && !url.startsWith("http://")) {
 			url = `https://${url}`;
@@ -352,16 +373,8 @@ if (form && input) {
 
 		// --- Existing encoding logic ---
 		const savedProxy = normalizeProxyChoice(localStorage.getItem("proxy"));
-		let proxy = savedProxy || "uv";
-		try {
-			const rules = window.NebuloProxyHostRules;
-			if ((!savedProxy || savedProxy === "sj") && rules && typeof rules.shouldForceScramjetForUrl === "function" && rules.shouldForceScramjetForUrl(url)) {
-				proxy = "sj";
-			}
-			if (proxy === "sj" && rules && typeof rules.shouldAvoidScramjetForUrl === "function" && rules.shouldAvoidScramjetForUrl(url)) {
-				proxy = "uv";
-			}
-		} catch {}
+		const hostRules = window.NebuloProxyHostRules;
+		let proxy = hostRules?.shouldForceArgonForUrl?.(url) ? "ag" : (savedProxy || "ag");
 		// Legacy/unsupported proxy modes (ex: "rh") can produce broken hvtrs paths.
 		if (!["uv", "sj", "ec", "ag"].includes(proxy)) {
 			proxy = "uv";
@@ -394,18 +407,9 @@ if (form && input) {
 		input.placeholder = lastDecodedUrl;
 	}
 
-	// === Lazy init background tasks ===
-window.addEventListener("load", () => {
-	const warm = () => {
-		initBareMux();
-		initServiceWorker();
-	};
-	if ("requestIdleCallback" in window) {
-		requestIdleCallback(warm, { timeout: 1500 });
-	} else {
-		setTimeout(warm, 0);
-	}
-});
+	// Start runtime setup while the user is typing instead of on first navigation.
+	initServiceWorker();
+	initBareMux();
 });
 
 window.addEventListener("setting-changed", ({ detail }) => {

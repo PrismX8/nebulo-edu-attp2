@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const userStore = require('../auth/localStore');
+const config = require('../../config/config');
 
 /**
  * Generate a secure random password
@@ -34,7 +35,7 @@ function generateToken(user) {
 
   return jwt.sign(
     payload,
-    process.env.JWT_SECRET || 'default_secret',
+    config.jwtSecret,
     { expiresIn: '30d' }
   );
 }

@@ -44,10 +44,10 @@ export const slashCommands = [
 
 export const fallbackEffects = [
   { id: 'none',       name: 'None',       price: 0,  description: 'No message effect.', roomDurationMs: 0 },
-  { id: 'flashbands', name: 'Flashbands', price: 6,  description: 'A blinding full-screen flash washes over the room, then slowly fades away.', roomDurationMs: 6500 },
-  { id: 'scramble',   name: 'Scramble',   price: 8,  description: 'Glitchy jitter with broken neon shadows.', roomDurationMs: 8000 },
-  { id: 'embers',     name: 'Embers',     price: 9,  description: 'A hot orange glow with pulsing heat.', roomDurationMs: 8500 },
-  { id: 'frostbyte',  name: 'Frostbyte',  price: 10, description: 'Icy highlights and a pale blue shimmer.', roomDurationMs: 8500 },
-  { id: 'matrix',     name: 'Matrix',     price: 12, description: 'A room-wide storm of glowing green number rain.', roomDurationMs: 10000 },
-  { id: 'starlight',  name: 'Starlight',  price: 14, description: 'Soft cosmic shimmer with a brighter edge.', roomDurationMs: 9000 }
+  { id: 'flashbands', name: 'Flashbands', price: 150, description: 'A blinding full-screen flash washes over the room, then slowly fades away.', roomDurationMs: 6500 },
+  { id: 'scramble',   name: 'Scramble',   price: 150, description: 'Glitchy jitter with broken neon shadows.', roomDurationMs: 8000 },
+  { id: 'embers',     name: 'Embers',     price: 150, description: 'A hot orange glow with pulsing heat.', roomDurationMs: 8500 },
+  { id: 'frostbyte',  name: 'Frostbyte',  price: 150, description: 'Icy highlights and a pale blue shimmer.', roomDurationMs: 8500 },
+  { id: 'matrix',     name: 'Matrix',     price: 150, description: 'A room-wide storm of glowing green number rain.', roomDurationMs: 10000 },
+  { id: 'starlight',  name: 'Starlight',  price: 150, description: 'Soft cosmic shimmer with a brighter edge.', roomDurationMs: 9000 }
 ];

@@ -9,6 +9,7 @@
   <meta property="og:title" content="Nebulo Education Plus - Educational Algebra Practice Tests">
   <meta property="og:description" content="Step into a dedicated math site built around educational algebra practice tests designed to enhance advanced math skills.">
 <title>Settings - Nebulo OS</title>
+  <script src="/assets/js/identity-mask.js" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -189,6 +190,48 @@ body {
   border-color: var(--stroke2);
   box-shadow: var(--shadow-sm);
 }
+.account-profile-grid {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.account-avatar-preview {
+  width: 116px;
+  height: 116px;
+  border-radius: 28px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--stroke2);
+  background: linear-gradient(145deg, rgba(125, 211, 192, 0.18), rgba(96, 165, 250, 0.12));
+  color: var(--accent);
+  font-size: 36px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+.account-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.account-identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+.account-identity strong { font-size: 20px; }
+.account-identity span { color: var(--text-secondary); font-size: 13px; }
+.account-status {
+  min-height: 20px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
 .card-header {
   margin-bottom: 20px;
 }
@@ -347,6 +390,17 @@ select.form-control {
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(125, 211, 192, 0.3);
 }
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border-color: var(--stroke);
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border-color: var(--stroke2);
+  transform: translateY(-1px);
+}
 .btn-danger {
   background: rgba(255, 92, 122, 0.2);
   color: var(--danger);
@@ -424,6 +478,9 @@ select.form-control {
     width: 100%;
     justify-content: center;
   }
+  .account-profile-grid {
+    grid-template-columns: 1fr;
+  }
 }
 /* Particles Background */
 #particles-js {
@@ -465,7 +522,13 @@ select.form-control {
       <p>Customize your Nebulo experience</p>
     </div>
     <nav class="nav-list">
-      <div class="nav-item active" data-section="cloaking">
+      <div class="nav-item active" data-section="account">
+        <div class="nav-icon">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <span class="nav-text">Account</span>
+      </div>
+      <div class="nav-item" data-section="cloaking">
         <div class="nav-icon">
           <i class="fas fa-mask"></i>
         </div>
@@ -511,8 +574,54 @@ select.form-control {
   </aside>
   <!-- Main Content -->
   <main class="settings-content">
+    <section id="account" class="section active">
+      <div class="section-header">
+        <h2>Account Profile</h2>
+        <p>Choose the profile picture shown with your Nebulo chat account.</p>
+      </div>
+      <div id="account-signed-out" class="settings-card">
+        <div class="card-header">
+          <h3>Sign in to your account</h3>
+          <p>Your profile picture is saved to the profile belonging to this account.</p>
+        </div>
+        <form id="account-login-form">
+          <div class="form-group">
+            <label class="form-label" for="account-login-id">Email or username</label>
+            <input class="form-control" id="account-login-id" autocomplete="username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="account-login-password">Password</label>
+            <input class="form-control" id="account-login-password" type="password" autocomplete="current-password" required>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" type="submit"><i class="fas fa-right-to-bracket"></i> Sign In</button>
+            <a class="btn btn-secondary" href="/kchat" style="text-decoration:none"><i class="fas fa-comments"></i> Open Chat</a>
+          </div>
+        </form>
+        <p id="account-login-status" class="account-status" role="status"></p>
+      </div>
+      <div id="account-profile-card" class="settings-card" hidden>
+        <div class="account-profile-grid">
+          <div id="account-avatar-preview" class="account-avatar-preview" aria-label="Current profile picture"><i class="fas fa-user"></i></div>
+          <div>
+            <div class="account-identity">
+              <strong id="account-profile-username">Nebulo user</strong>
+              <span id="account-profile-email"></span>
+            </div>
+            <p style="color:var(--text-muted);line-height:1.55;margin-bottom:16px">Images are centered, cropped square, and compressed before being saved.</p>
+            <input id="account-avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden>
+            <div class="btn-group">
+              <button class="btn btn-primary" id="account-avatar-choose" type="button"><i class="fas fa-image"></i> Choose Picture</button>
+              <button class="btn btn-danger" id="account-avatar-remove" type="button"><i class="fas fa-trash"></i> Remove</button>
+              <button class="btn btn-secondary" id="account-sign-out" type="button"><i class="fas fa-arrow-right-from-bracket"></i> Sign Out</button>
+            </div>
+            <p id="account-avatar-status" class="account-status" role="status"></p>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- Cloaking Section -->
-    <section id="cloaking" class="section active">
+    <section id="cloaking" class="section">
       <div class="section-header">
         <h2>Cloaking Settings</h2>
         <p>Hide your activities with advanced cloaking options</p>
@@ -761,6 +870,7 @@ select.form-control {
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script src="/assets/js/profile-avatar.js"></script>
 <script>
 const particlesConfig = {
   particles: {
@@ -809,6 +919,150 @@ const storage = {
   get: (key, defaultValue = null) => localStorage.getItem(key) ?? defaultValue,
   set: (key, value) => localStorage.setItem(key, value),
   getBool: (key, defaultValue = false) => localStorage.getItem(key) !== 'false' && (localStorage.getItem(key) === 'true' || defaultValue)
+};
+
+const accountRequest = async (url, options = {}) => {
+  const headers = { ...(options.headers || {}) };
+  const token = String(localStorage.getItem('token') || '').trim();
+  if (token) headers['x-auth-token'] = token;
+  let body = options.body;
+  if (body && typeof body === 'object') {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify(body);
+  }
+  const response = await fetch(url, { method: options.method || 'GET', headers, body });
+  let data = null;
+  try { data = await response.json(); } catch {}
+  if (!response.ok) {
+    const error = new Error(data?.msg || `Request failed (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+};
+
+const setAccountMessage = (element, message, type = 'info') => {
+  if (!element) return;
+  element.textContent = message || '';
+  element.style.color = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--text-secondary)';
+};
+
+const renderAccountProfile = (profile) => {
+  const signedOut = document.getElementById('account-signed-out');
+  const card = document.getElementById('account-profile-card');
+  const preview = document.getElementById('account-avatar-preview');
+  const username = document.getElementById('account-profile-username');
+  const email = document.getElementById('account-profile-email');
+  const remove = document.getElementById('account-avatar-remove');
+  if (!card || !signedOut || !preview) return;
+
+  signedOut.hidden = true;
+  card.hidden = false;
+  username.textContent = profile.username || 'Nebulo user';
+  email.textContent = profile.email || '';
+  const avatar = String(profile.avatar || profile.avatar_url || '').trim();
+  preview.replaceChildren();
+  if (avatar) {
+    const image = document.createElement('img');
+    image.src = avatar;
+    image.alt = `${profile.username || 'User'} profile picture`;
+    image.addEventListener('error', () => {
+      preview.innerHTML = '<i class="fas fa-user"></i>';
+    }, { once: true });
+    preview.appendChild(image);
+  } else {
+    preview.innerHTML = '<i class="fas fa-user"></i>';
+  }
+  if (remove) remove.disabled = !avatar;
+};
+
+const showAccountSignIn = (message = '') => {
+  const signedOut = document.getElementById('account-signed-out');
+  const card = document.getElementById('account-profile-card');
+  if (signedOut) signedOut.hidden = false;
+  if (card) card.hidden = true;
+  setAccountMessage(document.getElementById('account-login-status'), message, message ? 'error' : 'info');
+};
+
+const loadAccountProfile = async () => {
+  if (!localStorage.getItem('token')) {
+    showAccountSignIn();
+    return null;
+  }
+  try {
+    const data = await accountRequest('/api/account/profile');
+    renderAccountProfile(data.profile);
+    return data.profile;
+  } catch (error) {
+    showAccountSignIn(error.message);
+    return null;
+  }
+};
+
+const initAccountSettings = () => {
+  const loginForm = document.getElementById('account-login-form');
+  const fileInput = document.getElementById('account-avatar-file');
+  const avatarStatus = document.getElementById('account-avatar-status');
+
+  loginForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const identifier = document.getElementById('account-login-id')?.value.trim();
+    const password = document.getElementById('account-login-password')?.value || '';
+    const status = document.getElementById('account-login-status');
+    try {
+      setAccountMessage(status, 'Signing in…');
+      const data = await accountRequest('/api/auth', { method: 'POST', body: { username: identifier, email: identifier, password } });
+      if (data.token) localStorage.setItem('token', data.token);
+      if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+      const profile = await loadAccountProfile();
+      if (!profile) throw new Error('This sign-in is not linked to a database profile. Use the account email if the username also exists locally.');
+      loginForm.reset();
+      setAccountMessage(avatarStatus, 'Signed in.', 'success');
+    } catch (error) {
+      setAccountMessage(status, error.message, 'error');
+    }
+  });
+
+  document.getElementById('account-avatar-choose')?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    try {
+      setAccountMessage(avatarStatus, 'Cropping and compressing image…');
+      const avatar = await window.NebuloProfileAvatar.prepareAvatarFile(file);
+      setAccountMessage(avatarStatus, 'Saving to your profile…');
+      const data = await accountRequest('/api/account/profile/avatar', { method: 'PUT', body: { avatar } });
+      renderAccountProfile(data.profile);
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...currentUser, ...data.user, avatar: data.profile.avatar }));
+      setAccountMessage(avatarStatus, data.msg || 'Profile picture updated.', 'success');
+    } catch (error) {
+      setAccountMessage(avatarStatus, error.message, 'error');
+    } finally {
+      fileInput.value = '';
+    }
+  });
+
+  document.getElementById('account-avatar-remove')?.addEventListener('click', async () => {
+    try {
+      setAccountMessage(avatarStatus, 'Removing profile picture…');
+      const data = await accountRequest('/api/account/profile/avatar', { method: 'PUT', body: { avatar: null } });
+      renderAccountProfile(data.profile);
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...currentUser, ...data.user, avatar: null, avatar_url: null }));
+      setAccountMessage(avatarStatus, data.msg || 'Profile picture removed.', 'success');
+    } catch (error) {
+      setAccountMessage(avatarStatus, error.message, 'error');
+    }
+  });
+
+  document.getElementById('account-sign-out')?.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    showAccountSignIn('Signed out.');
+  });
+
+  void loadAccountProfile();
 };
 
 const getUsedSecretCodes = () => {
@@ -901,6 +1155,7 @@ const initSettings = () => {
   clickoffToggle.checked = storage.getBool('clickoff', true);
   abToggle.addEventListener('change', () => notifyChange('ab', String(abToggle.checked)));
   clickoffToggle.addEventListener('change', () => notifyChange('clickoff', String(clickoffToggle.checked)));
+
   if (activateAbCloakBtn) {
     activateAbCloakBtn.addEventListener('click', () => {
       if (!abToggle.checked) {
@@ -1005,7 +1260,7 @@ const initSettings = () => {
   const engineSelect = document.getElementById('engine-select');
   const particlesSelect = document.getElementById('particles-select');
   themeSelect.value = storage.get('theme', 'default');
-  proxySelect.value = storage.get('proxy', 'sj');
+  proxySelect.value = storage.get('proxy', 'ag');
   transportSelect.value = storage.get('transport', 'libcurl');
   engineSelect.value = storage.get('searchEngine', 'duckduckgo');
   particlesSelect.value = storage.get('particles', 'true');
@@ -1196,11 +1451,14 @@ const importSettings = () => {
 document.getElementById('export-btn').addEventListener('click', exportSettings);
 document.getElementById('import-btn').addEventListener('click', importSettings);
 // Initialize on load
-document.addEventListener('DOMContentLoaded', initSettings);
+document.addEventListener('DOMContentLoaded', () => {
+  initSettings();
+  initAccountSettings();
+});
 
 // Send initial proxy to service worker
 if ('serviceWorker' in navigator) {
-    const proxy = localStorage.getItem('proxy') || 'ag'; // or your default
+    const proxy = localStorage.getItem('proxy') || 'ag';
     navigator.serviceWorker.ready.then(reg => {
         reg.active?.postMessage({ type: 'set-proxy', proxy });
     });
