@@ -6883,7 +6883,7 @@ export function createChatUi(deps) {
     // chronological re-sort. The full sort only happens when a real server
     // response (or new history) arrives, which keeps the send feeling instant.
     state.messages.push(optimisticMsg);
-    if (id) animatedMessageIds.add(id);
+    animatedMessageIds.add(optimisticMsg._id);
     state.lastMessagesSignature = getMessagesSignature(state.messages);
     state.smoothNextMessageScroll = true;
     renderMessages();

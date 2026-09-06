@@ -408,6 +408,7 @@ async function getAdminStats() {
 }
 
 module.exports = {
+  getPool,
   query,
   transaction,
   findAccountByIdentifier,

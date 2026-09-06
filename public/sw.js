@@ -705,7 +705,7 @@ function createModifiedFetchEvent(originalEvent, newRequest) {
 
 function gracefulNetworkFailure(event, err) {
     try {
-        console.warn("SW network error:", err?.message);
+        console.warn("Browsing request failed");
         return new Response(
             "Upstream network failure.",
             {

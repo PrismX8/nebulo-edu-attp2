@@ -122,9 +122,32 @@ function getCounts() {
   };
 }
 
+function enrichUsers(resolveProfile) {
+  const snapshot = getCounts();
+  if (typeof resolveProfile !== 'function') return snapshot;
+  for (const roomUsers of Object.values(snapshot.users || {})) {
+    if (!Array.isArray(roomUsers)) continue;
+    roomUsers.forEach((user) => {
+      const profile = resolveProfile(user) || null;
+      if (!profile) return;
+      if (!user.userId) user.userId = String(profile.userId || profile._id || profile.id || '');
+      if (!user.avatar) user.avatar = profile.avatar || profile.avatar_url || '';
+      if (!user.role) user.role = profile.role || '';
+      user.is_owner = !!(user.is_owner || profile.is_owner);
+      user.is_premium = !!(user.is_premium || profile.is_premium);
+      user.is_booster = !!(user.is_booster || profile.is_booster);
+      user.equippedEffect = user.equippedEffect !== 'none' ? user.equippedEffect : (profile.equippedEffect || 'none');
+      user.equippedAvatarEffect = user.equippedAvatarEffect !== 'none' ? user.equippedAvatarEffect : (profile.equippedAvatarEffect || 'none');
+      user.equippedTag = user.equippedTag !== 'none' ? user.equippedTag : (profile.equippedTag || 'none');
+    });
+  }
+  return snapshot;
+}
+
 module.exports = {
   PRESENCE_STATUSES: [...PRESENCE_STATUSES],
   touch,
   remove,
-  getCounts
+  getCounts,
+  enrichUsers
 };

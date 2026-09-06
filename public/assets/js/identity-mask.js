@@ -34,11 +34,18 @@
     for (const pattern of PROXY_PATTERNS) {
       out = out.replace(pattern, REDACTED);
     }
+    // Console messages should not disclose browsing destinations or encoded
+    // upstream paths. This covers application logs; browser-owned Network and
+    // Sources panels remain outside page JavaScript's control.
+    out = out
+      .replace(/\/ag\/(?:https?|wss?)\/[^\s"'<>]+/gi, "[resource]")
+      .replace(/(?:https?|wss?):\/\/[^\s"'<>]+/gi, "[resource]");
     return out;
   }
 
   function maskArg(arg) {
     if (typeof arg === "string") return maskString(arg);
+    if (arg instanceof Error) return maskString(arg.message || String(arg));
     if (arg && typeof arg === "object") {
       try {
         const json = JSON.stringify(arg);

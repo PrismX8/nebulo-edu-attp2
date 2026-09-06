@@ -106,7 +106,7 @@
       // proxy a second time. The injected runtime still rewrites dynamic URLs.
       return true;
     })().catch((error) => {
-      console.warn("Could not prepare the Argon worker for", target.host, error);
+      console.warn("Could not prepare the browsing worker", error?.message || "runtime error");
       return false;
     }).finally(() => {
       argonWorkerPromises.delete(scope);
@@ -260,7 +260,7 @@
     }
 
     // eslint-disable-next-line no-console
-    console.warn("proxy-runtime: running automatic repair:", reason);
+    console.warn("Browsing runtime: running automatic repair");
     await clearProxyRuntimeData();
 
     // Hard reload to ensure SW + workers are recreated cleanly.

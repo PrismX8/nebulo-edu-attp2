@@ -119,11 +119,22 @@ const moderationExamples = [
   'Example allow 1: message="that game was wild lol" => {"allowed":true,"severity":"low","reasons":[],"suggestions":[],"rewritten":"that game was wild lol"}',
   'Example allow 2: message="this is fucking crazy" (not directed at a person) => {"allowed":true,"severity":"low","reasons":[],"suggestions":[],"rewritten":"this is fucking crazy"}',
   'Example allow 3: message="you are a dumb bitch" => {"allowed":true,"severity":"low","reasons":[],"suggestions":[],"rewritten":"you are a dumb bitch"}',
+  'Example allow 4: message="we were talking about sex education" => {"allowed":true,"severity":"low","reasons":[],"suggestions":[],"rewritten":"we were talking about sex education"}',
   'Example block 2: message="537 cherryhill road" => {"allowed":false,"severity":"high","reasons":["Potential personal address/doxxing content detected"],"suggestions":["Do not share street addresses or personal location info."],"rewritten":"Please remove address-like personal information."}',
   'Example block 3: message="kill yourself" => {"allowed":false,"severity":"high","reasons":["Self-harm encouragement detected"],"suggestions":["Do not encourage self-harm."],"rewritten":"Please remove harmful language."}',
   'Example block 4: message containing racial hate or n-word variants => {"allowed":false,"severity":"high","reasons":["Racist hate speech detected"],"suggestions":["Remove racist content."],"rewritten":"Message blocked by moderation."}',
   'Example block 5: message containing pornography, requests for nude images, or links described as NSFW => {"allowed":false,"severity":"high","reasons":["Pornographic or explicit sexual content detected"],"suggestions":["Remove pornographic or explicit sexual content."],"rewritten":"Message blocked by moderation."}'
 ].join("\n");
+
+const ordinaryProfanity = new Set([
+  "ass", "asshole", "bastard", "bitch", "bullshit", "crap", "cunt", "damn",
+  "dick", "fuck", "fucking", "hell", "motherfucker", "piss", "pussy", "shit"
+]);
+
+function isOrdinaryProfanityTerm(value = "") {
+  const normalized = normalizeModerationText(value).spaced;
+  return ordinaryProfanity.has(normalized);
+}
 const moderationConfusables = new Map(Object.entries({
   "а": "a", "ɑ": "a", "α": "a", "à": "a", "á": "a", "â": "a", "ã": "a", "ä": "a",
   "е": "e", "ε": "e", "ё": "e", "è": "e", "é": "e", "ê": "e", "ë": "e",
@@ -208,7 +219,7 @@ function shouldBlockBySeverity(severity) {
 }
 
 function isCriticalModerationReason(reason = "") {
-  return /(racis|racial|n-word|protected-class hate|credible threat|threat|dox|address|self-harm|suicide|credential|scam|phish|sexual|porn|nudity|nude|nsfw|explicit|minor|child|exploit|bomb|swat|spam|flood)/i.test(String(reason || ""));
+  return /(racis|racial|n-word|protected-class hate|credible threat|threat|dox|address|self-harm|suicide|credential|scam|phish|pornograph|graphic sexual|explicit sexual|sexual exploit|minor|child|bomb|swat|spam|flood)/i.test(String(reason || ""));
 }
 
 function mergeUniqueStrings(listA = [], listB = []) {
@@ -903,7 +914,7 @@ function ruleModerateText(body = "") {
 
   if (useBlockedWords) {
     const blocked = getMatchedBlockedWord(text);
-    if (blocked) {
+    if (blocked && !isOrdinaryProfanityTerm(blocked)) {
       reasons.push(`Contains blocked term: "${blocked}"`);
       suggestions.push("Remove blocked terms and retry.");
     }
@@ -943,10 +954,14 @@ function ruleModerateText(body = "") {
     suggestions.push("Remove exploitative sexual content involving minors.");
   }
 
-  if (/\b(?:porn(?:ography|ographic)?|hentai|nsfw|xxx|nudes?|explicit\s+sex(?:ual)?(?:\s+content)?|sex\s+tape|onlyfans\s+leaks?)\b/i.test(lower) ||
-      /(?:pornography|pornographic|porn|hentai|nsfw|xxx|nudes?|explicitsexualcontent|sextape|onlyfansleaks?)/i.test(normalized.compact)) {
+  const adultMediaTerms = '(?:porn(?:ography|ographic)?|hentai|nsfw|xxx|nudes?|explicit\\s+sex(?:ual)?(?:\\s+content)?|sex\\s+tape|onlyfans\\s+leaks?)';
+  const sexualSolicitation = new RegExp(
+    `(?:\\b(?:send|show|share|post|trade|buy|sell|leak|request|upload|download|dm\\s+me|looking\\s+for)\\b.{0,40}\\b${adultMediaTerms}\\b|\\b${adultMediaTerms}\\b.{0,40}\\b(?:link|site|download|send|share|trade|buy|sell|leak)\\b)`,
+    'i'
+  );
+  if (sexualSolicitation.test(lower) || sexualSolicitation.test(normalized.spaced)) {
     reasons.push("Pornographic or explicit sexual content detected");
-    suggestions.push("Remove pornographic or explicit sexual content.");
+    suggestions.push("Remove requests for or distribution of explicit sexual media.");
   }
 
   if (looksLikeAddress(text)) {

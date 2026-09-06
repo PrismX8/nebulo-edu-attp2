@@ -3,6 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    window.nebuloMobileEntry = matchMedia('(max-width: 820px)').matches
+      || navigator.userAgentData?.mobile === true
+      || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      || (navigator.maxTouchPoints > 1 && matchMedia('(pointer: coarse)').matches);
+    if (window.nebuloMobileEntry) {
+      try { localStorage.setItem('nebuloFirstVisit', 'true'); } catch (_) {}
+      window.location.replace('/setup-v2');
+    }
+  </script>
+  <meta name="monetag" content="ebb7362c5a55e3234b2edb2a48916819">
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -57,7 +68,30 @@
       :root { --page: #202124; --heading: #bdc1c6; --text: #9aa0a6; --link: #8ab4f8; --button: #8ab4f8; --button-text: #202124; --icon: #9aa0a6; }
       .press-n-prompt { color: #ff6b63; }
     }
-    @media (max-width: 520px) { .error-shell { width: calc(100% - 48px); padding-top: 110px; } h1 { font-size: 24px; } }
+    @media (max-width: 820px) {
+      html, body { min-height: 100vh; min-height: 100dvh; }
+      .first-visit {
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: end center;
+        padding: max(24px, env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+      }
+      .first-visit-inner { max-width: 430px; }
+      .first-visit h1 { margin-bottom: 18px; font-size: clamp(46px, 18vw, 72px); }
+      .first-visit p { margin-bottom: 26px; font-size: 17px; line-height: 1.55; }
+      .continue-button { width: 100%; min-height: 54px; border-radius: 14px; font-size: 17px; }
+      .error-shell {
+        width: min(100% - 40px, 540px);
+        padding-top: max(76px, calc(env(safe-area-inset-top) + 52px));
+        padding-bottom: calc(28px + env(safe-area-inset-bottom));
+      }
+      .error-icon { width: 60px; height: 60px; margin-bottom: 28px; }
+      .error-icon::before { width: 60px; top: 28px; }
+      .error-icon::after { height: 60px; left: 28px; }
+      h1 { font-size: 24px; }
+      .error-shell p, .error-shell ul { font-size: 14px; }
+      .reload-button { min-width: 112px; min-height: 44px; margin-top: 36px; }
+    }
     @media (prefers-reduced-motion: reduce) { .press-n-prompt { animation: none; } }
   </style>
   <script defer src="https://cloud.umami.is/script.js" data-website-id="ac558ad5-a729-416f-846e-d59a418f77ac"></script>
@@ -66,6 +100,7 @@
   <main id="page"></main>
   <script>
     (() => {
+      if (window.nebuloMobileEntry) return;
       const STORAGE_KEY = 'nebuloFirstVisit';
       const SETUP_URL = '/setup-v2';
       const LOCAL_WORKER_URL = '/sw.js?v=20260831-tiktok-fast-feed-cache-29';

@@ -98,6 +98,11 @@
     .section-kicker { margin: 0 0 6px; color: var(--coral); font: 900 9px/1 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
     .section-intro h2 { margin: 0; font-size: clamp(28px, 4vw, 48px); line-height: .95; text-transform: uppercase; font-weight: 950; }
     .section-intro > span { color: var(--muted); font-size: 11px; }
+    .sponsor-slot { margin: 42px auto 0; padding-top: 14px; border-top: 1px solid var(--line); }
+    .sponsor-slot > span { display: block; margin-bottom: 6px; color: #74716b; font: 800 9px/1 ui-monospace, monospace; letter-spacing: .13em; text-align: center; text-transform: uppercase; }
+    .sponsor-link { display: flex; width: max-content; min-height: 30px; margin: 6px auto 0; padding: 7px 12px; align-items: center; justify-content: center; border: 1px solid rgba(181, 255, 59, .28); border-radius: 2px; background: rgba(181, 255, 59, .07); color: var(--lime); font: 800 10px/1 ui-monospace, monospace; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; transition: background .18s ease, border-color .18s ease, color .18s ease; }
+    .sponsor-link:hover { border-color: rgba(181, 255, 59, .58); background: rgba(181, 255, 59, .13); color: #e2ffb3; }
+    .sponsor-link:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
     .cabinet-section { margin-bottom: 43px; }
     .cabinet-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, 31vw); gap: 12px; overflow-x: auto; padding: 0 0 10px; scroll-snap-type: x proximity; scrollbar-color: var(--coral) #202020; }
     .cabinet-card { position: relative; min-height: 210px; padding: 0; overflow: hidden; border: 1px solid var(--line); background: var(--raised); color: var(--paper); text-align: left; cursor: pointer; scroll-snap-align: start; }
@@ -205,7 +210,12 @@
     @media (max-width: 1180px) { .game-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
     @media (max-width: 920px) { .stage { grid-template-columns: minmax(0, 1fr) 260px; } .game-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 760px) {
-      .site-head { min-height: 62px; }
+      html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+      .shell { padding: 0 12px calc(88px + env(safe-area-inset-bottom)); }
+      .site-head { min-height: calc(58px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); }
+      .head-actions { gap: 6px; }
+      .chat-link, .setup-link { min-height: 44px; padding-inline: 12px; font-size: 10px; box-shadow: none; }
+      .chat-link::before { display: none; }
       .stage { min-height: 0; margin: 14px 0 30px; display: block; }
       .feature { min-height: 330px; }
       .feature::before { background: linear-gradient(0deg, rgba(7,7,7,.97), rgba(7,7,7,.18) 88%); }
@@ -221,7 +231,11 @@
       .queue-category { display: none; }
       .cabinet-row { grid-auto-columns: minmax(230px, 70vw); }
       .cabinet-card { min-height: 170px; }
-      .toolbar { grid-template-columns: 1fr; gap: 8px; }
+      .toolbar { top: 0; width: auto; max-width: none; margin-inline: -12px; grid-template-columns: 1fr; gap: 7px; padding: 8px 12px; }
+      #search { min-height: 44px; font-size: 16px; }
+      .chip { min-height: 44px; }
+      .cabinet-section, .cabinet-row, .toolbar, .chips { min-width: 0; }
+      .cabinet-row, .chips { max-width: 100%; overscroll-behavior-inline: contain; }
       .game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 9px; }
       .game-card:nth-child(13n+1) { grid-column: span 2; }
       .cover::after { display: none; }
@@ -251,14 +265,18 @@
       .game-card:nth-child(13n+1) .cover { aspect-ratio: 2 / 1; }
       .game-name { font-size: 12px; }
       .tags { font-size: 8px; }
-      .player { grid-template-rows: 52px minmax(0, 1fr) 32px; }
-      .player-head { gap: 7px; padding-inline: 8px 6px; }
+      .chat-launcher { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); width: auto; min-height: 48px; grid-template-columns: 28px auto; gap: 8px; padding: 7px 12px; border-width: 1px; box-shadow: 5px 5px 0 var(--coral); animation: none; }
+      .chat-launcher-icon { width: 28px; height: 28px; border-width: 2px; font-size: 13px; }
+      .chat-launcher-icon::after, .chat-launcher-copy small, .chat-launcher-arrow { display: none; }
+      .chat-launcher-copy strong { font-size: 11px; white-space: nowrap; }
+      .player { grid-template-rows: calc(52px + env(safe-area-inset-top)) minmax(0, 1fr) calc(30px + env(safe-area-inset-bottom)); }
+      .player-head { gap: 7px; padding: env(safe-area-inset-top) 6px 0 8px; }
       .player-brand { padding-right: 8px; border-right: 0; }
       .player-brand-copy { display: none; }
       .player-brand-mark { width: 17px; height: 17px; }
       .player-title { max-width: 92px; font-size: 11px; }
       .player-actions { gap: 4px; }
-      .icon-button { min-width: 40px; min-height: 40px; }
+      .icon-button { min-width: 44px; min-height: 44px; }
       .player-stage { margin: 6px 6px 0; }
       dialog[data-state="ready"] .player-ambient { display: block; }
       dialog[data-state="ready"] #game-frame { z-index: 2; top: 50%; bottom: auto; height: auto; aspect-ratio: var(--game-aspect, 1.7778); transform: translateY(-50%); border-block: 1px solid rgba(255,255,255,.32); box-shadow: 0 18px 55px rgba(0,0,0,.62); }
@@ -279,12 +297,12 @@
       .brand strong { font-size: 14px; }
       .head-actions { gap: 6px; }
       .setup-link { display: none; }
-      .shell { padding-bottom: 145px; }
+      .shell { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
       .chat-link { min-height: 42px; padding-inline: 11px; font-size: 10px; box-shadow: 3px 3px 0 var(--lime); }
       .chat-link::before { width: 7px; height: 7px; }
-      .chat-launcher { right: 12px; bottom: 12px; width: calc(100vw - 24px); min-height: 74px; grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 10px; padding: 11px 12px; box-shadow: 7px 7px 0 var(--coral), 0 0 0 1px var(--blue); }
-      .chat-launcher-icon { width: 42px; height: 35px; }
-      .chat-launcher-copy strong { font-size: 14px; }
+      .chat-launcher { right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); width: auto; min-height: 46px; grid-template-columns: 26px auto; gap: 7px; padding: 6px 10px; box-shadow: 4px 4px 0 var(--coral); }
+      .chat-launcher-icon { width: 26px; height: 26px; }
+      .chat-launcher-copy strong { font-size: 10px; }
       .chat-callout { padding: 22px 18px 24px; }
       .chat-callout h2 { font-size: 36px; }
       .chat-callout p:last-child { font-size: 12px; }
@@ -348,6 +366,10 @@
         <div class="game-grid" id="games"></div>
         <button class="load-more" id="load-more" type="button" hidden>Show more GΛMΞS</button>
       </section>
+      <aside class="sponsor-slot" aria-label="Sponsored content">
+        <span>Sponsored</span>
+        <a class="sponsor-link" href="https://omg10.com/4/11728073" target="_blank" rel="sponsored nofollow noopener noreferrer">Visit sponsor</a>
+      </aside>
     </main>
   </div>
   <a class="chat-launcher" href="/kchat?from=games" aria-label="Open the full Nebulo chat system">
@@ -398,6 +420,7 @@
       let currentGame = null;
       let launchTimer = 0;
       let readinessTimer = 0;
+      let reloadTimer = 0;
 
       const titleCase = (value) => String(value || '').replace(/\b\w/g, (letter) => letter.toUpperCase());
       const initial = (value) => String(value || '?').trim().charAt(0).toUpperCase() || '?';
@@ -501,18 +524,9 @@
             if (node instanceof doc.defaultView.HTMLImageElement) return node.complete && node.naturalWidth > 0 ? markVisible() : false;
             if (node instanceof doc.defaultView.HTMLVideoElement) return node.readyState >= 2 ? markVisible() : false;
             if (node instanceof doc.defaultView.HTMLCanvasElement) {
-              try {
-                const context = node.getContext('2d', { willReadFrequently: true });
-                if (!context) return elapsed >= 2400 ? markVisible() : false;
-                const points = [[.2,.2],[.5,.2],[.8,.2],[.2,.5],[.5,.5],[.8,.5],[.2,.8],[.5,.8],[.8,.8]];
-                const hasPixels = points.some(([x, y]) => {
-                  const pixel = context.getImageData(Math.max(0, Math.floor(node.width * x)), Math.max(0, Math.floor(node.height * y)), 1, 1).data;
-                  return pixel[3] > 20 && pixel[0] + pixel[1] + pixel[2] > 24;
-                });
-                return hasPixels ? markVisible() : false;
-              } catch (_) {
-                return elapsed >= 2400 ? markVisible() : false;
-              }
+              // Never acquire a context here: asking for 2D before the engine
+              // initializes permanently prevents this canvas from using WebGL.
+              return node.width > 0 && node.height > 0 ? markVisible() : false;
             }
             return markVisible();
           });
@@ -526,9 +540,11 @@
         clearInterval(readinessTimer);
         if (!currentGame) return;
         elements.dialog.dataset.state = 'ready';
-        setPlayerStatus('Game active', 'Game surface visible / controls online');
+        setPlayerStatus('Ready to play', 'Click or tap the game to start');
         elements.enter.hidden = true;
         elements.retry.hidden = true;
+        elements.frame.focus();
+        try { elements.frame.contentWindow.focus(); } catch (_) {}
       }
 
       function showSlowFallback() {
@@ -537,8 +553,8 @@
         if (!currentGame) return;
         elements.dialog.dataset.state = 'slow';
         setPlayerStatus('Awaiting picture', 'Fallback surface active / game still loading');
-        elements.launchCopy.textContent = 'The game has not produced a visible frame yet. Keep the branded cover in place, reload, or open the game surface manually.';
-        elements.enter.textContent = 'Show game surface';
+        elements.launchCopy.textContent = 'This game is taking longer to load. You can open it now to see its progress, or retry the download.';
+        elements.enter.textContent = 'Open game';
         elements.enter.hidden = false;
         elements.retry.hidden = false;
       }
@@ -546,10 +562,21 @@
       function beginReadinessCheck() {
         clearTimeout(launchTimer);
         clearInterval(readinessTimer);
+        try {
+          const doc = elements.frame.contentDocument;
+          const text = doc?.body?.textContent?.trim() || '';
+          if (/^(?:\{"error"\s*:|Not Found$|404\b|Bad Gateway$)/i.test(text)) {
+            showSlowFallback();
+            setPlayerStatus('Could not load game', 'Retry when your connection is ready');
+            elements.launchCopy.textContent = 'A required game file could not be loaded. Please retry.';
+            elements.enter.hidden = true;
+            return;
+          }
+        } catch (_) {}
         const started = performance.now();
         elements.dialog.dataset.state = 'loaded';
-        setPlayerStatus('Checking picture', 'Game files loaded / checking visible frame');
-        elements.launchCopy.textContent = 'Game files are loaded. Waiting for the first visible frame before revealing the cabinet.';
+        setPlayerStatus('Starting game', 'Opening game controls');
+        elements.launchCopy.textContent = 'Opening the game. Larger games may show their own loading screen.';
         elements.enter.hidden = true;
         elements.retry.hidden = true;
         // Some local games paint through DOM or WebGL surfaces that cannot be
@@ -557,7 +584,7 @@
         // short paint window and then hand control to the playable surface.
         launchTimer = window.setTimeout(() => {
           if (currentGame && elements.dialog.dataset.state === 'loaded') revealGame();
-        }, 2400);
+        }, 500);
         readinessTimer = window.setInterval(() => {
           if (!currentGame) return clearInterval(readinessTimer);
           const elapsed = performance.now() - started;
@@ -598,8 +625,10 @@
       function closeGame() {
         clearTimeout(launchTimer);
         clearInterval(readinessTimer);
+        clearTimeout(reloadTimer);
         currentGame = null;
         elements.frame.src = 'about:blank';
+        if (document.fullscreenElement === elements.dialog) document.exitFullscreen?.().catch(() => {});
         if (elements.dialog.open) elements.dialog.close();
         document.body.classList.remove('player-open');
       }
@@ -681,8 +710,11 @@
       elements.playFeature.addEventListener('click', () => { if (featuredGame) openGame(featuredGame); });
       const reloadCurrentGame = () => {
         if (!currentGame) return;
+        clearTimeout(reloadTimer);
+        clearTimeout(launchTimer);
+        clearInterval(readinessTimer);
         elements.frame.src = 'about:blank';
-        window.setTimeout(beginLaunch, 80);
+        reloadTimer = window.setTimeout(beginLaunch, 80);
       };
       elements.retry.addEventListener('click', reloadCurrentGame);
       elements.enter.addEventListener('click', revealGame);
@@ -692,7 +724,13 @@
       });
       document.getElementById('reload-game').addEventListener('click', reloadCurrentGame);
       document.getElementById('close-player').addEventListener('click', closeGame);
-      document.getElementById('fullscreen').addEventListener('click', () => elements.dialog.requestFullscreen?.());
+      document.getElementById('fullscreen').addEventListener('click', async () => {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (elements.dialog.requestFullscreen) await elements.dialog.requestFullscreen();
+          else setPlayerStatus('Ready to play', 'Rotate your phone for a larger game view');
+        } catch (_) { setPlayerStatus('Ready to play', 'Fullscreen is unavailable in this browser'); }
+      });
       elements.dialog.addEventListener('cancel', (event) => { event.preventDefault(); closeGame(); });
       loadCatalog();
     })();

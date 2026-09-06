@@ -3356,7 +3356,7 @@ var _0x58329e = async (_0x3612e1, _0xc5d1c, _0x20b009 = {}) => {
                 }
             } catch (_0x4b4e0d) {}
         }
-        console.error("Fetch error occurred:", _0x1d35e3.message, "Proxy URL:", _0x4679fc, "Method:", _0x3612e1.req.method);
+        console.error("Browsing request failed:", _0x1d35e3.message, "Method:", _0x3612e1.req.method);
         _0x3612e1.res = new Response("Proxy fetch error", {
             status: 502
         });

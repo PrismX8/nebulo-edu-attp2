@@ -559,7 +559,8 @@ function updateProfile(userId, updates = {}) {
   if (idx < 0) return null;
 
   const next = { ...store.users[idx] };
-  if (typeof updates.avatar === "string") {
+  if (Object.prototype.hasOwnProperty.call(updates, "avatar")
+    && (updates.avatar === null || typeof updates.avatar === "string")) {
     next.avatar = updates.avatar || null;
   }
   if (updates.coins !== undefined) {

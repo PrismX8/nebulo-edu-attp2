@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nebulo V5.4</title>
-  <script src="/assets/js/identity-mask.js" defer></script>
+  <script src="/assets/js/identity-mask.js?v=20260903-private-diagnostics-1" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="/assets/js/proxy-runtime.js?v=20260830-proxy-choice-3"></script>
@@ -810,8 +810,9 @@
     
     /* RESPONSIVE */
     @media (max-width: 768px) {
+      html, body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
       .main-content {
-        padding: 24px 16px;
+        padding: max(22px, env(safe-area-inset-top)) 16px 8px;
       }
       
       .title {
@@ -845,21 +846,24 @@
       
       .search-section {
         padding: 0 16px;
-        margin: 30px auto;
+        margin: 20px auto 26px;
       }
 
       .search-input {
-        padding: 13px 16px;
-        font-size: 13px;
-        border-radius: 12px;
+        height: 56px;
+        padding: 0 62px 0 16px;
+        font-size: 16px;
+        border-radius: 14px;
       }
       
       .search-btn {
-        width: 36px;
-        height: 36px;
-        right: 8px;
-        border-radius: 9px;
+        width: 44px;
+        height: 44px;
+        right: 6px;
+        border-radius: 11px;
       }
+
+      .adblock-control { min-height: 48px; padding: 8px 11px; }
       
       .apps-container {
         padding: 16px;
@@ -879,15 +883,15 @@
       }
       
       .app-card {
-        min-height: 88px;
-        padding: 9px 7px;
-        border-radius: 8px;
+        min-height: 98px;
+        padding: 11px 8px;
+        border-radius: 10px;
       }
       
       .app-icon {
-        flex-basis: 30px;
-        width: 30px;
-        height: 30px;
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
         margin: 0;
         font-size: 13px;
       }
@@ -953,13 +957,14 @@
       }
       
       .search-input {
-        padding: 12px 14px;
-        font-size: 12px;
+        height: 54px;
+        padding: 0 60px 0 15px;
+        font-size: 16px;
       }
 
       .search-btn {
-        width: 32px;
-        height: 32px;
+        width: 44px;
+        height: 44px;
       }
       
       .apps-container {
@@ -974,14 +979,14 @@
       }
       
       .app-card {
-        min-height: 82px;
-        padding: 8px 6px;
+        min-height: 96px;
+        padding: 10px 7px;
       }
 
       .app-icon {
-        flex-basis: 28px;
-        width: 28px;
-        height: 28px;
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
         margin: 0;
         font-size: 12px;
       }
@@ -992,8 +997,9 @@
       }
 
       .chat-cta-btn {
-        font-size: 9px;
-        padding: 5px 9px;
+        min-height: 44px;
+        font-size: 10px;
+        padding: 7px 11px;
       }
 
       .chat-cta-note {
@@ -1015,7 +1021,7 @@
   </style>
   <script src="/assets/js/panic.js" defer></script>
   <script src="/assets/js/appearance.js" defer></script>
-  <script src="/assets/js/cloaking.js" defer></script>
+  <script src="/assets/js/cloaking.js?v=20260905-mobile-viewport-1" defer></script>
   <script src="/assets/js/achievements.js" defer></script>
 <meta name="description" content="Nebulo Education Plus is a mathematics learning platform with algebra practice, geometry tools, chemistry lessons, and educational resources.">
 <meta name="keywords" content="math, mathematics, algebra, geometry, chemistry, educational games, study tools, learning platform">

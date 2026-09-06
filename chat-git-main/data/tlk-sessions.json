@@ -913,11 +913,11 @@
   },
   "asl8b4n9voa1782487035413": {
     "cookies": {
-      "_tlkio_session": "ZVVHVnVGdjM5M1l2bWdxZVpENENiWGhCanZSU2sxQmpzVGRtQVJpTVdlTTlhaTQwTDJZMGRIQVZIeGlheWx0UWJvWXFIMmF1Wjg4SUtPdG5Od2xoRWZqbnpCQzJMRG5pc2RyakxLZS9Id2ZrZ1owQlkvYVA2R0tpMGhQTDRkVEhkYU9taDJZdWE3cGpqdFJUU0tsSW5hTWhjdFVIcWJ3V1ZMMTRDdEZraGxPUFVsQm5NUHkvUU0yQVlFZSt3NlVnV3U4RU8rQ044ajNPZ3pKRnRMRmFiZUNndjBnVDE4bkRvUWFNb3FmRlNVNXhBNDhoTGVJTlovM2l2OGtKd0pnbW5DemI5RWJiVGVBcHl6bkhJYmZ3V0o5TlM5WjJIVktGTVFFc2h0V1FRMHBmMUNLMmtzRVFMUHZtb1VNZ2FDeHVhaU4xeWtQZ2p0c2JOUGxnOG90U08rYk1xSlYyMmxsNUZFMnp2NjBOUVp6QytZbngwa0tWMm80ZGQ4eUtaOE5nS0FmbHF0QndYYWJjSDdjYTROUk0raUlRVTN1TTlFeWxEbER5MXlIS251N2xyc0k0VWF2cVllRjV6YUdZS2xQRERCeUx3YkNESjVSRmpHZjBMRnpmQ1E9PS0tNFcxUkpXdnhVN25lRExGdmg0d3dIQT09--9257ccf374be955a714a76dc833cff3be3405cf3"
+      "_tlkio_session": "eGhtNm5HdTNLWitMdGZ4Zk00bktXODFyZHllRU5JeGdhaUIyVkcrUUxkMzV3QUhyQ3ozSkliNHU2cGQ2SGJkclJPUWlPZ3JkYTRaeEplbGZTMXBVUlJxUGtJU2kvem43WC92OGh2b1RMMkQzTHNISjh3NldvRG5hUXQ0endIVGdabllxdlJHZ2V4L1ZLSnR4VFVGMFd0YTNjOGNwUGdFUzFVYWswMGl1UEY4dG43MjlUR3c3M2J3WVJYRkoyVFlxMmluZEhyOEVUQXFFRzR1bm5BRlF3M1hLN3o3RmRmRzhxU0dTUHZCR1M4aVNrMDdhNWIzU1pQdEFPU0Fsdmc2dTRBUnJpRUt3a0ZTbThPak5pdzFEcGRxSURENDFITjRNYlBNVXpkNzJHemVrdkNMOFMwSzZRWnBUQURpK0Fzb1plUzhvSjBpdllPMkhJYkJWbCtRc0E3VHN5aDVRQ2ZRNGRFaG1kRjdDc2FTTVlQM2RvQWlQTmUyN2FVUEtRWi9KK1J3WXdTS3l5RFcraTdDZk5ZZnNjNjdRcW1SWFVFSzJmRmZKWG5WelFzK3djODdtZjROU2VWRUpSYUljdXRyTTBZODFJTXRVeDRrOWd6MW9TTHpLekE9PS0tU0ROMFBjUFFZcy9IRzhQcFhlWjdDUT09--ffc89baa238cb74b692e733d94190cd0633f0cc7"
     },
-    "csrfToken": "sks86YHN73Qm94JCHCLSV/rPaSdmPhKpm0H/Z/N0MoaYJxxxGL3RgS1NxiIx7gX5dYgue1oLEIenORFXu1jbLQ==",
-    "room": "rxrhcicz",
-    "chatId": "10384498",
+    "csrfToken": "511sTFX8UtI8aLc6v0aZkCFCYBw8/vwwbIsetr6/C0PNMUzUzIxsJzfS81qSik4+rgUnQADL/h5Q8/CG9pPi6A==",
+    "room": "globalb8alls",
+    "chatId": "10154182",
     "participant": {
       "token": "667ded",
       "nickname": "prismx",
@@ -1880,5 +1880,29 @@
       "profile_url": null
     },
     "authUserId": "97f2ea76-df4d-4f6e-9b78-c1bf1f6c439f"
+  },
+  "pll15wbkplr1788489998453": {
+    "cookies": {
+      "_tlkio_session": "ekVVR3VnTXIwem9FTWNEV3RuOENaSjNCSG5Dc0pCdnVqc2FHN3EzOEhWcGtsT1gyMk5xUTNDWmVMUXh5VDNUaEZMYnZaVVFRaFZ4eU1qYnV2YVFGRmVJWXQ5QTBuMTJwNndRZzY1cTF0cmg0ek82QjRtdC9CZ2JSZjI0RmNIZ1FvUXI5MjBBRHFRUG5HNlVRTnVMTXF6WHh2bjdCUXg3NnIrS3J0MjNCNnZvcHYydGxlY0tqa1p6WC9HeFlBU1QvY28vTnl2WHRnbHhrSlhCZk9zSC8waGRDZUxXU1UyRU5NRHJ6cGtRTW5aRkxuNGJxQ25ONFR1YXluRWpub01iVmdRdGp5T1RNMnlaWDF3ZUVHbjV3dEt6a25GajkyVEgyV0hCZU5iYmZueTZ5YjFESHRDMnNFdlR3a1pVanVLdy96S2ZQR1puakRDM1FPRG05YW9hVVB3c1RqNUVZeURMdFZrcUFJbzZmUWhmckQ2bnNaYTgrZWdVZ1pEa1F5VHFQUHFTdjV3OVhPS0RGQ0diM2pkZk9CelZjSkxvQU1XT3pBaU1ET0hBU1A5bXl4UllCc25LSG84R1J0NHhaNENLQmtMSmswODY4RWIwSGZnNWY0L1JkaGc9PS0tcFBxTFNLOXJYY2UyWGFpd3VnNVdCQT09--2f9f9a18cc206fc4ba4247cfb91cd7c0e5a44e84"
+    },
+    "csrfToken": "b83jbx93cTataRcgndpwWnTmlt6BiZFLt5hK4mTpwJ8eqCkokWp3ooLcYzQ4Dqew0pDEHdJBtAnGlLsUpvm6aQ==",
+    "room": "globalb8alls",
+    "chatId": "10154182",
+    "participant": {
+      "token": "4b6aa8",
+      "nickname": "PrismX",
+      "provider": "anonymous",
+      "avatar": null,
+      "profile_url": null
+    },
+    "authUserId": "6b629194-fe8b-4e18-a5be-65ec5ff2828c"
+  },
+  "codex-final-check": {
+    "cookies": {},
+    "csrfToken": null,
+    "room": "globalb8alls",
+    "chatId": "10154182",
+    "participant": null,
+    "authUserId": null
   }
 }

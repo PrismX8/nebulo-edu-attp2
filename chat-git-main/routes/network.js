@@ -70,7 +70,26 @@ router.put("/moderation", auth, (req, res) => {
 
 router.get("/presence", (_req, res) => {
   try {
-    return res.json(presence.getCounts());
+    return res.json(presence.enrichUsers((user) => {
+      const userId = String(user?.userId || '').trim();
+      const byId = userId ? userStore.findById(userId) : null;
+      const byName = userStore.findByUsername(user?.username || '');
+      const identityById = userId
+        ? identityStore.getTokensByUserId(userId)
+            .map((token) => identityStore.getByToken(token))
+            .filter(Boolean)
+            .sort((left, right) => Number(right.updatedAt || 0) - Number(left.updatedAt || 0))[0]
+        : null;
+      const identityByName = identityStore.getByUsername(user?.username || '')?.profile || null;
+      const local = byId || byName;
+      const identity = identityById || identityByName;
+      if (!local && !identity) return null;
+      return {
+        ...(local ? userStore.sanitizeUser(local) : {}),
+        ...(identity || {}),
+        avatar: identity?.avatar || local?.avatar || null
+      };
+    }));
   } catch (_error) {
     return res.json({ ttlMs: 30000, totalOnline: 0, rooms: {}, users: {} });
   }

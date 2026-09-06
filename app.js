@@ -200,6 +200,8 @@ if (cluster.isPrimary && WORKERS > 1) {
     const safe = local ? chatUserStore.sanitizeUser(local) : null;
     const merged = {
       ...account,
+      avatar: account.avatar ?? account.avatar_url ?? safe?.avatar ?? null,
+      avatar_url: account.avatar_url ?? account.avatar ?? safe?.avatar ?? null,
       coins: account.coins ?? safe?.coins ?? 0,
       ownedEffects: safe?.ownedEffects || ["none"],
       ownedAvatarEffects: safe?.ownedAvatarEffects || ["none"],
@@ -226,7 +228,14 @@ if (cluster.isPrimary && WORKERS > 1) {
     const userId = String(auth?.decoded?.user?.id || "").trim();
     const source = String(auth?.decoded?.user?.source || "").trim();
     if (userId && source === "database") {
-      return profileStore.findAccountById(userId);
+      try {
+        const databaseAccount = await profileStore.findAccountById(userId);
+        if (databaseAccount) return mergeDatabaseAccountMetadata(databaseAccount);
+      } catch (error) {
+        console.warn("Profile database lookup failed; using the local account mirror:", error?.message || error);
+      }
+      const local = findUserById(userId) || databaseAccountCache.get(userId);
+      return local ? { ...local, id: local.id || local._id, _id: local._id || local.id, source: "database" } : null;
     }
 
     if (!auth?.token) return null;
@@ -557,40 +566,37 @@ if (cluster.isPrimary && WORKERS > 1) {
   fastify.use(cors());
   const expressJson = express.json({ limit: "1mb" });
   const expressUrlencoded = express.urlencoded({ extended: true, limit: "1mb" });
+  const expressMounts = [];
   const mountExpressRouter = (prefix, router) => {
-    fastify.use(prefix, (req, res, next) => {
-      const originalUrl = String(req.url || "");
-      const originalBaseUrl = req.baseUrl;
-      const strippedUrl = originalUrl.startsWith(prefix)
-        ? originalUrl.slice(prefix.length) || "/"
-        : originalUrl || "/";
-
-      req.url = strippedUrl.startsWith("/") ? strippedUrl : `/${strippedUrl}`;
-      req.baseUrl = prefix;
-
-      expressJson(req, res, (jsonErr) => {
-        if (jsonErr) {
-          req.url = originalUrl;
-          req.baseUrl = originalBaseUrl;
-          return next(jsonErr);
-        }
-        expressUrlencoded(req, res, (urlErr) => {
-          if (urlErr) {
-            req.url = originalUrl;
-            req.baseUrl = originalBaseUrl;
-            return next(urlErr);
-          }
-          router(req, res, (routerErr) => {
-            req.url = originalUrl;
-            req.baseUrl = originalBaseUrl;
-            next(routerErr);
-          });
-        });
-      });
-    });
+    expressMounts.push({ prefix, router });
   };
 
   require("./chat-git-main/integration").integrateChat({ io, mountExpressRouter });
+  expressMounts.sort((left, right) => right.prefix.length - left.prefix.length);
+  fastify.use((req, res, next) => {
+    const originalUrl = String(req.url || "");
+    const pathname = originalUrl.split("?", 1)[0];
+    const mount = expressMounts.find(({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+    if (!mount) return next();
+
+    const originalBaseUrl = req.baseUrl;
+    const strippedUrl = originalUrl.slice(mount.prefix.length) || "/";
+    req.url = strippedUrl.startsWith("/") ? strippedUrl : `/${strippedUrl}`;
+    req.baseUrl = mount.prefix;
+
+    const finish = (error) => {
+      req.url = originalUrl;
+      req.baseUrl = originalBaseUrl;
+      next(error);
+    };
+    expressJson(req, res, (jsonError) => {
+      if (jsonError) return finish(jsonError);
+      expressUrlencoded(req, res, (urlError) => {
+        if (urlError) return finish(urlError);
+        mount.router(req, res, finish);
+      });
+    });
+  });
 
   registerPlatinumGameMirrorRoutes(fastify);
 
@@ -837,11 +843,25 @@ if (cluster.isPrimary && WORKERS > 1) {
       const updated = await profileStore.updateAvatar(account.id, avatar);
       if (!updated) return reply.status(404).send({ msg: "Profile not found" });
       const merged = mergeDatabaseAccountMetadata({ ...account, ...updated, email: account.email });
+      chatUserStore.updateProfile(account.id, { avatar });
+      chatIdentityStore.updateByUserId(account.id, { avatar });
       const token = signAuthToken(merged, "database");
       return { profile: merged, user: { ...merged, token }, token, msg: avatar ? "Profile picture updated" : "Profile picture removed" };
     } catch (error) {
       console.error("Avatar update failed:", error.message);
-      return reply.status(503).send({ msg: "Could not update the profile picture" });
+      const mirrored = chatUserStore.updateProfile(account.id, { avatar });
+      if (!mirrored) return reply.status(503).send({ msg: "Could not update the profile picture" });
+      const merged = { ...account, ...chatUserStore.sanitizeUser(mirrored), avatar, avatar_url: avatar };
+      databaseAccountCache.set(account.id, merged);
+      chatIdentityStore.updateByUserId(account.id, { avatar });
+      const token = signAuthToken(merged, "database");
+      return {
+        profile: merged,
+        user: { ...merged, token },
+        token,
+        msg: avatar ? "Profile picture updated" : "Profile picture removed",
+        pendingDatabaseSync: true
+      };
     }
   });
 
@@ -2125,7 +2145,6 @@ if (cluster.isPrimary && WORKERS > 1) {
   // uses the old (now-obfuscated) proxy prefixes so extensions / sniffers that
   // hard-code /uv/, /scram/, etc. get a clean "Not Found".
   fastify.addHook("onRequest", async (req, reply) => {
-    console.log("[HOOK-2071] onRequest hook hit for", req?.raw?.url);
     const rawUrl = String(req?.raw?.url || "");
     const pathOnly = rawUrl.split("?")[0];
     if (pathOnly.endsWith(".js.map") || pathOnly.endsWith(".css.map") || pathOnly.endsWith(".wasm.map")) {
@@ -2136,10 +2155,8 @@ if (cluster.isPrimary && WORKERS > 1) {
       "/service/scramjet/", "/baremux/", "/epoxy/", "/libcurl/"
     ];
     if (legacyProxyPrefixes.some((prefix) => pathOnly.startsWith(prefix))) {
-      console.log("[HOOK-2071] blocking legacy path:", pathOnly);
       return reply.code(404).type("text/plain; charset=utf-8").send("Not Found");
     }
-    console.log("[HOOK-2071] allowing path:", pathOnly);
     return undefined;
   });
 
@@ -2326,7 +2343,6 @@ if (cluster.isPrimary && WORKERS > 1) {
   // 1) legacy hvtrs/hvttr paths -> UV service
   // 2) accidental /uv/service/assets/* and /uv/service/themes.* -> local assets
   fastify.addHook("onRequest", async (req, reply) => {
-    console.log("[HOOK-2272] onRequest hook hit for", req?.raw?.url);
     const rawUrl = String(req?.raw?.url || "");
     const qIndex = rawUrl.indexOf("?");
     const pathname = qIndex === -1 ? rawUrl : rawUrl.slice(0, qIndex);

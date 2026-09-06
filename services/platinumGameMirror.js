@@ -1,25 +1,13 @@
-import { PassThrough, Readable } from "node:stream";
 import path from "node:path";
-import { lookup as lookupMimeType } from "mime-types";
+import { readFileSync } from 'node:fs';
+import { createGameAssetHandler } from "./gameAssetCache.js";
+import { repairGameExport } from './gameCompatibility.js';
 
 export const PLATINUM_ORIGIN = "https://platinumunblocker.com";
 export const PLATINUM_MOUNT = "/games/platinum";
 
-const UPSTREAM_TIMEOUT_MS = 45_000;
-const TEXT_REWRITE_LIMIT = 16 * 1024 * 1024;
-const textTypes = /(?:text\/|javascript|json|xml|svg)/i;
 const assetPath = /\.(?:html?|js|mjs|css|json|xml|txt|map|wasm|pck|data|mem|unityweb|unity3d|bundle|bin|br|gz|zip|swf|png|jpe?g|webp|gif|svg|ico|avif|mp3|ogg|wav|m4a|mp4|webm|ogv|ttf|otf|woff2?|eot|atlas|fnt)(?:[?#].*)?$/i;
 
-const PASSTHROUGH_RESPONSE_HEADERS = new Set([
-  "content-type",
-  "content-length",
-  "content-range",
-  "accept-ranges",
-  "etag",
-  "last-modified",
-  "content-encoding",
-  "cache-control",
-]);
 
 function safeSegment(segment) {
   let decoded = segment;
@@ -43,7 +31,9 @@ export function toPlatinumLocalUrl(remoteUrl) {
 }
 
 export function toPlatinumRemoteUrl(localPath) {
-  const raw = String(localPath || "").split("?")[0].replace(/^\/+/, "");
+  // Older cached bundles prefixed asset suffixes which an engine then joined
+  // to its own base path (build/resources/games/platinum/assets/...).
+  const raw = String(localPath || "").split("?")[0].replace(/^\/+/, "").replaceAll('/games/platinum/', '/');
   const url = new URL(`/${raw}`, PLATINUM_ORIGIN);
   if (url.origin !== PLATINUM_ORIGIN || url.pathname.includes("..")) {
     throw new Error("Invalid mirrored game path");
@@ -51,16 +41,21 @@ export function toPlatinumRemoteUrl(localPath) {
   return url;
 }
 
-export function rewritePlatinumText(text, contentType = "") {
+export function rewritePlatinumText(text, contentType = "", remoteUrl) {
   let output = String(text || "");
   output = output.replaceAll(`${PLATINUM_MOUNT}/`, "/");
   output = output
     .replaceAll(`${PLATINUM_ORIGIN}/`, `${PLATINUM_MOUNT}/`)
     .replaceAll("//platinumunblocker.com/", `${PLATINUM_MOUNT}/`);
+  // Recover malformed absolute script URLs in older archived HTML exports.
+  if (/html/i.test(contentType)) output = output.replace(/(\b(?:src|href)\s*=\s*["'])\/(https?:\/\/)/gi, '$1$2');
 
   if (/html/i.test(contentType)) {
+    // Rewritten scripts/styles no longer have the upstream byte digest.
+    output = output.replace(/(<(?:script|link)\b[^>]*?)\s+integrity\s*=\s*["'][^"']*["']/gi, '$1');
+    // Preserve game startup code around the injected ad IIFE.
     output = output.replace(
-      /<script\b[^>]*>(?:(?!<\/script>)[\s\S])*?function xsh\(b\)(?:(?!<\/script>)[\s\S])*?<\/script>\s*/gi,
+      /\(function\s*\(\)\s*\{\s*var\s+KeY\s*=\s*['"]{2},\s*iFD\s*=\s*\d+\s*-\s*\d+;[\s\S]*?\breturn\s+\d+\s*\r?\n\s*\}\)\(\)\s*;?/g,
       ""
     );
     output = output.replace(
@@ -79,210 +74,76 @@ export function rewritePlatinumText(text, contentType = "") {
       /(<base\b[^>]*\bhref\s*=\s*["'])https?:\/\/[^"']+\/(\s*["'][^>]*>)/gi,
       "$1./$2"
     );
+    output = output.replace(/<script\b[^>]*>(?:(?!<\/script>)[\s\S])*?window\.__CF\$cv\$params(?:(?!<\/script>)[\s\S])*?<\/script>/gi, '');
+    output = output.replace(/<script\b[^>]*>(?:(?!<\/script>)[\s\S])*?script\.src\s*=\s*["']https:\/\/cdn\.jsdelivr\.net\/npm\/eruda["'];(?:(?!<\/script>)[\s\S])*?<\/script>/gi, '');
+    if (remoteUrl?.pathname === '/cdn/traffic%20tour/index.html') {
+      output = output.replace(/<script\b[^>]*src=["']web3\/index.js["'][^>]*>\s*<\/script>/i, '');
+      output = output.replace(/<link\b[^>]*href=["']https:\/\/imadejptr\.glitch\.me\/[^"']+["'][^>]*>/gi, '');
+      output = output.replace('</head>', '<style>html,body{margin:0;height:100%;background:#000}#unity-container,#unity-canvas{width:100%;height:100%;display:block}#unity-loading-bar{position:absolute;inset:45% 20% auto;height:8px;background:#333}#unity-progress-bar-full{height:8px;background:#3f8cff}</style></head>');
+    }
     output = output.replace(
       /(\b(?:src|href|poster|action|data-src)\s*=\s*["'])\/(?!\/)([^"']*)(["'])/gi,
       `$1${PLATINUM_MOUNT}/$2$3`
     );
   }
 
-  output = output.replace(
-    /(["'`])\/(?!\/|games\/platinum\/)([^"'`\r\n]*)\1/g,
-    (match, quote, value, offset, source) => {
-      const before = source.slice(Math.max(0, offset - 12), offset).trimEnd();
-      if (before.endsWith("+")) return match;
-      if (/\s|[<>{}|\\^*]/.test(value) || !assetPath.test(value)) return match;
-      return `${quote}${PLATINUM_MOUNT}/${value}${quote}`;
-    }
-  );
+  // These archived Unity pages include their loader but omit the startup call.
+  const unityEntries = {
+    '/cdn/blocky%20snakes/index.html': ['gameContainer', 'build.json'],
+    '/cdn/fighter%20aircraft%20piolet/index.html': ['gameContainer', 'Build/Fighter%20Aircraft%20Pilot.json'],
+    '/cdn/freefall%20tournament/index.html': ['gameContainer', 'Build/freefall-tournament.json'],
+    '/cdn/gunspin/index.html': ['unityContainer', 'Build/GunSpin%20WebGL%20FinalVersion.json'],
+    '/cdn/Pre%20Civilization%20Bronze%20Age/index.html': ['unityContainer', 'Build/WebGL.json'],
+    '/cdn/ultimate%20offroad%20simulator/index.html': ['gameContainer', 'Build/trailer_chip.json'],
+  };
+  const bootstrap = unityEntries[remoteUrl?.pathname];
+  if (/html/i.test(contentType) && bootstrap && !/UnityLoader\.instantiate\s*\(/.test(output)) {
+    const startup = `<script>var gameInstance=UnityLoader.instantiate(${JSON.stringify(bootstrap[0])},${JSON.stringify(bootstrap[1])},{onProgress:typeof UnityProgress==='function'?UnityProgress:undefined});</script>`;
+    output = /<\/body>/i.test(output) ? output.replace(/<\/body>/i, `${startup}</body>`) : output + startup;
+  }
+
+  // JavaScript strings may be suffix tests, regex fragments, or engine asset
+  // keys. Resolve root asset requests on the server instead of changing them.
 
   if (/css/i.test(contentType)) {
     output = output.replace(
-      /(url\(\s*)\/(?!\/|games\/platinum\/)([^)'"\s]+)(\s*\))/gi,
+      /(url\(\s*["']?)\/(?!\/|games\/platinum\/)([^)'"\s]+)(["']?\s*\))/gi,
       `$1${PLATINUM_MOUNT}/$2$3`
     );
   }
 
-  return output;
+  output = output.replace(/https?:\/\/yandex\.ru\/games\/sdk\/v2/g, `${PLATINUM_MOUNT}/__nebulo/platform.js`)
+    .replace(/https?:\/\/www\.coolmathgames\.com\/sites\/default\/files\/cmg-ads\.js/g, `${PLATINUM_MOUNT}/__nebulo/platform.js`);
+  output = output.replaceAll('/__nebulo/platform.js', `${PLATINUM_MOUNT}/__nebulo/platform.js`).replaceAll(`${PLATINUM_MOUNT}${PLATINUM_MOUNT}/`, `${PLATINUM_MOUNT}/`);
+  if (output.includes('YaGames')) output = output.replace(/(["'])\/(?:games\/platinum\/)?sdk\.js\1/g, `$1${PLATINUM_MOUNT}/__nebulo/platform.js$1`);
+  return repairGameExport(output, remoteUrl);
 }
 
-function getContentTypeForPath(filePath) {
-  return lookupMimeType(filePath) || "application/octet-stream";
-}
 
-function buildUpstreamHeaders(request) {
-  const headers = {
-    accept: String(request.headers.accept || "*/*"),
-    "accept-encoding": "identity",
-    referer: `${PLATINUM_ORIGIN}/`,
-    "user-agent": String(request.headers["user-agent"] || "NebuloGameMirror/1.0"),
-  };
-  if (request.headers.range) headers.range = String(request.headers.range);
-  if (request.headers["if-range"]) headers["if-range"] = String(request.headers["if-range"]);
-  if (request.headers["if-none-match"]) headers["if-none-match"] = String(request.headers["if-none-match"]);
-  if (request.headers["if-modified-since"]) headers["if-modified-since"] = String(request.headers["if-modified-since"]);
-  return headers;
-}
-
-function copyResponseHeadersToReply(reply, upstreamHeaders) {
-  for (const name of PASSTHROUGH_RESPONSE_HEADERS) {
-    const value = upstreamHeaders.get(name);
-    if (value) reply.header(name, value);
-  }
-}
-
-function trackUpstreamAbort(upstreamResponse, clientRequest, log) {
-  const onClose = () => {
-    if (!upstreamResponse.body) return;
+export function registerPlatinumGameMirrorRoutes(fastify, options = {}) {
+  fastify.addHook('onRequest', async (request, reply) => {
+    const target = String(request.raw.url || '/');
+    if (target.startsWith(`${PLATINUM_MOUNT}/`) || !assetPath.test(target) || !request.headers.referer) return;
     try {
-      upstreamResponse.body.cancel().catch(() => {});
-    } catch {}
-  };
-  clientRequest.once("close", onClose);
-  const cleanup = () => clientRequest.off("close", onClose);
-  upstreamResponse.body?.once?.("end", cleanup);
-  upstreamResponse.body?.once?.("error", cleanup);
-}
-
-function readUpstreamIntoMemory(response) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let total = 0;
-    const reader = response.body.getReader();
-    const pump = async () => {
-      try {
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          if (value) {
-            total += value.byteLength;
-            if (total > TEXT_REWRITE_LIMIT) {
-              try { await reader.cancel(); } catch {}
-              const error = new Error("Upstream text response exceeded in-memory rewrite limit");
-              error.code = "ETEXT_TOO_LARGE";
-              reject(error);
-              return;
-            }
-            chunks.push(Buffer.from(value));
-          }
-        }
-        resolve(Buffer.concat(chunks, total));
-      } catch (error) {
-        reject(error);
+      const source = new URL(request.headers.referer);
+      const requestOrigin = new URL(`${source.protocol}//${request.headers.host}`).origin;
+      if (source.origin === requestOrigin && source.pathname.startsWith(`${PLATINUM_MOUNT}/`)) {
+        return reply.redirect(`${PLATINUM_MOUNT}${target}`, 307);
       }
-    };
-    pump();
+    } catch (_) {}
   });
-}
-
-function respondWith502(reply, request, message) {
-  request.log?.warn?.({ msg: message }, "game mirror upstream failure");
-  return reply.code(502).send({ error: message });
-}
-
-export function registerPlatinumGameMirrorRoutes(fastify) {
+  fastify.get(`${PLATINUM_MOUNT}/__nebulo/platform.js`, async (_req, reply) => reply.type('application/javascript')
+    .header('Cache-Control', 'no-cache').send(readFileSync(new URL('../public/assets/js/game-platform.js', import.meta.url))));
+  const handler = createGameAssetHandler({
+    ...options,
+    toRemote: toPlatinumRemoteUrl,
+    cachePath: getPlatinumCachePath,
+    rewrite: rewritePlatinumText,
+    origin: PLATINUM_ORIGIN,
+  });
   fastify.route({
     method: ["GET", "HEAD"],
     url: `${PLATINUM_MOUNT}/*`,
-    handler: async (request, reply) => {
-      if (String(request.params["*"] || "").endsWith("/undefined/pages/home.html")) {
-        return reply.code(204).send();
-      }
-
-      let remoteUrl;
-      try {
-        remoteUrl = toPlatinumRemoteUrl(request.params["*"]);
-        const query = request.raw.url?.split("?")[1];
-        if (query) remoteUrl.search = query;
-      } catch {
-        return reply.code(400).send({ error: "Invalid game asset path" });
-      }
-
-      const upstreamHeaders = buildUpstreamHeaders(request);
-      const abortController = new AbortController();
-      const timeoutId = setTimeout(() => abortController.abort(new Error("upstream timeout")), UPSTREAM_TIMEOUT_MS);
-      const onClientClose = () => {
-        if (!reply.sent && !request.raw.destroyed) return;
-        try { abortController.abort(new Error("client disconnected")); } catch {}
-      };
-      request.raw.once("close", onClientClose);
-
-      let upstreamResponse;
-      try {
-        upstreamResponse = await fetch(remoteUrl, {
-          method: request.method,
-          headers: upstreamHeaders,
-          redirect: "follow",
-          signal: abortController.signal,
-        });
-      } catch (error) {
-        clearTimeout(timeoutId);
-        request.raw.off("close", onClientClose);
-        return respondWith502(reply, request, `Game asset is temporarily unavailable: ${error?.message || "fetch failed"}`);
-      }
-
-      clearTimeout(timeoutId);
-      trackUpstreamAbort(upstreamResponse, request.raw, request.log);
-
-      const contentType = upstreamResponse.headers.get("content-type") || getContentTypeForPath(remoteUrl.pathname);
-      reply.code(upstreamResponse.status);
-      reply.type(contentType);
-      copyResponseHeadersToReply(reply, upstreamResponse.headers);
-      if (!upstreamResponse.headers.get("accept-ranges")) {
-        reply.header("Accept-Ranges", "bytes");
-      }
-      reply.header(
-        "Cache-Control",
-        /html/i.test(contentType) ? "no-cache" : "public, max-age=31536000, immutable"
-      );
-
-      if (request.method === "HEAD" || !upstreamResponse.body) {
-        request.raw.off("close", onClientClose);
-        return reply.send();
-      }
-
-      const contentLength = Number(upstreamResponse.headers.get("content-length") || 0);
-      const shouldRewriteText = !request.headers.range
-        && upstreamResponse.ok
-        && textTypes.test(contentType)
-        && contentLength > 0
-        && contentLength <= TEXT_REWRITE_LIMIT;
-
-      if (shouldRewriteText) {
-        try {
-          const body = await readUpstreamIntoMemory(upstreamResponse);
-          const rewritten = rewritePlatinumText(body.toString("utf8"), contentType);
-          const buffer = Buffer.from(rewritten, "utf8");
-          reply.header("Content-Length", buffer.length);
-          request.raw.off("close", onClientClose);
-          return reply.send(buffer);
-        } catch (error) {
-          request.log?.warn?.({ error: error?.message }, "game mirror text rewrite failed; streaming raw body");
-        }
-      }
-
-      const clientStream = new PassThrough();
-      let sourceStream;
-      try {
-        sourceStream = Readable.fromWeb(upstreamResponse.body);
-      } catch (error) {
-        request.raw.off("close", onClientClose);
-        return respondWith502(reply, request, `Failed to stream game asset: ${error?.message || "stream error"}`);
-      }
-
-      sourceStream.pipe(clientStream);
-      const onError = (error) => {
-        clientStream.destroy(error);
-        try { sourceStream.destroy(error); } catch {}
-      };
-      sourceStream.on("error", onError);
-      sourceStream.once("end", () => request.raw.off("close", onClientClose));
-      sourceStream.once("close", () => request.raw.off("close", onClientClose));
-      request.raw.once("close", () => {
-        try { sourceStream.destroy(new Error("client disconnected")); } catch {}
-        try { clientStream.destroy(); } catch {}
-      });
-
-      return reply.send(clientStream);
-    },
+    handler,
   });
 }

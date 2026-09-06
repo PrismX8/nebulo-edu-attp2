@@ -19,7 +19,7 @@ const concurrency = Math.max(1, Number(process.env.MIRROR_CONCURRENCY || 10));
 const maxAssets = Math.max(0, Number(process.env.MIRROR_MAX_ASSETS || 0));
 const textLimit = 16 * 1024 * 1024;
 const assetExtension = /\.(?:html?|js|mjs|css|json|xml|txt|map|wasm|pck|data|mem|unityweb|unity3d|bundle|bin|br|gz|zip|swf|png|jpe?g|webp|gif|svg|ico|avif|mp3|ogg|wav|m4a|mp4|webm|ogv|ttf|otf|woff2?|eot|atlas|fnt)(?:[?#].*)?$/i;
-const textTypes = /(?:text\/|javascript|json|xml|svg)/i;
+const textFile = /(?:\.(?:html?|js|mjs|css|json|xml|txt|map|svg|atlas|fnt)$|\/$)/i;
 const entryVersion = "20260819-game-assets-1";
 
 const args = new Set(process.argv.slice(2));
@@ -28,6 +28,7 @@ const entriesOnly = args.has("--entries-only");
 const repairCache = args.has("--repair-cache");
 const repairEntries = args.has("--repair-entries");
 const directAssets = args.has("--direct-assets");
+const refreshEntries = args.has("--refresh-entries");
 
 const catalog = JSON.parse(await fsp.readFile(catalogPath, "utf8"));
 const queue = [];
@@ -50,7 +51,7 @@ const oldUnityBootstrapRepairs = new Map([
 ]);
 
 function repairKnownGameEntry(text, remoteEntry) {
-  let output = rewritePlatinumText(text, "text/html");
+  let output = rewritePlatinumText(text, "text/html", remoteEntry);
   const bootstrap = oldUnityBootstrapRepairs.get(remoteEntry.pathname);
   if (bootstrap && !/UnityLoader\.instantiate\s*\(/.test(output)) {
     const [containerId, buildConfig] = bootstrap;
@@ -140,10 +141,11 @@ async function cacheUrl(url) {
     const filePath = getPlatinumCachePath(cacheRoot, url);
     try {
       const existing = await fsp.stat(filePath).catch(() => null);
-      if (existing?.isFile()) {
-        if (textTypes.test(String((await readMeta(filePath)).contentType || "")) && existing.size <= textLimit) {
+      const refreshEntry = refreshEntries && requiredUrls.has(url.toString()) && /\.html?$/i.test(url.pathname);
+      if (existing?.isFile() && !refreshEntry) {
+        if (textFile.test(url.pathname) && existing.size <= textLimit) {
           const cachedText = await fsp.readFile(filePath, "utf8");
-          const repairedText = rewritePlatinumText(cachedText, (await readMeta(filePath)).contentType);
+          const repairedText = rewritePlatinumText(cachedText, (await readMeta(filePath)).contentType, url);
           if (repairedText !== cachedText) await writeAtomic(filePath, Buffer.from(repairedText));
           if (!entriesOnly) {
             discoverReferences(repairedText.replaceAll(`${PLATINUM_MOUNT}/`, "/"), url);
@@ -166,19 +168,24 @@ async function cacheUrl(url) {
 
     const contentType = response.headers.get("content-type") || "application/octet-stream";
     const contentLength = Number(response.headers.get("content-length") || 0);
-    const isTextAsset = textTypes.test(contentType) || /\.(?:html?|js|mjs|css|json|xml|txt|map|svg)$/i.test(url.pathname);
+    const isTextAsset = textFile.test(url.pathname);
     if (isTextAsset && (!contentLength || contentLength <= textLimit)) {
       const raw = Buffer.from(await response.arrayBuffer());
       const original = raw.toString("utf8");
       if (!entriesOnly) discoverReferences(original, url);
-      const body = Buffer.from(rewritePlatinumText(original, contentType));
+      const body = Buffer.from(/html/i.test(contentType) ? repairKnownGameEntry(original, url) : rewritePlatinumText(original, contentType, url));
+      if (refreshEntry && existing?.isFile()) {
+        const backup = path.join(cacheRoot, 'before-entry-repair', path.relative(cacheRoot, filePath));
+        await fsp.mkdir(path.dirname(backup), { recursive: true });
+        await fsp.copyFile(filePath, backup, fs.constants.COPYFILE_EXCL).catch(error => { if (error.code !== 'EEXIST') throw error; });
+      }
       await writeAtomic(filePath, body);
       downloadedBytes += body.length;
     } else {
       await streamAtomic(filePath, response.body);
       downloadedBytes += (await fsp.stat(filePath)).size;
     }
-    await writeAtomic(`${filePath}.meta.json`, Buffer.from(`${JSON.stringify({ contentType, source: url.toString() })}\n`));
+    await writeAtomic(`${filePath}.meta.json`, Buffer.from(`${JSON.stringify({ contentType, source: url.toString(), decoded: !!response.headers.get('content-encoding') })}\n`));
     downloaded += 1;
   } catch (error) {
     const failure = { url: url.toString(), error: error.message };
@@ -204,10 +211,10 @@ async function repairCachedTextFiles(directory) {
     const assetFile = entryPath.slice(0, -".meta.json".length);
     const metadata = await readMeta(assetFile);
     const stat = await fsp.stat(assetFile).catch(() => null);
-    const isTextAsset = textTypes.test(String(metadata.contentType || "")) || /\.(?:html?|js|mjs|css|json|xml|txt|map|svg)$/i.test(assetFile);
+    const isTextAsset = textFile.test(assetFile);
     if (!stat?.isFile() || !isTextAsset || stat.size > textLimit) return;
     const existing = await fsp.readFile(assetFile, "utf8");
-    const repaired = rewritePlatinumText(existing, metadata.contentType || "");
+    const repaired = rewritePlatinumText(existing, metadata.contentType || "", metadata.source ? new URL(metadata.source) : undefined);
     if (repaired === existing) return;
     await writeAtomic(assetFile, Buffer.from(repaired));
     repairedAssets += 1;

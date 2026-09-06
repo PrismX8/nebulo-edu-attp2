@@ -377,6 +377,51 @@
       text-transform: uppercase;
     }
 
+    .sponsor-slot {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sponsor-slot > span {
+      display: block;
+      margin-bottom: 6px;
+      color: rgba(147, 164, 184, .62);
+      font-size: 9px;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .sponsor-link {
+      display: flex;
+      width: max-content;
+      min-height: 30px;
+      margin: 6px auto 0;
+      padding: 7px 12px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(63, 140, 255, .24);
+      border-radius: 8px;
+      background: rgba(63, 140, 255, .07);
+      color: #91baff;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: border-color .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .sponsor-link:hover {
+      border-color: rgba(63, 140, 255, .5);
+      background: rgba(63, 140, 255, .13);
+      color: #c8dcff;
+    }
+
+    .sponsor-link:focus-visible { outline: 2px solid #3f8cff; outline-offset: 3px; }
+
     @keyframes live-pulse {
       0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent), 0 0 14px currentColor; }
       70% { box-shadow: 0 0 0 8px transparent, 0 0 14px currentColor; }
@@ -389,16 +434,46 @@
     }
 
     @media (max-width: 680px) {
-      .page::before {
-        color: rgba(63, 140, 255, .17);
-        font-size: clamp(104px, 32vw, 142px);
-        letter-spacing: -.13em;
-        transform: translate(-50%, -68%);
+      html, body { min-height: 100vh; min-height: 100dvh; }
+      body { min-width: 0; }
+      .page {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: block;
+        padding: max(12px, env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom));
       }
-      .setup-card { box-shadow: 0 22px 60px var(--shadow); }
-      .terminal-bar { align-items: flex-start; flex-direction: column; padding: 13px 16px; }
-      .mode { grid-template-columns: 1fr; padding: 16px; }
-      .select { width: 100%; }
+      .page::before {
+        color: rgba(63, 140, 255, .095);
+        font-size: clamp(86px, 30vw, 132px);
+        letter-spacing: -.13em;
+        transform: translate(-50%, -88%);
+      }
+      .setup-card { width: 100%; border-radius: 14px; box-shadow: 0 22px 60px var(--shadow); }
+      .terminal-bar { min-height: 42px; padding: 0 13px; gap: 8px; font-size: 9px; letter-spacing: .09em; }
+      .terminal-code { gap: 6px; }
+      .content { padding: 22px 14px 16px; }
+      .eyebrow { margin-bottom: 7px; font-size: 9px; }
+      h1 { font-size: clamp(28px, 9.5vw, 38px); line-height: 1.02; }
+      .subtext { margin: 10px 0 19px; font-size: 13px; }
+      .choices { gap: 9px; }
+      .mode { grid-template-columns: 1fr; gap: 13px; padding: 14px; border-radius: 11px; }
+      .mode-kicker { margin-bottom: 5px; font-size: 9px; }
+      .mode-name { font-size: 20px; }
+      .mode-description { margin-top: 5px; font-size: 12px; line-height: 1.4; }
+      .status-list { gap: 5px; margin-top: 9px; }
+      .status-list li { min-height: 22px; padding-inline: 7px; font-size: 8px; }
+      .select { width: 100%; min-height: 48px; border-radius: 9px; }
+      .footer-note { margin-top: 14px; font-size: 9px; }
+      .sponsor-slot { margin-top: 14px; padding-top: 10px; }
+    }
+
+    @media (max-width: 680px) and (max-height: 700px) {
+      .page::before { display: none; }
+      .content { padding-top: 17px; }
+      .subtext { margin-bottom: 14px; }
+      .mode { padding: 12px; }
+      .mode-description { display: none; }
+      .status-list { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -474,6 +549,10 @@
         </div>
 
         <p class="footer-note">This choice resets each time the root address is opened.</p>
+        <aside class="sponsor-slot" aria-label="Sponsored content">
+          <span>Sponsored</span>
+          <a class="sponsor-link" href="https://omg10.com/4/11728073" target="_blank" rel="sponsored nofollow noopener noreferrer">Visit sponsor</a>
+        </aside>
       </div>
     </section>
   </main>

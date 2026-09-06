@@ -206,7 +206,7 @@ const S = {
   replyTarget: null, pendingFiles: [],
   roomState: { read: null, pinned: [], bookmarkIds: [] },
   allowedReactions: ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '💯'],
-  hasOlderMessages: true, loadingOlderMessages: false,
+  hasOlderMessages: true, loadingOlderMessages: false, historyAnchorCleanup: null,
   drafts: {}, draftTimer: null, readTimer: null,
   presenceStatus: 'online', customStatus: '', presenceIdleTimer: null, presenceLastActivity: Date.now(),
   unreadCounts: {}, mentionCounts: {}, alerts: [],
@@ -334,6 +334,52 @@ function applyChatPreferences() {
   renderTypingBar();
 }
 
+const mobileChatQuery = window.matchMedia('(max-width: 820px)');
+
+function isMobileChat() {
+  return mobileChatQuery.matches;
+}
+
+function syncMobilePanelBackdrop() {
+  const active = isMobileChat() && !!document.querySelector('#section-panel.mobile-open, #members-panel.mobile-open, #mobile-more-menu.mobile-open');
+  document.getElementById('mobile-panel-backdrop')?.classList.toggle('active', active);
+}
+
+function closeMobilePanels() {
+  document.getElementById('section-panel')?.classList.remove('mobile-open');
+  document.getElementById('members-panel')?.classList.remove('mobile-open');
+  const more = document.getElementById('mobile-more-menu');
+  more?.classList.remove('mobile-open');
+  more?.setAttribute('aria-hidden', 'true');
+  syncMobilePanelBackdrop();
+}
+
+function openMobileSectionPanel() {
+  if (!isMobileChat()) return;
+  closeMobilePanels();
+  document.getElementById('section-panel')?.classList.add('mobile-open');
+  syncMobilePanelBackdrop();
+}
+
+function openMobileMembersPanel() {
+  if (!isMobileChat()) return;
+  closeMobilePanels();
+  document.getElementById('members-panel')?.classList.add('mobile-open');
+  syncMobilePanelBackdrop();
+}
+
+function toggleMobileMoreMenu() {
+  if (!isMobileChat()) return;
+  const more = document.getElementById('mobile-more-menu');
+  const shouldOpen = !more?.classList.contains('mobile-open');
+  closeMobilePanels();
+  if (shouldOpen && more) {
+    more.classList.add('mobile-open');
+    more.setAttribute('aria-hidden', 'false');
+  }
+  syncMobilePanelBackdrop();
+}
+
 function formatTime(d) {
   if (!d) return '';
   return new Date(d).toLocaleTimeString([], {
@@ -385,6 +431,8 @@ function messageAuthorKey(msg = {}) {
 }
 
 function messageOrderValue(msg = {}) {
+  const stableLocalTime = Number(msg.__sortTime || 0);
+  if (Number.isFinite(stableLocalTime) && stableLocalTime > 0) return stableLocalTime;
   const value = new Date(messageTimeValue(msg)).getTime();
   return Number.isFinite(value) ? value : 0;
 }
@@ -560,7 +608,7 @@ async function api(url, opts = {}) {
     const err = new Error(`${method} ${url} → ${res.status}`);
     err.status = res.status;
     try { err.data = await res.json(); } catch { err.data = null; }
-    if (res.status === 401 && token) handleSessionExpired();
+    if (res.status === 401 && token && opts.ignoreAuthFailure !== true) handleSessionExpired();
     throw err;
   }
   const ct = res.headers.get('content-type') || '';
@@ -647,7 +695,7 @@ async function registerAccount(username, displayName, email, password) {
 
 async function hydrateUserProfile(sessionToken) {
   try {
-    const accountData = await api('/api/account/profile');
+    const accountData = await api('/api/account/profile', { ignoreAuthFailure: true });
     // Ignore a profile response from an older session after an account change/logout.
     if (sessionToken !== (S.token || localStorage.getItem('token') || '')) return;
     if (accountData?.profile && S.user) {
@@ -1863,16 +1911,28 @@ function avatarEl(name, size = 36, avatarUrl = null, effectId = 'none') {
   const color = avatarColor(name);
   const base = `width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.28)}px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center`;
   const fxClass = avatarEffectClass(effectId);
-  const avatarInner = avatarUrl
-    ? `<img src="${esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:${size<30?9:11}px;font-weight:700;color:#fff">${esc(avatarInitials(name))}</span>`
-    : esc(avatarInitials(name));
+  const initialsText = esc(avatarInitials(name));
   if (avatarUrl) {
+    const avatarInner = `<img data-avatar-img="1" src="${esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover" onerror="window.__nebuloAvatarFallback && window.__nebuloAvatarFallback(this)">
+      <span data-avatar-fallback="1" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:${size<30?9:11}px;font-weight:700;color:#fff">${initialsText}</span>`;
     return `<span class="avatar-fx-wrap${fxClass}" style="--avatar-size:${size}px"><span class="msg-avatar" style="${base};background:${color}">${avatarInner}</span></span>`;
   }
-  return `<span class="avatar-fx-wrap${fxClass}" style="--avatar-size:${size}px"><span class="msg-avatar" style="${base};background:${color};font-size:${size<30?9:11}px;font-weight:700;color:#fff">${avatarInner}</span></span>`;
+  return `<span class="avatar-fx-wrap${fxClass}" style="--avatar-size:${size}px"><span class="msg-avatar" style="${base};background:${color};font-size:${size<30?9:11}px;font-weight:700;color:#fff">${initialsText}</span></span>`;
 }
+
+window.__nebuloAvatarFallback = function(img) {
+  try {
+    if (!img) return;
+    img.style.display = 'none';
+    const fallback = img.nextElementSibling;
+    if (fallback && fallback.dataset?.avatarFallback === '1') {
+      fallback.style.display = 'flex';
+    } else if (img.parentElement) {
+      const text = (img.alt && img.alt.trim()) || (img.parentElement.textContent || '').trim();
+      img.parentElement.textContent = text || '?';
+    }
+  } catch {}
+};
 
 function renderBody(raw) {
   const imgUrls = [];
@@ -2164,7 +2224,15 @@ function renderMessages(msgs, options = {}) {
   if (!list) return;
   const orderedMessages = canonicalizeMessageAuthors(msgs);
   if (msgs === S.lastMsgs) S.lastMsgs = orderedMessages;
-  if (!orderedMessages.length) { list.innerHTML = emptyPlaceholder(); return; }
+  if (!orderedMessages.length) {
+    const emptyHtml = emptyPlaceholder();
+    if (list.__nebuloMessageSourceHtml !== emptyHtml || list.__nebuloMessageRoom !== String(S.room || '') || list.innerHTML !== emptyHtml) {
+      list.innerHTML = emptyHtml;
+      list.__nebuloMessageSourceHtml = emptyHtml;
+      list.__nebuloMessageRoom = String(S.room || '');
+    }
+    return;
+  }
   const shouldStick = options.forceScroll || isNearMessageBottom();
 
   let html = '';
@@ -2184,7 +2252,25 @@ function renderMessages(msgs, options = {}) {
     prevDate = dateStr; prevAuthor = author; prevTs = ts;
   }
 
+  const roomKey = String(S.room || '');
+  const htmlChanged = list.__nebuloMessageSourceHtml !== html ||
+    list.__nebuloMessageRoom !== roomKey ||
+    !list.querySelector('.msg-virtual-item');
+  if (!htmlChanged) {
+    if (shouldStick) scrollBottomSoon({ force: true });
+    return;
+  }
+
+  const container = document.getElementById('messages-container');
+  const previousScrollTop = container?.scrollTop || 0;
+  const previousScrollHeight = container?.scrollHeight || 0;
   list.innerHTML = html;
+  list.__nebuloMessageSourceHtml = html;
+  list.__nebuloMessageRoom = roomKey;
+
+  if (!shouldStick && container) {
+    container.scrollTop = previousScrollTop + Math.max(0, container.scrollHeight - previousScrollHeight);
+  }
   scrollBottomSoon({ force: shouldStick });
   void renderLinkEmbeds(list, { preserveScroll: !shouldStick }).finally(() => scrollBottomSoon({ force: shouldStick }));
 }
@@ -2437,7 +2523,7 @@ async function loadOlderMessages() {
     try {
       data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomAtStart)}/db-messages?${query}`);
     } catch (err) {
-      if (err?.status !== 404) throw err;
+      if (err?.status !== 404 && err?.status !== 500 && err?.status !== 502) throw err;
       data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomAtStart)}/messages?${query}`);
     }
     if (roomAtStart !== String(S.room)) return;
@@ -2451,11 +2537,11 @@ async function loadOlderMessages() {
     if (fresh.length) {
       S.lastMsgs = mergeMessageBatch(fresh.map(withLocalMessageIdentity), S.lastMsgs);
       renderMessages(S.lastMsgs);
-      restoreAnchor(container, anchorRect, previousScrollTop);
-      void restoreAfterImages(container, anchorRect, previousScrollTop, 1500);
+      stabilizeHistoryAnchor(container, anchorRect, previousScrollTop, roomAtStart);
     }
-  } catch {
-    toast('Could not load older messages', 'error');
+  } catch (err) {
+    const detail = err?.data?.msg ? ` (${err.data.msg})` : '';
+    toast(`Could not load older messages${detail}`, 'error');
   } finally {
     S.loadingOlderMessages = false;
     document.getElementById('history-loading')?.classList.remove('visible');
@@ -2467,30 +2553,31 @@ function pickAnchorRect(container) {
   if (!list) return null;
   const items = list.querySelectorAll('.msg-virtual-item');
   const containerTop = container.getBoundingClientRect().top;
+  let partiallyVisible = null;
   for (const item of items) {
     const rect = item.getBoundingClientRect();
     if (rect.bottom > containerTop + 4) {
-      return {
+      const candidate = {
         id: item.dataset.messageId || '',
         offset: rect.top - containerTop
       };
+      if (rect.top >= containerTop + 4) return candidate;
+      partiallyVisible ||= candidate;
     }
   }
-  return null;
+  return partiallyVisible;
 }
 
-function restoreAnchor(container, anchorRect, fallbackScrollTop) {
-  requestAnimationFrame(() => {
-    if (!container) return;
-    const target = findAnchorElement(container, anchorRect);
-    if (target) {
-      const newTop = target.getBoundingClientRect().top;
-      const containerTop = container.getBoundingClientRect().top;
-      container.scrollTop += (newTop - containerTop) - (anchorRect?.offset ?? 0);
-    } else {
-      container.scrollTop = fallbackScrollTop;
-    }
-  });
+function restoreAnchorNow(container, anchorRect, fallbackScrollTop) {
+  if (!container) return;
+  const target = findAnchorElement(container, anchorRect);
+  if (target) {
+    const newTop = target.getBoundingClientRect().top;
+    const containerTop = container.getBoundingClientRect().top;
+    container.scrollTop += (newTop - containerTop) - (anchorRect?.offset ?? 0);
+  } else {
+    container.scrollTop = fallbackScrollTop;
+  }
 }
 
 function findAnchorElement(container, anchorRect) {
@@ -2502,15 +2589,49 @@ function findAnchorElement(container, anchorRect) {
   return items?.[0] || null;
 }
 
-function restoreAfterImages(container, anchorRect, fallbackScrollTop, durationMs = 1500) {
-  if (!container) return;
-  const start = Date.now();
-  const tick = () => {
-    if (Date.now() - start > durationMs) return;
-    restoreAnchor(container, anchorRect, fallbackScrollTop);
-    requestAnimationFrame(tick);
+function stabilizeHistoryAnchor(container, anchorRect, fallbackScrollTop, roomAtStart, durationMs = 1800) {
+  S.historyAnchorCleanup?.();
+  if (!container || !anchorRect) return;
+
+  let active = true;
+  let frame = 0;
+  let timer = 0;
+  const list = document.getElementById('messages-list');
+  const cleanup = () => {
+    if (!active) return;
+    active = false;
+    if (frame) cancelAnimationFrame(frame);
+    if (timer) clearTimeout(timer);
+    resizeObserver?.disconnect();
+    userIntentEvents.forEach((type) => container.removeEventListener(type, cancelForUser));
+    if (S.historyAnchorCleanup === cleanup) S.historyAnchorCleanup = null;
   };
-  requestAnimationFrame(tick);
+  const restore = () => {
+    if (!active || String(S.room) !== String(roomAtStart)) return cleanup();
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      if (!active || String(S.room) !== String(roomAtStart)) return cleanup();
+      restoreAnchorNow(container, anchorRect, fallbackScrollTop);
+    });
+  };
+  const cancelForUser = () => cleanup();
+  const userIntentEvents = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+  userIntentEvents.forEach((type) => container.addEventListener(type, cancelForUser, { passive: true, once: true }));
+
+  const resizeObserver = typeof ResizeObserver === 'function' && list
+    ? new ResizeObserver(() => restore())
+    : null;
+  resizeObserver?.observe(list);
+  list?.querySelectorAll('img, video').forEach((media) => {
+    if (!media.complete) {
+      media.addEventListener('load', restore, { once: true });
+      media.addEventListener('error', restore, { once: true });
+    }
+  });
+
+  S.historyAnchorCleanup = cleanup;
+  restore();
+  timer = setTimeout(cleanup, durationMs);
 }
 
 function updateUnreadBadges() {
@@ -3822,10 +3943,10 @@ function showCenteredModerationNotice(reason, category) {
 // ─── File Upload ──────────────────────────────────────────────────────────────
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']);
 
-function uploadImageWithProgress(form, token, onProgress) {
+function uploadImageWithProgress(form, token, onProgress, endpoint) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload/image-db');
+    xhr.open('POST', endpoint || '/api/upload/image-db');
     if (token) xhr.setRequestHeader('x-auth-token', token);
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
@@ -3858,17 +3979,29 @@ async function handleFileSelect(file) {
   S.pendingFiles.push({ name: file.name, type: file.type, file, uploading: true, uploadId, progress: 1, status: 'Preparing upload...', url: null });
   renderAttachmentPreview();
 
-  try {
+try {
     const form = new FormData();
     form.append('image', file);
     const token = S.token || localStorage.getItem('token');
-    const data = await uploadImageWithProgress(form, token, (progress) => {
-      const item = S.pendingFiles.find(entry => entry.uploadId === uploadId);
-      if (!item) return;
-      item.progress = Math.max(Number(item.progress || 0), progress);
-      item.status = item.progress >= 95 ? 'Checking image...' : `Uploading... ${item.progress}%`;
-      renderAttachmentPreview();
-    });
+    let data;
+    try {
+      data = await uploadImageWithProgress(form, token, (progress) => {
+        const item = S.pendingFiles.find(entry => entry.uploadId === uploadId);
+        if (!item) return;
+        item.progress = Math.max(Number(item.progress || 0), progress);
+        item.status = item.progress >= 95 ? 'Checking image...' : `Uploading... ${item.progress}%`;
+        renderAttachmentPreview();
+      }, '/api/upload/image-db');
+    } catch (dbErr) {
+      if (dbErr?.status !== 502 && dbErr?.status !== 503 && dbErr?.status !== 500) throw dbErr;
+      data = await uploadImageWithProgress(form, token, (progress) => {
+        const item = S.pendingFiles.find(entry => entry.uploadId === uploadId);
+        if (!item) return;
+        item.progress = Math.max(Number(item.progress || 0), progress);
+        item.status = item.progress >= 95 ? 'Checking image...' : `Uploading... ${item.progress}%`;
+        renderAttachmentPreview();
+      }, '/api/upload/image');
+    }
     if (data?.moderation) console.log('[image moderation]', { url: data.url, ...data.moderation });
     const item = S.pendingFiles.find(entry => entry.uploadId === uploadId);
     if (!item) return;
@@ -3923,20 +4056,37 @@ function renderAttachmentPreview() {
   if (!preview) return;
   if (!S.pendingFiles.length) { preview.style.display = 'none'; preview.innerHTML = ''; return; }
   preview.style.display = 'grid';
-  preview.innerHTML = S.pendingFiles.map(item => {
+  preview.innerHTML = S.pendingFiles.map((item) => {
     const progress = Math.max(0, Math.min(100, Number(item.progress || 0)));
-    const previewUrl = item.url || (item.file ? URL.createObjectURL(item.file) : '');
+    const previewUrl = item.url || (item.file && typeof window.NebuloObjectUrl?.create === 'function'
+      ? window.NebuloObjectUrl.create(item.file)
+      : '');
+    const needsRevoke = !item.url && !!item.file;
+    const revokeAttr = needsRevoke ? ` data-revoke-blob="1" data-upload-id="${esc(item.uploadId)}"` : '';
     return `<div class="attachment-card${item.error ? ' has-error' : ''}">
-      <div class="attachment-thumb">${previewUrl ? `<img src="${esc(previewUrl)}" alt="" onload="${item.url ? '' : 'URL.revokeObjectURL(this.src)'}">` : '<span class="material-icons-round">image</span>'}</div>
+      <div class="attachment-thumb">${previewUrl ? `<img src="${esc(previewUrl)}" alt=""${revokeAttr}>` : '<span class="material-icons-round">image</span>'}</div>
       <div class="attachment-meta">
         <span class="attachment-name">${esc(item.name)}</span>
         <span class="attachment-status">${esc(item.status || 'Ready')}</span>
         ${item.uploading ? `<span class="attachment-progress"><i style="width:${progress}%"></i></span>` : ''}
       </div>
       ${item.error ? `<button type="button" class="icon-btn" onclick="retryAttachment('${esc(item.uploadId)}')" title="Retry"><span class="material-icons-round">refresh</span></button>` : ''}
-      <button type="button" class="icon-btn" onclick="clearAttachment('${esc(item.uploadId)}')" title="Remove"><span class="material-icons-round">close</span></button>
     </div>`;
   }).join('');
+  if (typeof window.NebuloObjectUrl?.revoke === 'function') {
+    preview.querySelectorAll('img[data-revoke-blob="1"]').forEach((img) => {
+      if (img.complete) {
+        try { window.NebuloObjectUrl.revoke(img.src); } catch {}
+      } else {
+        img.addEventListener('load', () => {
+          try { window.NebuloObjectUrl.revoke(img.src); } catch {}
+        }, { once: true });
+        img.addEventListener('error', () => {
+          try { window.NebuloObjectUrl.revoke(img.src); } catch {}
+        }, { once: true });
+      }
+    });
+  }
 }
 
 async function retryAttachment(uploadId) {
@@ -4118,6 +4268,74 @@ function queueOutgoingMessage(job) {
   void processOutgoingQueue();
 }
 
+function outgoingMessagePayload(job) {
+  return {
+    roomId: job.roomId,
+    body: job.finalBody,
+    clientId: getClientId(),
+    deviceId: getDeviceId(),
+    clientNonce: job.clientNonce,
+    reply: job.reply,
+    attachments: job.attachments,
+    equippedEffect: job.equippedEffect,
+    equippedAvatarEffect: job.equippedAvatarEffect
+  };
+}
+
+function sendMessageOverSocket(job) {
+  return new Promise((resolve, reject) => {
+    const socket = S.socket;
+    if (!socket?.connected) {
+      const error = new Error('Realtime connection is unavailable');
+      error.transportUnavailable = true;
+      reject(error);
+      return;
+    }
+    let settled = false;
+    let timer = null;
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      socket.off?.('disconnect', onDisconnect);
+      callback(value);
+    };
+    const onDisconnect = () => {
+      const error = new Error('Realtime connection was interrupted');
+      error.transportUnavailable = true;
+      finish(reject, error);
+    };
+    timer = setTimeout(() => {
+      const error = new Error('Realtime send timed out');
+      error.transportUnavailable = true;
+      finish(reject, error);
+    }, 13_000);
+    socket.once?.('disconnect', onDisconnect);
+    socket.emit('send_message', outgoingMessagePayload(job), (ack = {}) => {
+      if (ack?.ok && ack.message) {
+        finish(resolve, ack.message);
+        return;
+      }
+      const error = new Error(ack?.msg || 'Failed to send message');
+      error.status = Number(ack?.status || 400);
+      error.data = ack?.data || { msg: ack?.msg || error.message };
+      finish(reject, error);
+    });
+  });
+}
+
+async function sendQueuedMessage(job) {
+  try {
+    return await sendMessageOverSocket(job);
+  } catch (error) {
+    if (!error?.transportUnavailable) throw error;
+    return chatApi(`/api/tlk/rooms/${encodeURIComponent(job.roomId)}/messages`, {
+      method: 'POST',
+      body: outgoingMessagePayload(job)
+    });
+  }
+}
+
 async function processOutgoingQueue() {
   if (S.sendQueueProcessing) return;
   S.sendQueueProcessing = true;
@@ -4125,19 +4343,7 @@ async function processOutgoingQueue() {
     while (S.sendQueue.length) {
       const job = S.sendQueue[0];
       try {
-        const sendData = await chatApi(`/api/tlk/rooms/${encodeURIComponent(job.roomId)}/messages`, {
-          method: 'POST',
-          body: {
-            body: job.finalBody,
-            clientId: getClientId(),
-            deviceId: getDeviceId(),
-            clientNonce: job.clientNonce,
-            reply: job.reply,
-            attachments: job.attachments,
-            equippedEffect: job.equippedEffect,
-            equippedAvatarEffect: job.equippedAvatarEffect,
-          },
-        });
+        const sendData = await sendQueuedMessage(job);
         if (String(S.room) === String(job.roomId)) {
           handleRealtimeMessage({ roomId: job.roomId, message: ownOutgoingMessage(sendData) });
         }
@@ -4221,6 +4427,7 @@ async function sendMessage() {
     reply,
     attachments,
     date: new Date().toISOString(),
+    __sortTime: Date.now(),
     __localSequence: ++S.localMessageSequence,
     __pending: true
   });
@@ -4529,16 +4736,18 @@ function openUserCard(username, fallbackUser = null) {
   const member = (Array.isArray(S.currentMembers) ? S.currentMembers : []).find(
     item => String(item?.username || '').toLowerCase() === String(username || '').toLowerCase()
   );
-  const user = member || (fallbackUser && typeof fallbackUser === 'object' ? {
-    ...fallbackUser,
-    username: fallbackUser.username || username,
-    avatar: fallbackUser.avatar || fallbackUser.avatar_url || null,
-    equippedEffect: fallbackUser.equippedEffect || 'none',
-    equippedAvatarEffect: fallbackUser.equippedAvatarEffect || 'none',
-    equippedTag: fallbackUser.equippedTag || 'none',
-    equippedBanner: fallbackUser.equippedBanner || 'none',
-    equippedProfileEffect: fallbackUser.equippedProfileEffect || 'none'
-  } : null);
+  const fallback = fallbackUser && typeof fallbackUser === 'object' ? fallbackUser : null;
+  const user = (member || fallback) ? {
+    ...(fallback || {}),
+    ...(member || {}),
+    username: member?.username || fallback?.username || username,
+    avatar: member?.avatar || fallback?.avatar || fallback?.avatar_url || null,
+    equippedEffect: member?.equippedEffect || fallback?.equippedEffect || 'none',
+    equippedAvatarEffect: member?.equippedAvatarEffect || fallback?.equippedAvatarEffect || 'none',
+    equippedTag: member?.equippedTag || fallback?.equippedTag || 'none',
+    equippedBanner: member?.equippedBanner || fallback?.equippedBanner || 'none',
+    equippedProfileEffect: member?.equippedProfileEffect || fallback?.equippedProfileEffect || 'none'
+  } : null;
   if (!user) return toast('That member is no longer online', 'info');
   const tag = user.equippedTag && user.equippedTag !== 'none' ? EFFECT_MAP.get(user.equippedTag) : null;
   const equippedBanner = String(user.equippedBanner || '');
@@ -6717,6 +6926,7 @@ function bindRoomButtons() {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closeMobilePanels();
       joinRoom(btn.dataset.room, btn.dataset.roomType, btn.dataset.roomName);
     });
   });
@@ -6725,6 +6935,11 @@ function bindRoomButtons() {
 function toggleMembersPanel() {
   const panel = document.getElementById('members-panel');
   if (!panel) return;
+  if (isMobileChat()) {
+    if (panel.classList.contains('mobile-open')) closeMobilePanels();
+    else openMobileMembersPanel();
+    return;
+  }
   S.membersOpen = !S.membersOpen;
   localStorage.setItem('chatShowMembers', String(S.membersOpen));
   panel.style.display = S.membersOpen ? '' : 'none';
@@ -6772,10 +6987,13 @@ function setupPanelResizers() {
 }
 
 function showLogin() {
+  closeMobilePanels();
+  document.body.classList.remove('chat-authenticated');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
 }
 function showApp() {
+  document.body.classList.add('chat-authenticated');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 }
@@ -6915,8 +7133,31 @@ function setupAppHandlers() {
   setupPanelResizers();
   // Nav rail
   document.querySelectorAll('.nav-btn[data-section]').forEach(btn =>
-    btn.addEventListener('click', () => renderSection(btn.dataset.section))
+    btn.addEventListener('click', async () => {
+      await renderSection(btn.dataset.section);
+      if (isMobileChat()) openMobileSectionPanel();
+    })
   );
+
+  document.getElementById('mobile-sections-btn')?.addEventListener('click', openMobileSectionPanel);
+  document.getElementById('mobile-section-close')?.addEventListener('click', closeMobilePanels);
+  document.getElementById('mobile-members-close')?.addEventListener('click', closeMobilePanels);
+  document.getElementById('mobile-panel-backdrop')?.addEventListener('click', closeMobilePanels);
+  document.getElementById('mobile-more-btn')?.addEventListener('click', toggleMobileMoreMenu);
+  document.getElementById('mobile-more-close')?.addEventListener('click', closeMobilePanels);
+  document.querySelectorAll('[data-mobile-destination]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const destination = button.dataset.mobileDestination;
+      closeMobilePanels();
+      if (destination === 'profile') {
+        openUserCard(myUsername(), S.user || { username: myUsername() });
+        return;
+      }
+      if (destination === 'admin' && !isOwner()) return toast('Owner access required', 'error');
+      await renderSection(destination);
+      if (destination !== 'cosmetics') openMobileSectionPanel();
+    });
+  });
 
   // Avatar → settings
   document.getElementById('nav-avatar')?.addEventListener('click', () => renderSection('settings'));
@@ -7092,6 +7333,10 @@ function setupAppHandlers() {
     if (e.target.id === 'modal-overlay') closeModal();
   });
 
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && isMobileChat()) closeMobilePanels();
+  });
+
   // Sidebar search
   document.getElementById('sidebar-search')?.addEventListener('input', e => {
     const q = e.target.value.toLowerCase();
@@ -7115,6 +7360,7 @@ async function launchApp() {
   applyChatPreferences();
   const adminNav = document.getElementById('admin-nav-btn');
   if (adminNav) adminNav.style.display = isOwner() ? 'flex' : 'none';
+  document.querySelector('.mobile-admin-destination')?.toggleAttribute('hidden', !isOwner());
   initSocket();
   setupAppHandlers();
   startFocusRewards();
@@ -7148,6 +7394,9 @@ async function launchApp() {
 
 window.addEventListener('storage', (event) => {
   if (event.key?.startsWith('chat')) applyChatPreferences();
+});
+window.addEventListener('resize', () => {
+  if (!isMobileChat()) closeMobilePanels();
 });
 window.addEventListener('message', (event) => {
   const data = event.data;

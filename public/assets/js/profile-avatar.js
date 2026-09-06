@@ -2,17 +2,32 @@
   const MAX_SOURCE_BYTES = 5 * 1024 * 1024;
   const OUTPUT_SIZE = 256;
   const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+  // Capture the native blob helpers once. Proxy runtimes can replace the
+  // global URL constructor later, which used to make avatar image onload
+  // handlers throw and leave profile previews stuck.
+  const browserUrlApi = global.URL || global.webkitURL;
+  const createObjectUrl = typeof browserUrlApi?.createObjectURL === 'function'
+    ? browserUrlApi.createObjectURL.bind(browserUrlApi)
+    : null;
+  const revokeObjectUrl = typeof browserUrlApi?.revokeObjectURL === 'function'
+    ? browserUrlApi.revokeObjectURL.bind(browserUrlApi)
+    : () => {};
+  global.NebuloObjectUrl = Object.freeze({ create: createObjectUrl, revoke: revokeObjectUrl });
 
   function loadImage(file) {
     return new Promise((resolve, reject) => {
-      const url = URL.createObjectURL(file);
+      if (!createObjectUrl) {
+        reject(new Error('Image previews are unavailable in this browser.'));
+        return;
+      }
+      const url = createObjectUrl(file);
       const image = new Image();
       image.onload = () => {
-        URL.revokeObjectURL(url);
+        revokeObjectUrl(url);
         resolve(image);
       };
       image.onerror = () => {
-        URL.revokeObjectURL(url);
+        revokeObjectUrl(url);
         reject(new Error('The selected image could not be decoded.'));
       };
       image.src = url;

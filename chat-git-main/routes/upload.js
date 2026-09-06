@@ -97,6 +97,12 @@ router.post('/image-db', auth, security.chatWriteRateLimit, dbUpload.single('ima
       try {
         const publicUrl = `${req.protocol}://${req.get('host') || 'localhost'}/api/upload/image/${saved.id}`;
         const moderation = await moderateHostedImage(publicUrl);
+        if (moderation.unavailable) {
+          // A provider outage is not a content rejection. Retain the pending
+          // upload instead of permanently deleting an otherwise valid image.
+          console.warn('Image moderation is pending: provider unavailable');
+          return;
+        }
         const summary = {
           provider: 'contentmod',
           blocked: !moderation.allowed,
@@ -110,10 +116,7 @@ router.post('/image-db', auth, security.chatWriteRateLimit, dbUpload.single('ima
           riskScores: moderation.result?.riskScores || null
         };
         if (!moderation.allowed) {
-          try {
-            const { getPool } = require('../services/db/profileStore');
-            await getPool().query('DELETE FROM public.chat_images WHERE id = $1', [saved.id]);
-          } catch {}
+          await chatImageStore.deleteChatImage(saved.id).catch(() => {});
         } else {
           try {
             const { getPool } = require('../services/db/profileStore');
@@ -135,7 +138,8 @@ router.post('/image-db', auth, security.chatWriteRateLimit, dbUpload.single('ima
       }
     })();
   } catch (err) {
-    return res.status(err.status || 502).json({ msg: err.message || 'Failed to upload image' });
+    console.error('[upload/image-db] failed:', err?.message || err, { stack: err?.stack });
+    return res.status(err.status || 502).json({ msg: err.message || 'Failed to upload image', detail: err.detail || (err?.stack ? String(err.stack).split('\n').slice(0, 3).join(' | ') : '') });
   }
 });
 
@@ -208,13 +212,13 @@ async function moderateHostedImage(url) {
     validateStatus: null
   });
   if (actionResponse.status < 200 || actionResponse.status >= 300) {
-    return { allowed: false, reason: `ContentMod analyzer token request failed (${actionResponse.status})` };
+    return { allowed: false, unavailable: true, reason: `ContentMod analyzer token request failed (${actionResponse.status})` };
   }
   const signedUrl = String((String(actionResponse.data || '').match(/"data":"([^"]+)"/) || [])[1] || '')
     .replace(/\\u0026/g, '&')
     .trim();
   if (!signedUrl || !signedUrl.startsWith('https://api.contentmod.io/public/')) {
-    return { allowed: false, reason: 'ContentMod analyzer did not return a valid moderation URL' };
+    return { allowed: false, unavailable: true, reason: 'ContentMod analyzer did not return a valid moderation URL' };
   }
 
   const moderationResponse = await axios.post(
@@ -232,7 +236,7 @@ async function moderateHostedImage(url) {
     }
   );
   if (moderationResponse.status < 200 || moderationResponse.status >= 300) {
-    return { allowed: false, reason: `ContentMod analyzer failed (${moderationResponse.status})` };
+    return { allowed: false, unavailable: true, reason: `ContentMod analyzer failed (${moderationResponse.status})` };
   }
 
   const result = moderationResponse.data || {};

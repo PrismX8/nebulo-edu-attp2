@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { normalizeAttachment, attachmentUrl } = require('./attachments');
 
 const DATA_DIR = path.resolve(__dirname, '..', '..', 'data');
 const STORE_FILE = path.join(DATA_DIR, 'message-features.json');
@@ -26,14 +27,16 @@ const userKey = (user = {}) => {
   return id ? `id:${id}` : name ? `name:${name}` : '';
 };
 
-function normalizeAttachment(item = {}) {
-  const url = String(item?.url || '').trim();
-  if (!/^https:\/\/[^\s"'<>]{1,2000}$/i.test(url)) return null;
-  return {
-    url,
-    name: String(item?.name || 'Image').trim().slice(0, 160),
-    type: String(item?.type || 'image').trim().toLowerCase().slice(0, 80)
-  };
+function normalizeStoredAvatar(value = '') {
+  const avatar = String(value || '').trim();
+  if (!avatar) return null;
+  // Profile pictures are often large data URLs. Duplicating one into every
+  // message makes the history file enormous, and the previous 2,500 byte
+  // truncation produced invalid images. Current identity data is attached by
+  // the route when history is read, so only compact URL references belong in
+  // the message snapshot.
+  if (/^data:image\//i.test(avatar)) return null;
+  return /^https?:\/\/[^\s"'<>]{1,2500}$/i.test(avatar) ? avatar : null;
 }
 
 function normalizeAttachments(items = []) {
@@ -53,7 +56,7 @@ function normalizeReply(reply = null) {
     messageId,
     author,
     preview: String(reply.preview || reply.body || 'Message').replace(/\s+/g, ' ').trim().slice(0, 140) || 'Message',
-    imageUrl: /^https:\/\/[^\s"'<>]{1,2000}$/i.test(imageUrl) ? imageUrl : ''
+    imageUrl: attachmentUrl(imageUrl)
   };
 }
 
@@ -69,16 +72,29 @@ function ensureRoom(room) {
 }
 
 function normalizeLoadedState(input = {}) {
+  let changed = false;
   state.rooms = input?.rooms && typeof input.rooms === 'object' ? input.rooms : {};
   state.bookmarks = input?.bookmarks && typeof input.bookmarks === 'object' ? input.bookmarks : {};
   state.reads = input?.reads && typeof input.reads === 'object' ? input.reads : {};
-  Object.keys(state.rooms).forEach(ensureRoom);
+  Object.keys(state.rooms).forEach((room) => {
+    const roomState = ensureRoom(room);
+    Object.values(roomState?.messages || {}).forEach((feature) => {
+      if (!feature?.original || typeof feature.original !== 'object') return;
+      const normalizedAvatar = normalizeStoredAvatar(feature.original.avatar);
+      if (feature.original.avatar !== normalizedAvatar) {
+        feature.original.avatar = normalizedAvatar;
+        changed = true;
+      }
+    });
+  });
+  return changed;
 }
 
 function load() {
   try {
     if (!fs.existsSync(STORE_FILE)) return;
-    normalizeLoadedState(JSON.parse(fs.readFileSync(STORE_FILE, 'utf8') || '{}'));
+    const changed = normalizeLoadedState(JSON.parse(fs.readFileSync(STORE_FILE, 'utf8') || '{}'));
+    if (changed) save();
   } catch (error) {
     console.warn('Message feature state could not be loaded:', error?.message || error);
     normalizeLoadedState({});
@@ -122,12 +138,65 @@ function messageSnapshot(message = {}) {
   return {
     id: normalizeMessageId(message),
     body: normalizeBody(message.body || message.content || ''),
+    userId: userId(message) || null,
+    username: normalizeUsername(message.username || message.sender?.username || '') || null,
     nickname: normalizeUsername(message.nickname || message.username || message.name || 'Unknown'),
-    avatar: String(message.avatar || '').trim().slice(0, 2500),
+    avatar: normalizeStoredAvatar(message.avatar),
+    role: String(message.role || 'user').trim().toLowerCase().slice(0, 32),
     timestamp: message.timestamp || null,
     date: message.date || message.createdAt || message.created_at || null,
-    equippedEffect: String(message.equippedEffect || 'none').slice(0, 80)
+    equippedEffect: String(message.equippedEffect || 'none').slice(0, 80),
+    equippedAvatarEffect: String(message.equippedAvatarEffect || 'none').slice(0, 80),
+    equippedTag: String(message.equippedTag || 'none').slice(0, 80),
+    is_owner: !!message.is_owner,
+    is_premium: !!message.is_premium,
+    is_booster: !!message.is_booster
   };
+}
+
+function getRoomMessageHistory(room, { limit = 50, beforeId = null } = {}) {
+  const roomId = normalizeRoom(room);
+  const roomState = state.rooms[roomId];
+  if (!roomState || !Array.isArray(roomState.order)) return { messages: [], hasMore: false };
+
+  const safeLimit = Math.max(1, Math.min(200, Number(limit) || 50));
+  const targetId = normalizeMessageId(beforeId);
+  let end = roomState.order.length;
+  if (targetId) {
+    const exactIndex = roomState.order.indexOf(targetId);
+    if (exactIndex >= 0) {
+      end = exactIndex;
+    } else if (/^\d+$/.test(targetId)) {
+      const numericTarget = BigInt(targetId);
+      const firstNewerIndex = roomState.order.findIndex((id) => /^\d+$/.test(id) && BigInt(id) >= numericTarget);
+      if (firstNewerIndex >= 0) end = firstNewerIndex;
+    }
+  }
+
+  const start = Math.max(0, end - safeLimit);
+  const messages = roomState.order.slice(start, end).map((messageId) => {
+    const feature = roomState.messages?.[messageId];
+    if (!feature) return null;
+    const original = feature.original || {};
+    return {
+      ...original,
+      id: messageId,
+      _id: messageId,
+      roomId,
+      userId: original.userId || feature.authorUserId || null,
+      username: original.username || feature.authorUsername || null,
+      nickname: original.nickname || feature.authorUsername || 'Unknown',
+      user_token: feature.userToken || null,
+      body: feature.editedBody ?? feature.nativeBody ?? original.body ?? '',
+      content: feature.editedBody ?? feature.nativeBody ?? original.body ?? '',
+      avatar: original.avatar || null,
+      reply: feature.reply || null,
+      attachments: feature.attachments || [],
+      persistedLocally: true
+    };
+  }).filter(Boolean);
+
+  return { messages, hasMore: start > 0 };
 }
 
 function observeMessage(room, message = {}, extras = {}) {
@@ -142,6 +211,7 @@ function observeMessage(room, message = {}, extras = {}) {
     authorUsername: normalizeUsername(message.nickname || message.username || message.name) || previous.authorUsername || 'Unknown',
     userToken: String(message.user_token || message.userToken || '').trim().slice(0, 300) || previous.userToken || null,
     original: previous.original || messageSnapshot(message),
+    nativeBody: typeof extras.nativeBody === 'string' ? normalizeBody(extras.nativeBody) : previous.nativeBody,
     reply: normalizeReply(extras.reply || message.reply) || previous.reply || null,
     attachments: normalizeAttachments(extras.attachments || message.attachments).length
       ? normalizeAttachments(extras.attachments || message.attachments)
@@ -173,6 +243,7 @@ function recordMessage(room, message = {}, extras = {}) {
 }
 
 function decorateMessage(room, message = {}, viewer = null) {
+  if (message.deleted && !message.deletedVisibleToPrivileged) return { ...message, attachments: [], reply: null };
   const roomId = normalizeRoom(room);
   const messageId = normalizeMessageId(message);
   const roomState = state.rooms[roomId];
@@ -181,7 +252,7 @@ function decorateMessage(room, message = {}, viewer = null) {
   const viewerKey = userKey(viewer);
   return {
     ...message,
-    ...(feature.editedBody != null ? { body: feature.editedBody, content: feature.editedBody } : {}),
+    ...((feature.editedBody ?? feature.nativeBody) != null ? { body: feature.editedBody ?? feature.nativeBody, content: feature.editedBody ?? feature.nativeBody } : {}),
     reply: feature.reply || message.reply || null,
     attachments: feature.attachments?.length ? feature.attachments : message.attachments || [],
     reactions: publicReactions(feature.reactions, viewer),
@@ -369,6 +440,7 @@ module.exports = {
   bookmarks,
   decorateMessages,
   editMessage,
+  getRoomMessageHistory,
   hasMessage,
   markRead,
   observeMessages,

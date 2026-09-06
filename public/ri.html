@@ -10,7 +10,7 @@
     }
   </script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Nebulo Education Plus is a math-focused experience offering educational algebra practice tests to strengthen advanced math skills.">
   <meta name="keywords" content="math, algebra, advanced math practice test, educational exercises, study tools">
   <meta property="og:type" content="website">
@@ -1565,10 +1565,171 @@
         padding: 20px;
       }
     }
+
+    .mobile-toolbar-toggle { display: none; }
+
+    /* Keep wide touch phones in the mobile shell when rotated. */
+    @media (max-width: 820px), (pointer: coarse) and (max-width: 1100px) {
+      :root { --mobile-shell-height: 112px; }
+      html, body { width: 100%; min-width: 0; height: 100vh; height: 100dvh; overflow: hidden; }
+      .background-animation::before { animation: none; background-size: 100% 100%; }
+      .background-animation::after, .particles { display: none; }
+
+      .tab-system {
+        height: auto;
+        min-height: calc(var(--mobile-shell-height) + env(safe-area-inset-top));
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: 52px 52px;
+        align-content: end;
+        align-items: center;
+        gap: 0 8px;
+        padding: env(safe-area-inset-top) 8px 8px;
+        overflow: hidden;
+        background: rgba(10, 13, 20, .98);
+        backdrop-filter: blur(18px);
+      }
+      .tab-nav { grid-column: 1; grid-row: 1; gap: 4px; }
+      .tab-nav-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+      .tab-actions { grid-column: 2; grid-row: 1; min-width: 0; justify-content: flex-end; gap: 5px; }
+      .mobile-toolbar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0 11px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: #151b29;
+        color: #dce9fb;
+        font-weight: 600;
+        font-family: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .mobile-toolbar-toggle svg { width: 16px; height: 16px; flex: none; }
+      .mobile-toolbar-toggle:focus-visible { outline: 2px solid var(--accent-blue-light); outline-offset: 3px; }
+      .mobile-toolbar-toggle:active { background: #253652; }
+      #mobileToolbarShow {
+        display: none;
+        position: fixed;
+        top: calc(8px + env(safe-area-inset-top));
+        right: calc(8px + env(safe-area-inset-right));
+        z-index: 890;
+        box-shadow: 0 3px 14px rgba(0,0,0,.3);
+      }
+      body.mobile-toolbar-hidden #tabSystem { display: none !important; }
+      body.mobile-toolbar-hidden #mobileToolbarShow { display: inline-flex; }
+      body.mobile-toolbar-hidden .browser-windows { top: 0 !important; }
+      body.mobile-toolbar-hidden #mainContent { margin-top: 0 !important; height: 100dvh !important; min-height: 100dvh !important; }
+      .tab-sessions-btn, .tab-setup-btn, #tabSettingsBtn { display: none; }
+      .new-tab, .menu-button {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        margin: 0;
+        border-radius: 12px;
+      }
+      .menu-button span { width: 20px; }
+      .tabs-container {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        height: 44px;
+        gap: 5px;
+        padding: 2px 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x proximity;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+      }
+      .tabs-container::-webkit-scrollbar { display: none; }
+      .tab {
+        min-width: 118px;
+        max-width: 168px;
+        height: 40px;
+        padding: 0 8px 0 11px;
+        gap: 7px;
+        border-radius: 10px;
+        scroll-snap-align: start;
+        touch-action: pan-x;
+      }
+      .tab-title { font-size: 11px; }
+      .tab-close { width: 28px; height: 28px; opacity: .72; }
+      .browser-windows { top: calc(var(--mobile-shell-height) + env(safe-area-inset-top)); }
+      .main-content { min-width: 0; height: 100dvh; min-height: 100dvh; }
+
+      .apps-sidebar {
+        top: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: calc(100vw - 16px);
+        max-width: 460px;
+        height: auto;
+        padding-top: env(safe-area-inset-top);
+        border: 1px solid rgba(113, 147, 199, .28);
+        border-radius: 18px;
+        transform: translateX(calc(100% + 16px));
+        transition: transform .25s cubic-bezier(.2,.75,.25,1);
+        overflow: hidden;
+      }
+      .apps-sidebar.active { transform: translateX(0); }
+      .sidebar-header { padding: 18px 18px 13px; }
+      .sidebar-header h2 { font-size: 20px; }
+      .sidebar-search { padding: 10px 14px; }
+      .sidebar-search input { min-height: 46px; padding: 0 13px; font-size: 16px; }
+      .sidebar-options { padding: 10px 14px; gap: 7px; }
+      .sidebar-option-btn { min-height: 44px; padding: 9px 12px; font-size: 12px; }
+      .sidebar-content { padding: 12px 14px calc(18px + env(safe-area-inset-bottom)); }
+      .apps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .app-card { min-height: 104px; padding: 12px; transform: none !important; }
+      .app-icon { width: 40px; height: 40px; font-size: 16px; }
+      .app-info h4 { font-size: 12px; }
+      .app-info p { font-size: 10px; }
+      .sidebar-overlay { background: rgba(0,0,0,.68); backdrop-filter: blur(6px); }
+
+      .tab-sessions-popover {
+        left: 8px !important;
+        right: 8px !important;
+        top: auto !important;
+        bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        width: auto;
+        max-height: min(76dvh, 620px);
+        padding: 14px;
+        border-radius: 20px;
+        overflow: auto;
+      }
+      .tsp-btn { min-height: 44px; height: 44px; }
+      .tsp-input { min-height: 44px; height: 44px; font-size: 16px; }
+      .tsp-list { max-height: 42dvh; }
+    }
+
+    @media (max-width: 360px) {
+      :root { --mobile-shell-height: 108px; }
+      .tab-system { grid-template-rows: 50px 50px; padding-inline: 6px; }
+      .tab-nav-btn, .new-tab, .menu-button { width: 42px; height: 42px; min-width: 42px; }
+      .tab { min-width: 108px; }
+      #mobileToolbarHide { padding-inline: 0; width: 44px; }
+      #mobileToolbarHide .mobile-toolbar-label { display: none; }
+      .apps-sidebar { inset-inline: 4px; width: auto; }
+    }
+
+    @media (max-width: 1100px) and (pointer: coarse) {
+      .tab, .tab * { -webkit-user-drag: none; }
+    }
   </style>
   <script src="/assets/js/panic.js" defer></script>
   <script src="/assets/js/appearance.js" defer></script>
-  <script src="/assets/js/cloaking.js" defer></script>
+  <script src="/assets/js/cloaking.js?v=20260905-mobile-viewport-1" defer></script>
 <meta name="classification" content="Mathematics Education">
 <meta name="subject" content="Mathematics">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
@@ -1634,6 +1795,10 @@
       <!-- Tabs will be added here dynamically -->
     </div>
     <div class="tab-actions">
+      <button class="mobile-toolbar-toggle" id="mobileToolbarHide" type="button" title="Hide tabs and navigation for more space" aria-label="Hide toolbar" aria-expanded="true" aria-controls="tabSystem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 15 6-6 6 6" /></svg>
+        <span class="mobile-toolbar-label">Hide</span>
+      </button>
       <button class="new-tab" id="newTab" type="button" title="New tab" aria-label="Open a new tab">
         <i class="fas fa-plus"></i>
       </button>
@@ -1653,6 +1818,45 @@
       </button>
     </div>
   </div>
+
+  <button class="mobile-toolbar-toggle" id="mobileToolbarShow" type="button" title="Show tabs and navigation" aria-label="Show toolbar" aria-expanded="false" aria-controls="tabSystem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+    <span>Show toolbar</span>
+  </button>
+  <script>
+    // Independent of proxy startup: navigation can always be restored, even offline.
+    (() => {
+      const mobile = window.matchMedia('(max-width: 820px), (pointer: coarse) and (max-width: 1100px)');
+      const hide = document.getElementById('mobileToolbarHide');
+      const show = document.getElementById('mobileToolbarShow');
+      const toolbar = document.getElementById('tabSystem');
+      const key = 'nebuloMobileToolbarHidden';
+      let preferredHidden = false;
+      try { preferredHidden = localStorage.getItem(key) === 'true'; } catch {}
+      function apply(focusControl = false) {
+        const collapsed = mobile.matches && preferredHidden;
+        document.body.classList.toggle('mobile-toolbar-hidden', collapsed);
+        toolbar.inert = collapsed;
+        toolbar.setAttribute('aria-hidden', String(collapsed));
+        hide.setAttribute('aria-expanded', String(!collapsed));
+        show.setAttribute('aria-expanded', String(!collapsed));
+        requestAnimationFrame(() => {
+          if (typeof syncShellLayoutHeight === 'function') syncShellLayoutHeight();
+          if (focusControl) (collapsed ? show : hide).focus({ preventScroll: true });
+        });
+      }
+      function setHidden(hidden) {
+        preferredHidden = hidden;
+        try { localStorage.setItem(key, String(hidden)); } catch {}
+        apply(true);
+      }
+      hide.addEventListener('click', () => setHidden(true));
+      show.addEventListener('click', () => setHidden(false));
+      if (mobile.addEventListener) mobile.addEventListener('change', () => apply());
+      else mobile.addListener(() => apply());
+      apply();
+    })();
+  </script>
 
   <div class="tab-sessions-popover" id="tabSessionsPopover" hidden>
     <div class="tsp-header">
@@ -2956,10 +3160,25 @@
     }
 
     function getTabHeaderHeight() {
+      const isMobileShell = window.matchMedia('(max-width: 820px), (pointer: coarse) and (max-width: 1100px)').matches;
+      if (isMobileShell && document.body.classList.contains('mobile-toolbar-hidden')) return 0;
       const tabSystem = document.getElementById('tabSystem');
-      if (!tabSystem) return 52;
+      if (!tabSystem) return isMobileShell ? 112 : 52;
       const h = Number(tabSystem.getBoundingClientRect().height || 0);
-      return h > 0 ? h : 52;
+      return h > 0 ? h : (isMobileShell ? 112 : 52);
+    }
+
+    function syncShellLayoutHeight() {
+      const headerH = getTabHeaderHeight();
+      const browserWindows = document.getElementById('browserWindows');
+      if (browserWindows) browserWindows.style.top = `${headerH}px`;
+      const mainContent = document.getElementById('mainContent');
+      if (mainContent && document.getElementById('homeView')) {
+        mainContent.style.marginTop = `${headerH}px`;
+        mainContent.style.height = `calc(100dvh - ${headerH}px)`;
+        mainContent.style.minHeight = `calc(100dvh - ${headerH}px)`;
+      }
+      return headerH;
     }
 
     function setTabsUiVisible(visible) {
@@ -2972,6 +3191,7 @@
           tabSystem.classList.add('active');
           tabSystem.style.display = 'flex';
         }
+        requestAnimationFrame(syncShellLayoutHeight);
         if (browserWindows) browserWindows.classList.add('active');
         if (mainContent) {
           mainContent.style.display = 'none';
@@ -2994,7 +3214,7 @@
       }
       if (browserWindows) browserWindows.classList.remove('active');
       if (mainContent) {
-        const headerH = getTabHeaderHeight();
+        const headerH = syncShellLayoutHeight();
         mainContent.style.display = '';
         mainContent.style.padding = '0';
         mainContent.style.overflow = 'hidden';
@@ -3303,7 +3523,7 @@
       tabEl.className = 'tab';
       tabEl.id = `tab-el-${tab.id}`;
       tabEl.dataset.tabId = tab.id;
-      tabEl.draggable = true;
+      tabEl.draggable = !window.matchMedia('(pointer: coarse)').matches;
       
       tabEl.innerHTML = `
         <div class="tab-icon">
@@ -4557,6 +4777,7 @@
       });
 
       window.addEventListener('resize', () => {
+        requestAnimationFrame(syncShellLayoutHeight);
         if (!state.tabs.length) {
           setTabsUiVisible(false);
         }

@@ -23,9 +23,11 @@ const receiptStore = require('../services/chat/receiptStore');
 const messageCosmeticStore = require('../services/chat/messageCosmeticStore');
 const messageFeatureStore = require('../services/chat/messageFeatureStore');
 const chatMessagesStore = require('../services/db/chatMessagesStore');
-const { sites: networkSites } = require('../config/networkSites');
+const { globalRoom, sites: networkSites } = require('../config/networkSites');
 const { moderatePublicMessage } = require('../services/moderation/publicMessage');
 const uploadRoute = require('./upload');
+const chatImageStore = require('../services/db/chatImageStore');
+const { prepareNativeMediaMessage, LOCAL_IMAGE_PATH } = require('../services/chat/attachments');
 
 const router = express.Router();
 
@@ -417,6 +419,31 @@ function sortMessagesChronologically(messages = []) {
     .map((message, index) => ({ message, index }))
     .sort((left, right) => compareMessagesChronologically(left.message, right.message) || left.index - right.index)
     .map(({ message }) => message);
+}
+
+function mergeUniqueMessages(...batches) {
+  const merged = [];
+  const indexes = new Map();
+  for (const message of batches.flatMap((batch) => Array.isArray(batch) ? batch : [])) {
+    if (!message || typeof message !== 'object') continue;
+    const id = String(message.id || message._id || '').trim();
+    const nonce = String(message.clientNonce || message.client_nonce || '').trim();
+    const keys = [id ? `id:${id}` : '', nonce ? `nonce:${nonce}` : ''].filter(Boolean);
+    const existingIndex = keys.map((key) => indexes.get(key)).find((index) => index !== undefined);
+    if (existingIndex !== undefined) {
+      merged[existingIndex] = { ...merged[existingIndex], ...message };
+      const combined = merged[existingIndex];
+      const combinedId = String(combined.id || combined._id || '').trim();
+      const combinedNonce = String(combined.clientNonce || combined.client_nonce || '').trim();
+      if (combinedId) indexes.set(`id:${combinedId}`, existingIndex);
+      if (combinedNonce) indexes.set(`nonce:${combinedNonce}`, existingIndex);
+      continue;
+    }
+    const index = merged.length;
+    merged.push(message);
+    keys.forEach((key) => indexes.set(key, index));
+  }
+  return sortMessagesChronologically(merged);
 }
 
 function messagesAfterCursor(messages = [], cursor = '') {
@@ -1452,6 +1479,9 @@ async function sendRoomMessageOnce({
   const normalizedRoom = String(room || '').trim().toLowerCase();
   const cleanBody = String(body || '').trim();
   const clientNonce = String(rawClientNonce || '').trim().slice(0, 120);
+  const media = prepareNativeMediaMessage(cleanBody, attachments);
+  if (media.nativeUrls.length > 4) return { status: 400, data: { msg: 'Attach no more than four images per message.' } };
+  attachments = media.attachments;
   if (!cleanBody) return { status: 400, data: { msg: 'Message body is required' } };
   if (cleanBody.length > MAX_MESSAGE_BODY_LENGTH) {
     return { status: 400, data: { msg: `Message is too long. Limit is ${MAX_MESSAGE_BODY_LENGTH} characters.` } };
@@ -1584,6 +1614,12 @@ async function sendRoomMessageOnce({
       }
     }
 
+    // Native media belongs to Nebulo, not the upstream text service.
+    for (const url of media.nativeUrls) {
+      if (!await chatImageStore.getChatImage(LOCAL_IMAGE_PATH.exec(url)[1])) {
+        return { status: 422, data: { msg: 'An attached image is no longer available. Please upload it again.' } };
+      }
+    }
     let upstreamMessage = null;
     if (!persistentDm) {
       // A message post is intentionally single-attempt. Retrying an ambiguous
@@ -1591,7 +1627,7 @@ async function sendRoomMessageOnce({
       // browser transport fallback without re-posting upstream.
       const response = await axios.post(
         `${TLK_BASE}/api/chats/${chatId}/messages`,
-        `body=${encodeURIComponent(cleanBody)}`,
+        `body=${encodeURIComponent(media.upstreamBody)}`,
         {
           headers: {
             ...createApiHeaders(session),
@@ -1666,22 +1702,30 @@ async function sendRoomMessageOnce({
       receiptStore.markSeen(normalizedRoom, ids, receiptName);
       enrichedMessage = attachRoomReceipts(normalizedRoom, [enrichedMessage])[0] || enrichedMessage;
     }
+    // Save every accepted text-channel/group message before broadcasting it.
+    // This local store is the durable fallback when TLK or Postgres is down.
+    if (media.nativeBody != null) {
+      enrichedMessage.body = media.nativeBody;
+      enrichedMessage.content = media.nativeBody;
+    }
+    messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply, attachments, nativeBody: media.nativeBody });
+
     // The canonical message reaches connected clients before optional visual
-    // snapshots and rewards. Those follow-up jobs must never change delivery.
+    // snapshots, database replication, and rewards. Those follow-up jobs must
+    // never change delivery.
     try {
       emitRealtimeMessage(normalizedRoom, enrichedMessage, userName);
     } catch {}
     void (async () => {
       try {
         await messageCosmeticStore.save(normalizedRoom, enrichedMessage);
-        messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply, attachments });
         const siteConfig = findSiteForRoom(normalizedRoom);
         const isGroupRoom = !!groupChats.getGroupSync(normalizedRoom);
-        if (siteConfig?.persistMessagesToDb || isGroupRoom) {
+        if (!persistentDm) {
           try {
             await chatMessagesStore.persistChatMessage({
               room: normalizedRoom,
-              siteId: (siteConfig?.id || siteConfig?.channelName) || 'group',
+              siteId: (siteConfig?.id || siteConfig?.channelName) || (isGroupRoom ? 'group' : normalizedRoom === globalRoom ? 'global' : 'channel'),
               message: enrichedMessage
             });
           } catch (error) {
@@ -2259,7 +2303,22 @@ router.get('/rooms/:room/messages', auth, async (req, res) => {
 
     if (response.status !== 200) {
       debugMsg('final-non-200', { room, clientId, status: response.status, body: response.data });
-      return res.status(response.status).json(response.data || { msg: 'Failed to fetch messages' });
+      const requestedLimit = Number(req.query.limit || DEFAULT_MESSAGE_LIMIT);
+      const fallbackLimit = Math.max(25, Math.min(150, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : DEFAULT_MESSAGE_LIMIT));
+      const localHistory = messageFeatureStore.getRoomMessageHistory(room, {
+        limit: fallbackLimit,
+        beforeId: req.query.beforeId || null
+      });
+      if (!localHistory.messages.length) {
+        return res.status(response.status).json(response.data || { msg: 'Failed to fetch messages' });
+      }
+      const localMessages = attachMessageFeatures(
+        room,
+        await attachMessageCosmetics(room, localHistory.messages.map((message) => enrichMessageIdentity(message))),
+        requester
+      );
+      const isGroupRoom = !!groupChats.getGroupSync(room);
+      return res.json(isGroupRoom ? attachRoomReceipts(room, localMessages) : localMessages);
     }
 
     const roomClearMeta = netState.getRoomClearMeta(room);
@@ -2283,9 +2342,19 @@ router.get('/rooms/:room/messages', auth, async (req, res) => {
     const limit = Math.max(25, Math.min(150, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : DEFAULT_MESSAGE_LIMIT));
     const orderedMessages = sortMessagesChronologically(filtered);
     const messagesForRequest = afterId ? messagesAfterCursor(orderedMessages, afterId) : orderedMessages;
+    const localHistory = afterId
+      ? { messages: [] }
+      : messageFeatureStore.getRoomMessageHistory(room, {
+          limit,
+          beforeId: req.query.beforeId || null
+        });
+    const combinedMessages = mergeUniqueMessages(
+      localHistory.messages.map((message) => enrichMessageIdentity(message)),
+      messagesForRequest
+    );
     const latest = attachMessageFeatures(
       room,
-      await attachMessageCosmetics(room, messagesForRequest.slice(-limit)),
+      await attachMessageCosmetics(room, combinedMessages.slice(-limit)),
       requester
     );
     const isGroupRoom = !!groupChats.getGroupSync(room);
@@ -2328,44 +2397,77 @@ router.get('/rooms/:room/db-messages', auth, async (req, res) => {
   const callerRole = String(req.user?.role || '').toLowerCase();
   const isStaff = ['owner', 'admin'].includes(callerRole);
   const siteConfig = findSiteForRoom(room);
-  const isGroupRoom = !!groupChats.getGroupSync(room);
-  if (!siteConfig?.persistMessagesToDb && !isGroupRoom && !isStaff) {
-    return res.status(404).json({ msg: 'Room does not persist messages to the database' });
+  const group = groupChats.getGroupSync(room);
+  const isGroupRoom = !!group;
+  const requester = getAuthenticatedUser(req) || req.user;
+  const dmParticipants = getAuthorizedDmParticipants(room, requester);
+  if (dmParticipants !== null) return res.status(404).json({ msg: 'Direct messages use their private history store' });
+  if (isGroupRoom && !isGroupMember(room, requester?.username || requester?.name || '', callerRole)) {
+    return res.status(403).json({ msg: 'Join this group before viewing messages.' });
   }
   const limit = Math.max(1, Math.min(200, Number(req.query.limit) || 80));
+  const rawBeforeId = req.query.beforeId !== undefined && req.query.beforeId !== null
+    ? String(req.query.beforeId).trim()
+    : '';
   let beforeId = null;
-  if (req.query.beforeId !== undefined && req.query.beforeId !== null && String(req.query.beforeId).trim() !== '') {
-    const raw = String(req.query.beforeId).trim();
-    if (/^-?\d+$/.test(raw)) {
-      beforeId = Number(raw);
-    } else {
-      beforeId = await chatMessagesStore.findDbIdByMessageId({ room, messageId: raw });
-    }
+  if (rawBeforeId) {
+    // The browser paginates with the visible TLK message id, not the database
+    // sequence id. Resolve it before querying instead of comparing unrelated
+    // numeric id spaces.
+    beforeId = await chatMessagesStore.findDbIdByMessageId({ room, messageId: rawBeforeId });
+    if (!beforeId && /^db-\d+$/i.test(rawBeforeId)) beforeId = Number(rawBeforeId.slice(3));
   }
   try {
     const rows = await chatMessagesStore.getRecentChatMessages({ room, limit, beforeId });
+    const localHistory = messageFeatureStore.getRoomMessageHistory(room, {
+      limit,
+      beforeId: rawBeforeId || null
+    });
+    const databaseMessages = rows.map((row) => ({
+      id: row.message_id ? String(row.message_id) : `db-${row.id}`,
+      _id: row.message_id ? String(row.message_id) : `db-${row.id}`,
+      roomId: row.room,
+      dbId: Number(row.id) || null,
+      userId: row.user_id || null,
+      username: row.username || null,
+      nickname: row.nickname || row.username || 'Unknown',
+      avatar: row.avatar || null,
+      role: row.role || 'user',
+      body: row.body || '',
+      clientNonce: row.client_nonce || null,
+      date: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+      persistedToDb: true
+    }));
+    const sourceMessages = databaseMessages.length ? databaseMessages : localHistory.messages;
+    const messages = attachMessageFeatures(
+      room,
+      sourceMessages.map((message) => enrichMessageIdentity(message)),
+      req.user
+    );
     return res.json({
       room,
-      siteId: siteConfig.id || siteConfig.channelName,
-      messages: rows.map((row) => ({
-        id: row.message_id ? String(row.message_id) : `db-${row.id}`,
-        _id: row.message_id ? String(row.message_id) : `db-${row.id}`,
-        roomId: row.room,
-        dbId: Number(row.id) || null,
-        userId: row.user_id || null,
-        username: row.username || null,
-        nickname: row.nickname || row.username || 'Unknown',
-        avatar: row.avatar || null,
-        role: row.role || 'user',
-        body: row.body || '',
-        clientNonce: row.client_nonce || null,
-        date: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
-        persistedToDb: true
-      })),
-      hasMore: rows.length === limit
+      siteId: siteConfig?.id || siteConfig?.channelName || (room === globalRoom ? 'global' : 'group'),
+      messages,
+      hasMore: databaseMessages.length ? rows.length === limit : localHistory.hasMore,
+      source: databaseMessages.length ? 'database' : 'local-history'
     });
   } catch (error) {
-    return res.status(502).json({ msg: error?.message || 'Failed to load persisted messages' });
+    console.error('[tlk/db-messages] failed:', error?.message || error, { room, beforeId, stack: error?.stack });
+    const localHistory = messageFeatureStore.getRoomMessageHistory(room, {
+      limit,
+      beforeId: rawBeforeId || null
+    });
+    return res.json({
+      room,
+      siteId: siteConfig?.id || siteConfig?.channelName || (room === globalRoom ? 'global' : 'group'),
+      messages: attachMessageFeatures(
+        room,
+        localHistory.messages.map((message) => enrichMessageIdentity(message)),
+        req.user
+      ),
+      hasMore: localHistory.hasMore,
+      source: 'local-history'
+    });
   }
 });
 

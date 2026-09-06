@@ -4,6 +4,7 @@ const { Readable } = require('stream');
 const { brotliDecompressSync, gunzipSync, inflateSync } = require('zlib');
 const fs = require('fs');
 const path = require('path');
+const { applyBrowserDeviceHeaders } = require('./device-headers.cjs');
 
 // MUST happen before require('./argon.cjs').
 // argon.cjs checks:  typeof globalThis.addEventListener === "undefined"
@@ -16,7 +17,7 @@ if (typeof globalThis.addEventListener === 'undefined') {
 }
 
 const argon = require('./argon.cjs');
-const ARGON_RUNTIME_VERSION = '20260831-tiktok-runtime-cleanup-34';
+const ARGON_RUNTIME_VERSION = '20260905-mobile-browser-35';
 const TIKTOK_FAST_FEED_SOURCE = fs
   .readFileSync(path.join(__dirname, '..', 'public', 'assets', 'js', 'tiktok-client.js'), 'utf8')
   .replace(/<\/script/gi, '<\\/script');
@@ -2372,6 +2373,10 @@ function rewriteAbsoluteHtmlAttributes(source, proxyTarget, tokenPrefix) {
   );
 }
 
+function buildDiagnosticPrivacyBootstrap() {
+  return `<script data-nebulo-private-diagnostics>(function(){'use strict';try{var methods=['log','warn','error','info','debug'];var redact=function(value){if(typeof value==='string')return value.replace(/\\/ag\\/(?:https?|wss?)\\/[^\\s"'<>]+/gi,'[resource]').replace(/(?:https?|wss?):\\/\\/[^\\s"'<>]+/gi,'[resource]');if(value instanceof Error)return redact(value.message||String(value));return value;};methods.forEach(function(name){var original=console[name];if(typeof original!=='function')return;console[name]=function(){return original.apply(console,Array.prototype.map.call(arguments,redact));};});}catch(_){}})();</script>`;
+}
+
 function buildVirtualLocationBootstrap(proxyTarget, tokenPrefix = '/ag/') {
   if (!proxyTarget?.protocol || !proxyTarget?.host) return '';
   try {
@@ -2814,6 +2819,10 @@ async function sendArgonResponse(response, reply, headerOverrides = null, rewrit
         .replaceAll('/argon-response-injected.js"', `/argon-runtime/${ARGON_RUNTIME_VERSION}"`)
         .replaceAll("/argon-response-injected.js'", `/argon-runtime/${ARGON_RUNTIME_VERSION}'`);
       versionedHtml = rewriteRootRelativeHtmlAttributes(versionedHtml, proxyTarget, tokenPrefix);
+      if (/<html/i.test(versionedHtml) && !versionedHtml.includes('data-nebulo-private-diagnostics')) {
+        const privacyBootstrap = buildDiagnosticPrivacyBootstrap();
+        versionedHtml = versionedHtml.replace(/<head(\s[^>]*)?>/i, (head) => `${head}${privacyBootstrap}`);
+      }
       // Rewritten script bodies cannot satisfy hashes calculated for the
       // original bytes. Leaving SRI in place makes browsers reject valid
       // proxied resources before Argon can execute them.
@@ -3014,22 +3023,16 @@ function toFetchRequest(request, urlOverride, proxyTarget = null) {
   };
   sanitizeProxyRequestCookies(init.headers, proxyTarget);
 
-  // ── Browser-mimicking headers (siteproxy-style) ────────────────────────
-  // Cloudflare, Akamai, and other CDNs fingerprint proxy traffic by missing
-  // or unusual browser headers. Supplying a realistic set dramatically
-  // reduces blocks.
-  init.headers.set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
+  // Preserve the visitor's device so upstream pages and APIs choose their
+  // native mobile or desktop layout consistently.
+  applyBrowserDeviceHeaders(init.headers, request.headers);
   const incomingDestination = String(init.headers.get('sec-fetch-dest') || '').toLowerCase();
   if (incomingDestination === 'document' || incomingDestination === 'iframe') {
     init.headers.set('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7');
   } else if (!init.headers.has('Accept')) {
     init.headers.set('Accept', '*/*');
   }
-  init.headers.set('Accept-Language', 'en-US,en;q=0.9');
   init.headers.set('Accept-Encoding', 'gzip, deflate, br');
-  init.headers.set('sec-ch-ua', '"Chromium";v="131", "Not_A Brand";v="24", "Google Chrome";v="131"');
-  init.headers.set('sec-ch-ua-mobile', '?0');
-  init.headers.set('sec-ch-ua-platform', '"Windows"');
   // Preserve original sec-fetch-* headers when the browser sends them;
   // only supply defaults when they're completely absent.
   if (!init.headers.has('sec-fetch-site') && !init.headers.has('Sec-Fetch-Site')) {
@@ -3662,7 +3665,7 @@ async function fetchDirectStaticAsset(request, proxyTarget, refererHost = proxyT
     headers.set('sec-fetch-site', options.fetchSite || 'same-site');
   }
   headers.set('accept-encoding', 'identity');
-  headers.set('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
+  applyBrowserDeviceHeaders(headers, request.headers);
   if (refererHost) headers.set('referer', `https://${refererHost}/`);
   if (options.origin) headers.set('origin', options.origin);
   if (options.referer) headers.set('referer', options.referer);
@@ -4675,8 +4678,8 @@ async function argonPlugin(fastify, options) {
         fetchDestination,
       );
     } catch (err) {
-      console.error(`[argon] error on ${rewrittenUrl}:`, err);
-      reply.status(502).send(`Argon proxy error: ${err.message}`);
+      console.error('[argon] browsing request failed:', err?.message || 'upstream failure');
+      reply.status(502).type('text/plain; charset=utf-8').send('Browsing request failed.');
     }
   }
 
