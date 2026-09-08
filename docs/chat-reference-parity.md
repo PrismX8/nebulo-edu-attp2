@@ -28,13 +28,21 @@ These observations describe accessible UI, not end-to-end verification of writes
 - Owner/admin tools were not exposed to this account. Staff permissions and moderation behavior remain unverified.
 - Native image handling below is a Nebulo implementation; the reference's image delivery and moderation backend were not tested.
 
-## Implementation order
+## Implemented Nebulo community hub
 
-1. Preserve and deploy the native-image/history fix; verify image sends and reloads in a Nebulo test room.
-2. Add device-local reading preferences, conversation filters/pinning, and expanded emoji support without changing existing message identity/order behavior.
-3. Add server-enforced DM/friend privacy and private-channel invite/expiry handling, with permission tests.
-4. Specify and implement polls, audio messages and soundboard independently; reference behavior for these remains access-limited.
-5. Compare account recovery, moderation and rewards separately rather than assuming hidden controls work.
+Nebulo now has a first-party Community and Account hub, independent of the reference site's unavailable main bundle:
+
+- Daily check-ins, streaks, a separate free play-coin wallet, daily spin, coin/casino-streak leaderboards, and an earned-coin 30-day membership.
+- A casino with only non-purchasable, non-transferable, non-cash-out play coins. The server validates odds, daily/pace limits, balances, and idempotent request IDs.
+- Account information, profile details, local appearance preferences, server-enforced DM/friend-request privacy, password changes, hashed one-use recovery codes, blocked users, support tickets, and staff support replies.
+- Local-only notification tones and a synthesized soundboard with search, favorites, overlap, volume, and stop-all controls. It does not broadcast sounds into rooms or calls.
+- Public profile cards can display the opted-in profile fields and active membership name color. Private settings, recovery codes, support tickets, and wallet internals are never included.
+
+The state is persisted in the existing account metadata (`public.users.user_metadata.nebulo_community`) for database accounts, so no new production table or Beekeeper migration is required. Local-only accounts use the existing local user store. Database wallet/state mutations are performed in one row-locked transaction; no database account silently falls back to a local wallet during an outage.
+
+DM blocks are enforced for read/send/state/reaction routes and socket typing/voice joins. A person cannot evade a block through a lingering direct-message room, typing event, or voice-room join.
+
+Tests: `node --test scripts/chatCommunity.test.mjs scripts/chatNativeAttachments.test.mjs` (11 passing). They cover daily and game idempotency, recovery-code secrecy/one-use reset, privacy/blocking, database transaction behavior, support isolation, and native image persistence. Source changes require a normal app deployment/restart.
 
 ## Preliminary feature inventory
 

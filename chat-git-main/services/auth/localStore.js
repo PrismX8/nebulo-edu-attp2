@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const effects = require("../chat/effects");
 
-const DATA_DIR = path.resolve(__dirname, "..", "..", "data");
+const DATA_DIR = process.env.CHAT_LOCAL_DATA_DIR || path.resolve(__dirname, "..", "..", "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const RESERVED_USERNAMES = new Set(["moderation"]);
 const cache = {
@@ -20,7 +20,8 @@ function ensureStore() {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify({ users: [] }, null, 2), "utf8");
+    try { fs.writeFileSync(USERS_FILE, JSON.stringify({ users: [] }, null, 2), { encoding: 'utf8', flag: 'wx', mode: 0o600 }); }
+    catch (error) { if (error.code !== 'EEXIST') throw error; }
   }
 }
 
@@ -33,7 +34,7 @@ function normalizeStore(input = {}) {
 function sanitizeCoins(value) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 0;
-  return Math.max(0, Math.min(1000000, Math.round(parsed * 100) / 100));
+  return Math.max(0, Math.round(parsed * 100) / 100);
 }
 
 function normalizeCoinDelta(value) {
@@ -114,11 +115,13 @@ function normalizeUser(user = {}) {
   const password = normalizePasswordHash(user.password);
   return {
     _id: String(user._id || ''),
+    ...(user.source === 'database' ? { source: 'database' } : {}),
     username: String(user.username || '').trim(),
     ...(password ? { password } : {}),
     role: String(user.role || 'user'),
     avatar: typeof user.avatar === "string" ? user.avatar : null,
     coins: sanitizeCoins(user.coins),
+    ...(user.community && typeof user.community === 'object' ? { community: user.community } : {}),
     ownedEffects,
     equippedEffect: normalizeEquippedEffect(user.equippedEffect, ownedEffects),
     equippedAvatarEffect: normalizeEquippedAvatarEffect(user.equippedAvatarEffect, ownedEffects),
@@ -154,7 +157,7 @@ async function verifyPassword(user = {}, password = "") {
   if (matches && user._id) {
     try {
       const hashed = await bcrypt.hash(candidate, 10);
-      updatePassword(user._id, hashed);
+      module.exports.updatePassword(user._id, hashed);
     } catch (_err) {
       // preserve legacy password if hashing fails
     }
@@ -172,48 +175,39 @@ function updateCache(store, mtimeMs = cache.mtimeMs) {
 
 function readStore(force = false) {
   ensureStore();
-  try {
-    const stats = fs.statSync(USERS_FILE);
-    if (!force && cache.mtimeMs === stats.mtimeMs) {
-      return cache.store;
-    }
-    const raw = fs.readFileSync(USERS_FILE, "utf8");
-    const parsed = JSON.parse(raw || "{}");
-    const normalized = normalizeStore(parsed);
-    if (JSON.stringify(parsed || {}) !== JSON.stringify(normalized)) {
-      fs.writeFileSync(USERS_FILE, JSON.stringify(normalized, null, 2), "utf8");
-      const nextStats = fs.statSync(USERS_FILE);
-      return updateCache(normalized, nextStats.mtimeMs);
-    }
-    return updateCache(normalized, stats.mtimeMs);
-  } catch (err) {
-    const isSyntaxError = err?.name === "SyntaxError" || String(err?.message || "").includes("Unexpected token");
-    if (isSyntaxError) {
-      const backupPath = `${USERS_FILE}.corrupt.${Date.now()}`;
-      try {
-        if (fs.existsSync(USERS_FILE)) fs.copyFileSync(USERS_FILE, backupPath);
-      } catch (_copyErr) {
-        // ignore backup failures
-      }
-      console.error(`Failed to parse users.json; backed up corrupted file to ${backupPath}: ${err.message}`);
-      if (cache.store.users.length > 0) {
-        return cache.store;
-      }
-      throw new Error("Invalid users.json format");
-    }
-    return updateCache({ users: [] }, -1);
+  // Never replace an unreadable store with an empty one or persist a read-time
+  // normalization. A failed read must prevent the following write.
+  const stats = fs.statSync(USERS_FILE);
+  if (force || cache.mtimeMs !== stats.mtimeMs) {
+    const parsed = JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
+    if (!Array.isArray(parsed.users)) throw new Error("Invalid users.json format");
+    updateCache(parsed, stats.mtimeMs);
   }
+  // Mutations cannot change the committed cache until the disk write succeeds.
+  return JSON.parse(JSON.stringify(cache.store));
 }
 
 function writeStore(store) {
   ensureStore();
   const nextStore = normalizeStore(store);
-  fs.writeFileSync(USERS_FILE, JSON.stringify(nextStore, null, 2), "utf8");
+  const previous = cache.store;
+  const temp = `${USERS_FILE}.${crypto.randomUUID()}.tmp`;
+  let fd;
   try {
-    const stats = fs.statSync(USERS_FILE);
-    updateCache(nextStore, stats.mtimeMs);
-  } catch (_err) {
-    updateCache(nextStore, Date.now());
+    fd = fs.openSync(temp, 'wx', 0o600);
+    fs.writeFileSync(fd, JSON.stringify(nextStore, null, 2), 'utf8');
+    fs.fsyncSync(fd);
+    fs.closeSync(fd); fd = undefined;
+    fs.renameSync(temp, USERS_FILE);
+  } catch (error) {
+    if (fd !== undefined) { try { fs.closeSync(fd); } catch {} }
+    try { fs.unlinkSync(temp); } catch {}
+    throw error;
+  }
+  updateCache(nextStore, fs.statSync(USERS_FILE).mtimeMs);
+  const oldCoins = new Map(previous.users.map(u => [u._id, u.coins]));
+  for (const user of nextStore.users) {
+    if (oldCoins.get(user._id) !== user.coins) require('../chat/walletEvents').changed(user._id);
   }
 }
 
@@ -585,6 +579,9 @@ function grantCoins(userId, amount = 0) {
   const idx = store.users.findIndex((u) => String(u._id) === String(userId));
   if (idx < 0) return null;
   const currentCoins = sanitizeCoins(store.users[idx]?.coins);
+  if (currentCoins + delta > 1000000000) {
+    const error = new Error("Wallet limit reached"); error.code = "WALLET_LIMIT"; throw error;
+  }
   store.users[idx] = normalizeUser({
     ...store.users[idx],
     coins: currentCoins + delta
@@ -631,6 +628,9 @@ function transferCoins(fromUserId, toUserId, amount = 0) {
     throw error;
   }
 
+  if (recipient.coins + delta > 1000000000) {
+    const error = new Error("Recipient wallet limit reached"); error.code = "WALLET_LIMIT"; throw error;
+  }
   store.users[fromIdx] = normalizeUser({
     ...sender,
     coins: sender.coins - delta
@@ -710,6 +710,22 @@ function purchaseEffect(userId, effectId = "") {
   });
   writeStore(store);
   return { user: store.users[idx], effect };
+}
+
+// Keep wallet and community receipts in the same atomic local write. The
+// callback is synchronous so no other request can interleave a stale balance.
+function communityTransaction(id, callback) {
+  const current = readStore();
+  const store = JSON.parse(JSON.stringify(current));
+  const user = store.users.find(item => item._id === String(id));
+  if (!user) { const error = new Error('Account not found'); error.status = 404; throw error; }
+  const result = callback(user);
+  if (result?.then) throw new Error('Local community transactions must be synchronous');
+  if (!Number.isFinite(user.coins) || user.coins < 0 || user.coins > 1000000000) {
+    const error = new Error('Local wallet limit reached'); error.status = 409; throw error;
+  }
+  writeStore(store);
+  return result;
 }
 
 function unlockEffect(userId, effectId = "") {
@@ -818,13 +834,17 @@ function upsertRemoteUser(remoteUser = {}) {
     const usernameChanged = oldUsername && oldUsername !== nextUsername;
     const avatarChanged = remoteAvatar !== undefined && existing.avatar !== remoteAvatar;
     const roleChanged = remoteRole && existing.role !== remoteRole;
-    if (String(existing._id) === id && (usernameChanged || avatarChanged || roleChanged)) {
+    const sourceChanged = remoteUser.source === 'database' && existing.source !== 'database';
+    const versionChanged = Number(remoteUser.authVersion || 0) > Number(existing.community?.authVersion || 0);
+    if (String(existing._id) === id && (usernameChanged || avatarChanged || roleChanged || versionChanged || sourceChanged)) {
       const store = readStore();
       store.users = store.users.map((user) => {
         const replaceReference = (value) => String(value || '').trim().toLowerCase() === oldUsername ? nextUsername : value;
         if (String(user._id) === id) return normalizeUser({
           ...user,
           username,
+          ...(remoteUser.source === 'database' ? { source: 'database' } : {}),
+          ...(versionChanged ? { community: { ...(user.community || {}), authVersion: remoteUser.authVersion } } : {}),
           ...(remoteAvatar !== undefined ? { avatar: remoteAvatar } : {}),
           ...(remoteRole ? { role: remoteRole } : {})
         });
@@ -848,6 +868,7 @@ function upsertRemoteUser(remoteUser = {}) {
   const role = (envRole === 'owner' || envRole === 'admin') ? envRole : (remoteUser.role || envRole);
   const user = normalizeUser({
     _id: id,
+    ...(remoteUser.source === 'database' ? { source: 'database' } : {}),
     username,
     role,
     ...(remoteAvatar !== undefined ? { avatar: remoteAvatar } : {})
@@ -867,6 +888,7 @@ function sanitizeUser(user) {
     role: effectiveRole,
     avatar: normalized.avatar,
     coins: sanitizeCoins(normalized.coins),
+    authVersion: Math.max(0, Number(normalized.community?.authVersion || 0)),
     ownedEffects: ownedEffectsByScope(normalized.ownedEffects, "message"),
     ownedAvatarEffects: ownedEffectsByScope(normalized.ownedEffects, "avatar"),
     equippedEffect: normalizeEquippedEffect(normalized.equippedEffect, normalizeOwnedEffects(normalized.ownedEffects)),
@@ -876,6 +898,7 @@ function sanitizeUser(user) {
 }
 
 module.exports = {
+  communityTransaction,
   listUsers,
   findByUsername,
   findByIdentifier,
@@ -903,3 +926,48 @@ module.exports = {
   equipAvatarEffect,
   sanitizeUser
 };
+
+// Serialize every writer across local server processes. Contention fails safely
+// and is retryable; it never writes a stale snapshot over another process.
+for (const name of ['communityTransaction', 'upsertRemoteUser', 'addFriend',
+  'addFriendRequest', 'acceptFriendRequest', 'denyFriendRequest',
+  'removeFriendRelationship', 'createUser', 'updateProfile', 'updatePassword',
+  'deleteUser', 'grantCoins', 'spendCoins', 'transferCoins', 'purchaseEffect',
+  'unlockEffect', 'equipEffect', 'equipAvatarEffect']) {
+  const operation = module.exports[name];
+  module.exports[name] = (...args) => {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const lock = `${USERS_FILE}.lock`;
+    let descriptor;
+    try {
+      if (fs.existsSync(lock)) {
+        const owner = Number(fs.readFileSync(lock, 'utf8'));
+        let dead = false;
+        if (Number.isSafeInteger(owner) && owner > 0) {
+          try { process.kill(owner, 0); } catch (error) { dead = error.code === 'ESRCH'; }
+        }
+        if (dead) {
+          // Recheck under an exclusive recovery gate so two processes cannot
+          // delete a newly acquired writer's lock.
+          const gate = `${lock}.recovery`;
+          const gateFd = fs.openSync(gate, 'wx', 0o600);
+          try { if (Number(fs.readFileSync(lock, 'utf8')) === owner) fs.unlinkSync(lock); }
+          finally { fs.closeSync(gateFd); fs.unlinkSync(gate); }
+        }
+      }
+      descriptor = fs.openSync(lock, 'wx', 0o600);
+      fs.writeFileSync(descriptor, String(process.pid));
+    }
+    catch (cause) {
+      const error = new Error('Account storage is busy; retry the action');
+      error.code = 'STORE_BUSY'; error.status = 503; error.cause = cause; throw error;
+    }
+    try {
+      cache.mtimeMs = -1;
+      return operation(...args);
+    } finally {
+      fs.closeSync(descriptor);
+      fs.unlinkSync(lock);
+    }
+  };
+}

@@ -54,8 +54,15 @@ async function transaction(callback) {
   const client = await getPool().connect();
   try {
     await client.query('begin');
-    const result = await callback(client);
+    const changed = new Set();
+    const tracked = { query: async (sql, params = []) => {
+      const result = await client.query(sql, params);
+      if (/update\s+public\.profiles\s+set[\s\S]*?coins\s*=/i.test(sql) && params[0]) changed.add(String(params[0]));
+      return result;
+    } };
+    const result = await callback(tracked);
     await client.query('commit');
+    for (const id of changed) require('../chat/walletEvents').changed(id);
     return result;
   } catch (error) {
     await client.query('rollback').catch(() => {});
@@ -108,7 +115,8 @@ function mapAccount(row = {}) {
     is_booster: !!row.is_booster,
     email_confirmed: !!row.email_confirmed,
     updated_at: row.updated_at || null,
-    source: 'database'
+    source: 'database',
+    authVersion: Math.max(0, Number(metadata.nebulo_community?.authVersion || 0))
   };
 }
 
@@ -204,6 +212,7 @@ async function createAccount({ id, email, username, displayName, passwordHash })
       [id, username]
     );
     await client.query('commit');
+    for (const id of changed) require('../chat/walletEvents').changed(id);
     return findAccountById(id);
   } catch (error) {
     await client.query('rollback').catch(() => {});
@@ -315,8 +324,8 @@ async function updatePassword(userId, passwordHash) {
 
 async function grantCoins(userId, amount = 1) {
   const id = String(userId || '').trim();
-  const delta = Math.trunc(Number(amount));
-  if (!id || !Number.isFinite(delta) || delta <= 0 || delta > 100) {
+  const delta = Number(amount);
+  if (!id || !Number.isSafeInteger(delta) || delta <= 0 || delta > 100) {
     const error = new Error('Invalid coin reward');
     error.code = 'INVALID_AMOUNT';
     throw error;
@@ -325,15 +334,17 @@ async function grantCoins(userId, amount = 1) {
     `update public.profiles
         set coins = coins + $2,
             updated_at = now()
-      where id = $1::uuid
+      where id = $1::uuid and coins <= 1000000000 - $2
       returning id, coins`,
     [id, delta]
   );
   if (!result.rows[0]) {
-    const error = new Error('Profile not found');
-    error.code = 'USER_NOT_FOUND';
+    const exists = await getPool().query('select id from public.profiles where id=$1::uuid', [id]);
+    const error = new Error(exists.rows[0] ? 'Wallet limit reached' : 'Profile not found');
+    error.code = exists.rows[0] ? 'WALLET_LIMIT' : 'USER_NOT_FOUND';
     throw error;
   }
+  require('../chat/walletEvents').changed(id);
   return { id: String(result.rows[0].id), coins: Math.max(0, Number(result.rows[0].coins || 0)) };
 }
 
@@ -355,6 +366,7 @@ async function spendCoins(userId, amount = 0) {
     [id, cost]
   );
   if (result.rows[0]) {
+    require('../chat/walletEvents').changed(id);
     return { id: String(result.rows[0].id), coins: Math.max(0, Number(result.rows[0].coins || 0)) };
   }
   const exists = await getPool().query('select coins from public.profiles where id = $1::uuid limit 1', [id]);
@@ -363,27 +375,53 @@ async function spendCoins(userId, amount = 0) {
   throw error;
 }
 
+async function transferCoins(fromId, toId, amount) {
+  const delta = Number(amount);
+  if (!Number.isSafeInteger(delta) || delta <= 0 || delta > 1000000000) {
+    const error = new Error('Invalid amount'); error.code = 'INVALID_AMOUNT'; throw error;
+  }
+  if (String(fromId) === String(toId)) {
+    const error = new Error('Cannot transfer coins to yourself'); error.code = 'SAME_USER'; throw error;
+  }
+  return transaction(async client => {
+    // Deterministic lock order prevents reciprocal transfers from deadlocking.
+    const rows = await client.query('select id, coins, username from public.profiles where id = any($1::uuid[]) order by id for update', [[fromId, toId]]);
+    const from = rows.rows.find(row => String(row.id) === String(fromId));
+    const to = rows.rows.find(row => String(row.id) === String(toId));
+    if (!from || !to) { const e = new Error('User not found'); e.code = 'USER_NOT_FOUND'; throw e; }
+    if (Number(from.coins) < delta) { const e = new Error('Not enough coins'); e.code = 'INSUFFICIENT_COINS'; throw e; }
+    if (Number(to.coins) + delta > 1000000000) { const e = new Error('Recipient wallet limit reached'); e.code = 'WALLET_LIMIT'; throw e; }
+    const sender = await client.query('update public.profiles set coins=coins-$2, updated_at=now() where id=$1::uuid returning coins', [fromId, delta]);
+    const recipient = await client.query('update public.profiles set coins=coins+$2, updated_at=now() where id=$1::uuid returning coins', [toId, delta]);
+    return { amount: delta,
+      fromUser: { ...from, _id: String(from.id), coins: Number(sender.rows[0].coins) },
+      toUser: { ...to, _id: String(to.id), coins: Number(recipient.rows[0].coins) } };
+  });
+}
+
 async function adminGrantCoins(userId, amount) {
   const id = String(userId || '').trim();
-  const delta = Math.trunc(Number(amount));
-  if (!id || !Number.isFinite(delta) || delta < 1 || delta > 1_000_000) {
+  const delta = Number(amount);
+  if (!id || !Number.isSafeInteger(delta) || delta < 1 || delta > 1_000_000) {
     const error = new Error('Coin amount must be between 1 and 1,000,000');
     error.code = 'INVALID_AMOUNT';
     throw error;
   }
   const result = await getPool().query(
     `update public.profiles
-        set coins = least(1000000000, coins + $2),
+        set coins = coins + $2,
             updated_at = now()
-      where id = $1::uuid
+      where id = $1::uuid and coins <= 1000000000 - $2
       returning id, coins`,
     [id, delta]
   );
   if (!result.rows[0]) {
-    const error = new Error('Profile not found');
-    error.code = 'USER_NOT_FOUND';
+    const exists = await getPool().query('select id from public.profiles where id=$1::uuid', [id]);
+    const error = new Error(exists.rows[0] ? 'Wallet limit reached' : 'Profile not found');
+    error.code = exists.rows[0] ? 'WALLET_LIMIT' : 'USER_NOT_FOUND';
     throw error;
   }
+  require('../chat/walletEvents').changed(id);
   return findAccountById(id);
 }
 
@@ -424,6 +462,7 @@ module.exports = {
   grantCoins,
   spendCoins,
   adminGrantCoins,
+  transferCoins,
   getAdminStats,
   mapAccount
 };

@@ -29,6 +29,15 @@ const isAllowedVoiceRoom = (roomName = '', roomType = '') => {
 
 const getParticipantName = (req) => String(req.user?.username || req.user?.name || 'User').trim() || 'User';
 
+router.use(['/start-call', '/join-call', '/participants/:roomName', '/calls/:roomName'], auth, async (req, res, next) => {
+  const room = normalizeRoomName(req.params.roomName || req.body?.roomName);
+  if (!room || room === 'voice:general') return next();
+  try {
+    await require('./tlk').assertRoomAccess(room.replace(/^voice:/, ''), req.user, { write: req.method !== 'GET' });
+    next();
+  } catch (error) { res.status(error.status || 503).json({ error: error.status ? error.message : 'Room permissions are unavailable.' }); }
+});
+
 /**
  * Start a voice call in a room/channel
  * POST /api/voice/start-call

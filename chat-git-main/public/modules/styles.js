@@ -1876,6 +1876,28 @@ export const APP_STYLES = `
       text-transform: capitalize;
     }
     .member-status.online { color: var(--success); }
+    .member-name-glow { text-shadow: 0 0 6px rgba(255, 170, 50, 0.7); }
+    .member-name-rainbow {
+      background: linear-gradient(90deg, #ff0000, #ff8800, #ffff00, #00cc00, #0088ff, #8800ff, #ff0000);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: rainbow-text 3s linear infinite;
+    }
+    @keyframes rainbow-text { to { background-position: 200% center; } }
+    .member-badge { font-size: 12px; margin-left: 2px; vertical-align: middle; }
+    .member-custom-status {
+      color: var(--text-2);
+      font-size: 11px;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      display: block;
+      margin-top: 1px;
+    }
     .member-tags {
       display: flex;
       align-items: center;

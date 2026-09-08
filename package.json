@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node app.js",
+    "test:coins": "node --test scripts/coinSystem.test.mjs scripts/chatCommunity.test.mjs scripts/chatNativeAttachments.test.mjs scripts/casinoGames.test.mjs",
     "mirror:games": "node scripts/mirrorPlatinumGames.mjs --repair-cache --entries-only --rewrite-catalog",
     "mirror:games:full": "node scripts/mirrorPlatinumGames.mjs --rewrite-catalog"
   },

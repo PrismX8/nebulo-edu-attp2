@@ -1,3 +1,4 @@
+const rewardQueue = require('../services/chat/rewardQueue');
 const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
@@ -28,6 +29,7 @@ const { moderatePublicMessage } = require('../services/moderation/publicMessage'
 const uploadRoute = require('./upload');
 const chatImageStore = require('../services/db/chatImageStore');
 const { prepareNativeMediaMessage, LOCAL_IMAGE_PATH } = require('../services/chat/attachments');
+const communityStore = require('../services/chat/communityStore');
 
 const router = express.Router();
 
@@ -420,6 +422,35 @@ function sortMessagesChronologically(messages = []) {
     .sort((left, right) => compareMessagesChronologically(left.message, right.message) || left.index - right.index)
     .map(({ message }) => message);
 }
+
+async function assertRoomAccess(room, user, { write = false } = {}) {
+  const target = String(room || '').trim().toLowerCase();
+  if (!user) { const e = new Error('Sign in to access chat.'); e.status = 401; throw e; }
+  if (!isGroupMember(target, user.username || user.name || '', user.role || '')) {
+    const e = new Error('You are not a member of this group.'); e.status = 403; throw e;
+  }
+  const participants = getAuthorizedDmParticipants(target, user);
+  if (participants === false) { const e = new Error('You are not a participant in this DM.'); e.status = 403; throw e; }
+  if (Array.isArray(participants)) {
+    const username = String(user.username || '').toLowerCase();
+    if (!participants.some(name => name.toLowerCase() === username)) {
+      const e = new Error('Only participants can send to this DM.'); e.status = 403; throw e;
+    }
+    const otherName = participants.find(name => name.toLowerCase() !== username);
+    // A block immediately hides an existing DM as well as preventing new
+    // delivery. Privacy settings control new writes, while old conversations
+    // remain readable for the participant who has not blocked the other user.
+    await communityStore.assertContact(user, await communityStore.resolveUsername(otherName), write ? 'dm' : 'blocked');
+  }
+}
+
+router.use('/rooms/:room', auth, async (req, res, next) => {
+  try {
+    const readOnly = req.method === 'GET' || /\/(?:join|read|bookmark)$/.test(req.path);
+    await assertRoomAccess(req.params.room, req.user, { write: !readOnly });
+    next();
+  } catch (error) { res.status(error.status || 503).json({ msg: error.status ? error.message : 'Room permissions are temporarily unavailable.' }); }
+});
 
 function mergeUniqueMessages(...batches) {
   const merged = [];
@@ -977,7 +1008,7 @@ router.post('/chat-effects/rooms/:room/activate', auth, async (req, res) => {
       room,
       `${triggeredByName} activated the ${effectName} room effect.`,
       SYSTEM_BOT_NAME
-    );
+    ).catch(() => null);
     if (globalThis.__nebuloChatIo) {
       globalThis.__nebuloChatIo.to(room).emit('room_effect', {
         effectId: cleanEffectId,
@@ -1488,6 +1519,7 @@ async function sendRoomMessageOnce({
   }
 
   try {
+    await assertRoomAccess(normalizedRoom, authUser, { write: true });
     presence.touch(clientId, normalizedRoom, authUser || {});
     const session = getSession(clientId);
     if (!isGroupMember(normalizedRoom, authUser?.username || authUser?.name || '', authUser?.role || '')) {
@@ -1709,6 +1741,17 @@ async function sendRoomMessageOnce({
       enrichedMessage.content = media.nativeBody;
     }
     messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply, attachments, nativeBody: media.nativeBody });
+    if ((authUser?._id || authUser?.id) && !DISABLE_MESSAGE_COIN_REWARD) {
+      let rewardAmount = earnsReplyReward ? 2 : 1;
+      try {
+        const communityData = await communityStore.read(authUser);
+        if (communityData.state.boostUntil > Date.now()) rewardAmount *= 2;
+      } catch {}
+      rewardQueue.enqueue(authUser, rewardAmount);
+      // Starts crediting immediately and retries from disk after an outage.
+      void rewardQueue.drain().catch(error => console.warn('Coin reward queued:', error.message));
+    }
+
 
     // The canonical message reaches connected clients before optional visual
     // snapshots, database replication, and rewards. Those follow-up jobs must
@@ -1732,18 +1775,7 @@ async function sendRoomMessageOnce({
             console.warn('DB message persistence failed:', error?.message || error);
           }
         }
-        if ((authUser?._id || authUser?.id) && !DISABLE_MESSAGE_COIN_REWARD) {
-          const coinsEarned = earnsReplyReward ? 2 : 1;
-          const rewardedUser = await grantRewardCoins(authUser, coinsEarned);
-          const username = String(authUser?.username || authUser?.name || '').trim().toLowerCase();
-          if (username) {
-            globalThis.__nebuloChatIo?.to(`user:${username}`).emit('chat_reward', {
-              balance: rewardedUser?.coins,
-              coinsEarned,
-              replyBonus: earnsReplyReward
-            });
-          }
-        }
+
       } catch (error) {
         console.warn('Post-send chat work failed:', error?.message || error);
       }
@@ -1758,7 +1790,7 @@ async function sendRoomMessageOnce({
     };
   } catch (error) {
     console.error('TLK send error:', error?.message || error);
-    return { status: 502, data: { msg: error?.message || 'TLK send failed' } };
+    return { status: error.status || 502, data: { msg: error?.message || 'TLK send failed' } };
   }
 }
 
@@ -2837,5 +2869,6 @@ router.postRoomNote = postRoomNote;
 router.SYSTEM_BOT_NAME = SYSTEM_BOT_NAME;
 
 router.sendRoomMessage = sendRoomMessage;
+router.assertRoomAccess = assertRoomAccess;
 
 module.exports = router;

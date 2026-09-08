@@ -5,6 +5,7 @@ const axios = require('axios');
 const auth = require('../middleware/auth');
 const security = require('../middleware/security');
 const chatImageStore = require('../services/db/chatImageStore');
+const communityStore = require('../services/chat/communityStore');
 
 const IMAGE_MODERATION_ENABLED = String(process.env.IMAGE_MODERATION_ENABLED || 'true').toLowerCase() !== 'false';
 const IMAGE_MODERATION_BLOCK = new Set(
@@ -14,6 +15,7 @@ const IMAGE_MODERATION_BLOCK = new Set(
     .filter(Boolean)
 );
 const IMAGE_DB_MAX_BYTES = Math.max(64 * 1024, Number(process.env.CHAT_IMAGE_DB_MAX_BYTES || 5 * 1024 * 1024));
+const IMAGE_DB_BOOSTED_MAX_BYTES = IMAGE_DB_MAX_BYTES * 2;
 const CONTENTMOD_ANALYZER_PAGE = 'https://contentmod.io/tools/free-image-analyzer';
 const CONTENTMOD_ANALYZER_ACTION = '7f2e0bf3e11b93660b302398daba2300f50476b501';
 const QUIZIZZ_UPLOAD_URL = String(
@@ -46,7 +48,7 @@ const upload = multer({
 
 const dbUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: IMAGE_DB_MAX_BYTES },
+  limits: { fileSize: IMAGE_DB_BOOSTED_MAX_BYTES },
   fileFilter(_req, file, cb) {
     cb(null, ALLOWED_MIME.has(file.mimetype));
   }
@@ -67,6 +69,17 @@ router.post('/image-db', auth, security.chatWriteRateLimit, dbUpload.single('ima
     const userId = String(authUser?._id || authUser?.id || '').trim();
     const username = String(authUser?.username || authUser?.name || '').trim();
     const room = String(req.body?.room || '').trim().toLowerCase();
+
+    if (req.file.size > IMAGE_DB_MAX_BYTES) {
+      let hasBoost = false;
+      try {
+        const communityData = await communityStore.read(authUser);
+        hasBoost = communityData.state.uploadBoostUntil > Date.now();
+      } catch {}
+      if (!hasBoost) {
+        return res.status(413).json({ msg: `File too large. Max is ${Math.round(IMAGE_DB_MAX_BYTES / 1024 / 1024)} MB. Purchase an Upload Boost to double the limit.` });
+      }
+    }
 
     const saved = await chatImageStore.saveChatImage({
       userId,

@@ -44,6 +44,8 @@ const banEvasion = require("./chat-git-main/services/moderation/banEvasion");
 const { verifyToken: verifyChatToken } = require("./chat-git-main/services/auth/remoteAuth");
 const { moderatePublicMessage } = require("./chat-git-main/services/moderation/publicMessage");
 const tlkRoutes = require("./chat-git-main/routes/tlk");
+require("./chat-git-main/services/chat/walletEvents");
+const communityStore = require("./chat-git-main/services/chat/communityStore");
 
 const libcurlPath = fileURLToPath(
   new URL("node_modules/@mercuryworkshop/libcurl-transport/dist/", import.meta.url)
@@ -127,8 +129,9 @@ if (cluster.isPrimary && WORKERS > 1) {
   const isStaffAccount = (user) => isOwnerAccount(user) || String(user?.role || "").toLowerCase() === "admin" || user?.is_admin === true;
 
   const signAuthToken = (user, source = "local") =>
-    jwt.sign({ user: { id: user?._id || user?.id, source } }, JWT_SECRET, { expiresIn: "30d" });
+    jwt.sign({ user: { id: user?._id || user?.id, source, authVersion: Number(user?.authVersion || user?.community?.authVersion || 0) } }, JWT_SECRET, { expiresIn: "30d" });
 
+  const walletStore = require("./chat-git-main/services/chat/wallet");
   const databaseAccountCache = new Map();
 
   const getRequestToken = (req) => {
@@ -156,11 +159,10 @@ if (cluster.isPrimary && WORKERS > 1) {
     return password === storedPassword;
   };
 
-  const getAuthenticatedUser = (req) => {
+  const getAuthenticatedUser = async (req) => {
     const auth = decodeRequestToken(req);
-    const userId = String(auth?.decoded?.user?.id || "").trim();
-    if (!userId) return null;
-    return findUserById(userId) || databaseAccountCache.get(userId) || null;
+    if (!auth?.token) return null;
+    return verifyChatToken(auth.token);
   };
 
   const enforceLoginAbuseControls = async (req, reply, user) => {
@@ -230,12 +232,13 @@ if (cluster.isPrimary && WORKERS > 1) {
     if (userId && source === "database") {
       try {
         const databaseAccount = await profileStore.findAccountById(userId);
+        if (databaseAccount && Number(auth.decoded.user.authVersion || 0) !== Number(databaseAccount.authVersion || 0)) return null;
         if (databaseAccount) return mergeDatabaseAccountMetadata(databaseAccount);
       } catch (error) {
         console.warn("Profile database lookup failed; using the local account mirror:", error?.message || error);
       }
-      const local = findUserById(userId) || databaseAccountCache.get(userId);
-      return local ? { ...local, id: local.id || local._id, _id: local._id || local.id, source: "database" } : null;
+      // Sensitive profile updates cannot use stale identity/password data.
+      return null;
     }
 
     if (!auth?.token) return null;
@@ -254,6 +257,27 @@ if (cluster.isPrimary && WORKERS > 1) {
     allow_udp_streams: false,
     hostname_blacklist: [],
   });
+
+  // 127.0.0.2 was used by an older TikTok shortcut.  It must not turn an
+  // actual Nebulo page/API request into a proxied TikTok request when a
+  // browser restores one of those old tabs.
+  const isLegacyAliasLocalPath = (url) => {
+    const pathname = String(url || "/").split("?", 1)[0] || "/";
+    return (
+      pathname.startsWith("/api/") ||
+      pathname === "/kchat" || pathname.startsWith("/kchat/") ||
+      pathname === "/setup" || pathname === "/setup.html" || pathname === "/setup-v2" ||
+      pathname === "/@" || pathname === "/search" || pathname === "/s.html" ||
+      pathname === "/rindex" || pathname === "/ri.html" || pathname === "/settings" ||
+      pathname === "/st.html" || pathname === "/games" || pathname === "/gs.html" ||
+      pathname === "/apps" || pathname === "/ap.html" || pathname === "/tools" ||
+      pathname === "/wt.html" || pathname === "/help" || pathname === "/links" ||
+      pathname === "/report" || pathname === "/achievements" || pathname === "/whatsnew" ||
+      pathname === "/sw.js" || pathname === "/manifest.json" || pathname === "/favicon.ico" ||
+      pathname.startsWith("/assets/") || pathname.startsWith("/games/") ||
+      pathname.startsWith("/chemistry-games/")
+    );
+  };
 
   const fastify = Fastify({
     logger: false,
@@ -274,6 +298,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       // directly, so no rewrite needed.
       const requestHost = String(request.headers.host || "").toLowerCase().split(":")[0];
       if (requestHost !== "127.0.0.2") return requestUrl;
+      if (isLegacyAliasLocalPath(requestUrl)) return requestUrl;
       if (requestUrl.startsWith("/nebulo/tiktok-client.js")) {
         return "/assets/js/tiktok-client.js" + requestUrl.slice("/nebulo/tiktok-client.js".length);
       }
@@ -406,6 +431,18 @@ if (cluster.isPrimary && WORKERS > 1) {
     .type("text/plain; charset=utf-8")
     .send("Not Found");
 
+  // Recovery resets revoke old database sessions even on host-owned API routes
+  // that otherwise use a local profile mirror. Never cache this security check.
+  fastify.addHook('preHandler', async (req, reply) => {
+    if (!String(req.raw.url || '').startsWith('/api/')) return;
+    const auth = decodeRequestToken(req);
+    if (auth?.decoded?.user?.source !== 'database') return;
+    try {
+      const result = await profileStore.query("select coalesce((user_metadata->'nebulo_community'->>'authVersion')::bigint,0) as version from public.users where id=$1::uuid", [auth.decoded.user.id]);
+      if (!result.rows[0] || Number(result.rows[0].version) !== Number(auth.decoded.user.authVersion || 0)) return reply.code(401).send({ msg: 'Session expired. Sign in again.' });
+    } catch (_error) { return reply.code(503).send({ msg: 'Account database is temporarily unavailable.' }); }
+  });
+
   // First hook: serve obfuscated proxy assets directly from disk. The public/
   // static mount's wildcard would otherwise 404 for paths like /a3/uv.config.js
   // because it tries to resolve them under public/a3/. Reading from disk here
@@ -459,7 +496,11 @@ if (cluster.isPrimary && WORKERS > 1) {
         pathname === "/argon-tiktok-feed-cache.json";
 
       let canonicalPath = rawUrl;
-      if (pathname.startsWith("/nebulo/tiktok-client.js")) {
+      if (isLegacyAliasLocalPath(rawUrl)) {
+        // Keep Nebulo navigation/API calls local.  In particular this avoids
+        // redirecting /kchat and /api/community/* into www.tiktok.com.
+        canonicalPath = rawUrl;
+      } else if (pathname.startsWith("/nebulo/tiktok-client.js")) {
         canonicalPath = "/assets/js/tiktok-client.js" + rawUrl.slice("/nebulo/tiktok-client.js".length);
       } else if (pathname.startsWith("/obj/static-tx/slardar/")) {
         canonicalPath = "/ag/https/lf16-cdn-tos.tiktokcdn-us.com" + rawUrl;
@@ -800,6 +841,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       try {
         const databaseUser = mergeDatabaseAccountMetadata(await profileStore.findAccountById(userId));
         if (!databaseUser) return reply.status(401).send({ msg: "Account no longer exists" });
+        if (Number(auth.decoded.user.authVersion || 0) !== Number(databaseUser.authVersion || 0)) return reply.status(401).send({ msg: "Session expired. Sign in again." });
         return databaseUser;
       } catch (error) {
         console.error("Database session lookup failed:", error.message);
@@ -807,7 +849,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       }
     }
 
-    const user = getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req);
     if (!user) {
       return reply.status(401).send({ msg: "No token" });
     }
@@ -948,7 +990,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/account/coins/checkout", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) return reply.status(401).send({ msg: "Invalid token" });
 
     const packs = {
@@ -1063,7 +1105,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   // Users list
   fastify.get("/api/users", async (req, reply) => {
-    const user = getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req);
     if (!user) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1071,7 +1113,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.put("/api/users/profile", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1100,7 +1142,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/users/transfer-coins", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1114,13 +1156,8 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(400).send({ msg: "Amount must be greater than 0" });
     }
 
-    const recipient = chatUserStore.findByUsername(rawRecipient);
-    if (!recipient) {
-      return reply.status(404).send({ msg: "Recipient not found" });
-    }
-
     try {
-      const result = chatUserStore.transferCoins(authUser._id, recipient._id, amount);
+      const result = await walletStore.transfer(authUser, rawRecipient, amount);
       return {
         msg: `Sent ${result.amount} coin${result.amount === 1 ? "" : "s"} to ${result.toUser.name || result.toUser.username}`,
         amount: result.amount,
@@ -1145,7 +1182,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/users/coins/dev-grant", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1153,21 +1190,21 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(403).send({ msg: "Owner access required" });
     }
 
-    const updatedUser = chatUserStore.updateProfile(authUser._id, {
-      coins: 1000000
-    });
+    const updatedUser = authUser.source === 'database'
+      ? await profileStore.adminGrantCoins(authUser.id || authUser._id, 1000000)
+      : chatUserStore.grantCoins(authUser._id, 1000000);
     if (!updatedUser) {
       return reply.status(404).send({ msg: "User not found" });
     }
 
     return {
-      msg: "Test balance set to 1,000,000 coins",
+      msg: "Added 1,000,000 test coins",
       user: sanitizeUser(updatedUser)
     };
   });
 
   fastify.get("/api/admin/overview", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) return reply.status(401).send({ msg: "Invalid token" });
     if (!isOwnerAccount(authUser)) return reply.status(403).send({ msg: "Owner access required" });
     try {
@@ -1185,7 +1222,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.get("/api/admin/users", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) return reply.status(401).send({ msg: "Invalid token" });
     if (!isOwnerAccount(authUser)) return reply.status(403).send({ msg: "Owner access required" });
     try {
@@ -1202,7 +1239,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/admin/coins/grant", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) return reply.status(401).send({ msg: "Invalid token" });
     if (!isOwnerAccount(authUser)) return reply.status(403).send({ msg: "Owner access required" });
     const targetId = String(req.body?.userId || "").trim();
@@ -1227,7 +1264,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.put("/api/users/password", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1255,7 +1292,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.get("/api/users/friends", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1371,7 +1408,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/users/friends", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1402,6 +1439,9 @@ if (cluster.isPrimary && WORKERS > 1) {
 
     try {
       const normalizedTarget = username.toLowerCase();
+      const contactActor = await communityStore.resolveUsername(caller.username);
+      const contactTarget = await communityStore.resolveUsername(username);
+      await communityStore.assertContact(contactActor || caller, contactTarget, 'friend');
       const alreadyPending = Array.isArray(caller.friendRequestsSent) && caller.friendRequestsSent.includes(normalizedTarget);
       const isIncomingRequest = Array.isArray(caller.friendRequestsReceived) && caller.friendRequestsReceived.includes(normalizedTarget);
       const updated = chatUserStore.addFriendRequest(caller._id, username);
@@ -1449,7 +1489,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/users/friends/accept", async (req, reply) => {
-    let authUser = getAuthenticatedUser(req);
+    let authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       try { authUser = await getAuthenticatedProfileAccount(req); } catch {}
     }
@@ -1466,6 +1506,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(400).send({ msg: "Requester username is required" });
     }
     try {
+      await communityStore.assertContact(await communityStore.resolveUsername(caller.username) || caller, await communityStore.resolveUsername(username), 'blocked');
       const updated = chatUserStore.acceptFriendRequest(caller._id, username);
       return { ok: true, user: sanitizeUser(updated) };
     } catch (error) {
@@ -1477,7 +1518,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/users/friends/deny", async (req, reply) => {
-    let authUser = getAuthenticatedUser(req);
+    let authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       try { authUser = await getAuthenticatedProfileAccount(req); } catch {}
     }
@@ -1505,7 +1546,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.delete("/api/users/friends/:username", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1530,11 +1571,11 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.get("/api/chat-effects", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
-    const currentUser = findUserById(authUser._id);
+    const currentUser = authUser;
     if (!currentUser) {
       return reply.status(404).send({ msg: "User not found" });
     }
@@ -1545,7 +1586,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.get("/api/chat-effects/rooms/:room", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1559,18 +1600,18 @@ if (cluster.isPrimary && WORKERS > 1) {
     return {
       room,
       roomEffect,
-      user: sanitizeUser(findUserById(authUser._id))
+      user: sanitizeUser(authUser)
     };
   });
 
   fastify.post("/api/chat-effects/:effectId/purchase", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
 
     try {
-      const result = chatUserStore.purchaseEffect(authUser._id, req.params.effectId);
+      const result = await walletStore.purchase(authUser, req.params.effectId);
       return {
         msg: `${result.effect.name} unlocked`,
         effect: result.effect,
@@ -1594,7 +1635,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/chat-effects/equip", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1628,7 +1669,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   const purchaseAvatarEffect = async (req, reply) => {
     const account = await getAuthenticatedProfileAccount(req).catch(() => null);
-    const authUser = account || getAuthenticatedUser(req);
+    const authUser = account || await getAuthenticatedUser(req);
     if (!authUser) return reply.status(401).send({ msg: "Invalid token" });
     const effect = chatEffects.getEffect(req.params.effectId);
     if (!effect || effect.scope !== "avatar") {
@@ -1648,22 +1689,7 @@ if (cluster.isPrimary && WORKERS > 1) {
           if (error?.code === "AVATAR_EFFECT_ALREADY_OWNED") {
             state = await effectStore.equipAvatar(account.id, effect.id);
           } else {
-          if (!["42501", "42P01"].includes(error?.code)) throw error;
-          const local = chatUserStore.upsertRemoteUser(account) || findUserById(account.id);
-          if (!local) {
-            const localError = new Error("User not found");
-            localError.code = "USER_NOT_FOUND";
-            throw localError;
-          }
-          const localUserId = local._id || account.id;
-          const owned = new Set(chatUserStore.sanitizeUser(local)?.ownedAvatarEffects || ["none"]);
-          if (!owned.has(effect.id)) await profileStore.spendCoins(account.id, Number(effect.price || 0));
-          chatUserStore.unlockEffect(localUserId, effect.id);
-          const equipped = chatUserStore.equipAvatarEffect(localUserId, effect.id);
-          state = {
-            ...chatUserStore.sanitizeUser(equipped.user),
-            coins: (await profileStore.findAccountById(account.id))?.coins ?? account.coins ?? 0
-          };
+          throw error; // Never debit Postgres and save ownership in a separate local write.
           }
         }
         const updatedAccount = await profileStore.findAccountById(account.id);
@@ -1702,7 +1728,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
   const equipAvatarEffect = async (req, reply) => {
     const account = await getAuthenticatedProfileAccount(req).catch(() => null);
-    const authUser = account || getAuthenticatedUser(req);
+    const authUser = account || await getAuthenticatedUser(req);
     if (!authUser) return reply.status(401).send({ msg: "Invalid token" });
     const effectId = String(req.body?.effectId || req.body?.avatarEffectId || "none").trim().toLowerCase();
     const effect = effectId === "none" ? { id: "none", name: "No avatar ring" } : chatEffects.getEffect(effectId);
@@ -1775,7 +1801,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   fastify.post("/api/tlk/chat-avatar-effects/equip", equipAvatarEffect);
 
   fastify.post("/api/chat-effects/rooms/:room/activate", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1789,7 +1815,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       return reply.status(400).send({ msg: "Choose a valid room effect" });
     }
 
-    const currentUser = findUserById(authUser._id);
+    const currentUser = authUser;
     if (!currentUser) {
       return reply.status(404).send({ msg: "User not found" });
     }
@@ -1799,7 +1825,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
     let updatedUser;
     try {
-      updatedUser = chatUserStore.spendCoins(authUser._id, effect.price);
+      updatedUser = await walletStore.spend(authUser, effect.price);
     } catch (error) {
       if (error?.code === "INSUFFICIENT_COINS") {
         return reply.status(400).send({ msg: "Not enough coins" });
@@ -1820,7 +1846,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       room,
       `${roomEffect.triggeredByName} activated the ${effect.name} room effect for ${effect.price} coin${effect.price === 1 ? "" : "s"}.`,
       tlkRoutes.SYSTEM_BOT_NAME || "System"
-    );
+    ).catch(() => null);
 
     if (globalThis.__nebuloChatIo) {
       globalThis.__nebuloChatIo.to(room).emit("room_effect", {
@@ -1846,7 +1872,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   fastify.post("/api/chat-effects/global/activate", async (req, reply) => {
-    const authUser = getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req);
     if (!authUser) {
       return reply.status(401).send({ msg: "Invalid token" });
     }
@@ -1878,7 +1904,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       });
     }
 
-    const currentUser = findUserById(authUser._id);
+    const currentUser = authUser;
     if (!currentUser) {
       return reply.status(404).send({ msg: "User not found" });
     }
@@ -1888,7 +1914,7 @@ if (cluster.isPrimary && WORKERS > 1) {
 
     let updatedUser;
     try {
-      updatedUser = chatUserStore.spendCoins(authUser._id, effect.price);
+      updatedUser = await walletStore.spend(authUser, effect.price);
     } catch (error) {
       if (error?.code === "INSUFFICIENT_COINS") {
         return reply.status(400).send({ msg: "Not enough coins" });
@@ -1913,7 +1939,7 @@ if (cluster.isPrimary && WORKERS > 1) {
       "nebulo5_4", // global room
       `${currentUser.name || currentUser.username || "Unknown"} broadcast: ${publicMessage}`,
       tlkRoutes.SYSTEM_BOT_NAME || "System"
-    );
+    ).catch(() => null);
 
     return {
       msg: `${effect.name} is now live globally`,
@@ -2272,6 +2298,71 @@ if (cluster.isPrimary && WORKERS > 1) {
       console.error("Could not read local game catalog:", error?.message || error);
       return reply.code(500).send({ error: "Local game catalog unavailable" });
     }
+  });
+
+  // ── Game progress (per-user saves + recently played) ──────────────────────
+  const gameProgressDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "data", "game-progress");
+  const ensureGameProgressDir = () => { try { fs.mkdirSync(gameProgressDir, { recursive: true }); } catch (_) {} };
+
+  const getGameProgressFile = (userId) => path.join(gameProgressDir, `${userId}.json`);
+
+  const readGameProgress = (userId) => {
+    try { return JSON.parse(fs.readFileSync(getGameProgressFile(userId), "utf8")); }
+    catch { return { saves: {}, recentlyPlayed: [] }; }
+  };
+
+  const writeGameProgress = (userId, data) => {
+    ensureGameProgressDir();
+    try { fs.writeFileSync(getGameProgressFile(userId), JSON.stringify(data, null, 2), "utf8"); } catch (_) {}
+  };
+
+  const requireAuth = (req, reply) => {
+    const auth = decodeRequestToken(req);
+    const userId = String(auth?.decoded?.user?.id || "").trim();
+    if (!userId) return reply.code(401).send({ msg: "Authentication required" });
+    return userId;
+  };
+
+  // Load all game saves for the user
+  fastify.get("/api/game-progress", async (req, reply) => {
+    const userId = requireAuth(req, reply);
+    if (userId === undefined) return;
+    const progress = readGameProgress(userId);
+    return reply.header("Cache-Control", "no-store").send(progress);
+  });
+
+  // Save game progress for a specific game
+  fastify.put("/api/game-progress", async (req, reply) => {
+    const userId = requireAuth(req, reply);
+    if (userId === undefined) return;
+    const { gamePath, data, recentlyPlayed } = req.body || {};
+    const progress = readGameProgress(userId);
+
+    if (gamePath && data) {
+      progress.saves[gamePath] = { ...progress.saves[gamePath], ...data, lastUpdated: Date.now() };
+    }
+    if (Array.isArray(recentlyPlayed)) {
+      progress.recentlyPlayed = recentlyPlayed.slice(0, 20);
+    }
+
+    writeGameProgress(userId, progress);
+    return { ok: true };
+  });
+
+  // Record a recently played game
+  fastify.post("/api/game-progress/recent", async (req, reply) => {
+    const userId = requireAuth(req, reply);
+    if (userId === undefined) return;
+    const { gamePath, gameName, gameImage, gameCategories } = req.body || {};
+    if (!gamePath || !gameName) return reply.code(400).send({ msg: "gamePath and gameName required" });
+
+    const progress = readGameProgress(userId);
+    const recent = progress.recentlyPlayed || [];
+    const filtered = recent.filter(g => g.gamePath !== gamePath);
+    filtered.unshift({ gamePath, gameName, gameImage: gameImage || null, gameCategories: gameCategories || [], playedAt: Date.now() });
+    progress.recentlyPlayed = filtered.slice(0, 20);
+    writeGameProgress(userId, progress);
+    return { ok: true, recentlyPlayed: progress.recentlyPlayed };
   });
 
   // Serve the interstitial at the root

@@ -38,6 +38,7 @@ async function purchaseAndEquip(userId, banner) {
   await ensureAccess();
   const id = String(userId || '').trim();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     const owned = await client.query('select 1 from public.chat_user_banners where user_id = $1::uuid and banner_id = $2 limit 1', [id, banner.id]);
     if (owned.rows[0]) { const error = new Error('Banner already owned'); error.code = 'BANNER_ALREADY_OWNED'; throw error; }
     const charged = await client.query(
@@ -63,6 +64,7 @@ async function equip(userId, bannerId) {
   const id = String(userId || '').trim();
   const selected = String(bannerId || 'none').trim().toLowerCase();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (selected !== 'none') {
       const owned = await client.query('select 1 from public.chat_user_banners where user_id = $1::uuid and banner_id = $2 limit 1', [id, selected]);
       if (!owned.rows[0]) { const error = new Error('Banner not owned'); error.code = 'BANNER_NOT_OWNED'; throw error; }

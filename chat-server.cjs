@@ -68,6 +68,7 @@ const signAuthToken = (user, source = "local") =>
     expiresIn: "24h",
   });
 
+const walletStore = require("./chat-git-main/services/chat/wallet");
 const databaseAccountCache = new Map();
 
 const getRequestToken = (req) => {
@@ -98,12 +99,12 @@ const verifyPassword = async (inputPassword, storedPassword) => {
   return password === storedPassword;
 };
 
-const getAuthenticatedUser = (req) => {
-  const auth = decodeRequestToken(req);
-  const userId = String(auth?.decoded?.user?.id || "").trim();
-  if (!userId) return null;
-  return findUserById(userId) || databaseAccountCache.get(userId) || null;
-};
+const getAuthenticatedUser = async (req) => {
+    const auth = decodeRequestToken(req);
+    if (!auth?.token) return null;
+    if (req.authToken === auth.token) return req.user || null;
+    return verifyChatToken(auth.token);
+  };
 
 const mergeDatabaseAccountMetadata = (account) => {
   if (!account) return null;
@@ -144,6 +145,22 @@ const mountExpressRouter = (prefix, router) => {
   // In a plain Express app, just use the prefix directly
   app.use(prefix, router);
 };
+
+// Resolve signed database sessions once before host-owned async routes. A
+// temporary database outage must return 503, never log users out as a bad token.
+app.use('/api', async (req, res, next) => {
+  if (req.path === '/wallet' || req.path === '/wallet/') return next();
+  const auth = decodeRequestToken(req);
+  if (auth?.decoded?.user?.source !== 'database') return next();
+  try {
+    req.user = await verifyChatToken(auth.token);
+    req.authToken = auth.token;
+    if (!req.user) return res.status(401).json({ msg: 'Session expired. Sign in again.' });
+    next();
+  } catch (error) {
+    res.status(503).json({ msg: 'Account database is temporarily unavailable.' });
+  }
+});
 
 // ─── Mount chat routes from integration.js ──────────────────────────────────
 require("./chat-git-main/integration").integrateChat({ io, mountExpressRouter });
@@ -221,7 +238,7 @@ app.get("/api/auth", async (req, res) => {
     }
   }
 
-  const user = getAuthenticatedUser(req);
+  const user = await getAuthenticatedUser(req);
   if (!user) {
     return res.status(401).json({ msg: "No token" });
   }
@@ -278,14 +295,14 @@ app.post("/api/users", async (req, res) => {
 
 // GET /api/users — list users
 app.get("/api/users", async (req, res) => {
-  const user = getAuthenticatedUser(req);
+  const user = await getAuthenticatedUser(req);
   if (!user) return res.status(401).json({ msg: "Invalid token" });
   return res.json(chatUserStore.listUsers().map(sanitizeUser));
 });
 
 // PUT /api/users/profile — update profile
 app.put("/api/users/profile", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const { name, avatar } = req.body || {};
   if (avatar && String(avatar).length > 2_000_000) {
@@ -303,7 +320,7 @@ app.put("/api/users/profile", async (req, res) => {
 
 // PUT /api/users/password — change password
 app.put("/api/users/password", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const { currentPassword, newPassword } = req.body || {};
   if (!currentPassword || !newPassword) {
@@ -330,23 +347,23 @@ app.put("/api/users/password", async (req, res) => {
 
 // POST /api/users/coins/dev-grant — owner only
 app.post("/api/users/coins/dev-grant", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   if (!isOwnerAccount(authUser))
     return res.status(403).json({ msg: "Owner access required" });
-  const updatedUser = chatUserStore.updateProfile(authUser._id, {
-    coins: 1000000,
-  });
+  const updatedUser = authUser.source === 'database'
+    ? await profileStore.adminGrantCoins(authUser.id || authUser._id, 1000000)
+    : chatUserStore.grantCoins(authUser._id, 1000000);
   if (!updatedUser) return res.status(404).json({ msg: "User not found" });
   return res.json({
-    msg: "Test balance set to 1,000,000 coins",
+    msg: "Added 1,000,000 test coins",
     user: sanitizeUser(updatedUser),
   });
 });
 
 // POST /api/users/transfer-coins
 app.post("/api/users/transfer-coins", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const rawRecipient = String(
     req.body?.username || req.body?.recipient || ""
@@ -356,15 +373,8 @@ app.post("/api/users/transfer-coins", async (req, res) => {
     return res.status(400).json({ msg: "Recipient username required" });
   if (!Number.isFinite(amount) || amount <= 0)
     return res.status(400).json({ msg: "Amount must be greater than 0" });
-  const recipient = chatUserStore.findByUsername(rawRecipient);
-  if (!recipient)
-    return res.status(404).json({ msg: "Recipient not found" });
   try {
-    const result = chatUserStore.transferCoins(
-      authUser._id,
-      recipient._id,
-      amount
-    );
+    const result = await walletStore.transfer(authUser, rawRecipient, amount);
     return res.json({
       msg: `Sent ${result.amount} coin${result.amount === 1 ? "" : "s"} to ${result.toUser.name || result.toUser.username}`,
       amount: result.amount,
@@ -383,7 +393,7 @@ app.post("/api/users/transfer-coins", async (req, res) => {
 // ─── Friends Routes (mirrored from app.js) ────────────────────────────────────
 
 app.get("/api/users/friends", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const caller =
     chatUserStore.upsertRemoteUser(authUser) || findUserById(authUser._id);
@@ -503,7 +513,7 @@ app.get("/api/users/friends", async (req, res) => {
 });
 
 app.post("/api/users/friends", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const caller =
     chatUserStore.upsertRemoteUser(authUser) || findUserById(authUser._id);
@@ -554,7 +564,7 @@ app.post("/api/users/friends", async (req, res) => {
 });
 
 app.post("/api/users/friends/accept", async (req, res) => {
-  let authUser = getAuthenticatedUser(req);
+  let authUser = await getAuthenticatedUser(req);
   if (!authUser) {
     try {
       authUser = await getAuthenticatedProfileAccount(req);
@@ -579,7 +589,7 @@ app.post("/api/users/friends/accept", async (req, res) => {
 });
 
 app.post("/api/users/friends/deny", async (req, res) => {
-  let authUser = getAuthenticatedUser(req);
+  let authUser = await getAuthenticatedUser(req);
   if (!authUser) {
     try {
       authUser = await getAuthenticatedProfileAccount(req);
@@ -604,7 +614,7 @@ app.post("/api/users/friends/deny", async (req, res) => {
 });
 
 app.delete("/api/users/friends/:username", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const caller = findUserById(authUser._id);
   if (!caller) return res.status(401).json({ msg: "User not found" });
@@ -627,9 +637,9 @@ app.delete("/api/users/friends/:username", async (req, res) => {
 // ─── Chat Effects Routes (mirrored from app.js) ───────────────────────────────
 
 app.get("/api/chat-effects", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
-  const currentUser = findUserById(authUser._id);
+  const currentUser = authUser;
   if (!currentUser) return res.status(404).json({ msg: "User not found" });
   return res.json({
     effects: chatEffects.listEffects(),
@@ -638,16 +648,16 @@ app.get("/api/chat-effects", async (req, res) => {
 });
 
 app.get("/api/chat-effects/rooms/:room", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const room = String(req.params.room || "").trim().toLowerCase();
   if (!room) return res.status(400).json({ msg: "Room is required" });
   const roomEffect = chatNetState.getRoomEffect(room);
-  return res.json({ room, roomEffect, user: sanitizeUser(findUserById(authUser._id)) });
+  return res.json({ room, roomEffect, user: sanitizeUser(authUser) });
 });
 
 app.post("/api/chat-effects/:effectId/purchase", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   try {
     const result = chatUserStore.purchaseEffect(
@@ -669,7 +679,7 @@ app.post("/api/chat-effects/:effectId/purchase", async (req, res) => {
 });
 
 app.post("/api/chat-effects/equip", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   try {
     const result = chatUserStore.equipEffect(
@@ -695,7 +705,7 @@ app.post("/api/chat-effects/equip", async (req, res) => {
 });
 
 app.post("/api/chat-effects/rooms/:room/activate", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const room = String(req.params.room || "").trim().toLowerCase();
   const effect = chatEffects.getEffect(req.body?.effectId);
@@ -703,14 +713,14 @@ app.post("/api/chat-effects/rooms/:room/activate", async (req, res) => {
     return res.status(400).json({ msg: "Room is required" });
   if (!effect || effect.scope !== "room")
     return res.status(400).json({ msg: "Choose a valid room effect" });
-  const currentUser = findUserById(authUser._id);
+  const currentUser = authUser;
   if (!currentUser) return res.status(404).json({ msg: "User not found" });
   if (Math.max(0, Number(currentUser.coins || 0)) < effect.price)
     return res.status(400).json({ msg: "Not enough coins" });
 
   let updatedUser;
   try {
-    updatedUser = chatUserStore.spendCoins(authUser._id, effect.price);
+    updatedUser = await walletStore.spend(authUser, effect.price);
   } catch (error) {
     if (error?.code === "INSUFFICIENT_COINS")
       return res.status(400).json({ msg: "Not enough coins" });
@@ -749,7 +759,7 @@ app.post("/api/chat-effects/rooms/:room/activate", async (req, res) => {
 });
 
 app.post("/api/chat-effects/global/activate", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   const effect = chatEffects.getEffect(req.body?.effectId);
   const publicMessage = String(req.body?.message || "").trim();
@@ -762,14 +772,14 @@ app.post("/api/chat-effects/global/activate", async (req, res) => {
       .status(400)
       .json({ msg: "Public messages are limited to 280 characters" });
 
-  const currentUser = findUserById(authUser._id);
+  const currentUser = authUser;
   if (!currentUser) return res.status(404).json({ msg: "User not found" });
   if (Math.max(0, Number(currentUser.coins || 0)) < effect.price)
     return res.status(400).json({ msg: "Not enough coins" });
 
   let updatedUser;
   try {
-    updatedUser = chatUserStore.spendCoins(authUser._id, effect.price);
+    updatedUser = await walletStore.spend(authUser, effect.price);
   } catch (error) {
     if (error?.code === "INSUFFICIENT_COINS")
       return res.status(400).json({ msg: "Not enough coins" });
@@ -798,7 +808,7 @@ app.post("/api/chat-effects/global/activate", async (req, res) => {
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 
 app.get("/api/admin/overview", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   if (!isOwnerAccount(authUser))
     return res.status(403).json({ msg: "Owner access required" });
@@ -823,7 +833,7 @@ app.get("/api/admin/overview", async (req, res) => {
 });
 
 app.get("/api/admin/users", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   if (!isOwnerAccount(authUser))
     return res.status(403).json({ msg: "Owner access required" });
@@ -847,7 +857,7 @@ app.get("/api/admin/users", async (req, res) => {
 });
 
 app.post("/api/admin/coins/grant", async (req, res) => {
-  const authUser = getAuthenticatedUser(req);
+  const authUser = await getAuthenticatedUser(req);
   if (!authUser) return res.status(401).json({ msg: "Invalid token" });
   if (!isOwnerAccount(authUser))
     return res.status(403).json({ msg: "Owner access required" });

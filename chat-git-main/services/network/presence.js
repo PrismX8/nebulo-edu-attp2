@@ -30,6 +30,8 @@ function touch(clientId, room, user = {}) {
     equippedTag: String(user?.equippedTag || 'none'),
     equippedBanner: String(user?.equippedBanner || 'none'),
     equippedProfileEffect: String(user?.equippedProfileEffect || 'none'),
+    nameEffect: String(user?.nameEffect || 'none'),
+    equippedBadge: String(user?.equippedBadge || 'none'),
     status: hasStatus ? normalizeStatus(user?.status || user?.presenceStatus) : normalizeStatus(previous.status),
     customStatus: hasCustomStatus
       ? String(user?.customStatus || '').trim().slice(0, 80)
@@ -91,6 +93,8 @@ function getCounts() {
         equippedTag: info.equippedTag || 'none',
         equippedBanner: info.equippedBanner || 'none',
         equippedProfileEffect: info.equippedProfileEffect || 'none',
+        nameEffect: info.nameEffect || 'none',
+        equippedBadge: info.equippedBadge || 'none',
         status: info.status || 'online',
         customStatus: info.customStatus || '',
         seenAt: info.seenAt
@@ -109,6 +113,8 @@ function getCounts() {
       existing.equippedTag = info.equippedTag || existing.equippedTag || 'none';
       existing.equippedBanner = info.equippedBanner || existing.equippedBanner || 'none';
       existing.equippedProfileEffect = info.equippedProfileEffect || existing.equippedProfileEffect || 'none';
+      existing.nameEffect = info.nameEffect || existing.nameEffect || 'none';
+      existing.equippedBadge = info.equippedBadge || existing.equippedBadge || 'none';
       existing.status = info.status || existing.status || 'online';
       existing.customStatus = info.customStatus || existing.customStatus || '';
     }
@@ -139,6 +145,8 @@ function enrichUsers(resolveProfile) {
       user.equippedEffect = user.equippedEffect !== 'none' ? user.equippedEffect : (profile.equippedEffect || 'none');
       user.equippedAvatarEffect = user.equippedAvatarEffect !== 'none' ? user.equippedAvatarEffect : (profile.equippedAvatarEffect || 'none');
       user.equippedTag = user.equippedTag !== 'none' ? user.equippedTag : (profile.equippedTag || 'none');
+      user.nameEffect = user.nameEffect !== 'none' ? user.nameEffect : (profile.nameEffect || 'none');
+      user.equippedBadge = user.equippedBadge !== 'none' ? user.equippedBadge : (profile.equippedBadge || 'none');
     });
   }
   return snapshot;

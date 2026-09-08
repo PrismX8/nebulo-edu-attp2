@@ -1,4 +1,6 @@
+import { createWalletSync } from './modules/wallet-sync.js?v=20260906-coins-1';
 // UBG Chat — comprehensive self-contained frontend
+import { initCommunityHub } from './modules/community-hub.js?v=20260906-workspace-2';
 
 // ─── Effects catalog ──────────────────────────────────────────────────────────
 const EFFECTS = [
@@ -603,7 +605,12 @@ async function api(url, opts = {}) {
     headers['Content-Type'] = 'application/json';
     body = JSON.stringify(body);
   }
-  const res = await fetch(fullUrl, { method, headers, body, cache: opts.cache, keepalive: opts.keepalive === true });
+  let res;
+  try { res = await fetch(fullUrl, { method, headers, body, cache: opts.cache, keepalive: opts.keepalive === true }); }
+  finally {
+    // An interrupted response can follow a successfully committed charge.
+    if (method !== 'GET' && S.user) void walletSync.refresh();
+  }
   if (!res.ok) {
     const err = new Error(`${method} ${url} → ${res.status}`);
     err.status = res.status;
@@ -641,7 +648,28 @@ function handleSessionExpired() {
   setupLoginHandlers();
 }
 
+const walletSync = createWalletSync({
+  read: () => api('/api/wallet', { cache: 'no-store' }),
+  changed: coins => {
+    if (!S.user) return;
+    setUser({ ...S.user, coins });
+    document.dispatchEvent(new CustomEvent('nebulo-wallet', { detail: { coins } }));
+  }
+});
+function updateWalletDisplays() {
+  if (!S.user) return;
+  for (const node of document.querySelectorAll('[data-wallet-coins]')) {
+    const owner = node.dataset.walletUser;
+    if (owner && ![S.user.id, S.user._id, S.user.username].some(id => String(id || '').toLowerCase() === owner.toLowerCase())) continue;
+    node.textContent = Number(S.user.coins || 0).toLocaleString();
+  }
+}
 function setUser(user) {
+  const previousId = String(S.user?.id || S.user?._id || '');
+  const nextId = String(user?.id || user?._id || '');
+  walletSync.reset(nextId);
+  if (user && walletSync.balance !== null) user = { ...user, coins: walletSync.balance };
+  if (nextId && previousId !== nextId) queueMicrotask(() => void walletSync.refresh());
   S.user = user || null;
   if (user) {
     try { localStorage.setItem('user', JSON.stringify(user)); } catch {}
@@ -659,6 +687,7 @@ function setUser(user) {
     const uname = (user.username || user.name || '').toLowerCase();
     if (uname) knownValidUsers.add(uname);
   } else { localStorage.removeItem('user'); }
+  updateWalletDisplays();
 }
 
 function getCachedUser() {
@@ -730,6 +759,7 @@ async function loadUser() {
 }
 
 function logout() {
+  communityHub.clear();
   if (S.focusRewardTimer) clearInterval(S.focusRewardTimer);
   S.focusRewardTimer = null;
   setToken(null); setUser(null);
@@ -837,11 +867,13 @@ function showDesktopNotification(title, body, channelId) {
 }
 
 function maybeNotify(msg) {
-  if (!canNotify() || isMine(msg)) return;
+  if (isMine(msg)) return;
   const me = myUsername().toLowerCase();
   const body = String(msg.body || '');
   const isDm = S.roomMeta?.type === 'dm';
   const mentioned = me && detectMentions(body).some(n => n.toLowerCase() === me);
+  communityHub.notify(isDm || mentioned ? 'mention' : 'message');
+  if (!canNotify()) return;
   if (!isDm && !mentioned) return;
   const sender = getUsername(msg);
   const title = isDm ? `DM from ${sender}` : `Mentioned by ${sender}`;
@@ -878,7 +910,7 @@ async function sendFocusRewardHeartbeat(focused = isChatRewardFocused()) {
     }
   } catch (error) {
     if (Number(error?.status || 0) === 429) S.focusRewardBackoffUntil = Date.now() + 60_000;
-    if (![0, 401, 429].includes(Number(error?.status || 0))) {
+    if (![0, 401, 429, 503].includes(Number(error?.status || 0))) {
       console.warn('[UBG Chat] Focus reward heartbeat failed:', error?.message || error);
     }
   } finally {
@@ -1161,10 +1193,16 @@ function initSocket() {
     startPolling(30_000);
     void pollMessages();
     startMeta();
+    void walletSync.refresh();
   });
   S.socket.on('alert_created', (data = {}) => {
     if (data.message) toast(data.message, 'info');
     void fetchAlerts();
+  });
+  S.socket.on('wallet_changed', () => void walletSync.refresh());
+  S.socket.on('chat_reward', (reward = {}) => {
+    void walletSync.refresh();
+    if (Number(reward.coinsEarned) > 0) showCoinReward(reward.coinsEarned);
   });
   S.socket.on('receive_message', handleRealtimeMessage);
   S.socket.on('message_receipts_updated', handleReceiptUpdate);
@@ -1636,6 +1674,7 @@ function startMeta() {
   S.metaTimer = setInterval(() => {
     S.socket?.emit('presence_ping', presencePayload());
     fetchModeration(); fetchAlerts(); fetchPresence();
+    void walletSync.refresh();
   }, metaIntervalMs);
 }
 function stopMeta() { clearInterval(S.metaTimer); S.metaTimer = null; }
@@ -3695,7 +3734,7 @@ function toggleEffectsPopover() {
   pop.style.display = 'block';
   pop.innerHTML = `
     <div style="font-size:11px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-      <span style="color:#fbbf24;display:flex;align-items:center;gap:3px"><span class="material-icons-round" style="font-size:13px">toll</span>${esc(String(coins))}</span>
+      <span style="color:#fbbf24;display:flex;align-items:center;gap:3px"><span class="material-icons-round" style="font-size:13px">toll</span><span data-wallet-coins>${esc(String(coins))}</span></span>
     </div>
     <div style="font-size:11px;font-weight:600;color:#fbbf24;margin:6px 0 4px;display:flex;align-items:center;gap:5px"><span class="material-icons-round" style="font-size:14px">theater_comedy</span>Room Effects — everyone in the room sees this</div>
     ${roomEffects.map(e => effectRow(e, 'activateRoomEffect')).join('')}
@@ -4344,6 +4383,7 @@ async function processOutgoingQueue() {
       const job = S.sendQueue[0];
       try {
         const sendData = await sendQueuedMessage(job);
+        void walletSync.refresh();
         if (String(S.room) === String(job.roomId)) {
           handleRealtimeMessage({ roomId: job.roomId, message: ownOutgoingMessage(sendData) });
         }
@@ -4479,7 +4519,7 @@ function renderMemberList(users = []) {
         <div style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:#e4e4e7;white-space:nowrap;overflow:hidden"><span style="overflow:hidden;text-overflow:ellipsis">${name}</span>${speaking ? '<span class="material-icons-round" title="Speaking" style="font-size:13px;color:#4ade80">graphic_eq</span>' : ''}</div>
         ${badges ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:1px">${badges}</div>` : ''}
         ${customStatus ? `<div class="member-custom-status">${esc(customStatus)}</div>` : ''}
-        <div style="display:flex;align-items:center;gap:3px;margin-top:2px;color:#fbbf24;font-size:10px"><span class="material-icons-round" style="font-size:11px">toll</span>${esc(String(u.coins ?? 0))}</div>
+        <div style="display:flex;align-items:center;gap:3px;margin-top:2px;color:#fbbf24;font-size:10px"><span class="material-icons-round" style="font-size:11px">toll</span><span data-wallet-coins data-wallet-user="${esc(u.id || u._id || u.username)}">${esc(String(u.coins ?? 0))}</span></div>
       </div>
     </button>`;
   }).join('');
@@ -4776,7 +4816,7 @@ function openUserCard(username, fallbackUser = null) {
         <div class="profile-card-badges">${roleBadge(user)}${tagBadgeHtml(tag)}</div>
       </div>
       <div class="profile-card-stats">
-        <div><span>Coins</span><strong><span class="material-icons-round">toll</span>${esc(String(user.coins ?? 0))}</strong></div>
+        <div><span>Coins</span><strong><span class="material-icons-round">toll</span><span data-wallet-coins data-wallet-user="${esc(user.id || user._id || user.username)}">${esc(String(user.coins ?? 0))}</span></strong></div>
         <div><span>Role</span><strong>${esc(role || 'user')}</strong></div>
         <div><span>Banner</span><strong>${esc(bannerLabel)}</strong></div>
       </div>
@@ -4791,6 +4831,7 @@ function openUserCard(username, fallbackUser = null) {
     </div>
   </div>`);
 
+  void communityHub.enhanceProfile(displayName, document.querySelector('.profile-card-modal'));
   document.getElementById('profile-add-friend')?.addEventListener('click', async (event) => {
     const btn = event.currentTarget;
     btn.disabled = true;
@@ -5685,6 +5726,10 @@ function renderSettings() {
   ].filter(Boolean).join('');
 
   list.innerHTML = `
+    ${settingsGroupHtml('groups', 'Your Nebulo', `
+      <button type="button" class="sb-item" data-community-open="community" style="width:100%"><span class="material-icons-round mi">redeem</span><span>Community<span class="setting-desc" style="display:block">Daily rewards, casino, leaderboard & support</span></span></button>
+      <button type="button" class="sb-item" data-community-open="account" style="width:100%"><span class="material-icons-round mi">manage_accounts</span><span>Account<span class="setting-desc" style="display:block">Profile, privacy, recovery, appearance & sounds</span></span></button>
+    `)}
     ${settingsGroupHtml('notifications', 'Notifications', `
       <div style="padding:2px 7px 6px"><button id="notify-btn" class="sb-item" style="width:100%;background:${notifyGranted && getChatBool('chatNotifications', false) ? 'rgba(74,222,128,.1)' : 'rgba(255,255,255,.04)'}">
         <span class="material-icons-round mi" style="color:${notifyGranted && getChatBool('chatNotifications', false) ? '#4ade80' : '#71717a'}">${notifyGranted && getChatBool('chatNotifications', false) ? 'notifications_active' : 'notifications_none'}</span>
@@ -5698,7 +5743,7 @@ function renderSettings() {
       </div>
       <div class="settings-profile-meta">
         <div class="settings-profile-name">${esc(name)}</div>
-        <div class="settings-profile-coins"><span class="material-icons-round" style="font-size:15px">toll</span>${esc(String(u?.coins ?? 0))} coins</div>
+        <div class="settings-profile-coins"><span class="material-icons-round" style="font-size:15px">toll</span><span data-wallet-coins>${esc(String(u?.coins ?? 0))}</span> coins</div>
         ${roleBadge || badges ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">${roleBadge}${badges}</div>` : ''}
       </div>
       <button id="profile-edit-btn" type="button" title="Edit profile" style="display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.055);color:#d4d4d8;font:800 11px 'Inter',sans-serif;cursor:pointer"><span class="material-icons-round" style="font-size:15px">edit</span>Edit</button>
@@ -6078,7 +6123,7 @@ async function renderCosmeticsSidebarLegacy() {
 
   if (action) action.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:4px;background:rgba(251,191,36,.08);border-radius:10px;font-size:12px;color:#fbbf24">
     <span class="material-icons-round" style="font-size:16px">toll</span>
-    <strong>${coins.toLocaleString()}</strong> coins
+    <strong data-wallet-coins>${coins.toLocaleString()}</strong> coins
   </div>`;
 
   function effectStoreItem(e) {
@@ -6140,7 +6185,7 @@ async function renderCosmeticsSidebarLegacy() {
 
   html += '<div class="coin-store-card">'
     + '<div class="coin-store-top"><span class="coin-store-icon"><span class="material-icons-round" style="font-size:19px">paid</span></span>'
-    + '<div class="coin-store-copy"><div class="coin-store-title">Purchase coins</div><div class="coin-store-balance"><strong>' + coins.toLocaleString() + '</strong> coins available</div></div></div>'
+    + '<div class="coin-store-copy"><div class="coin-store-title">Purchase coins</div><div class="coin-store-balance"><strong data-wallet-coins>' + coins.toLocaleString() + '</strong> coins available</div></div></div>'
     + '<button class="coin-store-buy" onclick="openCoinStore()"><span class="material-icons-round" style="font-size:14px">storefront</span>Open coin shop</button></div>';
 
   // Message Effects
@@ -6192,7 +6237,9 @@ function cosmeticOwnedState(scope, id) {
 function cosmeticCard(effect, scope) {
   const id = effect.id;
   const state = cosmeticOwnedState(scope, id);
-  const status = state.active ? '<span class="cosmetic-card-status active">Equipped</span>' : state.owned ? '<span class="cosmetic-card-status">Owned</span>' : '<span class="cosmetic-card-status preview">Preview</span>';
+  const price = Number(effect.price || 0);
+  const badge = state.active ? '<span class="cosmetic-card-badge equipped">Equipped</span>' : state.owned && id !== 'none' ? '<span class="cosmetic-card-badge owned">Owned</span>' : '';
+  const scopeLabel = { banner: 'Banner', profile: 'Profile effect', message: 'Message effect', avatar: 'Avatar ring', tag: 'Tag' }[scope] || scope;
   let visual = '';
   if (id === 'none') {
     visual = '<span class="cosmetic-none-visual"><span class="material-icons-round">block</span></span>';
@@ -6208,8 +6255,8 @@ function cosmeticCard(effect, scope) {
     visual = `<span class="cosmetic-tag-visual">${tagBadgeHtml(effect)}</span>`;
   }
   const motionEvents = scope === 'profile' && id !== 'none' ? ' onmouseenter="setProfileCardEffectMotion(this,true)" onmouseleave="setProfileCardEffectMotion(this,false)"' : '';
-  return `<button type="button" class="cosmetic-shop-card cosmetic-shop-card-${scope}${state.active ? ' active' : ''}" data-name="${esc(effect.name.toLowerCase())}" onclick="openCosmeticPreview('${esc(scope)}','${esc(id)}')"${motionEvents}>
-    ${visual}<span class="cosmetic-card-copy"><strong>${esc(effect.name)}</strong>${status}</span>
+  return `<button type="button" class="cosmetic-shop-card cosmetic-shop-card-${scope}${state.active ? ' active' : ''}${state.owned && !state.active ? ' owned' : ''}" data-name="${esc(effect.name.toLowerCase())}" data-price="${price}" data-owned="${state.owned}" aria-label="Preview ${esc(effect.name)}${state.active ? ', equipped' : state.owned ? ', owned' : ''}" onclick="openCosmeticPreview('${esc(scope)}','${esc(id)}')"${motionEvents}>
+    ${badge}${visual}<span class="cosmetic-card-copy"><small class="shop-product-type">${esc(scopeLabel)}</small><strong>${esc(effect.name)}</strong><span class="shop-card-meta"><span class="cosmetic-card-price">${price > 0 ? price.toLocaleString() + ' coins' : 'Free'}</span><span class="cosmetic-card-preview">Preview <span class="material-icons-round">arrow_forward</span></span></span></span>
   </button>`;
 }
 
@@ -6334,22 +6381,253 @@ function bindTagManager(data = {}) {
 async function renderCosmetics() {
   const main = document.getElementById('main-area');
   if (!main) return;
+  const number = value => Number(value || 0).toLocaleString();
+  const date = value => value ? new Date(value).toLocaleString() : '—';
+  if (!S.shopCasinoView) S.shopCasinoView = 'lobby';
+  if (!S.shopCasinoHeld) S.shopCasinoHeld = new Set();
+  if (!S.shopMinesState) S.shopMinesState = { grid:[], revealed:[], mines:[], multiplier:1, bet:10, active:false, crashed:false, roundId:null, version:0, multipliers:{} };
+  if (!S.shopCrashState) S.shopCrashState = { multiplier:1, bet:10, active:false, crashed:false, cashedOut:false, crashPoint:0, lastCashout:0, lastWin:0, roundId:null, version:0 };
+  if (!S.shopHLState) S.shopHLState = { current:null, next:null, bet:10, streak:0, active:false, revealed:false, won:false, roundId:null, version:0 };
+  if (!S.shopGuessState) S.shopGuessState = { target:0, guess:null, attempts:0, bet:10, active:false, hint:'', roundId:null, version:0 };
+  if (!S.shopTriviaState) S.shopTriviaState = { question:null, options:[], answered:false, bet:10, active:false, roundId:null, version:0, selected:null, correct:null };
+  const shopCasinoCard = (items, holdable=false) => `<div class="ch-cards">${(items||[]).map((card,i) => card.hidden ? '<div class="ch-playing-card ch-card-hidden"><span>?</span></div>' : `<${holdable?'button':'div'} ${holdable?`type="button" data-shop-action="hold" data-index="${i}"`:''} class="ch-playing-card ${['H','D'].includes(card.suit)?'ch-red':''} ${S.shopCasinoHeld.has(i)&&holdable?'is-held':''}"><span>${esc(card.rank)}</span><b>${esc({S:'♠',H:'♥',D:'♦',C:'♣'}[card.suit]||'')}</b>${holdable?`<small>${S.shopCasinoHeld.has(i)?'Held':'Hold'}</small>`:''}</${holdable?'button':'div'}>`).join('')}</div>`;
   document.body.classList.add('cosmetics-open');
-  const category = ['banners','profile','message','avatar','tags'].includes(S.cosmeticsCategory) ? S.cosmeticsCategory : 'banners';
+  const allCategories = ['overview','banners','profile','message','avatar','tags','perks','status','tickets','membership','rewards','casino','leaderboard','support'];
+  const category = allCategories.includes(S.cosmeticsCategory) ? S.cosmeticsCategory : 'overview';
   const categoryInfo = {
+    overview: { label:'Discover', icon:'grid_view', title:'Make it yours.', copy:'A little personality for every conversation. Explore your next look.', scope:'overview' },
     banners: { label:'Banners', icon:'panorama', title:'Profile banners', copy:'Cinematic artwork shown across your member card and profile.', scope:'banner' },
-    profile: { label:'Profile Effects', icon:'flare', title:'Quick profile effects', copy:'Short effects that play once when somebody opens your profile.', scope:'profile' },
-    message: { label:'Message Effects', icon:'chat_bubble', title:'Message effects', copy:'Animated materials applied behind your chat messages.', scope:'message' },
-    avatar: { label:'Avatar Rings', icon:'blur_circular', title:'Avatar rings', copy:'Persistent animated frames around your avatar in every chat.', scope:'avatar' },
-    tags: { label:'Tags', icon:'local_offer', title:'Profile tags', copy:'Small labels displayed beside your name.', scope:'tag' }
+    profile: { label:'Profile Effects', icon:'flare', title:'Profile effects', copy:'Short effects that play when somebody opens your profile.', scope:'profile' },
+    message: { label:'Message Effects', icon:'chat_bubble', title:'Message effects', copy:'Animated materials behind your chat messages.', scope:'message' },
+    avatar: { label:'Avatar Rings', icon:'blur_circular', title:'Avatar rings', copy:'Persistent animated frames around your avatar.', scope:'avatar' },
+    tags: { label:'Tags', icon:'local_offer', title:'Profile tags', copy:'Small labels displayed beside your name.', scope:'tag' },
+    perks: { label:'Perks', icon:'bolt', title:'Power-ups & boosts', copy:'Temporary boosts that give you an edge.', scope:'perk' },
+    status: { label:'Identity', icon:'badge', title:'Status, names & badges', copy:'Custom status, glowing names, and collectible badges.', scope:'status' },
+    tickets: { label:'Lottery', icon:'confirmation_number', title:'Lottery tickets', copy:'View your existing tickets and lottery availability.', scope:'ticket' },
+    membership: { label:'Premium', icon:'workspace_premium', title:'Nebulo Premium', copy:'Exclusive themes, cursors, name color for 30 days.', scope:'membership' },
+    rewards: { label:'Rewards', icon:'redeem', title:'Daily rewards', copy:'Collect daily coins and bonuses, and track your streak.', scope:'rewards' },
+    casino: { label:'Casino', icon:'casino', title:'Coin casino', copy:'Play blackjack, video poker, mines, crash and more.', scope:'casino' },
+    leaderboard: { label:'Leaderboard', icon:'leaderboard', title:'Top members', copy:'See who leads the community in coins, wins and streaks.', scope:'leaderboard' },
+    support: { label:'Support', icon:'support_agent', title:'Get help', copy:'Contact the team or check your open tickets.', scope:'support' }
   };
   const info = categoryInfo[category];
   const noneNames = { banner:'No banner', profile:'No profile effect', message:'No message effect', avatar:'No avatar ring', tag:'No tag' };
-  const effects = [{ id:'none', name:noneNames[info.scope], price:0, scope:info.scope }, ...EFFECTS.filter(effect => effect.scope === info.scope && effect.id !== 'none')];
+  const isLegacyCosmetic = ['banners','profile','message','avatar','tags'].includes(category);
+  const isCommunityFeature = ['rewards','casino','leaderboard','support'].includes(category);
+  const effects = isLegacyCosmetic ? [{ id:'none', name:noneNames[info.scope], price:0, scope:info.scope }, ...EFFECTS.filter(effect => effect.scope === info.scope && effect.id !== 'none')] : [];
+  let communityStoreData = null;
+  try { communityStoreData = await api('/api/community/me'); } catch (error) { communityStoreData = null; }
+  S.communityStoreData = communityStoreData;
   let tagManagerData = null;
   if (category === 'tags' && isOwner() && S.tagManagerOpen) {
     try { tagManagerData = await api('/api/tlk/tag-manager'); }
     catch (error) { toast(error.data?.msg || 'Could not load tag manager', 'error'); S.tagManagerOpen = false; }
+  }
+  const userCoins = S.user?.coins ?? communityStoreData?.coins ?? 0;
+  const communityStore = communityStoreData?.store || {};
+  const communityItems = communityStore.items || [];
+  let catalogHtml = '';
+  if (isLegacyCosmetic) {
+    catalogHtml = `<div class="cosmetics-grid cosmetics-grid-${info.scope}">${effects.map(effect => cosmeticCard(effect, info.scope)).join('')}</div>`;
+  } else if (category === 'overview') {
+    const departments = ['banners','profile','message','avatar','tags'];
+    const spotlight = EFFECTS.filter(effect => effect.scope === 'banner' && effect.id !== 'none').slice(0, 3);
+    catalogHtml = `<section class="shop-discover" aria-label="Browse the collection">
+      <div class="shop-directory">${departments.map((key, index) => `<button type="button" class="shop-directory-item" onclick="setCosmeticsCategory('${key}')"><span class="shop-directory-number">0${index + 1}</span><span class="shop-directory-copy"><strong>${esc(categoryInfo[key].label)}</strong><small>${EFFECTS.filter(effect => effect.scope === categoryInfo[key].scope && effect.id !== 'none').length} styles to explore</small></span><span class="material-icons-round">arrow_forward</span></button>`).join('')}</div>
+      <div class="shop-discover-aside"><span class="shop-eyebrow">Your next look</span><h3>Small details.<br>A style of your own.</h3><p>Preview every cosmetic before you choose. Your collection stays with your account.</p><button type="button" class="shop-text-button" onclick="setCosmeticsCategory('profile')">Explore profile effects <span class="material-icons-round">arrow_forward</span></button><div class="shop-discover-note"><span class="material-icons-round">redeem</span><div><strong>Build your collection with coins</strong><button type="button" class="shop-text-button" onclick="setCosmeticsCategory('rewards')">View daily rewards <span class="material-icons-round">arrow_forward</span></button></div></div></div>
+    </section>
+    <section class="shop-featured"><div class="shop-inline-heading"><div><span class="shop-eyebrow">The collection</span><h3>A new backdrop</h3></div><button type="button" class="shop-text-button" onclick="setCosmeticsCategory('banners')">All banners <span class="material-icons-round">arrow_forward</span></button></div><div class="cosmetics-grid cosmetics-grid-banner shop-featured-grid">${spotlight.map(effect => cosmeticCard(effect, 'banner')).join('')}</div></section>
+    <div class="shop-utility-links">${['perks','status','membership'].map(key => `<button type="button" onclick="setCosmeticsCategory('${key}')"><span class="material-icons-round">${categoryInfo[key].icon}</span><span>${esc(categoryInfo[key].label)}</span><span class="material-icons-round">arrow_forward</span></button>`).join('')}</div>`;
+  } else if (category === 'rewards') {
+    const daily = communityStoreData?.daily || {}, spin = communityStoreData?.spin || {};
+    const streak = Number(daily.streak) || 0;
+    const bestStreak = Number(daily.bestStreak) || 0;
+    const nextReward = 100 + 25 * (Math.min(streak, 7) - 1);
+    const progress = Math.min(100, (streak / 7) * 100);
+    const weekDays = Array.from({length:7},(_,i)=>{
+      const earned = i < Math.min(7, streak);
+      const isNext = i === Math.min(6, streak);
+      return `<li class="${earned ? 'earned' : ''}${isNext && !daily.claimedToday ? ' next' : ''}"><span>Day ${i+1}</span><b>${100+i*25}</b>${earned ? '<small>✓</small>' : ''}</li>`;
+    }).join('');
+    const recentActivity = (communityStoreData?.recent || []).slice(0,6).map(item => {
+      const amt = item.amount ?? item.delta ?? '';
+      const isPositive = String(amt).startsWith('+') || Number(amt) > 0;
+      return `<div class="shop-recent-item"><span>${esc(item.label || item.kind || 'Wallet')}</span><span class="${isPositive ? 'shop-positive' : ''}">${esc(amt)}</span></div>`;
+    }).join('');
+    catalogHtml = `
+      <div class="shop-rewards-hero">
+        <div class="shop-rewards-hero-left">
+          <div class="shop-coins-big"><span class="material-icons-round">paid</span><div><strong data-wallet-coins>${number(userCoins)}</strong><small>coins</small></div></div>
+        </div>
+        <div class="shop-rewards-hero-right">
+          <div class="shop-streak-stat"><strong>${number(streak)}</strong><small>Day streak</small></div>
+          <div class="shop-streak-divider"></div>
+          <div class="shop-streak-stat"><strong>${number(bestStreak)}</strong><small>Best streak</small></div>
+        </div>
+      </div>
+      <div class="shop-rewards-section">
+        <div class="shop-section-head"><span class="material-icons-round">local_fire_department</span><h3>Daily streak</h3><span class="shop-badge">${streak > 0 ? streak + ' day' + (streak > 1 ? 's' : '') : 'Start today'}</span></div>
+        <p class="shop-section-desc">Claim every day to keep your streak going. Rewards grow each day.</p>
+        <div class="shop-streak-bar"><div class="shop-streak-fill" style="width:${progress}%"></div></div>
+        <div class="shop-streak-labels"><span>Day 1</span><span>Day 7</span></div>
+        <ol class="shop-week">${weekDays}</ol>
+        <div class="shop-claim-row">
+          <button class="shop-claim-btn${daily.claimedToday ? ' disabled' : ''}" onclick="shopClaimDaily()" ${daily.claimedToday ? 'disabled' : ''}>${daily.claimedToday ? 'Claimed today' : 'Claim ' + number(daily.reward || nextReward) + ' coins'}</button>
+          <span class="shop-muted">${daily.claimedToday ? 'Next claim ' + esc(date(daily.nextClaimAt)) : 'Come back tomorrow to keep your streak.'}</span>
+        </div>
+      </div>
+      <div class="shop-rewards-section">
+        <div class="shop-section-head"><span class="material-icons-round">redeem</span><h3>Daily bonus</h3>${spin.claimedToday ? '<span class="shop-badge done">Claimed</span>' : '<span class="shop-badge live">Available</span>'}</div>
+        <p class="shop-section-desc">Claim a free bonus of 20, 40, 60, 100 or 200 coins. No streak required.</p>
+        <div class="shop-claim-row">
+          <button class="shop-claim-btn${spin.claimedToday ? ' disabled' : ''}" onclick="shopClaimSpin()" ${spin.claimedToday ? 'disabled' : ''}>${spin.claimedToday ? 'Claimed today' : 'Claim bonus'}</button>
+          <span class="shop-muted">${spin.claimedToday ? 'Next claim ' + esc(date(spin.nextClaimAt)) : 'Reset at midnight UTC.'}</span>
+        </div>
+      </div>
+      ${recentActivity ? `<div class="shop-rewards-section"><div class="shop-section-head"><span class="material-icons-round">history</span><h3>Recent activity</h3></div><div class="shop-recent-list">${recentActivity}</div></div>` : ''}`;
+  } else if (category === 'casino') {
+    const cv = S.shopCasinoView;
+    const casinoRound = communityStoreData?.casino?.round;
+    const casinoHistory = communityStoreData?.casino?.history || [];
+    const active = casinoRound?.status === 'playing';
+    if (active && cv === 'lobby') S.shopCasinoView = casinoRound.game;
+    const game = cv === 'lobby' ? '' : active ? casinoRound.game : cv;
+    const casinoSummary = `<div class="shop-casino-balance"><span>Balance</span><strong><span data-wallet-coins>${number(userCoins)}</span> coins</strong></div>`;
+    const casinoNames = {blackjack:'Blackjack',videopoker:'Video Poker',higherlower:'Higher or Lower',mines:'Mines',numberguess:'Number Guess',crash:'Crash',trivia:'Trivia'};
+    const casinoHistoryHtml = casinoHistory.length ? `<div class="shop-rewards-section"><div class="shop-section-head"><span class="material-icons-round">history</span><h3>Recent hands</h3></div><div class="shop-recent-list">${casinoHistory.slice(0,6).map(h => `<div class="shop-recent-item"><div><strong>${esc(casinoNames[h.game]||h.game)}</strong><small>${esc(h.outcome)} · ${number(h.stake??h.bet)} stake</small></div><span class="${h.net>0?'shop-positive':''}">${h.net>0?'+':''}${number(h.net)}</span></div>`).join('')}</div></div>` : '';
+    if (!game) {
+      catalogHtml = `
+        <div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Coin Casino</h3><p>Bet your coins on text-based games. Play at your own pace.</p></div></div>
+        ${casinoSummary}
+        <div class="shop-casino-grid">
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="blackjack"><span class="shop-game-emoji material-icons-round">style</span><strong>Blackjack</strong><small>Hit, stand or double. Get closer to 21.</small><span class="shop-game-tag">3:2 payout</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="videopoker"><span class="shop-game-emoji material-icons-round">filter_5</span><strong>Video Poker</strong><small>Five cards, one draw. Build your hand.</small><span class="shop-game-tag">250× royal</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="higherlower"><span class="shop-game-emoji material-icons-round">swap_vert</span><strong>Higher or Lower</strong><small>Guess higher or lower. Build streaks.</small><span class="shop-game-tag">Streak bonus</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="mines"><span class="shop-game-emoji material-icons-round">grid_on</span><strong>Mines</strong><small>Reveal tiles, avoid mines, collect multipliers.</small><span class="shop-game-tag">5×5 grid</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="numberguess"><span class="shop-game-emoji material-icons-round">pin</span><strong>Number Guess</strong><small>Guess 1-100. Fewer attempts = bigger wins.</small><span class="shop-game-tag">7 tries</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="crash"><span class="shop-game-emoji material-icons-round">trending_up</span><strong>Crash</strong><small>Watch the multiplier climb. Cash out before crash.</small><span class="shop-game-tag">2×-100×</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="trivia"><span class="shop-game-emoji material-icons-round">quiz</span><strong>Trivia</strong><small>Answer questions to earn coins.</small><span class="shop-game-tag">Timed</span></button>
+        </div>${casinoHistoryHtml}`;
+    } else {
+      const visible = casinoRound?.game === game ? casinoRound : null;
+      const toolbar = `<div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button><span>${active?'Hand in progress':'Ready to deal'}</span></div>`;
+      const wagerForm = `<form data-shop-casino-form="true" class="ch-deal-form"><input type="hidden" name="game" value="${esc(game)}"><label class="ch-field">Stake<input name="bet" value="${S.shopCasinoWager}" type="number" min="1" required></label><button class="ch-button ch-primary" type="submit">Deal</button></form>`;
+      if (game === 'blackjack') {
+        const bj = active && visible ? visible : null;
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Blackjack</h3><p>Dealer stands on soft 17 · Blackjack pays 3:2</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${bj ? `<div class="ch-hand-label">Dealer <span>${active?'One card hidden':number(bj.dealerTotal)}</span></div>${shopCasinoCard(bj.dealer)}<div class="ch-table-rule"></div><div class="ch-hand-label">You<span>${number(bj.playerTotal)}</span></div>${shopCasinoCard(bj.player)}${bj.status==='settled'?`<div class="ch-hand-result" role="status"><strong>${esc(bj.outcome)}</strong><span>${bj.net>0?'+':''}${number(bj.net)} coins · ${number(bj.payout)} returned</span></div>`:`<p class="ch-table-instruction">Choose your next move.</p>`}`:`<div class="ch-table-empty"><span class="ch-table-mark">21</span><h4>Take a seat at the table</h4><p>Place a stake to deal your first two cards.</p></div>`}</section>${active?`<div class="ch-game-actions"><span>Stake <strong>${number(casinoRound.stake)} coins</strong></span><div>${(casinoRound.actions||[]).map(move=>`<button type="button" class="ch-button" data-shop-action="casino-move" data-move="${esc(move)}">${{hit:'Hit',stand:'Stand',double:'Double down'}[move]||move}</button>`).join('')}</div></div>`:wagerForm}`;
+      } else if (game === 'videopoker') {
+        const vp = active && visible ? visible : null;
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Video Poker</h3><p>Jacks or Better · Five-card draw</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${vp ? `<div class="ch-hand-label">Your hand<span>${active?'Select cards to hold':'Final hand'}</span></div>${shopCasinoCard(vp.player,active)}${vp.status==='settled'?`<div class="ch-hand-result" role="status"><strong>${esc(vp.outcome)}</strong><span>${vp.net>0?'+':''}${number(vp.net)} coins · ${number(vp.payout)} returned</span></div>`:`<p class="ch-table-instruction">Hold any cards you want to keep, then draw once.</p>`}`:`<div class="ch-table-empty"><span class="ch-table-mark">J Q K A</span><h4>Make your best five-card hand</h4><p>Deal five cards, hold your favorites and draw replacements.</p></div>`}</section>${active?`<div class="ch-game-actions"><span>Stake <strong>${number(casinoRound.stake)} coins</strong></span><div><button type="button" class="ch-button" data-shop-action="casino-move" data-move="draw">Draw cards</button></div></div>`:wagerForm}`;
+      } else if (game === 'higherlower') {
+        const hl = S.shopHLState;
+        const suits = ['♠','♥','♦','♣'];
+        const suitColor = s => s==='♥'||s==='♦' ? 'ch-red' : '';
+        const currentCard = hl.current ? { rank: hl.current.rank, suit: suits[hl.current.suit] } : null;
+        const nextCard = hl.next ? { rank: hl.next.rank, suit: suits[hl.next.suit] } : null;
+        let hlContent;
+        if (hl.active && currentCard) {
+          hlContent = `<div class="ch-hl-display"><div class="ch-hl-card ${suitColor(currentCard.suit)}"><span>${currentCard.rank}</span><small>${currentCard.suit}</small></div><span class="ch-hl-arrow">vs</span>${nextCard ? `<div class="ch-hl-card ${suitColor(nextCard.suit)}"><span>${nextCard.rank}</span><small>${nextCard.suit}</small></div>` : `<div class="ch-hl-card" style="background:#2a2d35;border-color:#444"><span style="color:#666">?</span></div>`}</div>${!hl.revealed ? `<div class="ch-hl-buttons"><button type="button" class="ch-button" data-shop-action="hl-guess" data-choice="higher">Higher</button><button type="button" class="ch-button" data-shop-action="hl-guess" data-choice="lower">Lower</button></div>` : `<div style="text-align:center;margin-top:14px"><p style="font-size:13px;color:${hl.won?'#4ade80':'#f87171'};font-weight:550">${hl.won?'Correct!':'Wrong!'} ${nextCard?nextCard.rank+nextCard.suit:''}</p><div style="margin-top:12px"><button type="button" class="ch-button" data-shop-action="hl-next">Next card</button> <button type="button" class="ch-button ch-primary" data-shop-action="hl-cashout">Cash out</button></div></div>`}`;
+        } else {
+          hlContent = `<div class="ch-table-empty"><span class="ch-table-mark">A K Q</span><h4>Higher or Lower</h4><p>Guess if the next card is higher or lower. Streak multiplier increases your payout.</p></div>`;
+        }
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Higher or Lower</h3><p>Guess higher or lower. Build your streak for bigger payouts.</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${hlContent}</section>${!hl.active ? wagerForm : `<div class="ch-game-actions"><span>Stake <strong>${number(hl.bet)} coins</strong></span><span>Streak: ${hl.streak}</span></div>`}`;
+      } else if (game === 'mines') {
+        const ms = S.shopMinesState;
+        const gridSize = 25, mineCount = 5;
+        const gridHtml = Array.from({length:gridSize},(_,i)=>{
+          const isRevealed = ms.revealed.includes(i);
+          const isMine = ms.mines.includes(i);
+          let cls = 'ch-mines-cell', content = '';
+          if (isRevealed) { cls += ' ch-mines-revealed'; if (isMine) { cls += ' ch-mines-mine'; content = '💣'; } else { cls += ' ch-mines-safe'; content = ms.multipliers?.[i] ? `${ms.multipliers[i]}×` : '✓'; } }
+          return `<button type="button" class="${cls}" data-shop-action="mines-reveal" data-index="${i}" ${isRevealed?'disabled':''}>${content}</button>`;
+        }).join('');
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Mines</h3><p>Reveal safe tiles to increase your multiplier. Cash out anytime to collect.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button>${ms.active?`<span>Streak: ${ms.revealed.length}</span>`:''}</div>${casinoSummary}${ms.active?`<div class="shop-casino-balance"><span>Current multiplier</span><strong>${ms.multiplier.toFixed(2)}×</strong></div><div class="shop-casino-balance"><span>Potential win</span><strong>${number(Math.floor(ms.bet*ms.multiplier))} coins</strong></div>`:''}<section class="ch-game-table">${ms.active?`<div class="ch-mines-grid">${gridHtml}</div><div style="display:flex;justify-content:space-between;margin-top:14px"><span style="font-size:12px;color:#777782">${ms.revealed.length} tiles revealed · ${mineCount} mines</span><div><button type="button" class="ch-button ch-primary" data-shop-action="mines-cashout">Cash out</button></div></div>`:`<div class="ch-table-empty"><span class="ch-table-mark">💣</span><h4>Mines</h4><p>Avoid mines and collect multipliers. Cash out after each safe tile to lock in your winnings.</p></div>`}</section>${!ms.active?wagerForm:''}`;
+      } else if (game === 'numberguess') {
+        const gs = S.shopGuessState;
+        const maxAttempts = 7;
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Number Guess</h3><p>Guess a secret number between 1 and 100. Fewer attempts means bigger wins.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button></div>${casinoSummary}<section class="ch-game-table">${gs.active?`<div class="ch-guess-display"><div class="ch-guess-range">Attempts: ${gs.attempts} / ${maxAttempts}</div>${gs.hint?`<div class="ch-guess-hint ${gs.hint.includes('High')?'ch-guess-too-high':gs.hint.includes('Low')?'ch-guess-too-low':'ch-guess-correct'}">${esc(gs.hint)}</div>`:''}</div><form data-shop-guess-form="true" class="ch-deal-form" style="justify-content:center"><label class="ch-field">Your guess<input name="guess" type="number" min="1" max="100" required placeholder="1-100"></label><button class="ch-button ch-primary" type="submit">Guess</button></form>${gs.attempts>=maxAttempts&&!gs.hint?.includes('Correct')?`<div style="text-align:center;margin-top:12px"><p style="font-size:12px;color:#777782">The number was ${gs.target}</p></div>`:''}`:`<div class="ch-table-empty"><span class="ch-table-mark">1-100</span><h4>Number Guess</h4><p>Guess a number between 1 and 100. Get hints after each guess. Win with fewer attempts for higher payouts.</p></div>`}</section>${!gs.active?wagerForm:''}`;
+      } else if (game === 'crash') {
+        const cs = S.shopCrashState;
+        const crashClass = cs.crashed ? 'ch-crash-crashed' : cs.multiplier < 2 ? 'ch-crash-low' : cs.multiplier < 5 ? 'ch-crash-mid' : 'ch-crash-high';
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Crash</h3><p>Watch the multiplier climb. Cash out before it crashes to collect.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button></div>${casinoSummary}<section class="ch-game-table">${cs.active||cs.crashed||cs.cashedOut?`<div class="ch-crash-display"><div class="ch-crash-value ${crashClass}" data-crash-value>${cs.crashed?'CRASHED':`${cs.multiplier.toFixed(2)}×`}</div><div class="ch-crash-label" data-crash-label>${cs.crashed?`Crashed at ${cs.crashPoint.toFixed(2)}×`:cs.cashedOut?`Cashed out at ${cs.lastCashout.toFixed(2)}×`:'Climbing...'}</div>${cs.active&&!cs.crashed&&!cs.cashedOut?`<div style="margin-top:20px" data-crash-btn-wrap><button type="button" class="ch-button ch-primary" data-shop-action="crash-cashout">Cash out at ${cs.multiplier.toFixed(2)}× (${number(Math.floor(cs.bet*cs.multiplier))} coins)</button></div>`:''}${cs.cashedOut?`<div style="margin-top:16px"><p style="font-size:14px;font-weight:550;color:#4ade80">Cashed out at ${cs.lastCashout.toFixed(2)}× · +${number(cs.lastWin)} coins</p></div>`:''}${cs.crashed&&!cs.cashedOut?`<div style="margin-top:16px"><p style="font-size:14px;font-weight:550;color:#f87171">You lost ${number(cs.bet)} coins</p></div>`:''}</div>`:`<div class="ch-table-empty"><span class="ch-table-mark">📈</span><h4>Crash</h4><p>The multiplier starts at 1× and climbs randomly. Cash out before it crashes.</p></div>`}</section>${!cs.active?wagerForm:''}`;
+      } else if (game === 'trivia') {
+        const ts = S.shopTriviaState;
+        const triviaQs = [
+          {q:'What planet is known as the Red Planet?',opts:['Venus','Mars','Jupiter','Saturn'],correct:1,cat:'Science'},
+          {q:'Which element has the chemical symbol "O"?',opts:['Gold','Osmium','Oxygen','Iron'],correct:2,cat:'Science'},
+          {q:'In what year did World War II end?',opts:['1943','1944','1945','1946'],correct:2,cat:'History'},
+          {q:'What is the largest ocean on Earth?',opts:['Atlantic','Indian','Arctic','Pacific'],correct:3,cat:'Geography'},
+          {q:'Which programming language was created by Brendan Eich?',opts:['Python','Java','JavaScript','C++'],correct:2,cat:'Technology'},
+          {q:'What is the speed of light in km/s?',opts:['150,000','200,000','300,000','400,000'],correct:2,cat:'Science'},
+          {q:'Which country has the most natural lakes?',opts:['USA','Russia','Canada','Brazil'],correct:2,cat:'Geography'},
+          {q:'What does "HTTP" stand for?',opts:['HyperText Transfer Protocol','High Tech Transfer Process','Home Tool Transfer Protocol','HyperText Transmission Platform'],correct:0,cat:'Technology'},
+          {q:'Which planet has the most moons?',opts:['Jupiter','Saturn','Uranus','Neptune'],correct:1,cat:'Science'},
+          {q:'In what year was the first iPhone released?',opts:['2005','2006','2007','2008'],correct:2,cat:'Technology'},
+        ];
+        const keys = ['A','B','C','D'];
+        let triviaContent;
+        if (ts.active && ts.question) {
+          triviaContent = `<div class="ch-trivia-category">${esc(ts.question.cat)}</div><div class="ch-trivia-question">${esc(ts.question.q)}</div><div class="ch-trivia-options">${ts.question.opts.map((opt,i)=>`<button type="button" class="ch-trivia-option ${ts.answered&&i===ts.question.correct?'ch-trivia-correct':ts.answered&&i===ts.selected&&i!==ts.question.correct?'ch-trivia-wrong':''}" data-shop-action="trivia-answer" data-index="${i}" ${ts.answered?'disabled':''}><span class="ch-trivia-key">${keys[i]}</span>${esc(opt)}</button>`).join('')}</div>${ts.answered?`<div style="text-align:center;margin-top:16px"><p style="font-size:13px;color:${ts.correct?'#4ade80':'#f87171'};font-weight:550">${ts.correct?'Correct!':'Wrong!'}</p><button type="button" class="ch-button ch-primary" data-shop-action="trivia-next">Next question</button></div>`:''}`;
+        } else {
+          triviaContent = `<div class="ch-table-empty"><span class="ch-trivia-key" style="font-size:20px;width:48px;height:48px">?</span><h4>Trivia</h4><p>Test your knowledge and earn coins. Each correct answer pays out based on your stake.</p></div>`;
+        }
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Trivia</h3><p>Answer questions correctly to earn coins.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button></div>${casinoSummary}<section class="ch-game-table">${triviaContent}</section>${!ts.active?wagerForm:''}`;
+      } else {
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Coin Casino</h3><p>Select a game to play.</p></div></div>${casinoSummary}`;
+      }
+    }
+  } else if (category === 'leaderboard') {
+    const board = communityStoreData?.leaderboard || {};
+    const entries = board.entries || [];
+    catalogHtml = `
+      <div class="shop-leaderboard-header">
+        <span class="material-icons-round">leaderboard</span>
+        <div><h3>Community Leaderboard</h3><p>Real standings, updated when you load them.</p></div>
+      </div>
+      <div class="shop-lb-controls">
+        <button class="shop-lb-tab active" onclick="shopLoadLeaderboard('coins')" data-metric="coins">Coins</button>
+        <button class="shop-lb-tab" onclick="shopLoadLeaderboard('streak')" data-metric="streak">Daily streak</button>
+        <button class="shop-lb-tab" onclick="shopLoadLeaderboard('wins')" data-metric="wins">Casino wins</button>
+      </div>
+      ${entries.length ? `<ol class="shop-lb-list">${entries.map((entry,i) => `<li class="shop-lb-entry"><span class="shop-lb-rank">${i+1}</span><div class="shop-lb-user"><strong>${esc(entry.displayName || entry.username)}</strong><small>@${esc(entry.username)}</small></div><span class="shop-lb-score">${number(entry[board.metric || 'coins'])}</span></li>`).join('')}</ol>` : '<div class="shop-empty-hint" style="padding:40px;text-align:center">No standings yet. Claim your daily reward to get started.</div>'}`;
+  } else if (category === 'support') {
+    const tickets = communityStoreData?.tickets || [];
+    const ticketHtml = tickets.length ? tickets.map(t => `<div class="shop-ticket"><div class="shop-ticket-head"><strong>${esc(t.subject)}</strong><span class="shop-badge ${t.status === 'open' ? 'live' : 'done'}">${esc(t.status)}</span></div><p>${esc(t.body)}</p>${t.reply ? `<div class="shop-ticket-reply"><strong>Staff reply:</strong><p>${esc(t.reply)}</p></div>` : '<small class="shop-muted">Awaiting reply</small>'}</div>`).join('') : '<div class="shop-empty-hint" style="padding:20px;text-align:center">No support requests yet.</div>';
+    catalogHtml = `
+      <div class="shop-support-header">
+        <span class="material-icons-round">support_agent</span>
+        <div><h3>Support</h3><p>Ask for help or report a problem.</p></div>
+      </div>
+      <form class="shop-support-form" onsubmit="shopSubmitSupport(event)">
+        <label class="shop-form-label">Subject<input name="subject" class="shop-input" placeholder="Give your request a short title" required maxlength="100" /></label>
+        <label class="shop-form-label">Message<textarea name="body" class="shop-input shop-textarea" placeholder="What happened, and what did you expect?" required maxlength="2000" rows="4"></textarea></label>
+        <button type="submit" class="shop-submit-btn">Send request</button>
+      </form>
+      <div class="shop-rewards-section"><div class="shop-section-head"><span class="material-icons-round">inbox</span><h3>Your requests</h3></div>${ticketHtml}</div>`;
+  } else {
+    const storeCatFilter = category === 'perks' ? communityItems.filter(i => i.cat === 'perk')
+      : category === 'status' ? communityItems.filter(i => i.cat === 'cosmetic')
+      : category === 'tickets' ? communityItems.filter(i => i.id === 'lottery_ticket')
+      : category === 'membership' ? communityItems.filter(i => i.id === 'premium')
+      : communityItems;
+    const lotteryHtml = category === 'tickets' && communityStore.lottery ? `<div class="cosmetics-lottery-pot"><span class="material-icons-round">emoji_events</span><span>Weekly pot: <strong>${number(communityStore.lottery.pot || 0)}</strong> coins</span><span>${communityStore.lottery.tickets || 0} existing tickets · new purchases unavailable</span></div>` : '';
+    catalogHtml = `${lotteryHtml}<div class="cosmetics-grid cosmetics-grid-store">${storeCatFilter.map(item => {
+      const owned = (item.id === 'name_glow' && communityStore.nameEffect === 'glow') || (item.id === 'name_rainbow' && communityStore.nameEffect === 'rainbow') || (item.id === 'badge_star' && (communityStore.ownedBadges || []).includes('badge_star')) || (item.id === 'badge_verified' && (communityStore.ownedBadges || []).includes('badge_verified')) || (item.id === 'premium' && communityStoreData?.premium?.active);
+      const isActive = (item.id === 'channel_boost' && communityStore.boostActive) || (item.id === 'proxy_priority' && communityStore.proxyActive) || (item.id === 'upload_boost' && communityStore.uploadActive);
+      const needText = item.id === 'custom_status';
+      const flag = owned ? '<span class="cosmetic-card-badge owned">Owned</span>' : isActive ? '<span class="cosmetic-card-badge equipped">Active</span>' : item.price > 0 ? `<span class="cosmetic-card-badge price">${number(item.price)} coins</span>` : '<span class="cosmetic-card-badge">Free</span>';
+      const cta = item.available === false ? 'Unavailable' : owned ? 'Owned' : isActive ? 'Active' : item.price > 0 ? `Buy · ${number(item.price)} coins` : 'Get for free';
+      return `<button type="button" class="cosmetic-shop-card cosmetic-shop-card-store${owned ? ' owned' : ''}${isActive ? ' active' : ''}" data-name="${esc(item.name.toLowerCase())}" data-price="${Number(item.price || 0)}" data-owned="${!!owned || !!isActive}" ${item.available === false ? 'disabled' : ''} onclick="buyCommunityItem('${esc(item.id)}',${needText})">
+        ${flag}
+        <span class="cosmetic-card-store-icon">${item.icon}</span>
+        <span class="cosmetic-card-copy"><span class="shop-product-type">${esc(info.label)}</span><strong>${esc(item.name)}</strong><small>${esc(item.desc)}</small>${item.available === false ? `<small class="shop-unavailable-reason">${esc(item.unavailableReason || 'This item is currently unavailable.')}</small>` : ''}
+          ${owned ? '<span class="cosmetic-card-status">Owned</span>' : isActive ? '<span class="cosmetic-card-status active">Active</span>' : ''}
+          <span class="cosmetic-card-price"><span class="material-icons-round">paid</span>${item.price > 0 ? number(item.price) : 'Free'}</span>
+        </span>
+        <span class="cosmetic-card-buy">${cta}</span>
+      </button>`;
+    }).join('')}</div>`;
+    if (!storeCatFilter.length) catalogHtml += `<div class="cosmetics-empty" style="display:block">No items in this category.</div>`;
   }
   let page = document.getElementById('cosmetics-page');
   if (!page) {
@@ -6357,39 +6635,163 @@ async function renderCosmetics() {
     page.id = 'cosmetics-page';
     main.appendChild(page);
   }
+  const groups = { collection:['overview','banners','profile','message','avatar','tags','perks','status','membership'], earn:['rewards','casino','tickets','leaderboard'], help:['support'] };
+  const group = Object.keys(groups).find(key => groups[key].includes(category)) || 'collection';
+  const hasCatalogControls = !isCommunityFeature && category !== 'overview' && !tagManagerData;
+  page.dataset.category = category;
   page.innerHTML = `<header class="cosmetics-page-header">
-    <div><span class="cosmetics-kicker">Cosmetics</span><h1>Customize your profile</h1></div>
-    <div class="cosmetics-header-actions"><button class="cosmetics-icon-button" onclick="openCoinStore()"><span class="material-icons-round">paid</span><span>Coin shop</span></button><button class="cosmetics-icon-button" onclick="renderSection('channels')"><span class="material-icons-round">close</span></button></div>
+    <div class="cosmetics-header-left"><span class="shop-store-logo"><span class="material-icons-round">storefront</span></span><h1>Shop<span>Nebulo</span></h1></div>
+    <div class="cosmetics-header-actions"><div class="cosmetics-coins" aria-label="Wallet balance"><span class="material-icons-round">toll</span><span data-wallet-coins>${number(userCoins)}</span><span>coins</span></div><button type="button" class="shop-primary-btn" onclick="setCosmeticsCategory('rewards')">Get coins</button><button type="button" class="cosmetics-icon-button shop-back-chat" onclick="renderSection('channels')" aria-label="Back to chat"><span class="material-icons-round">arrow_back</span><span>Back to chat</span></button></div>
   </header>
+  <nav class="shop-primary-nav" aria-label="Shop sections">${Object.entries({collection:'Collection',earn:'Earn & play',help:'Help'}).map(([key,label]) => `<button type="button" class="${key === group ? 'active' : ''}" ${key === group ? 'aria-current="true"' : ''} onclick="setCosmeticsCategory('${groups[key][0]}')">${label}</button>`).join('')}</nav>
   <div class="cosmetics-page-body">
-    <nav class="cosmetics-category-nav">${Object.entries(categoryInfo).map(([key,item]) => `<button class="${key === category ? 'active' : ''}" onclick="setCosmeticsCategory('${key}')"><span class="material-icons-round">${item.icon}</span><span>${item.label}</span></button>`).join('')}</nav>
-    <main class="cosmetics-catalog">
-      <div class="cosmetics-catalog-head"><div><h2>${tagManagerData ? 'Manage tags' : info.title}</h2><p>${tagManagerData ? 'Create, edit, animate, remove, and restore tags.' : info.copy}</p></div><div class="cosmetics-catalog-actions">${category === 'tags' && isOwner() ? `<button class="cosmetics-icon-button" onclick="setTagManagerOpen(${tagManagerData ? 'false' : 'true'})"><span class="material-icons-round">${tagManagerData ? 'arrow_back' : 'tune'}</span><span>${tagManagerData ? 'Back to tags' : 'Manage tags'}</span></button>` : ''}${tagManagerData ? '' : `<label class="cosmetics-search"><span class="material-icons-round">search</span><input id="cosmetics-search-input" value="${esc(S.cosmeticsSearch)}" placeholder="Search ${esc(info.label.toLowerCase())}"></label>`}</div></div>
-      ${tagManagerData ? tagManagerMarkup(tagManagerData) : `<div class="cosmetics-grid cosmetics-grid-${info.scope}">${effects.map(effect => cosmeticCard(effect, info.scope)).join('')}</div><div id="cosmetics-empty" class="cosmetics-empty" style="display:none">No cosmetics match that search.</div>`}
-    </main>
+    <nav class="cosmetics-category-nav" aria-label="${group === 'collection' ? 'Collection departments' : group === 'earn' ? 'Earn and play pages' : 'Help pages'}">${groups[group].map(key => `<button type="button" class="${key === category ? 'active' : ''}" ${key === category ? 'aria-current="page"' : ''} onclick="setCosmeticsCategory('${key}')">${esc(categoryInfo[key].label)}</button>`).join('')}</nav>
+    <main class="cosmetics-catalog"><div class="shop-catalog-inner">
+      <div class="cosmetics-catalog-head"><div><span class="shop-eyebrow">${group === 'collection' ? 'The collection' : group === 'earn' ? 'Earn & play' : 'Here to help'}</span><h2>${tagManagerData ? 'Manage tags' : info.title}</h2><p>${tagManagerData ? 'Create, edit, animate, remove, and restore tags.' : info.copy}</p></div>${category === 'tags' && isOwner() ? `<button class="cosmetics-icon-button" onclick="setTagManagerOpen(${tagManagerData ? 'false' : 'true'})"><span class="material-icons-round">${tagManagerData ? 'arrow_back' : 'tune'}</span><span>${tagManagerData ? 'Back to tags' : 'Manage tags'}</span></button>` : ''}</div>
+      ${hasCatalogControls ? `<div class="shop-catalog-tools"><label class="cosmetics-search"><span class="material-icons-round">search</span><input id="cosmetics-search-input" value="${esc(S.cosmeticsSearch || '')}" aria-label="Search ${esc(info.label.toLowerCase())}" placeholder="Search ${esc(info.label.toLowerCase())}"></label><div class="shop-filter-controls"><label><span>Show</span><select id="shop-owned-filter" aria-label="Filter by ownership"><option value="all" ${S.shopOwnedFilter !== 'owned' ? 'selected' : ''}>All items</option><option value="owned" ${S.shopOwnedFilter === 'owned' ? 'selected' : ''}>Owned</option></select></label><label><span>Sort</span><select id="shop-sort" aria-label="Sort products"><option value="featured" ${!S.shopSort || S.shopSort === 'featured' ? 'selected' : ''}>Collection order</option><option value="price-asc" ${S.shopSort === 'price-asc' ? 'selected' : ''}>Price: low to high</option><option value="price-desc" ${S.shopSort === 'price-desc' ? 'selected' : ''}>Price: high to low</option><option value="name" ${S.shopSort === 'name' ? 'selected' : ''}>Name: A–Z</option></select></label></div><span id="shop-results-count" role="status" aria-live="polite"></span></div>` : ''}
+      ${tagManagerData ? tagManagerMarkup(tagManagerData) : catalogHtml}<div id="cosmetics-empty" class="cosmetics-empty" hidden><span class="material-icons-round">search_off</span><h3>No matching items</h3><p>Try another search or show all items.</p><button type="button" class="cosmetics-icon-button" id="shop-clear-filters">Clear filters</button></div>
+      <footer class="shop-footer-note"><span>Personalize your space. Prices are in coins.</span><button type="button" class="shop-text-button" onclick="setCosmeticsCategory('support')">Shop support <span class="material-icons-round">arrow_forward</span></button></footer>
+    </div></main>
   </div>`;
   const input = document.getElementById('cosmetics-search-input');
-  input?.addEventListener('input', () => {
-    S.cosmeticsSearch = input.value;
-    const query = input.value.trim().toLowerCase();
+  const ownedFilter = document.getElementById('shop-owned-filter');
+  const sort = document.getElementById('shop-sort');
+  const applyCatalogFilters = () => {
+    if (!hasCatalogControls) return;
+    S.cosmeticsSearch = input?.value || '';
+    S.shopOwnedFilter = ownedFilter?.value || 'all';
+    S.shopSort = sort?.value || 'featured';
+    const query = S.cosmeticsSearch.trim().toLowerCase();
+    const cards = Array.from(page.querySelectorAll('.cosmetic-shop-card'));
+    cards.forEach((card, index) => { if (!card.dataset.collectionOrder) card.dataset.collectionOrder = String(index + 1); });
+    cards.sort((a,b) => S.shopSort === 'name' ? a.dataset.name.localeCompare(b.dataset.name) : S.shopSort === 'price-asc' ? Number(a.dataset.price) - Number(b.dataset.price) : S.shopSort === 'price-desc' ? Number(b.dataset.price) - Number(a.dataset.price) : Number(a.dataset.collectionOrder) - Number(b.dataset.collectionOrder));
     let visible = 0;
-    page.querySelectorAll('.cosmetic-shop-card').forEach(card => {
-      const show = !query || card.dataset.name.includes(query);
-      card.style.display = show ? '' : 'none';
+    cards.forEach(card => {
+      const show = (!query || card.dataset.name.includes(query)) && (S.shopOwnedFilter !== 'owned' || card.dataset.owned === 'true');
+      card.hidden = !show;
+      card.parentElement.appendChild(card);
       if (show) visible += 1;
     });
-    const empty = document.getElementById('cosmetics-empty');
-    if (empty) empty.style.display = visible ? 'none' : 'block';
-  });
-  input?.dispatchEvent(new Event('input'));
+    document.getElementById('cosmetics-empty').hidden = visible > 0;
+    document.getElementById('shop-results-count').textContent = `${visible} ${visible === 1 ? 'item' : 'items'}`;
+  };
+  input?.addEventListener('input', applyCatalogFilters);
+  ownedFilter?.addEventListener('change', applyCatalogFilters);
+  sort?.addEventListener('change', applyCatalogFilters);
+  document.getElementById('shop-clear-filters')?.addEventListener('click', () => { input.value = ''; ownedFilter.value = 'all'; applyCatalogFilters(); input.focus(); });
+  applyCatalogFilters();
   if (tagManagerData) bindTagManager(tagManagerData);
+  page.removeEventListener('click', shopHandleCasinoClick);
+  page.removeEventListener('submit', shopHandleCasinoSubmit);
+  page.addEventListener('click', shopHandleCasinoClick);
+  page.addEventListener('submit', shopHandleCasinoSubmit);
 }
 
 window.setCosmeticsCategory = function(category) {
+  if (S.cosmeticsCategory === 'casino' && category !== 'casino' && shopCrashInterval) { cancelAnimationFrame(shopCrashInterval); shopCrashInterval = null; }
   S.cosmeticsCategory = category;
-  S.cosmeticsSearch = '';
   S.tagManagerOpen = false;
   void renderCosmetics();
+};
+
+window.buyCommunityItem = async function(itemId, needsText) {
+  if (S.shopPurchaseBusy) return;
+  S.shopPurchaseBusy = true;
+  try {
+    let command = S.shopPurchasePending;
+    if (command && command.itemId !== itemId) {
+      toast('Retry the previous purchase before buying another item.', 'error');
+      return;
+    }
+    if (!command) {
+      const me = await api('/api/community/me');
+      const item = (me.store?.items || []).find(entry => entry.id === itemId);
+      if (item?.available === false) { toast(item.unavailableReason || 'This item is unavailable.', 'error'); return; }
+      const ownedBadge = (me.store?.ownedBadges || []).includes(itemId);
+      command = { action: ownedBadge ? 'equip_badge' : itemId === 'premium' ? 'premium' : 'buy_store', itemId, requestId: crypto.randomUUID() };
+      if (itemId === 'custom_status') {
+        const text = prompt('Enter your custom status:');
+        if (!text?.trim()) return;
+        command.text = text.trim();
+      }
+      S.shopPurchasePending = command;
+    }
+    const data = await api('/api/community/action', { method: 'POST', body: command });
+    S.shopPurchasePending = null;
+    if (data.state && S.user) {
+      const identity = data.state.store || {};
+      setUser({ ...S.user, coins: data.state.coins, nameEffect: identity.nameEffect || 'none', equippedBadge: identity.equippedBadge || 'none', ownedBadges: identity.ownedBadges || [], customStatus: identity.customStatus || '' });
+      if (identity.customStatus) S.customStatus = identity.customStatus;
+      S.socket?.emit('presence_ping', presencePayload());
+      void fetchPresence();
+    }
+    await walletSync.refresh();
+    toast(data.result?.msg || (command.action === 'equip_badge' ? 'Badge equipped.' : 'Purchase complete.'), 'success');
+    void renderCosmetics();
+  } catch (error) {
+    if (error.status && error.status < 500) S.shopPurchasePending = null;
+    toast(error.data?.msg || error.message || 'Purchase not confirmed. Select this item again to retry safely.', 'error');
+  } finally { S.shopPurchaseBusy = false; }
+};
+
+window.shopClaimDaily = async function() {
+  try {
+    await api('/api/community/action', { method: 'POST', body: { action: 'daily', requestId: crypto.randomUUID() } });
+    const me = await api('/api/community/me');
+    if (S.user) S.user.coins = me.coins;
+    toast('Daily reward claimed!', 'success');
+    void renderCosmetics();
+  } catch (error) { toast(error.data?.msg || 'Claim failed', 'error'); }
+};
+
+window.shopClaimSpin = async function() {
+  try {
+    const result = await api('/api/community/action', { method: 'POST', body: { action: 'spin', requestId: crypto.randomUUID() } });
+    const me = await api('/api/community/me');
+    if (S.user) S.user.coins = me.coins;
+    toast(result?.result?.message || 'Bonus claimed!', 'success');
+    void renderCosmetics();
+  } catch (error) { toast(error.data?.msg || 'Claim failed', 'error'); }
+};
+
+window.shopOpenCasino = function(game) {
+  if (shopCrashInterval) { cancelAnimationFrame(shopCrashInterval); shopCrashInterval = null; }
+  S.shopCasinoView = game || 'lobby';
+  S.shopCasinoHeld = new Set();
+  S.shopCasinoHeldRound = '';
+  S.shopCasinoWager = 10;
+  S.shopMinesState = { grid:[], revealed:[], mines:[], multiplier:1, bet:10, active:false, crashed:false, roundId:null, version:0, multipliers:{} };
+  S.shopCrashState = { multiplier:1, bet:10, active:false, crashed:false, cashedOut:false, crashPoint:0, lastCashout:0, lastWin:0, roundId:null, version:0 };
+  S.shopHLState = { current:null, next:null, bet:10, streak:0, active:false, revealed:false, won:false, roundId:null, version:0 };
+  S.shopGuessState = { target:0, guess:null, attempts:0, bet:10, active:false, hint:'', roundId:null, version:0 };
+  S.shopTriviaState = { question:null, options:[], answered:false, bet:10, active:false, roundId:null, version:0, selected:null, correct:null };
+  void renderCosmetics();
+};
+
+window.shopLoadLeaderboard = async function(metric) {
+  try {
+    const data = await api('/api/community/leaderboard?metric=' + encodeURIComponent(metric));
+    const list = document.querySelector('.shop-lb-list');
+    const tabs = document.querySelectorAll('.shop-lb-tab');
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.metric === metric));
+    if (!list) { void renderCosmetics(); return; }
+    const entries = data.entries || [];
+    list.innerHTML = entries.length ? entries.map((entry,i) => `<li class="shop-lb-entry"><span class="shop-lb-rank">${i+1}</span><div class="shop-lb-user"><strong>${esc(entry.displayName || entry.username)}</strong><small>@${esc(entry.username)}</small></div><span class="shop-lb-score">${number(entry[data.metric || metric])}</span></li>`).join('') : '<div class="shop-empty-hint" style="padding:40px;text-align:center">No standings yet.</div>';
+  } catch (error) { toast('Could not load leaderboard', 'error'); }
+};
+
+window.shopSubmitSupport = async function(event) {
+  event.preventDefault();
+  const form = event.target;
+  const subject = form.subject?.value?.trim();
+  const body = form.body?.value?.trim();
+  if (!subject || !body) return;
+  try {
+    await api('/api/community/action', { method: 'POST', body: { action: 'support', subject, body, requestId: crypto.randomUUID() } });
+    toast('Support request sent!', 'success');
+    form.reset();
+    void renderCosmetics();
+  } catch (error) { toast(error.data?.msg || 'Failed to send', 'error'); }
 };
 
 window.setTagManagerOpen = function(open) {
@@ -6397,6 +6799,290 @@ window.setTagManagerOpen = function(open) {
   S.cosmeticsSearch = '';
   void renderCosmetics();
 };
+
+function shopHandleCasinoClick(event) {
+  const target = event.target.closest('[data-shop-action]');
+  if (!target) return;
+  event.preventDefault();
+  const action = target.dataset.shopAction;
+  if (action === 'choose-game') { shopOpenCasino(target.dataset.game); return; }
+  if (action === 'casino-lobby') { S.shopCasinoView = 'lobby'; void renderCosmetics(); return; }
+  if (action === 'hold') {
+    const i = Number(target.dataset.index);
+    if (S.shopCasinoHeld.has(i)) S.shopCasinoHeld.delete(i); else S.shopCasinoHeld.add(i);
+    void renderCosmetics(); return;
+  }
+  if (action === 'casino-move') shopCasinoMove(target.dataset.move);
+  if (action === 'hl-guess') shopHandleHLGuess(target.dataset.choice);
+  if (action === 'hl-next') { const hl = S.shopHLState; hl.current = hl.next || hl.current; hl.next = null; hl.revealed = false; void renderCosmetics(); }
+  if (action === 'hl-cashout') shopHandleHLCashout();
+  if (action === 'mines-reveal') shopHandleMinesReveal(Number(target.dataset.index));
+  if (action === 'mines-cashout') shopHandleMinesCashout();
+  if (action === 'crash-cashout') shopHandleCrashCashout();
+  if (action === 'trivia-answer') shopHandleTriviaAnswer(Number(target.dataset.index));
+  if (action === 'trivia-next') shopHandleTriviaNext();
+}
+
+function shopHandleCasinoSubmit(event) {
+  const form = event.target;
+  if (form.dataset.shopCasinoForm) {
+    event.preventDefault();
+    const fd = new FormData(form);
+    const bet = Number(fd.get('bet'));
+    const game = fd.get('game');
+    if (bet < 1) return;
+    S.shopCasinoWager = bet;
+    shopCasinoDeal(game, bet);
+  } else if (form.dataset.shopGuessForm) {
+    event.preventDefault();
+    const fd = new FormData(form);
+    const guess = Number(fd.get('guess'));
+    if (!guess || guess < 1 || guess > 100) return;
+    shopHandleGuessSubmit(guess);
+  }
+}
+
+async function shopMutateCasino(payload) {
+  try {
+    const data = await api('/api/community/action', { method: 'POST', body: { ...payload, requestId: crypto.randomUUID() } });
+    if (data.state && S.user && Number.isFinite(Number(data.state.coins))) S.user.coins = Number(data.state.coins);
+    return data;
+  } catch (error) {
+    toast(error.data?.msg || error.message || 'Casino action failed', 'error');
+    throw error;
+  }
+}
+
+function shopShowWin(amount) {
+  const page = document.getElementById('cosmetics-page');
+  if (!page) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'shop-win-overlay';
+  overlay.innerHTML = `<div class="shop-win-content"><div class="shop-win-text">WIN!</div><div class="shop-win-amount">+${Number(amount).toLocaleString()}</div><div class="shop-win-subtitle">coins added to your wallet</div></div>`;
+  page.appendChild(overlay);
+  for (let i = 0; i < 40; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'shop-confetti-piece';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.animationDelay = Math.random() * 0.8 + 's';
+    confetti.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    confetti.style.background = ['#fbbf24','#34d399','#818cf8','#f472b6','#38bdf8','#a3e635'][Math.floor(Math.random()*6)];
+    overlay.appendChild(confetti);
+  }
+  setTimeout(() => { overlay.style.transition = 'opacity .6s'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 600); }, 2200);
+}
+
+function shopShowLoss(amount) {
+  const page = document.getElementById('cosmetics-page');
+  if (!page) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'shop-loss-overlay';
+  overlay.innerHTML = `<div class="shop-loss-content"><div class="shop-loss-text">LOSS</div><div class="shop-loss-amount">-${Number(amount).toLocaleString()}</div><div class="shop-loss-subtitle">better luck next time</div></div>`;
+  page.appendChild(overlay);
+  setTimeout(() => { overlay.style.transition = 'opacity .5s'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 500); }, 2000);
+}
+
+async function shopCasinoDeal(game, bet) {
+  if (bet > Number(S.user?.coins || S.communityStoreData?.coins || 0)) { toast('Not enough coins.', 'error'); return; }
+  try {
+    const data = await shopMutateCasino({ action: 'casino', game, move: 'deal', bet });
+    const round = data.state?.casino?.round;
+    if (!round) return;
+    if (game === 'higherlower') {
+      S.shopHLState = { current:{rank:round.gameData.currentCard,suit:Math.floor(Math.random()*4)}, next:null, bet, streak:0, active:true, revealed:false, won:false, roundId:round.id, version:round.version };
+    } else if (game === 'mines') {
+      S.shopMinesState = { grid:[], revealed:[], mines:round.gameData.mines||[], multiplier:1, bet, active:true, crashed:false, roundId:round.id, version:round.version, multipliers:{} };
+    } else if (game === 'numberguess') {
+      S.shopGuessState = { target:round.gameData?.target||Math.floor(Math.random()*100)+1, guess:null, attempts:0, bet, active:true, hint:'', roundId:round.id, version:round.version };
+    } else if (game === 'crash') {
+      S.shopCrashState = { multiplier:1, bet, active:true, crashed:false, cashedOut:false, crashPoint:round.gameData?.crashPoint||2, lastCashout:0, lastWin:0, roundId:round.id, version:round.version };
+      shopStartCrashAnimation();
+    } else if (game === 'trivia') {
+      S.shopTriviaState.bet = bet; S.shopTriviaState.active = true; S.shopTriviaState.roundId = round.id; S.shopTriviaState.version = round.version;
+      shopHandleTriviaNext();
+      return;
+    }
+    void renderCosmetics();
+  } catch {}
+}
+
+async function shopCasinoMove(move) {
+  const round = S.communityStoreData?.casino?.round;
+  if (!round || round.status !== 'playing') return;
+  const payload = { action:'casino', game:round.game, move, roundId:round.id, version:round.version };
+  if (move === 'draw') payload.hold = [...S.shopCasinoHeld].sort((a,b)=>a-b);
+  const data = await shopMutateCasino(payload);
+  const newRound = data.state?.casino?.round;
+  if (newRound && newRound.status === 'completed') {
+    const payout = Number(newRound.gameData?.payout || 0);
+    if (payout > 0) shopShowWin(payout);
+  } else if (newRound && newRound.status === 'lost') {
+    shopShowLoss(round.bet || 10);
+  }
+  void renderCosmetics();
+}
+
+function shopHandleHLGuess(choice) {
+  const hl = S.shopHLState;
+  if (!hl.active || hl.revealed) return;
+  const nextCard = { rank: Math.floor(Math.random()*13), suit: Math.floor(Math.random()*4) };
+  hl.next = nextCard;
+  hl.revealed = true;
+  const currentVal = (hl.current?.rank ?? 0) + 2;
+  const nextVal = nextCard.rank + 2;
+  hl.won = (choice === 'higher' && nextVal > currentVal) || (choice === 'lower' && nextVal < currentVal) || (nextVal === currentVal);
+  if (hl.won) hl.streak++; else { hl.active = false; shopShowLoss(hl.bet); }
+  void renderCosmetics();
+}
+
+function shopHandleHLCashout() {
+  const hl = S.shopHLState;
+  if (!hl.active) return;
+  const payout = Math.floor(hl.bet * (1 + hl.streak * 0.5));
+  shopShowWin(payout);
+  toast(`Cashed out with ${hl.streak} streak! +${payout} coins`, 'success');
+  hl.active = false;
+  shopMutateCasino({ action:'casino', game:'higherlower', move:'cashout', bet:hl.bet, streak:hl.streak, roundId:hl.roundId, version:hl.version }).then(()=>void renderCosmetics()).catch(()=>void renderCosmetics());
+}
+
+async function shopHandleMinesReveal(index) {
+  const ms = S.shopMinesState;
+  if (!ms.active || ms.revealed.includes(index)) return;
+  if (ms.mines.includes(index)) {
+    ms.revealed = [...ms.mines];
+    ms.crashed = true;
+    ms.active = false;
+    shopShowLoss(ms.bet);
+    toast(`Boom! You hit a mine.`, 'error');
+    shopMutateCasino({ action:'casino', game:'mines', move:'crash', bet:ms.bet, roundId:ms.roundId, version:ms.version }).catch(()=>{});
+  } else {
+    try {
+      const data = await shopMutateCasino({ action:'casino', game:'mines', move:'reveal', index, bet:ms.bet, roundId:ms.roundId, version:ms.version });
+      const round = data.state?.casino?.round;
+      if (round && round.game === 'mines' && round.status === 'playing') {
+        ms.version = round.version;
+        ms.revealed = round.gameData?.revealed ?? ms.revealed;
+        ms.multiplier = round.gameData?.multiplier ?? ms.multiplier;
+        ms.multipliers = round.gameData?.multipliers ?? ms.multipliers;
+      }
+    } catch {}
+  }
+  void renderCosmetics();
+}
+
+function shopHandleMinesCashout() {
+  const ms = S.shopMinesState;
+  if (!ms.active || ms.revealed.length === 0) return;
+  const payout = Math.floor(ms.bet * ms.multiplier);
+  shopShowWin(payout);
+  toast(`Cashed out at ${ms.multiplier.toFixed(2)}×! +${payout} coins`, 'success');
+  ms.active = false;
+  shopMutateCasino({ action:'casino', game:'mines', move:'cashout', bet:ms.bet, multiplier:ms.multiplier, roundId:ms.roundId, version:ms.version }).then(()=>void renderCosmetics()).catch(()=>void renderCosmetics());
+}
+
+let shopCrashInterval = null;
+function shopStartCrashAnimation() {
+  if (shopCrashInterval) cancelAnimationFrame(shopCrashInterval);
+  const cs = S.shopCrashState;
+  const crashStart = performance.now();
+  const cp = cs.crashPoint;
+  const tick = (now) => {
+    if (!cs.active || cs.crashed || cs.cashedOut) return;
+    const t = (now - crashStart) / 1000;
+    cs.multiplier = Math.min(1 + t * (cp - 1) * 0.6 + t * t * (cp - 1) * 0.15, cp);
+    if (cs.multiplier >= cp) {
+      cs.multiplier = cp; cs.crashed = true; cs.active = false;
+      shopShowLoss(cs.bet);
+      toast(`Crashed at ${cp.toFixed(2)}×!`, 'error');
+      shopMutateCasino({ action:'casino', game:'crash', move:'crash', bet:cs.bet, roundId:cs.roundId, version:cs.version }).catch(()=>{});
+      void renderCosmetics(); return;
+    }
+    const valEl = document.querySelector('[data-crash-value]');
+    const lblEl = document.querySelector('[data-crash-label]');
+    const btnWrap = document.querySelector('[data-crash-btn-wrap]');
+    if (valEl) { valEl.textContent = `${cs.multiplier.toFixed(2)}×`; valEl.className = `ch-crash-value ${cs.multiplier<2?'ch-crash-low':cs.multiplier<5?'ch-crash-mid':'ch-crash-high'}`; }
+    if (lblEl) lblEl.textContent = 'Climbing...';
+    if (btnWrap) btnWrap.querySelector('button').textContent = `Cash out at ${cs.multiplier.toFixed(2)}× (${Math.floor(cs.bet*cs.multiplier).toLocaleString()} coins)`;
+    shopCrashInterval = requestAnimationFrame(tick);
+  };
+  shopCrashInterval = requestAnimationFrame(tick);
+}
+
+function shopHandleCrashCashout() {
+  const cs = S.shopCrashState;
+  if (!cs.active || cs.crashed || cs.cashedOut) return;
+  cs.cashedOut = true; cs.active = false;
+  cs.lastCashout = cs.multiplier;
+  cs.lastWin = Math.floor(cs.bet * cs.multiplier);
+  shopShowWin(cs.lastWin);
+  toast(`Cashed out at ${cs.lastCashout.toFixed(2)}×! +${cs.lastWin} coins`, 'success');
+  if (shopCrashInterval) cancelAnimationFrame(shopCrashInterval);
+  const valEl = document.querySelector('[data-crash-value]');
+  const lblEl = document.querySelector('[data-crash-label]');
+  const btnWrap = document.querySelector('[data-crash-btn-wrap]');
+  if (valEl) { valEl.textContent = `${cs.lastCashout.toFixed(2)}×`; valEl.className = 'ch-crash-value ch-crash-high'; }
+  if (lblEl) lblEl.textContent = `Cashed out at ${cs.lastCashout.toFixed(2)}×`;
+  if (btnWrap) btnWrap.outerHTML = `<div style="margin-top:16px"><p style="font-size:14px;font-weight:550;color:#4ade80">Cashed out at ${cs.lastCashout.toFixed(2)}× · +${cs.lastWin} coins</p></div>`;
+  shopMutateCasino({ action:'casino', game:'crash', move:'cashout', bet:cs.bet, multiplier:cs.lastCashout, roundId:cs.roundId, version:cs.version }).catch(()=>{});
+}
+
+function shopHandleTriviaAnswer(index) {
+  const ts = S.shopTriviaState;
+  if (!ts.active || ts.answered || !ts.question) return;
+  ts.answered = true; ts.selected = index;
+  ts.correct = index === ts.question.correct;
+  if (ts.correct) {
+    shopShowWin(ts.bet);
+    toast(`Correct! +${ts.bet} coins`, 'success');
+    shopMutateCasino({ action:'casino', game:'trivia', move:'answer', bet:ts.bet, correct:true, roundId:ts.roundId, version:ts.version }).catch(()=>{});
+  } else {
+    shopShowLoss(ts.bet);
+    toast(`Wrong! The answer was ${ts.question.opts[ts.question.correct]}`, 'error');
+    shopMutateCasino({ action:'casino', game:'trivia', move:'answer', bet:ts.bet, correct:false, roundId:ts.roundId, version:ts.version }).catch(()=>{});
+  }
+  void renderCosmetics();
+}
+
+function shopHandleTriviaNext() {
+  const questions = [
+    {q:'What planet is known as the Red Planet?',opts:['Venus','Mars','Jupiter','Saturn'],correct:1,cat:'Science'},
+    {q:'Which element has the chemical symbol "O"?',opts:['Gold','Osmium','Oxygen','Iron'],correct:2,cat:'Science'},
+    {q:'In what year did World War II end?',opts:['1943','1944','1945','1946'],correct:2,cat:'History'},
+    {q:'What is the largest ocean on Earth?',opts:['Atlantic','Indian','Arctic','Pacific'],correct:3,cat:'Geography'},
+    {q:'Which programming language was created by Brendan Eich?',opts:['Python','Java','JavaScript','C++'],correct:2,cat:'Technology'},
+    {q:'What is the speed of light in km/s?',opts:['150,000','200,000','300,000','400,000'],correct:2,cat:'Science'},
+    {q:'Which country has the most natural lakes?',opts:['USA','Russia','Canada','Brazil'],correct:2,cat:'Geography'},
+    {q:'What does "HTTP" stand for?',opts:['HyperText Transfer Protocol','High Tech Transfer Process','Home Tool Transfer Protocol','HyperText Transmission Platform'],correct:0,cat:'Technology'},
+    {q:'Which planet has the most moons?',opts:['Jupiter','Saturn','Uranus','Neptune'],correct:1,cat:'Science'},
+    {q:'In what year was the first iPhone released?',opts:['2005','2006','2007','2008'],correct:2,cat:'Technology'},
+  ];
+  const ts = S.shopTriviaState;
+  ts.question = questions[Math.floor(Math.random()*questions.length)];
+  ts.answered = false; ts.selected = null; ts.correct = null;
+  void renderCosmetics();
+}
+
+async function shopHandleGuessSubmit(guess) {
+  const gs = S.shopGuessState;
+  gs.attempts++; gs.guess = guess;
+  if (guess === gs.target) {
+    gs.hint = 'Correct!';
+    const payout = Math.floor(gs.bet * (1 + (7 - gs.attempts) * 0.3));
+    shopShowWin(payout);
+    toast(`You got it in ${gs.attempts} attempts! +${payout} coins`, 'success');
+    gs.active = false;
+    shopMutateCasino({ action:'casino', game:'numberguess', move:'guess', bet:gs.bet, attempts:gs.attempts, correct:true, roundId:gs.roundId, version:gs.version }).catch(()=>{});
+  } else if (gs.attempts >= 7) {
+    gs.hint = `The number was ${gs.target}`;
+    gs.active = false;
+    shopShowLoss(gs.bet);
+    toast(`Out of attempts! The number was ${gs.target}.`, 'error');
+    shopMutateCasino({ action:'casino', game:'numberguess', move:'guess', bet:gs.bet, attempts:gs.attempts, correct:false, roundId:gs.roundId, version:gs.version }).catch(()=>{});
+  } else {
+    gs.hint = guess > gs.target ? 'Too high!' : 'Too low!';
+  }
+  void renderCosmetics();
+}
 
 function cosmeticPreviewVisual(effect, scope) {
   if (effect.id === 'none') return '<div class="cosmetic-preview-none"><span class="material-icons-round">block</span></div>';
@@ -6412,12 +7098,12 @@ window.openCosmeticPreview = function(scope, id) {
   if (!effect || (id !== 'none' && effect.scope !== scope)) return;
   const state = cosmeticOwnedState(scope, id);
   const duration = scope === 'profile' && id !== 'none' ? `${(Number(effect.durationMs || 1000) / 1000).toFixed(1).replace('.0','')} second animation` : '';
-  const actionLabel = state.active ? 'Currently equipped' : state.owned ? (id === 'none' ? 'Remove cosmetic' : 'Equip') : 'Buy and equip';
+  const actionLabel = state.active ? 'Equipped' : state.owned ? (id === 'none' ? 'Remove cosmetic' : 'Equip') : 'Buy & equip';
   openModal(`<article class="cosmetic-preview-modal cosmetic-preview-modal-${esc(scope)}">
     <button class="cosmetic-preview-close" onclick="closeModal()" aria-label="Close"><span class="material-icons-round">close</span></button>
     ${cosmeticPreviewVisual(effect, scope)}
     <div class="cosmetic-preview-details"><span class="cosmetic-preview-type">${esc(scope === 'profile' ? 'Quick profile effect' : scope)}</span><h2>${esc(effect.name)}</h2><p>${esc(effect.description || (scope === 'banner' ? 'Cinematic profile banner.' : 'Preview this cosmetic before equipping it.'))}</p>${duration ? `<span class="cosmetic-preview-duration"><span class="material-icons-round">timer</span>${duration}</span>` : ''}
-      <div class="cosmetic-preview-purchase"><div><span>${state.owned ? 'Status' : 'Price'}</span><strong>${state.owned ? (state.active ? 'Equipped' : 'Owned') : effect.price > 0 ? `${Number(effect.price).toLocaleString()} coins` : 'Included'}</strong><small>${Number(S.user?.coins || 0).toLocaleString()} coins available</small></div>
+      <div class="cosmetic-preview-purchase"><div><span>${state.owned ? 'Status' : 'Price'}</span><strong>${state.owned ? (state.active ? 'Equipped' : 'Owned') : effect.price > 0 ? `${Number(effect.price).toLocaleString()} coins` : 'Included'}</strong><small><span data-wallet-coins>${Number(S.user?.coins || 0).toLocaleString()}</span> coins available</small></div>
       <button class="modal-btn modal-btn-primary" ${state.active ? 'disabled' : ''} onclick="applyCosmeticPreview('${esc(scope)}','${esc(id)}')">${esc(actionLabel)}</button></div>
       ${scope === 'profile' && id !== 'none' ? '<button class="cosmetic-replay" onclick="replayProfileEffect()"><span class="material-icons-round">replay</span>Replay effect</button>' : ''}
     </div>
@@ -6481,7 +7167,7 @@ window.openCoinStore = function() {
     <div class="coin-shop-content">
       <div class="coin-shop-hero">
         <div><div class="coin-shop-kicker">UBG Chat Store</div><h2>Make chat yours.</h2><p>Purchase coins or pick up a curated cosmetic collection. Every purchase is connected to your signed-in UBG Chat account.</p></div>
-        <div class="coin-shop-wallet"><div class="coin-shop-wallet-label">Your wallet</div><div class="coin-shop-wallet-value"><span class="material-icons-round">toll</span>${Number(S.user?.coins || 0).toLocaleString()}</div></div>
+        <div class="coin-shop-wallet"><div class="coin-shop-wallet-label">Your wallet</div><div class="coin-shop-wallet-value"><span class="material-icons-round">toll</span><span data-wallet-coins>${Number(S.user?.coins || 0).toLocaleString()}</span></div></div>
       </div>
       <section class="coin-shop-section">
         <div class="coin-shop-section-head"><div><div class="coin-shop-section-title">Coin Packs</div><div class="coin-shop-section-subtitle">Flexible currency for any cosmetic in the shop.</div></div><span class="coin-shop-section-label">Best everyday value</span></div>
@@ -7356,6 +8042,7 @@ function setupAppHandlers() {
 // ─── Launch ───────────────────────────────────────────────────────────────────
 async function launchApp() {
   showApp();
+  void communityHub.refresh();
   await refreshMessageEffectState();
   applyChatPreferences();
   const adminNav = document.getElementById('admin-nav-btn');
@@ -7435,4 +8122,15 @@ async function boot() {
   await launchApp();
 }
 
+const communityHub = initCommunityHub({
+  api, getUser: () => S.user, setUser, openModal, closeModal, toast,
+  openProfileEditor, openCosmetics: () => renderSection('cosmetics'),
+  applyAccountUpdate, closeMobilePanels,
+});
+window.__openCommunityHub = (mode, tab) => communityHub.open(mode, tab);
 boot().catch(err => console.error('[UBG Chat] Boot error:', err));
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && S.user) void walletSync.refresh();
+});
+window.addEventListener('online', () => { if (S.user) void walletSync.refresh(); });

@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GΛMΞS Library · Nebulo</title>
   <script src="/assets/js/identity-mask.js" defer></script>
-  <!-- core scripts (preserved) -->
   <script src="/assets/js/proxy-runtime.js?v=20260830-proxy-choice-3"></script>
   <script src="/d5/index.js" defer></script>
   <script src="/e9/index.js" defer></script>
@@ -20,1236 +19,957 @@
   <script src="/assets/js/cloaking.js" defer></script>
   <meta name="description" content="Browse and play Nebulo's locally hosted GΛMΞS library.">
   <meta name="robots" content="index,follow">
-
-  <!-- Compact game library UI. Proxy and launch behavior lives in the script below. -->
   <style>
     :root {
       color-scheme: dark;
-      --canvas: #0b0c0d;
-      --games-surface: #131517;
-      --games-surface-raised: #191c1e;
-      --games-surface-hover: #202427;
-      --line: #2a2e31;
-      --line-strong: #3b4144;
-      --games-text: #f2f0e9;
-      --games-muted: #9da29f;
-      --quiet: #737a76;
+      --bg: #080a0e;
+      --surface: #10131a;
+      --surface-2: #161a24;
+      --surface-hover: #1c2130;
+      --text: #edf0f5;
+      --text-2: #c5cad4;
+      --muted: #6b7280;
+      --border: rgba(255,255,255,.07);
+      --border-hover: rgba(255,255,255,.14);
       --lime: #b7ed58;
       --lime-ink: #11150a;
-      --cyan: #55d7ca;
-      --danger: #ff776f;
-      --radius: 7px;
+      --blue: #3b82f6;
+      --blue-dim: rgba(59,130,246,.1);
+      --coral: #ff6b5e;
+      --radius: 10px;
     }
-
-    * { box-sizing: border-box; }
-
-    html { background: var(--canvas); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg); }
     body {
-      margin: 0;
       min-height: 100vh;
-      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--canvas);
-      color: var(--games-text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--bg);
+      color: var(--text);
       line-height: 1.4;
-      padding: 0 0 56px;
+      padding: 0 0 48px;
     }
-
-    button,
-    input { font: inherit; }
-
+    button, input { font: inherit; }
     button { color: inherit; }
+    [hidden] { display: none !important; }
 
     .skip-link {
       position: fixed;
       z-index: 100;
-      top: 10px;
-      left: 10px;
-      padding: 9px 12px;
+      top: 8px;
+      left: 8px;
+      padding: 8px 12px;
       color: var(--lime-ink);
       background: var(--lime);
-      border-radius: 4px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 700;
       transform: translateY(-160%);
     }
-
     .skip-link:focus { transform: translateY(0); }
 
-    .main-column {
-      width: min(1520px, 100%);
+    .shell {
+      width: min(1480px, 100%);
       margin: 0 auto;
-      padding: 0 28px;
+      padding: 0 clamp(16px, 3vw, 48px);
     }
 
-    .library-header {
-      min-height: 112px;
+    /* ── Header ── */
+    .header {
+      min-height: 100px;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 24px;
-      padding: 30px 0 22px;
-      border-bottom: 1px solid var(--line);
+      gap: 20px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
     }
-
-    .brand-block {
-      display: flex;
-      align-items: flex-end;
-      gap: 16px;
-    }
-
-    .library-mark {
-      width: 8px;
-      height: 42px;
+    .brand { display: flex; align-items: flex-end; gap: 14px; }
+    .brand-mark {
+      width: 6px;
+      height: 40px;
+      flex-shrink: 0;
       background: var(--lime);
-      box-shadow: 0 -10px 0 var(--cyan);
+      box-shadow: 0 -8px 0 var(--blue);
+      border-radius: 3px;
     }
-
-    .eyebrow {
-      margin: 0 0 3px;
-      color: var(--games-muted);
-      font-size: 0.68rem;
+    .brand-eyebrow {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: .14em;
       text-transform: uppercase;
     }
-
-    .library-header h1 {
+    .header h1 {
       margin: 0;
-      font-size: 2rem;
-      font-weight: 760;
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 800;
+      letter-spacing: -.02em;
       line-height: 1;
     }
-
     .header-stat {
       display: grid;
       justify-items: end;
       gap: 2px;
+      flex-shrink: 0;
     }
-
     .count-value {
-      font-size: 1.2rem;
-      font-weight: 750;
+      font-size: clamp(18px, 2.5vw, 26px);
+      font-weight: 800;
       color: var(--lime);
     }
-
     .count-label {
-      color: var(--games-muted);
-      font-size: 0.72rem;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: .08em;
     }
 
+    /* ── Recently played ── */
+    .recent-section {
+      margin-top: 28px;
+      animation: fadeUp .35s ease both;
+    }
+    .section-kicker {
+      margin: 0 0 4px;
+      color: var(--coral);
+      font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+    .recent-row {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(180px, 20vw);
+      gap: 10px;
+      overflow-x: auto;
+      padding: 0 0 8px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: thin;
+      scrollbar-color: var(--blue) #1a1a1a;
+    }
+    .recent-card {
+      position: relative;
+      min-height: 130px;
+      padding: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      transition: border-color .12s ease, transform .12s ease, background .12s ease;
+    }
+    .recent-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      background: var(--surface-hover);
+    }
+    .recent-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .2;
+      transition: opacity .12s ease;
+    }
+    .recent-card:hover img { opacity: .35; }
+    .recent-card-copy { position: relative; z-index: 1; }
+    .recent-card-name {
+      display: block;
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .recent-card-time {
+      display: block;
+      margin-top: 4px;
+      color: var(--blue);
+      font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .recent-empty {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 16px 0;
+    }
+
+    /* ── Discovery bar ── */
     .discovery-bar {
       position: sticky;
       top: 0;
       z-index: 20;
-      margin: 0 -28px;
-      padding: 14px 28px 10px;
-      background: rgba(11, 12, 13, 0.96);
-      border-bottom: 1px solid var(--line);
+      margin: 0 calc(clamp(16px, 3vw, 48px) * -1);
+      padding: 12px clamp(16px, 3vw, 48px) 10px;
+      background: rgba(8, 10, 14, .96);
+      border-bottom: 1px solid var(--border);
       backdrop-filter: blur(12px);
     }
-
-    .search-actions {
+    .search-row {
       display: grid;
-      grid-template-columns: minmax(240px, 1fr) auto;
+      grid-template-columns: minmax(220px, 1fr) auto;
       gap: 10px;
     }
-
     .search-field {
       min-width: 0;
-      height: 44px;
+      height: 42px;
       display: flex;
       align-items: center;
       gap: 10px;
-      background: var(--games-surface);
-      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 0 8px 0 14px;
-      transition: border-color 140ms ease, background 140ms ease;
+      transition: border-color .12s ease, background .12s ease;
     }
-
     .search-field:focus-within {
-      background: var(--games-surface-raised);
-      border-color: var(--lime);
-      box-shadow: 0 0 0 3px rgba(183, 237, 88, 0.12);
+      background: var(--surface-2);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-dim);
     }
-
     .search-input {
       width: 100%;
       min-width: 0;
       border: 0;
       outline: 0;
-      color: var(--games-text);
+      color: var(--text);
       background: transparent;
-      font-size: 0.94rem;
+      font-size: 14px;
     }
-
-    .search-input::placeholder { color: var(--quiet); }
-
+    .search-input::placeholder { color: var(--muted); }
     .search-hint {
       flex: 0 0 auto;
-      min-width: 25px;
-      padding: 2px 6px;
-      border: 1px solid var(--line-strong);
-      border-bottom-color: #4e5659;
+      min-width: 22px;
+      padding: 2px 5px;
+      border: 1px solid var(--border);
       border-radius: 4px;
-      color: var(--games-muted);
-      background: #0d0f10;
-      font-size: 0.7rem;
+      color: var(--muted);
+      background: var(--bg);
+      font-size: 10px;
       text-align: center;
     }
-
     .clear-search {
       display: none;
       flex: 0 0 auto;
       border: 0;
-      padding: 5px 7px;
+      padding: 4px 6px;
       background: transparent;
-      color: var(--games-muted);
+      color: var(--muted);
       cursor: pointer;
-      font-size: 0.78rem;
+      font-size: 12px;
     }
-
     .clear-search.is-visible { display: inline-flex; }
-    .clear-search:hover { color: var(--games-text); }
-
-    .action-button {
-      min-height: 44px;
+    .clear-search:hover { color: var(--text); }
+    .action-btn {
+      min-height: 42px;
       border: 1px solid var(--lime);
       border-radius: var(--radius);
       padding: 0 16px;
       background: var(--lime);
       color: var(--lime-ink);
-      font-weight: 760;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: .02em;
       cursor: pointer;
-      transition: transform 120ms ease, background 120ms ease;
+      transition: filter .1s ease, transform .1s ease;
     }
-
-    .action-button:hover { background: #caf878; }
-    .action-button:active { transform: translateY(1px); }
-    .action-button:disabled { opacity: 0.45; cursor: not-allowed; }
-
+    .action-btn:hover { filter: brightness(1.06); }
+    .action-btn:active { transform: translateY(1px); }
+    .action-btn:disabled { opacity: .4; cursor: not-allowed; }
     .category-scroller {
       display: flex;
-      gap: 7px;
+      gap: 6px;
       overflow-x: auto;
       scrollbar-width: none;
       padding-top: 10px;
     }
-
     .category-scroller::-webkit-scrollbar { display: none; }
-
-    .category-chip {
+    .chip {
       flex: 0 0 auto;
-      min-height: 31px;
-      padding: 5px 11px;
-      border: 1px solid var(--line);
-      border-radius: 5px;
-      background: var(--games-surface);
-      color: var(--games-muted);
-      font-size: 0.78rem;
-      font-weight: 650;
+      min-height: 30px;
+      padding: 4px 11px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
+      transition: color .1s ease, border-color .1s ease, background .1s ease;
     }
+    .chip:hover { color: var(--text); border-color: var(--border-hover); background: var(--surface-hover); }
+    .chip[aria-pressed="true"] { color: var(--lime-ink); background: var(--lime); border-color: var(--lime); }
 
-    .category-chip:hover {
-      color: var(--games-text);
-      background: var(--games-surface-hover);
-      border-color: var(--line-strong);
-    }
-
-    .category-chip[aria-pressed="true"] {
-      color: var(--lime-ink);
-      background: var(--lime);
-      border-color: var(--lime);
-    }
-
-    .section-block { margin-top: 28px; }
-
+    /* ── Quick access ── */
+    .quick-section { margin-top: 26px; }
     .section-heading {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 12px;
     }
-
-    .section-title {
-      margin: 0;
-      color: var(--games-text);
-      font-size: 0.95rem;
-      font-weight: 740;
-    }
-
-    .section-kicker,
-    .result-summary {
-      margin: 0;
-      color: var(--games-muted);
-      font-size: 0.76rem;
-    }
-
+    .section-heading h2 { margin: 0; font-size: 16px; font-weight: 800; }
+    .section-kicker-sub { margin: 0; color: var(--muted); font-size: 11px; }
     .site-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
     }
-
     .site-tile {
       min-width: 0;
-      min-height: 68px;
+      min-height: 64px;
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr) auto;
+      grid-template-columns: 38px minmax(0, 1fr) auto;
       align-items: center;
-      gap: 11px;
-      border: 1px solid var(--line);
+      gap: 10px;
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 10px;
-      background: var(--games-surface);
+      padding: 9px 10px;
+      background: var(--surface);
       text-align: left;
       cursor: pointer;
-      transition: background 130ms ease, border-color 130ms ease, transform 130ms ease;
+      transition: background .1s ease, border-color .1s ease, transform .1s ease;
     }
-
-    .site-tile:hover {
-      background: var(--games-surface-hover);
-      border-color: var(--cyan);
-      transform: translateY(-1px);
-    }
-
-    .site-tile img {
-      width: 42px;
-      height: 42px;
-      object-fit: cover;
-      border-radius: 5px;
-      background: #090a0b;
-    }
-
+    .site-tile:hover { background: var(--surface-hover); border-color: var(--blue); transform: translateY(-1px); }
+    .site-tile img { width: 38px; height: 38px; object-fit: cover; border-radius: 6px; background: #090a0b; }
     .site-copy { min-width: 0; }
+    .site-name { display: block; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .site-desc { display: block; margin-top: 1px; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .site-open { color: var(--blue); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 
-    .site-title {
-      display: block;
-      overflow: hidden;
-      color: var(--games-text);
-      font-size: 0.83rem;
-      font-weight: 700;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .site-description {
-      display: block;
-      margin-top: 2px;
-      overflow: hidden;
-      color: var(--games-muted);
-      font-size: 0.7rem;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .site-open {
-      color: var(--cyan);
-      font-size: 0.66rem;
-      font-weight: 760;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
+    /* ── Game grid ── */
+    .catalog-section { margin-top: 26px; }
+    .result-summary { margin: 0; color: var(--muted); font-size: 11px; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 10px;
     }
-
     .game-card {
       min-width: 0;
       padding: 0;
       overflow: hidden;
-      border: 1px solid var(--line);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: var(--games-surface);
+      background: var(--surface);
       text-align: left;
       cursor: pointer;
-      transition: transform 130ms ease, border-color 130ms ease, background 130ms ease;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
     }
-
-    .game-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--lime);
-      background: var(--games-surface-hover);
-    }
-
+    .game-card:hover { transform: translateY(-2px); border-color: var(--lime); background: var(--surface-hover); }
     .game-card:active { transform: translateY(0); }
-
     .game-media {
       position: relative;
       display: block;
       aspect-ratio: 16 / 10;
       overflow: hidden;
       background: #090a0b;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--border);
     }
-
     .game-image {
       width: 100%;
       height: 100%;
       display: block;
       object-fit: cover;
-      transition: transform 180ms ease, opacity 180ms ease;
+      transition: transform .16s ease, opacity .16s ease;
     }
-
     .game-card:hover .game-image { transform: scale(1.025); }
-
     .game-index {
       position: absolute;
-      top: 7px;
-      left: 7px;
-      padding: 3px 5px;
-      border-radius: 3px;
+      top: 6px;
+      left: 6px;
+      padding: 2px 5px;
+      border-radius: 4px;
       color: #fff;
-      background: rgba(8, 9, 10, 0.78);
-      font-size: 0.62rem;
+      background: rgba(8,9,10,.75);
+      font-size: 9px;
       font-variant-numeric: tabular-nums;
-      letter-spacing: 0.04em;
+      letter-spacing: .03em;
     }
-
     .game-copy {
-      min-height: 65px;
+      min-height: 60px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 8px;
-      padding: 10px 11px 9px;
+      gap: 6px;
+      padding: 8px 10px 7px;
     }
-
     .game-title {
       display: -webkit-box;
       overflow: hidden;
-      color: var(--games-text);
-      font-size: 0.82rem;
-      font-weight: 690;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
       line-height: 1.25;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
     }
-
     .game-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
     }
-
     .game-category {
       overflow: hidden;
-      color: var(--games-muted);
-      font-size: 0.66rem;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 600;
       text-overflow: ellipsis;
       text-transform: uppercase;
       white-space: nowrap;
-      letter-spacing: 0.05em;
+      letter-spacing: .04em;
     }
+    .play-label { color: var(--lime); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
 
-    .play-label {
-      color: var(--lime);
-      font-size: 0.65rem;
-      font-weight: 760;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
+    /* ── States ── */
     .catalog-state {
-      min-height: 86px;
+      min-height: 80px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
-      border: 1px dashed var(--line-strong);
+      gap: 8px;
+      border: 1px dashed var(--border-hover);
       border-radius: var(--radius);
-      color: var(--games-muted);
-      background: var(--games-surface);
-      font-size: 0.82rem;
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 12px;
     }
-
-    .catalog-state[hidden] { display: none; }
-
-    .loading-mark {
-      width: 8px;
-      height: 8px;
+    .loading-dot {
+      width: 7px;
+      height: 7px;
       background: var(--lime);
-      animation: loadingPulse 900ms ease-in-out infinite alternate;
+      border-radius: 50%;
+      animation: pulse 900ms ease-in-out infinite alternate;
     }
-
     .empty-state {
-      min-height: 170px;
+      min-height: 150px;
       display: grid;
       place-items: center;
-      align-content: center;
-      gap: 10px;
-      border: 1px dashed var(--line-strong);
+      gap: 8px;
+      border: 1px dashed var(--border-hover);
       border-radius: var(--radius);
       text-align: center;
-      color: var(--games-muted);
+      color: var(--muted);
     }
-
-    .empty-state[hidden] { display: none; }
-    .empty-state strong { color: var(--games-text); font-size: 0.95rem; }
-
-    .text-button {
+    .empty-state strong { color: var(--text); font-size: 15px; }
+    .text-btn {
       border: 0;
       border-bottom: 1px solid var(--lime);
-      padding: 3px 0;
+      padding: 2px 0;
       color: var(--lime);
       background: transparent;
       cursor: pointer;
-      font-size: 0.78rem;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .game-card.is-entering { animation: cardIn 260ms ease both; }
+    .game-card.is-entering { animation: cardIn .25s ease both; }
 
-    :focus-visible {
-      outline: 2px solid var(--cyan);
-      outline-offset: 2px;
-    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { from { opacity: .3; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    [data-hidden-math-essay] { display: none; }
-
-    @keyframes loadingPulse {
-      from { opacity: 0.35; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 980px) {
-      .site-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
+    @media (max-width: 980px) { .site-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 620px) {
-      body { padding-bottom: 32px; }
-      .main-column { padding: 0 14px; }
-      .library-header { min-height: 92px; padding: 22px 0 18px; }
-      .library-header h1 { font-size: 1.55rem; }
-      .library-mark { height: 34px; }
-      .discovery-bar { margin: 0 -14px; padding: 10px 14px 9px; }
-      .search-actions { grid-template-columns: minmax(0, 1fr); }
-      .action-button { width: 100%; }
-      .site-grid {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x proximity;
-        scrollbar-width: none;
-      }
+      body { padding-bottom: 28px; }
+      .shell { padding: 0 12px; }
+      .header { min-height: 80px; padding: 20px 0 16px; }
+      .header h1 { font-size: 1.4rem; }
+      .brand-mark { height: 32px; }
+      .discovery-bar { margin: 0 -12px; padding: 8px 12px 7px; }
+      .search-row { grid-template-columns: 1fr; }
+      .action-btn { width: 100%; }
+      .site-grid { display: flex; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
       .site-grid::-webkit-scrollbar { display: none; }
-      .site-tile { flex: 0 0 230px; scroll-snap-align: start; }
-      .section-block { margin-top: 22px; }
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-      .game-copy { min-height: 70px; padding: 9px; }
-      .game-title { font-size: 0.78rem; }
+      .site-tile { flex: 0 0 220px; scroll-snap-align: start; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .game-copy { min-height: 60px; padding: 7px 8px; }
+      .game-title { font-size: 11px; }
       .game-index { display: none; }
-      .header-stat { min-width: 56px; }
       .count-value { font-size: 1rem; }
     }
-
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
+        animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: .01ms !important;
       }
     }
+    :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#gameCatalog">Skip to GΛMΞS</a>
-  <main class="main-column">
-    <header class="library-header">
-      <div class="brand-block">
-        <span class="library-mark" aria-hidden="true"></span>
+  <main class="shell">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
         <div>
-          <p class="eyebrow">Nebulo / Chemistry activities</p>
-          <h1>GΛMΞS library</h1>
+          <p class="brand-eyebrow">Nebulo / Local library</p>
+          <h1>GΛMΞS Library</h1>
         </div>
       </div>
       <div class="header-stat" aria-live="polite">
         <span class="count-value" id="totalCount">0</span>
-        <span class="count-label">GΛMΞS found</span>
+        <span class="count-label">Games found</span>
       </div>
     </header>
 
+    <section class="recent-section" id="recent-section" hidden>
+      <p class="section-kicker">Continue</p>
+      <h2 class="section-title">Recently played</h2>
+      <div class="recent-row" id="recent-row"></div>
+    </section>
+
     <section class="discovery-bar" aria-label="Find a game">
-      <div class="search-actions">
+      <div class="search-row">
         <div class="search-field">
           <label class="sr-only" for="activitiesSearchInput">Search GΛMΞS</label>
-          <input id="activitiesSearchInput" class="search-input" type="search" placeholder="Search 500+ GΛMΞS" autocomplete="off" spellcheck="false" />
+          <input id="activitiesSearchInput" class="search-input" type="search" placeholder="Search 500+ games..." autocomplete="off" spellcheck="false" />
           <button id="clearSearchButton" class="clear-search" type="button" aria-label="Clear search">Clear</button>
           <kbd class="search-hint" aria-hidden="true">/</kbd>
         </div>
-        <button id="surpriseButton" class="action-button" type="button">Surprise me</button>
+        <button id="surpriseButton" class="action-btn" type="button">Surprise me</button>
       </div>
       <nav class="category-scroller" id="categoryFilters" aria-label="Game categories"></nav>
     </section>
 
-    <section class="section-block" aria-labelledby="quickAccessTitle">
+    <section class="quick-section" aria-labelledby="quickAccessTitle">
       <div class="section-heading">
         <div>
-          <h2 class="section-title" id="quickAccessTitle">Quick access</h2>
-          <p class="section-kicker">Open a larger GΛMΞS collection through your selected PRØXY</p>
+          <h2 id="quickAccessTitle">Quick access</h2>
+          <p class="section-kicker-sub">Open a larger game collection through your selected proxy</p>
         </div>
       </div>
       <div class="site-grid" id="siteQuickGrid"></div>
     </section>
 
-    <section class="section-block" id="gameCatalog" aria-labelledby="catalogTitle">
+    <section class="catalog-section" id="gameCatalog" aria-labelledby="catalogTitle">
       <div class="section-heading">
-        <h2 class="section-title" id="catalogTitle">All GΛMΞS</h2>
+        <h2 id="catalogTitle">All games</h2>
         <p class="result-summary" id="resultSummary" aria-live="polite">Loading catalog</p>
       </div>
       <div class="catalog-state" id="catalogLoading" role="status">
-        <span class="loading-mark" aria-hidden="true"></span>
-        Loading the GΛMΞS library
+        <span class="loading-dot" aria-hidden="true"></span>
+        Loading the game library
       </div>
       <div class="empty-state" id="emptyState" hidden>
-        <strong>No GΛMΞS match that search</strong>
+        <strong>No games match that search</strong>
         <span>Try another title or reset the filters.</span>
-        <button class="text-button" id="resetFiltersButton" type="button">Show all GΛMΞS</button>
+        <button class="text-btn" id="resetFiltersButton" type="button">Show all games</button>
       </div>
       <div class="grid" id="realActivitiesGrid"></div>
     </section>
   </main>
 
-  <!-- full original script (preserved) – only count pill updated -->
   <script>
-    // --- full original script, exactly as before (functionality unchanged) ---
-    const REAL_GAMES = [];
-
-    const ACCESS_SITES = [
-       { id: 'crazygames', name: 'CrazyGames', description: 'Arcade activities', url: 'https://www.crazygames.com/', image: '/assets/img/icons/crazygames.jpeg' },
-       { id: 'geforce-now', name: 'GeForce Now', description: 'Cloud play', url: 'https://play.geforcenow.com', image: '/assets/img/icons/geforce-now.webp' },
-       { id: 'gn-math', name: 'GN Math', description: '500+ activities', url: 'https://gn-math.dev/', image: 'https://lh3.googleusercontent.com/Mxl8996vzcWWRU5RyKdTDA76GEPj9jQpuYc02nPgtwKgdqpWidM5YVqu8DHBd-D1sZ3sP1AOYB-DlNhMEpaLJxQcTQ=s128-rj-sc0x00ffffff' },
-       { id: 'duck-math', name: 'DuckMath', description: 'Math activities', url: 'https://duckmath.org/', image: 'https://www.google.com/s2/favicons?sz=256&domain=duckmath.org' },
-       { id: 'cloudfront-activities', name: 'Totally Science', description: 'Activity site', url: 'https://d11jzht7mj96rr.cloudfront.net/', image: 'https://www.google.com/s2/favicons?sz=256&domain=d11jzht7mj96rr.cloudfront.net' },
-       { id: 'poki-games', name: 'PokiGames', description: 'Browser games', url: 'https://pokigames.vip/', image: 'https://www.google.com/s2/favicons?sz=256&domain=pokigames.vip' },
-       { id: 'az-games', name: 'AZ Games', description: 'Activity site', url: 'https://azgames.io/', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAllBMVEUPDw/////////+/v7////////////9/f3x8fHc3Nz9/f3////4+Pj///8BAADtMhvyMxv3NByUHg7w8PAYU28FJDQ+u/O7JhPl5uYMFxtiZWR+FQhYCAPY2Nj9Nh3gLxnMKRZ+f342ODdKS0sTP1U9BQOLi4uXmJg2pNomd56kpqYwAADFxsYymMopgakwkb6wsrK9vr85bmfhAAAADnRSTlMB3ehTtnlj/hoLQ6Is02MI3dcAAAFQSURBVCiRjVLXcsMwDPOWEyfUsOU94hVnp/3/nyvl69UrD8UTTxABkEdN+x/cvY3Yu5+43ZHECKJ/Yk2SAiIl9gfSeoCIoghu+m7raJx7xnmZtb6zVfWbrKSUR/B93MTRH3BilFKWp8RckQ5Jc6rARRKvW604EZydBGMV3MhhGYd8oSoTPepmzWoapYpNvfoRQbGcxoohYrQSosJQfb2I5JLhXqk05W8kb6HaZhyfEYyqSHNdq4CIo2qWZSdOOY66n21g6HlZRmrxOVVFMem6Rn0XQuSQJAnkQmRQWLM8Z9UE3fP57MbqQf5MbdLKIJAQhJewA9kFsvX/TL0CXmEYYOvlnYxlM5EYNrheJSSvi4SxTKf1mqNnomTfgbJsCjLN6RHf9+MmCFGxjbGezalpB8ex8cCklDAYjmNuzujon+u6HnxrTYzdloHQvY9XvcUPK7Ie7mAxWo0AAAAASUVORK5CYII=' },
-       { id: 'nowgg', name: 'Now.gg', description: 'Cloud gaming', url: 'https://nowgg.fun/', image: '/assets/img/icons/now-gg.webp' }
-     ];
-
-    const gameState = { loaded: false, loading: true };
-    const ACTIVITIES_JSON_URL = '/assets/data/activities.json?v=20260817-platinum-1';
-    let currentSearchTerm = '';
-    let currentCategory = 'all';
-    let visibleGames = [];
-    let searchRenderTimer = 0;
-
-    const CATEGORY_ALIASES = {
-      shooter: 'action',
-      fighting: 'action',
-      cards: 'strategy',
-      io: 'multiplayer'
-    };
-
-    const CATEGORY_ORDER = [
-      'action', 'adventure', 'arcade', 'sports', 'racing', 'puzzle',
-      'strategy', 'platformer', 'multiplayer', 'idle', 'horror', 'other'
-    ];
-
-    function sortAlphabetically(activities) {
-      return [...activities].sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }));
-    }
-
-    function escapeHtml(value) {
-      return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function normalizeCategory(value) {
-      const normalized = String(value || '').trim().toLowerCase();
-      return CATEGORY_ALIASES[normalized] || normalized || 'other';
-    }
-
-    function getGameCategories(game) {
-      const source = Array.isArray(game?.categories) ? game.categories : (Array.isArray(game?._cat) ? game._cat : []);
-      const normalized = Array.from(new Set(source.map(normalizeCategory).filter(Boolean)));
-      return normalized.length ? normalized : ['other'];
-    }
-
-    function formatCategory(value) {
-      return String(value || 'other').replace(/\b\w/g, (letter) => letter.toUpperCase());
-    }
-
-    function isMatch(game, query) {
-      const categories = getGameCategories(game);
-      if (currentCategory !== 'all' && !categories.includes(currentCategory)) return false;
-      if (!query) return true;
-      const haystack = `${game?.name || ''} ${game?.description || ''} ${categories.join(' ')}`.toLowerCase();
-      return haystack.includes(query);
-    }
-
-    function getFilteredGames() {
-      return sortAlphabetically(REAL_GAMES.filter((entry) => isMatch(entry, currentSearchTerm)));
-    }
-
-    function updateTotalCount() {
-      const count = visibleGames.length;
-      const total = document.getElementById('totalCount');
-      const summary = document.getElementById('resultSummary');
-      if (total) total.textContent = String(count);
-      if (summary) {
-        const context = currentCategory === 'all' ? 'all categories' : formatCategory(currentCategory);
-        summary.textContent = `${count} GΛMΞS · ${context}`;
-      }
-      const surprise = document.getElementById('surpriseButton');
-      if (surprise) surprise.disabled = count === 0;
-    }
-
-    function renderCategoryFilters() {
-      const host = document.getElementById('categoryFilters');
-      if (!host) return;
-      const counts = new Map();
-      REAL_GAMES.forEach((game) => {
-        getGameCategories(game).forEach((category) => counts.set(category, (counts.get(category) || 0) + 1));
-      });
-      const extras = Array.from(counts.keys()).filter((category) => !CATEGORY_ORDER.includes(category)).sort();
-      const categories = ['all', ...CATEGORY_ORDER.filter((category) => counts.has(category)), ...extras];
-      if (currentCategory !== 'all' && !categories.includes(currentCategory)) currentCategory = 'all';
-      const fragment = document.createDocumentFragment();
-      categories.forEach((category) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'category-chip';
-        button.dataset.category = category;
-        button.setAttribute('aria-pressed', String(category === currentCategory));
-        const count = category === 'all' ? REAL_GAMES.length : counts.get(category);
-        button.textContent = `${formatCategory(category)} ${count || 0}`;
-        button.addEventListener('click', () => {
-          currentCategory = category;
-          renderAll();
-        });
-        fragment.appendChild(button);
-      });
-      host.replaceChildren(fragment);
-    }
-
-    function renderCategory(gridId, entries) {
-      const grid = document.getElementById(gridId);
-      if (!grid) return 0;
-      const filtered = sortAlphabetically((entries || []).filter((entry) => isMatch(entry, currentSearchTerm)));
-      visibleGames = filtered;
-      const fragment = document.createDocumentFragment();
-      filtered.forEach((game, index) => {
-        const categories = getGameCategories(game);
-        const name = game.name || 'Activity';
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = `game-card${index < 18 ? ' is-entering' : ''}`;
-        if (index < 18) card.style.animationDelay = `${index * 14}ms`;
-        card.setAttribute('aria-label', `Play ${name}`);
-        card.title = name;
-        card.addEventListener('click', () => openGameInTab(game));
-        card.innerHTML = `
-          <span class="game-media">
-            <img class="game-image" src="${escapeHtml(game.image || '/chemistry-games/images/game-site.svg')}" alt="${escapeHtml(name)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/chemistry-games/images/game-site.svg'">
-            <span class="game-index" aria-hidden="true">${String(index + 1).padStart(3, '0')}</span>
-          </span>
-          <span class="game-copy">
-            <span class="game-title">${escapeHtml(name)}</span>
-            <span class="game-meta">
-              <span class="game-category">${escapeHtml(formatCategory(categories[0]))}</span>
-              <span class="play-label" aria-hidden="true">Play</span>
-            </span>
-          </span>
-        `;
-        fragment.appendChild(card);
-      });
-      grid.replaceChildren(fragment);
-      const loading = document.getElementById('catalogLoading');
-      const empty = document.getElementById('emptyState');
-      if (loading) loading.hidden = !gameState.loading;
-      if (empty) empty.hidden = gameState.loading || filtered.length > 0;
-      return filtered.length;
-    }
-
-    function renderSiteQuickGrid() {
-      const grid = document.getElementById('siteQuickGrid');
-      if (!grid) return 0;
-      const sorted = [
-        ...ACCESS_SITES.filter((entry) => entry.id === 'gn-math'),
-        ...sortAlphabetically(ACCESS_SITES.filter((entry) => entry.id !== 'gn-math'))
+    (() => {
+      const REAL_GAMES = [];
+      const ACCESS_SITES = [
+        { id: 'crazygames', name: 'CrazyGames', description: 'Arcade activities', url: 'https://www.crazygames.com/', image: '/assets/img/icons/crazygames.jpeg' },
+        { id: 'geforce-now', name: 'GeForce Now', description: 'Cloud play', url: 'https://play.geforcenow.com', image: '/assets/img/icons/geforce-now.webp' },
+        { id: 'gn-math', name: 'GN Math', description: '500+ activities', url: 'https://gn-math.dev/', image: 'https://lh3.googleusercontent.com/Mxl8996vzcWWRU5RyKdTDA76GEPj9jQpuYc02nPgtwKgdqpWidM5YVqu8DHBd-D1sZ3sP1AOYB-DlNhMEpaLJxQcTQ=s128-rj-sc0x00ffffff' },
+        { id: 'duck-math', name: 'DuckMath', description: 'Math activities', url: 'https://duckmath.org/', image: 'https://www.google.com/s2/favicons?sz=256&domain=duckmath.org' },
+        { id: 'cloudfront-activities', name: 'Totally Science', description: 'Activity site', url: 'https://d11jzht7mj96rr.cloudfront.net/', image: 'https://www.google.com/s2/favicons?sz=256&domain=d11jzht7mj96rr.cloudfront.net' },
+        { id: 'poki-games', name: 'PokiGames', description: 'Browser games', url: 'https://pokigames.vip/', image: 'https://www.google.com/s2/favicons?sz=256&domain=pokigames.vip' },
+        { id: 'az-games', name: 'AZ Games', description: 'Activity site', url: 'https://azgames.io/', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAllBMVEUPDw/////////+/v7////////////9/f3x8fHc3Nz9/f3////4+Pj///8BAADtMhvyMxv3NByUHg7w8PAYU28FJDQ+u/O7JhPl5uYMFxtiZWR+FQhYCAPY2Nj9Nh3gLxnMKRZ+f342ODdKS0sTP1U9BQOLi4uXmJg2pNomd56kpqYwAADFxsYymMopgakwkb6wsrK2vr85bmfhAAAADnRSTlMB3ehTtnlj/hoLQ6Is02MI3dcAAAFQSURBVCiRjVLXcsMwDPOWEyfUsOU94hVnp/3/nyvl69UrD8UTTxABkEdN+x/cvY3Yu5+43ZHECKJ/Yk2SAiIl9gfSeoCIoghu+m7raJx7xnmZtb6zVfWbrKSUR/B93MTRH3BilFKWp8RckQ5Jc6rARRKvW604EZydBGMV3MhhGYd8oSoTPepmzWoapYpNvfoRQbGcxoohYrQSosJQfb2I5JLhXqk05W8kb6HaZhyfEYyqSHNdq4CIo2qWZSdOOY66n21g6HlZRmrxOVVFMem6Rn0XQuSQJAnkQmRQWLM8Z9UE3fP57MbqQf5MbdLKIJAQhJewA9kFsvX/TL0CXmEYYOvlnYxlM5EYNrheJSSvi4SxTKf1mqNnomTfgbJsCjLN6RHf9+MmCFGxjbGezalpB8ex8cCklDAYjmNuzujon+u6HnxrTYzdloHQvY9XvcUPK7Ie7mAxWo0AAAAASUVORK5CYII=' },
+        { id: 'nowgg', name: 'Now.gg', description: 'Cloud gaming', url: 'https://nowgg.fun/', image: '/assets/img/icons/now-gg.webp' }
       ];
-      const fragment = document.createDocumentFragment();
-      sorted.forEach((site) => {
-        const tile = document.createElement('button');
-        tile.type = 'button';
-        tile.className = 'site-tile';
-        tile.title = site.name || 'Site';
-        tile.setAttribute('aria-label', `Open ${site.name || 'site'}`);
-        tile.addEventListener('click', () => openGameInTab(site, { preferProxy: true }));
-        tile.innerHTML = `
-          <img src="${escapeHtml(site.image || '/chemistry-games/images/game-site.svg')}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/chemistry-games/images/game-site.svg'">
-          <span class="site-copy">
-            <span class="site-title">${escapeHtml(site.name || 'Site')}</span>
-            <span class="site-description">${escapeHtml(site.description || 'GΛMΞS collection')}</span>
-          </span>
-          <span class="site-open" aria-hidden="true">Open</span>
-        `;
-        fragment.appendChild(tile);
-      });
-      grid.replaceChildren(fragment);
-      return sorted.length;
-    }
 
-    function renderAll() {
-      renderCategoryFilters();
-      renderCategory('realActivitiesGrid', REAL_GAMES);
-      renderSiteQuickGrid();
-      updateTotalCount();
-    }
+      const gameState = { loaded: false, loading: true };
+      const ACTIVITIES_JSON_URL = '/assets/data/activities.json?v=20260817-platinum-1';
+      let currentSearchTerm = '';
+      let currentCategory = 'all';
+      let visibleGames = [];
+      let searchRenderTimer = 0;
 
-    function normalizeText(value) {
-      return String(value || '').trim().toLowerCase();
-    }
+      const CATEGORY_ALIASES = { shooter: 'action', fighting: 'action', cards: 'strategy', io: 'multiplayer' };
+      const CATEGORY_ORDER = ['action', 'adventure', 'arcade', 'sports', 'racing', 'puzzle', 'strategy', 'platformer', 'multiplayer', 'idle', 'horror', 'other'];
 
-    function createActivityId(entry, index) {
-      const base = normalizeText(entry.name || entry.url || `activity-${index}`);
-      const cleaned = base.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      return cleaned || `activity-${index}`;
-    }
+      function sortAlphabetically(arr) { return [...arr].sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })); }
+      function escapeHtml(v) { return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+      function normalizeCategory(v) { const n = String(v || '').trim().toLowerCase(); return CATEGORY_ALIASES[n] || n || 'other'; }
+      function getGameCategories(g) { const src = Array.isArray(g?.categories) ? g.categories : Array.isArray(g?._cat) ? g._cat : []; const norm = Array.from(new Set(src.map(normalizeCategory).filter(Boolean))); return norm.length ? norm : ['other']; }
+      function formatCategory(v) { return String(v || 'other').replace(/\b\w/g, l => l.toUpperCase()); }
+      function isMatch(g, q) { const cats = getGameCategories(g); if (currentCategory !== 'all' && !cats.includes(currentCategory)) return false; if (!q) return true; const h = `${g?.name||''} ${g?.description||''} ${cats.join(' ')}`.toLowerCase(); return h.includes(q); }
+      function getFilteredGames() { return sortAlphabetically(REAL_GAMES.filter(e => isMatch(e, currentSearchTerm))); }
 
-    function mergeActivitiesIntoRealActivities(activities) {
-      if (!Array.isArray(activities) || !activities.length) return 0;
-      let added = 0;
+      function updateTotalCount() {
+        const count = visibleGames.length;
+        const t = document.getElementById('totalCount');
+        const s = document.getElementById('resultSummary');
+        if (t) t.textContent = String(count);
+        if (s) { const ctx = currentCategory === 'all' ? 'all categories' : formatCategory(currentCategory); s.textContent = `${count} games · ${ctx}`; }
+        const btn = document.getElementById('surpriseButton');
+        if (btn) btn.disabled = count === 0;
+      }
 
-      activities.forEach((entry, index) => {
-        const name = String(entry?.name || '').trim();
-        const url = String(entry?.url || '').trim();
-        if (!name || !url) return;
-
-        REAL_GAMES.push({
-          id: createActivityId(entry, index),
-          name,
-          description: String(entry?.description || 'Activity'),
-          url,
-          image: String(entry?.image || '/chemistry-games/images/game-site.svg'),
-          categories: Array.isArray(entry?._cat) ? entry._cat.map(normalizeCategory) : ['other']
+      function renderCategoryFilters() {
+        const host = document.getElementById('categoryFilters');
+        if (!host) return;
+        const counts = new Map();
+        REAL_GAMES.forEach(g => getGameCategories(g).forEach(c => counts.set(c, (counts.get(c) || 0) + 1)));
+        const extras = Array.from(counts.keys()).filter(c => !CATEGORY_ORDER.includes(c)).sort();
+        const cats = ['all', ...CATEGORY_ORDER.filter(c => counts.has(c)), ...extras];
+        if (currentCategory !== 'all' && !cats.includes(currentCategory)) currentCategory = 'all';
+        const frag = document.createDocumentFragment();
+        cats.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'chip';
+          btn.dataset.category = cat;
+          btn.setAttribute('aria-pressed', String(cat === currentCategory));
+          const cnt = cat === 'all' ? REAL_GAMES.length : counts.get(cat);
+          btn.textContent = `${formatCategory(cat)} ${cnt || 0}`;
+          btn.addEventListener('click', () => { currentCategory = cat; renderAll(); });
+          frag.appendChild(btn);
         });
-        added += 1;
-      });
-
-      return added;
-    }
-
-    async function loadActivitiesJson() {
-      const response = await fetch(ACTIVITIES_JSON_URL, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${ACTIVITIES_JSON_URL}: ${response.status}`);
+        host.replaceChildren(frag);
       }
-      const data = await response.json();
-      if (!Array.isArray(data)) return [];
-      return data;
-    }
 
-    function initSearch() {
-      const input = document.getElementById('activitiesSearchInput');
-      if (!input) return;
-      input.addEventListener('input', (event) => {
-        currentSearchTerm = String(event.target?.value || '').trim().toLowerCase();
-        updateSearchControls();
-        clearTimeout(searchRenderTimer);
-        searchRenderTimer = setTimeout(renderAll, 60);
-      });
-
-      document.getElementById('clearSearchButton')?.addEventListener('click', clearSearch);
-      document.getElementById('resetFiltersButton')?.addEventListener('click', resetFilters);
-      document.getElementById('surpriseButton')?.addEventListener('click', () => {
-        if (!visibleGames.length) return;
-        const randomGame = visibleGames[Math.floor(Math.random() * visibleGames.length)];
-        openGameInTab(randomGame);
-      });
-
-      document.addEventListener('keydown', (event) => {
-        const target = event.target;
-        const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
-        if (event.key === '/' && !isTyping) {
-          event.preventDefault();
-          input.focus();
-        }
-        if (event.key === 'Escape' && (document.activeElement === input || currentSearchTerm)) {
-          event.preventDefault();
-          clearSearch();
-          input.focus();
-        }
-      });
-    }
-
-    function updateSearchControls() {
-      const clear = document.getElementById('clearSearchButton');
-      if (clear) clear.classList.toggle('is-visible', Boolean(currentSearchTerm));
-    }
-
-    function clearSearch() {
-      const input = document.getElementById('activitiesSearchInput');
-      currentSearchTerm = '';
-      if (input) input.value = '';
-      updateSearchControls();
-      renderAll();
-    }
-
-    function resetFilters() {
-      currentCategory = 'all';
-      clearSearch();
-    }
-
-    let proxyInitPromise = null;
-
-    function enforceArgonProxyDefault() {
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
-    }
-    enforceArgonProxyDefault();
-
-    async function waitFor(conditionFn, timeoutMs = 6000, stepMs = 50) {
-      const start = Date.now();
-      while (Date.now() - start < timeoutMs) {
-        try { if (conditionFn()) return true; } catch {}
-        await new Promise((resolve) => setTimeout(resolve, stepMs));
-      }
-      return false;
-    }
-
-    async function initServiceWorker() {
-      if (!('serviceWorker' in navigator)) return;
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (!reg) await navigator.serviceWorker.register('/sw.js');
-        await navigator.serviceWorker.ready;
-        if (!navigator.serviceWorker.controller) {
-          await new Promise((resolve) => {
-            const done = () => resolve();
-            navigator.serviceWorker.addEventListener('controllerchange', done, { once: true });
-            setTimeout(done, 1500);
-          });
-        }
-      } catch {}
-    }
-
-    async function initBareMuxTransport() {
-      const ready = await waitFor(() => typeof BareMux !== 'undefined' && typeof BareMux.BareMuxConnection === 'function', 4000);
-      if (!ready) throw new Error('BareMux runtime did not load in time');
-
-      const wispUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/wisp/';
-      const connection = new BareMux.BareMuxConnection('/d5/worker.js?v=bw1');
-
-      const transport = localStorage.getItem('transport') || 'epoxy';
-      const expectedTransport = transport === 'libcurl' ? '/f1/index.mjs' : '/e9/index.mjs';
-      if ((await connection.getTransport()) !== expectedTransport) {
-        await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
-      }
-      const activeTransport = await connection.getTransport();
-      if (activeTransport !== expectedTransport) {
-        throw new Error(`BareMux transport verification failed. Expected ${expectedTransport}, got ${activeTransport || 'none'}.`);
-      }
-      localStorage.setItem('transport', transport);
-    }
-
-    async function ensureProxyRuntimeReady() {
-      if (proxyInitPromise) return proxyInitPromise;
-      proxyInitPromise = (async () => {
-        await initServiceWorker();
-        await initBareMuxTransport();
-      })().catch((err) => {
-        proxyInitPromise = null;
-        throw err;
-      });
-      return proxyInitPromise;
-    }
-
-    function shouldForceArgonForUrl(inputUrl) {
-      const rules = window.NebuloProxyHostRules;
-      if (rules && typeof rules.shouldForceArgonForUrl === 'function') {
-        return rules.shouldForceArgonForUrl(inputUrl);
-      }
-      try {
-        const host = new URL(inputUrl).hostname.toLowerCase();
-        return host === 'play.geforcenow.com'
-          || host.endsWith('.geforcenow.com')
-          || host === 'login.nvidia.com'
-          || host === 'login.nvgs.nvidia.com'
-          || host === 'accounts.nvgs.nvidia.com';
-      } catch {
-        return false;
-      }
-    }
-
-    let scramjetControllerPromise = null;
-    async function ensureScramjetController() {
-      if (scramjetControllerPromise) return scramjetControllerPromise;
-      scramjetControllerPromise = (async () => {
-        if (typeof $scramjetLoadController !== 'function') return null;
-        const { ScramjetController } = $scramjetLoadController();
-        const controller = new ScramjetController({
-          files: {
-            wasm: '/c2/j/wasm.wasm',
-            all: '/c2/j/all.js',
-            sync: '/c2/j/sync.js',
-          },
+      function renderGrid(gridId, entries) {
+        const grid = document.getElementById(gridId);
+        if (!grid) return 0;
+        const filtered = sortAlphabetically((entries || []).filter(e => isMatch(e, currentSearchTerm)));
+        visibleGames = filtered;
+        const frag = document.createDocumentFragment();
+        filtered.forEach((g, i) => {
+          const cats = getGameCategories(g);
+          const name = g.name || 'Activity';
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = `game-card${i < 16 ? ' is-entering' : ''}`;
+          if (i < 16) card.style.animationDelay = `${i * 12}ms`;
+          card.setAttribute('aria-label', `Play ${name}`);
+          card.title = name;
+          card.addEventListener('click', () => openGameInTab(g));
+          card.innerHTML = `<span class="game-media"><img class="game-image" src="${escapeHtml(g.image || '/chemistry-games/images/game-site.svg')}" alt="${escapeHtml(name)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/chemistry-games/images/game-site.svg'"><span class="game-index" aria-hidden="true">${String(i+1).padStart(3,'0')}</span></span><span class="game-copy"><span class="game-title">${escapeHtml(name)}</span><span class="game-meta"><span class="game-category">${escapeHtml(formatCategory(cats[0]))}</span><span class="play-label" aria-hidden="true">Play</span></span></span>`;
+          frag.appendChild(card);
         });
-        await controller.init();
-        return controller;
-      })().catch(() => null);
-      return scramjetControllerPromise;
-    }
-
-    function encodeViaUv(url) {
-      if (typeof __uv$config !== 'undefined' && __uv$config?.encodeUrl) {
-        return __uv$config.prefix + __uv$config.encodeUrl(url);
-      }
-      return url;
-    }
-
-    function shouldForceScramjetForUrl(inputUrl) {
-      const rules = window.NebuloProxyHostRules;
-      if (rules && typeof rules.shouldForceScramjetForUrl === 'function') {
-        return rules.shouldForceScramjetForUrl(inputUrl);
+        grid.replaceChildren(frag);
+        const ld = document.getElementById('catalogLoading');
+        const em = document.getElementById('emptyState');
+        if (ld) ld.hidden = !gameState.loading;
+        if (em) em.hidden = gameState.loading || filtered.length > 0;
+        return filtered.length;
       }
 
-      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
-      if (!raw) return false;
-
-      let parsed = null;
-      try {
-        parsed = new URL(raw);
-      } catch {
-        if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) {
-          try {
-            parsed = new URL('https://' + raw);
-          } catch {
-            parsed = null;
-          }
-        }
-      }
-      if (!parsed) return false;
-
-      const host = (parsed.hostname || '').toLowerCase();
-      return (
-        host === 'crazygames.com' ||
-        host.endsWith('.crazygames.com') ||
-        host === 'play.geforcenow.com' ||
-        host.endsWith('.geforcenow.com') ||
-        host === 'tlk.io' ||
-        host.endsWith('.tlk.io')
-      );
-    }
-
-    function shouldAvoidScramjetForUrl(inputUrl) {
-      const rules = window.NebuloProxyHostRules;
-      if (rules && typeof rules.shouldAvoidScramjetForUrl === 'function') {
-        return rules.shouldAvoidScramjetForUrl(inputUrl);
+      function renderSiteQuickGrid() {
+        const grid = document.getElementById('siteQuickGrid');
+        if (!grid) return;
+        const sorted = [...ACCESS_SITES.filter(e => e.id === 'gn-math'), ...sortAlphabetically(ACCESS_SITES.filter(e => e.id !== 'gn-math'))];
+        const frag = document.createDocumentFragment();
+        sorted.forEach(s => {
+          const t = document.createElement('button');
+          t.type = 'button';
+          t.className = 'site-tile';
+          t.title = s.name || 'Site';
+          t.setAttribute('aria-label', `Open ${s.name || 'site'}`);
+          t.addEventListener('click', () => openGameInTab(s, { preferProxy: true }));
+          t.innerHTML = `<img src="${escapeHtml(s.image || '/chemistry-games/images/game-site.svg')}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/chemistry-games/images/game-site.svg'"><span class="site-copy"><span class="site-name">${escapeHtml(s.name || 'Site')}</span><span class="site-desc">${escapeHtml(s.description || 'Game collection')}</span></span><span class="site-open" aria-hidden="true">Open</span>`;
+          frag.appendChild(t);
+        });
+        grid.replaceChildren(frag);
       }
 
-      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
-      if (!raw) return false;
-
-      let parsed = null;
-      try {
-        parsed = new URL(raw);
-      } catch {
-        if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) {
-          try {
-            parsed = new URL('https://' + raw);
-          } catch {
-            parsed = null;
-          }
-        }
-      }
-      if (!parsed) return false;
-
-      const host = (parsed.hostname || '').toLowerCase();
-      return host === 'polybuzz.ai' || host.endsWith('.polybuzz.ai');
-    }
-
-    function encodeScramjetRoute(inputUrl) {
-      const raw = (typeof inputUrl === 'string' ? inputUrl : String(inputUrl || '')).trim();
-      if (!raw) return raw;
-      try {
-        const u = new URL(raw);
-        if (u.protocol !== 'http:' && u.protocol !== 'https:') return raw;
-        const hash = u.hash ? u.hash.slice(1) : '';
-        u.hash = '';
-        return '/c2/j/' + encodeURIComponent(u.href) + (hash ? '#' + encodeURIComponent(hash) : '');
-      } catch {
-        return '/c2/j/' + encodeURIComponent(raw);
-      }
-    }
-
-    function encodeArgonRoute(inputUrl) {
-      const url = new URL(inputUrl);
-      return '/ag/' + url.protocol.replace(':', '') + '/' + url.host
-        + (url.pathname || '/') + (url.search || '') + (url.hash || '');
-    }
-
-    async function encodeWithSelectedProxy(absoluteUrl, overrideProxy = null) {
-      const forced = shouldForceArgonForUrl(absoluteUrl) ? 'ag' : null;
-      let proxy = forced || localStorage.getItem('proxy') || 'ag';
-      if (proxy === 'argon') proxy = 'ag';
-      if (proxy === 'ag') return encodeArgonRoute(absoluteUrl);
-      if (proxy === 'sj') {
-        const scram = await ensureScramjetController();
-        if (scram && typeof scram.encodeUrl === 'function') return scram.encodeUrl(absoluteUrl);
-        if (forced === 'sj') return encodeScramjetRoute(absoluteUrl);
-        return encodeViaUv(absoluteUrl);
-      }
-      if (proxy === 'ec') {
-        if (typeof __eclipse$config !== 'undefined' && __eclipse$config?.codec?.encode) {
-          return __eclipse$config.prefix + __eclipse$config.codec.encode(absoluteUrl);
-        }
-        return encodeViaUv(absoluteUrl);
-      }
-      return encodeViaUv(absoluteUrl);
-    }
-
-    function openInNebuloTab(url, game, forceProxy = null, proxied = true) {
-      try {
-        if (!window.parent || window.parent === window) return false;
-        window.parent.postMessage({
-          type: 'open-new-tab',
-          url: url,
-          title: game?.name || 'Activity',
-          icon: 'fa-gamepad',
-          forceProxy: forceProxy || null,
-          proxied: !!proxied
-        }, '*');
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    async function openGameInTab(game, options = {}) {
-      const isLocal = typeof game.url === 'string' && game.url.startsWith('/');
-      const absoluteUrl = new URL(game.url, window.location.origin).toString();
-      const proxyRequired = !isLocal && shouldForceScramjetForUrl(absoluteUrl);
-      const useProxy = !isLocal && (proxyRequired || !!options.preferProxy);
-      const forceProxy = shouldForceArgonForUrl(absoluteUrl) ? 'ag' : null;
-
-      if (openInNebuloTab(isLocal ? game.url : absoluteUrl, game, forceProxy, useProxy)) return;
-
-      if (isLocal) {
-        window.location.href = game.url;
-        return;
-      }
-      if (!useProxy) {
-        window.location.href = absoluteUrl;
-        return;
-      }
-      try {
-        await ensureProxyRuntimeReady();
-        const proxied = await encodeWithSelectedProxy(absoluteUrl, forceProxy);
-        window.location.href = proxied;
-      } catch {
-        window.location.href = absoluteUrl;
-      }
-    }
-
-    function unloadChemistryActivities() {
-      const realActivitiesGrid = document.getElementById('realActivitiesGrid');
-      const siteQuickGrid = document.getElementById('siteQuickGrid');
-      if (realActivitiesGrid) realActivitiesGrid.innerHTML = '';
-      if (siteQuickGrid) siteQuickGrid.innerHTML = '';
-    }
-
-    async function loadChemistryActivities() {
-      if (gameState.loaded) {
-        renderAll();
-        return;
+      function renderAll() {
+        renderCategoryFilters();
+        renderGrid('realActivitiesGrid', REAL_GAMES);
+        renderSiteQuickGrid();
+        updateTotalCount();
       }
 
-      try {
-        const jsonActivities = await loadActivitiesJson();
-        mergeActivitiesIntoRealActivities(jsonActivities);
-      } catch (err) {
-        console.warn('Could not load activities.json, using built-in entries only.', err);
+      function normalizeText(v) { return String(v || '').trim().toLowerCase(); }
+      function createActivityId(e, i) { return (normalizeText(e.name || e.url || `activity-${i}`).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `activity-${i}`); }
+
+      function mergeActivities(arr) {
+        if (!Array.isArray(arr) || !arr.length) return 0;
+        let added = 0;
+        arr.forEach((e, i) => {
+          const name = String(e?.name || '').trim();
+          const url = String(e?.url || '').trim();
+          if (!name || !url) return;
+          REAL_GAMES.push({ id: createActivityId(e, i), name, description: String(e?.description || 'Activity'), url, image: String(e?.image || '/chemistry-games/images/game-site.svg'), categories: Array.isArray(e?._cat) ? e._cat.map(normalizeCategory) : ['other'] });
+          added++;
+        });
+        return added;
       }
 
-      gameState.loaded = true;
-      gameState.loading = false;
-      renderAll();
-    }
+      async function loadActivitiesJson() {
+        const r = await fetch(ACTIVITIES_JSON_URL, { cache: 'no-store' });
+        if (!r.ok) throw new Error(`Failed to fetch ${ACTIVITIES_JSON_URL}: ${r.status}`);
+        const d = await r.json();
+        return Array.isArray(d) ? d : [];
+      }
 
-    async function resetProxyDatabasesInWindow() {
-      if (!('indexedDB' in window)) return;
-      const names = new Set(['bare-mux', 'baremux', 'bare-mux-db', 'baremux-db']);
-      if (typeof indexedDB.databases === 'function') {
+      function initSearch() {
+        const input = document.getElementById('activitiesSearchInput');
+        if (!input) return;
+        input.addEventListener('input', e => {
+          currentSearchTerm = String(e.target?.value || '').trim().toLowerCase();
+          updateSearchControls();
+          clearTimeout(searchRenderTimer);
+          searchRenderTimer = setTimeout(renderAll, 60);
+        });
+        document.getElementById('clearSearchButton')?.addEventListener('click', clearSearch);
+        document.getElementById('resetFiltersButton')?.addEventListener('click', () => { currentCategory = 'all'; clearSearch(); });
+        document.getElementById('surpriseButton')?.addEventListener('click', () => { if (!visibleGames.length) return; openGameInTab(visibleGames[Math.floor(Math.random() * visibleGames.length)]); });
+        document.addEventListener('keydown', e => {
+          const tgt = e.target;
+          const typing = tgt instanceof HTMLInputElement || tgt instanceof HTMLTextAreaElement || tgt?.isContentEditable;
+          if (e.key === '/' && !typing) { e.preventDefault(); input.focus(); }
+          if (e.key === 'Escape' && (document.activeElement === input || currentSearchTerm)) { e.preventDefault(); clearSearch(); input.focus(); }
+        });
+      }
+
+      function updateSearchControls() { const c = document.getElementById('clearSearchButton'); if (c) c.classList.toggle('is-visible', Boolean(currentSearchTerm)); }
+      function clearSearch() { const i = document.getElementById('activitiesSearchInput'); currentSearchTerm = ''; if (i) i.value = ''; updateSearchControls(); renderAll(); }
+
+      let proxyInitPromise = null;
+      function enforceArgonProxyDefault() { try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {} }
+      enforceArgonProxyDefault();
+
+      async function waitFor(fn, ms = 6000, step = 50) { const s = Date.now(); while (Date.now() - s < ms) { try { if (fn()) return true; } catch {} await new Promise(r => setTimeout(r, step)); } return false; }
+
+      async function initServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
         try {
-          const dbs = await indexedDB.databases();
-          dbs.forEach((db) => {
-            const n = db?.name || '';
-            const lower = n.toLowerCase();
-            if (lower.includes('bare') || lower.includes('mux') || lower.includes('uv') || lower.includes('scram') || lower.includes('idbmap')) {
-              names.add(n);
-            }
-          });
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (!reg) await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.ready;
+          if (!navigator.serviceWorker.controller) {
+            await new Promise(r => { const d = () => r(); navigator.serviceWorker.addEventListener('controllerchange', d, { once: true }); setTimeout(d, 1500); });
+          }
         } catch {}
       }
-      await Promise.allSettled(
-        Array.from(names).map((name) => new Promise((resolve) => {
-          if (!name) return resolve();
-          try {
-            const req = indexedDB.deleteDatabase(name);
-            req.onsuccess = () => resolve();
-            req.onerror = () => resolve();
-            req.onblocked = () => resolve();
-          } catch {
-            resolve();
-          }
-        }))
-      );
-    }
 
-    window.addEventListener('unhandledrejection', async (event) => {
-      const msg = String(event?.reason?.message || '');
-      if (!msg.includes('MessagePort') && !msg.includes('invalid MessagePort')) return;
-      if (sessionStorage.getItem('proxy_port_repair_attempted') === 'true') return;
-      sessionStorage.setItem('proxy_port_repair_attempted', 'true');
-      try { await resetProxyDatabasesInWindow(); } catch {}
-      try { localStorage.removeItem('transport'); } catch {}
-      try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
-      location.reload();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        unloadChemistryActivities();
-      } else {
-        loadChemistryActivities();
+      async function initBareMuxTransport() {
+        const ready = await waitFor(() => typeof BareMux !== 'undefined' && typeof BareMux.BareMuxConnection === 'function', 4000);
+        if (!ready) throw new Error('BareMux runtime did not load in time');
+        const wispUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/wisp/';
+        const connection = new BareMux.BareMuxConnection('/d5/worker.js?v=bw1');
+        const transport = localStorage.getItem('transport') || 'epoxy';
+        const expectedTransport = transport === 'libcurl' ? '/f1/index.mjs' : '/e9/index.mjs';
+        if ((await connection.getTransport()) !== expectedTransport) await connection.setTransport(expectedTransport, [{ wisp: wispUrl }]);
+        const activeTransport = await connection.getTransport();
+        if (activeTransport !== expectedTransport) throw new Error(`BareMux transport verification failed. Expected ${expectedTransport}, got ${activeTransport || 'none'}.`);
+        localStorage.setItem('transport', transport);
       }
-    });
 
-    initSearch();
-    loadChemistryActivities();
+      async function ensureProxyRuntimeReady() {
+        if (proxyInitPromise) return proxyInitPromise;
+        proxyInitPromise = (async () => { await initServiceWorker(); await initBareMuxTransport(); })().catch(err => { proxyInitPromise = null; throw err; });
+        return proxyInitPromise;
+      }
+
+      function shouldForceArgonForUrl(u) {
+        const r = window.NebuloProxyHostRules;
+        if (r && typeof r.shouldForceArgonForUrl === 'function') return r.shouldForceArgonForUrl(u);
+        try { const h = new URL(u).hostname.toLowerCase(); return h === 'play.geforcenow.com' || h.endsWith('.geforcenow.com') || h === 'login.nvidia.com' || h === 'login.nvgs.nvidia.com' || h === 'accounts.nvgs.nvidia.com'; } catch { return false; }
+      }
+
+      let sjPromise = null;
+      async function ensureScramjetController() {
+        if (sjPromise) return sjPromise;
+        sjPromise = (async () => {
+          if (typeof $scramjetLoadController !== 'function') return null;
+          const { ScramjetController } = $scramjetLoadController();
+          const c = new ScramjetController({ files: { wasm: '/c2/j/wasm.wasm', all: '/c2/j/all.js', sync: '/c2/j/sync.js' } });
+          await c.init();
+          return c;
+        })().catch(() => null);
+        return sjPromise;
+      }
+
+      function encodeViaUv(url) { if (typeof __uv$config !== 'undefined' && __uv$config?.encodeUrl) return __uv$config.prefix + __uv$config.encodeUrl(url); return url; }
+
+      function shouldForceScramjetForUrl(u) {
+        const r = window.NebuloProxyHostRules;
+        if (r && typeof r.shouldForceScramjetForUrl === 'function') return r.shouldForceScramjetForUrl(u);
+        const raw = (typeof u === 'string' ? u : String(u || '')).trim();
+        if (!raw) return false;
+        let p = null;
+        try { p = new URL(raw); } catch { if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) { try { p = new URL('https://' + raw); } catch { p = null; } } }
+        if (!p) return false;
+        const h = (p.hostname || '').toLowerCase();
+        return h === 'crazygames.com' || h.endsWith('.crazygames.com') || h === 'play.geforcenow.com' || h.endsWith('.geforcenow.com') || h === 'tlk.io' || h.endsWith('.tlk.io');
+      }
+
+      function shouldAvoidScramjetForUrl(u) {
+        const r = window.NebuloProxyHostRules;
+        if (r && typeof r.shouldAvoidScramjetForUrl === 'function') return r.shouldAvoidScramjetForUrl(u);
+        const raw = (typeof u === 'string' ? u : String(u || '')).trim();
+        if (!raw) return false;
+        let p = null;
+        try { p = new URL(raw); } catch { if (raw.includes('.') && !raw.includes(' ') && !raw.startsWith('/')) { try { p = new URL('https://' + raw); } catch { p = null; } } }
+        if (!p) return false;
+        const h = (p.hostname || '').toLowerCase();
+        return h === 'polybuzz.ai' || h.endsWith('.polybuzz.ai');
+      }
+
+      function encodeScramjetRoute(u) { const raw = (typeof u === 'string' ? u : String(u || '')).trim(); if (!raw) return raw; try { const p = new URL(raw); if (p.protocol !== 'http:' && p.protocol !== 'https:') return raw; const hash = p.hash ? p.hash.slice(1) : ''; p.hash = ''; return '/c2/j/' + encodeURIComponent(p.href) + (hash ? '#' + encodeURIComponent(hash) : ''); } catch { return '/c2/j/' + encodeURIComponent(raw); } }
+      function encodeArgonRoute(u) { const p = new URL(u); return '/ag/' + p.protocol.replace(':', '') + '/' + p.host + (p.pathname || '/') + (p.search || '') + (p.hash || ''); }
+
+      async function encodeWithSelectedProxy(absoluteUrl, overrideProxy = null) {
+        const forced = shouldForceArgonForUrl(absoluteUrl) ? 'ag' : null;
+        let proxy = forced || localStorage.getItem('proxy') || 'ag';
+        if (proxy === 'argon') proxy = 'ag';
+        if (proxy === 'ag') return encodeArgonRoute(absoluteUrl);
+        if (proxy === 'sj') { const s = await ensureScramjetController(); if (s && typeof s.encodeUrl === 'function') return s.encodeUrl(absoluteUrl); if (forced === 'sj') return encodeScramjetRoute(absoluteUrl); return encodeViaUv(absoluteUrl); }
+        if (proxy === 'ec') { if (typeof __eclipse$config !== 'undefined' && __eclipse$config?.codec?.encode) return __eclipse$config.prefix + __eclipse$config.codec.encode(absoluteUrl); return encodeViaUv(absoluteUrl); }
+        return encodeViaUv(absoluteUrl);
+      }
+
+      function trackRecentPlay(game) {
+        const token = (() => { try { return localStorage.getItem('token'); } catch { return ''; } })();
+        if (!token || !game) return;
+        const isLocal = typeof game.url === 'string' && game.url.startsWith('/');
+        if (!isLocal) return;
+        fetch('/api/game-progress/recent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+          body: JSON.stringify({ gamePath: game.url, gameName: game.name || 'Unknown', gameImage: game.image || '', gameCategories: game.categories || [] })
+        }).catch(() => {});
+      }
+
+      function openInNebuloTab(url, game, forceProxy = null, proxied = true) {
+        try {
+          if (!window.parent || window.parent === window) return false;
+          window.parent.postMessage({ type: 'open-new-tab', url, title: game?.name || 'Activity', icon: 'fa-gamepad', forceProxy: forceProxy || null, proxied: !!proxied }, '*');
+          return true;
+        } catch { return false; }
+      }
+
+      async function openGameInTab(game, options = {}) {
+        trackRecentPlay(game);
+        const isLocal = typeof game.url === 'string' && game.url.startsWith('/');
+        const absoluteUrl = new URL(game.url, window.location.origin).toString();
+        const proxyRequired = !isLocal && shouldForceScramjetForUrl(absoluteUrl);
+        const useProxy = !isLocal && (proxyRequired || !!options.preferProxy);
+        const forceProxy = shouldForceArgonForUrl(absoluteUrl) ? 'ag' : null;
+        if (openInNebuloTab(isLocal ? game.url : absoluteUrl, game, forceProxy, useProxy)) return;
+        if (isLocal) { window.location.href = game.url; return; }
+        if (!useProxy) { window.location.href = absoluteUrl; return; }
+        try { await ensureProxyRuntimeReady(); const p = await encodeWithSelectedProxy(absoluteUrl, forceProxy); window.location.href = p; } catch { window.location.href = absoluteUrl; }
+      }
+
+      function unloadChemistryActivities() {
+        const g = document.getElementById('realActivitiesGrid');
+        const s = document.getElementById('siteQuickGrid');
+        if (g) g.innerHTML = '';
+        if (s) s.innerHTML = '';
+      }
+
+      async function loadChemistryActivities() {
+        if (gameState.loaded) { renderAll(); return; }
+        try { const json = await loadActivitiesJson(); mergeActivities(json); } catch (err) { console.warn('Could not load activities.json, using built-in entries only.', err); }
+        gameState.loaded = true;
+        gameState.loading = false;
+        renderAll();
+      }
+
+      async function resetProxyDatabasesInWindow() {
+        if (!('indexedDB' in window)) return;
+        const names = new Set(['bare-mux', 'baremux', 'bare-mux-db', 'baremux-db']);
+        if (typeof indexedDB.databases === 'function') {
+          try { const dbs = await indexedDB.databases(); dbs.forEach(db => { const n = db?.name || ''; const l = n.toLowerCase(); if (l.includes('bare') || l.includes('mux') || l.includes('uv') || l.includes('scram') || l.includes('idbmap')) names.add(n); }); } catch {}
+        }
+        await Promise.allSettled(Array.from(names).map(name => new Promise(resolve => {
+          if (!name) return resolve();
+          try { const req = indexedDB.deleteDatabase(name); req.onsuccess = () => resolve(); req.onerror = () => resolve(); req.onblocked = () => resolve(); } catch { resolve(); }
+        })));
+      }
+
+      window.addEventListener('unhandledrejection', async (event) => {
+        const msg = String(event?.reason?.message || '');
+        if (!msg.includes('MessagePort') && !msg.includes('invalid MessagePort')) return;
+        if (sessionStorage.getItem('proxy_port_repair_attempted') === 'true') return;
+        sessionStorage.setItem('proxy_port_repair_attempted', 'true');
+        try { await resetProxyDatabasesInWindow(); } catch {}
+        try { localStorage.removeItem('transport'); } catch {}
+        try { if (!localStorage.getItem('proxy')) localStorage.setItem('proxy', 'ag'); } catch {}
+        location.reload();
+      });
+
+      // ── Recently played ──
+      const recentSection = document.getElementById('recent-section');
+      const recentRow = document.getElementById('recent-row');
+      const timeAgo = (ts) => {
+        const diff = Date.now() - ts;
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+        return Math.floor(diff / 86400000) + 'd ago';
+      };
+      const loadRecentlyPlayed = async () => {
+        const token = (() => { try { return localStorage.getItem('token'); } catch { return ''; } })();
+        if (!token) return;
+        try {
+          const res = await fetch('/api/game-progress', { headers: { 'x-auth-token': token } });
+          if (!res.ok) return;
+          const progress = await res.json();
+          const recent = progress.recentlyPlayed || [];
+          if (!recent.length) return;
+          recentSection.hidden = false;
+          recentRow.replaceChildren(...recent.slice(0, 10).map(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'recent-card';
+            btn.setAttribute('aria-label', `Play ${item.gameName}`);
+            if (item.gameImage) {
+              const img = document.createElement('img');
+              img.src = item.gameImage;
+              img.alt = '';
+              img.loading = 'lazy';
+              img.addEventListener('error', () => img.remove(), { once: true });
+              btn.append(img);
+            }
+            const copy = document.createElement('div');
+            copy.className = 'recent-card-copy';
+            copy.innerHTML = `<span class="recent-card-name">${escapeHtml(item.gameName)}</span><span class="recent-card-time">${timeAgo(item.playedAt)}</span>`;
+            btn.append(copy);
+            btn.addEventListener('click', () => {
+              const game = REAL_GAMES.find(g => g.url === item.gamePath);
+              if (game) openGameInTab(game);
+              else openGameInTab({ name: item.gameName, url: item.gamePath, image: item.gameImage, categories: item.gameCategories || [] });
+            });
+            return btn;
+          }));
+        } catch {}
+      };
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) unloadChemistryActivities();
+        else loadChemistryActivities();
+      });
+
+      initSearch();
+      loadChemistryActivities();
+      loadRecentlyPlayed();
+    })();
   </script>
-
-  <!-- hidden math essay (preserved) -->
-  <section hidden aria-hidden="true" data-hidden-math-essay>
-    <h2>Essay on Mathematics</h2>
-    <p>Mathematics is a language of patterns, logic, and structure...</p>
-  </section>
 </body>
 </html>

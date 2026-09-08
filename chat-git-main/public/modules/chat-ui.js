@@ -1,3 +1,4 @@
+import { createWalletSync } from './wallet-sync.js?v=20260906-coins-1';
 import { getSocket } from './socket.js';
 import { createVoiceModule } from './voice.js';
 
@@ -24,6 +25,19 @@ export function createChatUi(deps) {
     renderRoomEffectStage
   } = deps;
 
+  const walletSync = createWalletSync({
+    read: () => api('/api/wallet', { cache: 'no-store' }),
+    changed: coins => {
+      if (!state.user) return;
+      state.user = { ...state.user, coins };
+      applyUserSnapshot(state.user);
+      updateCoinDisplays();
+    }
+  });
+  const refreshWallet = () => {
+    walletSync.reset(state.user?.id || state.user?._id);
+    return walletSync.refresh();
+  };
   let friendSearchActionClickHandler = null;
   let joinedMessageRoomIds = new Set();
   const OUTBOX_LIMIT = 4;
@@ -1173,6 +1187,10 @@ export function createChatUi(deps) {
     const bgStyle = `background:${avatarColor(name)}`;
     const effectId = isDeleted ? 'none' : getMessageEffect(m);
     const effectCls = effectId === 'none' ? '' : `effect-${effectId}`;
+    const msgMember = getMemberListEntries().find(me => me.username.toLowerCase() === String(name || '').toLowerCase());
+    const nameEffectCls = !msgMember || msgMember.nameEffect === 'none' ? '' : `member-name-${msgMember.nameEffect}`;
+    const badgeIcons = { badge_star: '⭐', badge_verified: '✅' };
+    const msgBadge = msgMember && msgMember.equippedBadge !== 'none' ? (badgeIcons[msgMember.equippedBadge] || '') : '';
     const meta = getMessageMeta(m);
     const reactionHtml = Object.entries(meta.reactions)
       .filter(([, names]) => Array.isArray(names) && names.length)
@@ -1227,7 +1245,7 @@ export function createChatUi(deps) {
           </div>
           <div class="msg-body">
             <div class="msg-head">
-              <strong class="msg-name ${effectCls}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">${esc(isSystem ? 'System' : name)}</strong>
+              <strong class="msg-name ${effectCls} ${nameEffectCls}" data-username="${esc(isSystem ? '' : name)}" data-user-id="${esc(getUserId(m))}">${esc(isSystem ? 'System' : name)}${msgBadge ? `<span class="member-badge">${msgBadge}</span>` : ''}</strong>
               ${friendTagHtml}
               ${rankHtml}
               <span>${esc(fmtTime(m))}</span>
@@ -1309,14 +1327,7 @@ export function createChatUi(deps) {
       }
     }
 
-    for (const child of Array.from(root.children)) {
-      if (child.dataset && child.dataset.messageId && !fragment.contains(child)) {
-        root.removeChild(child);
-      }
-    }
-
-    while (root.firstChild) root.removeChild(root.firstChild);
-    root.appendChild(fragment);
+    root.replaceChildren(fragment);
 
     state.messages.forEach((m) => {
       const id = String(m?.id || m?._id || '').trim();
@@ -2337,11 +2348,7 @@ export function createChatUi(deps) {
     if (state.currentChannel) scheduleMessagePoll(1200);
   };
 
-  const handleChatReward = (payload = {}) => {
-    if (payload?.balance === undefined || !state.user) return;
-    state.user = { ...state.user, coins: Math.max(0, Number(payload.balance || 0)) };
-    updateCoinDisplays();
-  };
+  const handleChatReward = () => { void refreshWallet(); };
 
   const ensureChatSocket = async () => {
     const origin = getSocketOrigin();
@@ -2351,6 +2358,7 @@ export function createChatUi(deps) {
       activeSocket.off('connect', handleSocketConnect);
       activeSocket.off('disconnect', handleSocketDisconnect);
       activeSocket.off('chat_reward', handleChatReward);
+      activeSocket.off('wallet_changed', handleChatReward);
       activeSocket.off('user_typing', handleRemoteTyping);
       activeSocket.off('receive_message', handleRealtimeMessage);
       activeSocket.off('global_effect', handleGlobalEffect);
@@ -2375,6 +2383,7 @@ export function createChatUi(deps) {
     activeSocket.off('connect', handleSocketConnect);
     activeSocket.off('disconnect', handleSocketDisconnect);
     activeSocket.off('chat_reward', handleChatReward);
+      activeSocket.off('wallet_changed', handleChatReward);
     activeSocket.off('user_typing', handleRemoteTyping);
     activeSocket.off('receive_message', handleRealtimeMessage);
     activeSocket.off('global_effect', handleGlobalEffect);
@@ -2396,6 +2405,8 @@ export function createChatUi(deps) {
     activeSocket.on('connect', handleSocketConnect);
     activeSocket.on('disconnect', handleSocketDisconnect);
     activeSocket.on('chat_reward', handleChatReward);
+    activeSocket.on('wallet_changed', handleChatReward);
+    void refreshWallet();
     activeSocket.on('user_typing', handleRemoteTyping);
     activeSocket.on('receive_message', handleRealtimeMessage);
     activeSocket.on('global_effect', handleGlobalEffect);
@@ -5912,7 +5923,10 @@ export function createChatUi(deps) {
         relationship: details.relationship || getFriendRelationship(name),
         status: details.status || 'member',
         avatar: details.avatar || '',
-        online: details.online ?? key === currentName.toLowerCase()
+        online: details.online ?? key === currentName.toLowerCase(),
+        nameEffect: details.nameEffect || 'none',
+        equippedBadge: details.equippedBadge || 'none',
+        customStatus: details.customStatus || ''
       });
     };
 
@@ -5929,7 +5943,10 @@ export function createChatUi(deps) {
         relationship: getFriendRelationship(username),
         status: 'online now',
         avatar: withAvatarVersion(String(user?.avatar || '').trim()),
-        online: true
+        online: true,
+        nameEffect: user?.nameEffect || 'none',
+        equippedBadge: user?.equippedBadge || 'none',
+        customStatus: user?.customStatus || ''
       });
     });
 
@@ -5980,18 +5997,23 @@ export function createChatUi(deps) {
             : '';
           const relationshipTag = relationshipLabel ? `<span class="member-tag relation-${esc(relationship)}">${esc(relationshipLabel)}</span>` : '';
           const canAddFriend = relationship === 'none' || relationship === 'incoming';
+          const nameClass = member.nameEffect === 'rainbow' ? ' member-name-rainbow' : member.nameEffect === 'glow' ? ' member-name-glow' : '';
+          const badgeIcons = { badge_star: '⭐', badge_verified: '✅' };
+          const badge = member.equippedBadge && member.equippedBadge !== 'none' ? badgeIcons[member.equippedBadge] : '';
+          const customStatus = member.customStatus ? `<span class="member-custom-status">${esc(member.customStatus)}</span>` : '';
           return `
             <div class="member-row">
               <span class="member-avatar" style="background:${avatarColor(member.username)}">
                 ${member.avatar ? `<img src="${esc(member.avatar)}" alt="${esc(member.username)}" />` : avatarLetter}
               </span>
               <span class="member-meta">
-                <span class="member-name">${esc(member.username)}</span>
+                <span class="member-name${nameClass}">${esc(member.username)}${badge ? ` <span class="member-badge">${badge}</span>` : ''}</span>
                 <span class="member-tags">
                   ${relationshipTag}
                   ${roleTag}
                   <span class="member-status ${member.online ? 'online' : ''}">${esc(member.status || 'online')}</span>
                 </span>
+                ${customStatus}
               </span>
               ${canAddFriend ? `<button type="button" class="member-add-friend" data-member-add-friend="${esc(member.username)}" title="Add ${esc(member.username)} as friend">+</button>` : ''}
             </div>
@@ -6033,7 +6055,9 @@ export function createChatUi(deps) {
       getFriendRelationship(member.username),
       member.status || '',
       member.avatar || '',
-      member.online ? '1' : '0'
+      member.online ? '1' : '0',
+      member.nameEffect || 'none',
+      member.equippedBadge || 'none'
     ].join(':'))
     .join('|');
 
@@ -7850,6 +7874,7 @@ export function createChatUi(deps) {
 
     state.metaTimer = setInterval(async () => {
       await refreshPresence();
+      void refreshWallet();
       await fetchAlerts();
       await refreshSlowmodeConfig();
     }, 20000);
@@ -7857,7 +7882,11 @@ export function createChatUi(deps) {
 
   // Update coin displays (header, settings, room effects balance)
   const updateCoinDisplays = () => {
+    walletSync.reset(state.user?.id || state.user?._id);
+    if (state.user && walletSync.balance !== null) state.user.coins = walletSync.balance;
     const label = formatCoinLabel(state.user?.coins);
+    const pickerCoins = document.getElementById('effects-picker-balance');
+    if (pickerCoins) pickerCoins.textContent = label;
     const headerCoins = document.getElementById('header-coins');
     if (headerCoins) headerCoins.textContent = label;
     const settingsCoins = document.getElementById('settings-coins-balance');

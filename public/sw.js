@@ -1,4 +1,4 @@
-const SW_VERSION = "2026-08-31-tiktok-fast-feed-cache-30";
+const SW_VERSION = "2026-09-06-local-chat-route-fix-31";
 let adBlockEnabled = true;
 
 // Proxy asset URL prefixes. Kept in sync with the server-side PROXY_PREFIXES

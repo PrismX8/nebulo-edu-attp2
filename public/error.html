@@ -30,10 +30,12 @@
       --button: #1a73e8;
       --icon: #5f6368;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { min-height: 100%; }
-    body { margin: 0; background: var(--page); color: var(--text); font-family: Arial, Helvetica, sans-serif; }
+    body { background: var(--page); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
     button { font: inherit; }
+
+    /* ── First-visit screen ── */
     .first-visit {
       min-height: 100vh;
       display: grid;
@@ -43,31 +45,239 @@
       color: #fff;
       text-align: center;
     }
-    .first-visit-inner { width: min(700px, 100%); }
-    .first-visit h1 { display: inline-block; margin: 0 0 24px; padding-bottom: 8px; border-bottom: 1px solid #333; font-size: clamp(48px, 12vw, 80px); font-weight: 300; letter-spacing: -2px; text-transform: lowercase; }
-    .first-visit p { margin: 0 0 38px; color: #ccc; font-size: clamp(20px, 4vw, 29px); font-weight: 300; line-height: 1.5; }
-    .first-visit strong { padding: 2px 7px; border-radius: 4px; background: #222; color: #fff; font-weight: 600; }
-    .continue-button { min-width: 230px; min-height: 60px; padding: 12px 28px; border: 2px solid #fff; border-radius: 40px; background: transparent; color: #fff; cursor: pointer; font-size: 22px; }
-    .continue-button:disabled { border-color: #666; color: #666; cursor: not-allowed; }
-    .continue-button:not(:disabled):hover, .continue-button:not(:disabled):focus-visible { background: #fff; color: #000; outline: none; }
-    .press-n-prompt { width: 72px; margin: 0 0 16px; color: #c5221f; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 14px; font-weight: 800; letter-spacing: .08em; text-align: center; white-space: nowrap; animation: blink 1s steps(2, end) infinite; }
-    .error-shell { width: min(600px, calc(100% - 48px)); margin: 0 auto; padding-top: max(130px, 18vh); }
-    .error-icon { position: relative; width: 72px; height: 72px; margin-bottom: 38px; color: var(--icon); }
-    .error-icon::before, .error-icon::after { content: ""; position: absolute; background: currentColor; }
-    .error-icon::before { width: 72px; height: 4px; top: 34px; left: 0; transform: rotate(45deg); }
-    .error-icon::after { width: 4px; height: 72px; top: 0; left: 34px; transform: rotate(45deg); }
-    h1 { margin: 0 0 16px; color: var(--heading); font-size: 28px; font-weight: 400; line-height: 1.25; }
-    .error-shell p { margin: 0 0 14px; font-size: 15px; line-height: 1.6; }
-    .error-shell ul { margin: 0; padding-left: 28px; font-size: 15px; line-height: 1.6; }
-    .error-shell a { color: var(--link); text-decoration: none; }
-    .error-code { margin-top: 14px; font-size: 12px; text-transform: uppercase; }
-    .reload-button { min-width: 90px; min-height: 40px; margin-top: 48px; padding: 8px 18px; border: 0; border-radius: 20px; background: var(--button); color: var(--button-text); cursor: pointer; font-size: 14px; font-weight: 600; }
-    .reload-button:focus-visible { outline: 3px solid rgba(26, 115, 232, .35); outline-offset: 2px; }
-    @keyframes blink { 50% { opacity: .2; } }
-    @media (prefers-color-scheme: dark) {
-      :root { --page: #202124; --heading: #bdc1c6; --text: #9aa0a6; --link: #8ab4f8; --button: #8ab4f8; --button-text: #202124; --icon: #9aa0a6; }
-      .press-n-prompt { color: #ff6b63; }
+    .first-visit-inner {
+      width: min(520px, 100%);
+      animation: fadeUp .6s cubic-bezier(.2,.8,.2,1) both;
     }
+    .first-visit-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .first-visit-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3f8cff;
+      box-shadow: 0 0 20px rgba(63, 140, 255, .6);
+    }
+    .first-visit-label {
+      font: 800 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.45);
+    }
+    .first-visit h1 {
+      font-size: clamp(42px, 10vw, 64px);
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .first-visit-divider {
+      width: 48px;
+      height: 2px;
+      margin: 0 auto 20px;
+      background: rgba(255,255,255,.12);
+      border-radius: 1px;
+    }
+    .first-visit p {
+      margin: 0 0 36px;
+      color: rgba(255,255,255,.5);
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.6;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .first-visit p strong {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.75);
+      font-weight: 700;
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .continue-button {
+      min-width: 200px;
+      min-height: 52px;
+      padding: 12px 28px;
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      transition: all .2s ease;
+    }
+    .continue-button:disabled {
+      border-color: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.2);
+      cursor: not-allowed;
+      background: transparent;
+    }
+    .continue-button:not(:disabled):hover {
+      background: rgba(255,255,255,.1);
+      border-color: rgba(255,255,255,.35);
+      transform: translateY(-1px);
+    }
+    .continue-button:not(:disabled):active {
+      transform: translateY(0);
+    }
+    .continue-button:not(:disabled):focus-visible {
+      outline: 2px solid rgba(63, 140, 255, .8);
+      outline-offset: 3px;
+    }
+    .countdown-badge {
+      display: inline-block;
+      min-width: 32px;
+      margin-left: 8px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.08);
+      font: 700 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      vertical-align: middle;
+    }
+
+    /* ── Error page ── */
+    .error-shell {
+      width: min(560px, calc(100% - 48px));
+      margin: 0 auto;
+      padding-top: max(120px, 18vh);
+      animation: fadeUp .5s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .error-icon {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      margin-bottom: 32px;
+      color: var(--icon);
+    }
+    .error-icon::before, .error-icon::after {
+      content: "";
+      position: absolute;
+      background: currentColor;
+    }
+    .error-icon::before {
+      width: 56px;
+      height: 3px;
+      top: 26px;
+      left: 0;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+    .error-icon::after {
+      width: 3px;
+      height: 56px;
+      top: 0;
+      left: 26px;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+    .press-n-prompt {
+      display: inline-block;
+      width: auto;
+      min-width: 80px;
+      margin: 0 0 20px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: rgba(210, 48, 48, .08);
+      color: #d93025;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-align: center;
+      white-space: nowrap;
+      animation: blink 1.2s steps(2, end) infinite;
+    }
+    .error-shell h1 {
+      margin: 0 0 12px;
+      color: var(--heading);
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.3;
+    }
+    .error-shell p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .error-shell ul {
+      margin: 0;
+      padding-left: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .error-shell a {
+      color: var(--link);
+      text-decoration: none;
+    }
+    .error-shell a:hover {
+      text-decoration: underline;
+    }
+    .error-code {
+      margin-top: 24px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(0,0,0,.04);
+      font-size: 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .reload-button {
+      min-width: 90px;
+      min-height: 40px;
+      margin-top: 36px;
+      padding: 8px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--button);
+      color: var(--button-text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .15s ease, transform .1s ease;
+    }
+    .reload-button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+    .reload-button:active {
+      transform: translateY(0);
+    }
+    .reload-button:focus-visible {
+      outline: 3px solid rgba(26, 115, 232, .35);
+      outline-offset: 2px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes blink { 50% { opacity: .2; } }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page: #202124;
+        --heading: #e8eaed;
+        --text: #9aa0a6;
+        --link: #8ab4f8;
+        --button: #8ab4f8;
+        --button-text: #202124;
+        --icon: #9aa0a6;
+      }
+      .error-code { background: rgba(255,255,255,.04); }
+      .press-n-prompt { color: #f28b82; background: rgba(242, 139, 130, .1); }
+    }
+
     @media (max-width: 820px) {
       html, body { min-height: 100vh; min-height: 100dvh; }
       .first-visit {
@@ -76,23 +286,32 @@
         place-items: end center;
         padding: max(24px, env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
       }
-      .first-visit-inner { max-width: 430px; }
-      .first-visit h1 { margin-bottom: 18px; font-size: clamp(46px, 18vw, 72px); }
-      .first-visit p { margin-bottom: 26px; font-size: 17px; line-height: 1.55; }
-      .continue-button { width: 100%; min-height: 54px; border-radius: 14px; font-size: 17px; }
+      .first-visit-inner { max-width: 380px; }
+      .first-visit h1 { font-size: clamp(38px, 14vw, 56px); margin-bottom: 12px; }
+      .first-visit p { font-size: 14px; margin-bottom: 28px; }
+      .continue-button {
+        width: 100%;
+        min-height: 50px;
+        border-radius: 10px;
+        font-size: 15px;
+      }
       .error-shell {
-        width: min(100% - 40px, 540px);
-        padding-top: max(76px, calc(env(safe-area-inset-top) + 52px));
+        width: min(100% - 36px, 500px);
+        padding-top: max(64px, calc(env(safe-area-inset-top) + 44px));
         padding-bottom: calc(28px + env(safe-area-inset-bottom));
       }
-      .error-icon { width: 60px; height: 60px; margin-bottom: 28px; }
-      .error-icon::before { width: 60px; top: 28px; }
-      .error-icon::after { height: 60px; left: 28px; }
-      h1 { font-size: 24px; }
-      .error-shell p, .error-shell ul { font-size: 14px; }
-      .reload-button { min-width: 112px; min-height: 44px; margin-top: 36px; }
+      .error-icon { width: 48px; height: 48px; margin-bottom: 24px; }
+      .error-icon::before { width: 48px; top: 22px; }
+      .error-icon::after { height: 48px; left: 22px; }
+      .error-shell h1 { font-size: 22px; }
+      .error-shell p, .error-shell ul { font-size: 13px; }
+      .reload-button { min-width: 100px; min-height: 42px; margin-top: 28px; }
     }
-    @media (prefers-reduced-motion: reduce) { .press-n-prompt { animation: none; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .first-visit-inner, .error-shell { animation: none; }
+      .press-n-prompt { animation: none; }
+    }
   </style>
   <script defer src="https://cloud.umami.is/script.js" data-website-id="ac558ad5-a729-416f-846e-d59a418f77ac"></script>
 </head>
@@ -103,29 +322,18 @@
       if (window.nebuloMobileEntry) return;
       const STORAGE_KEY = 'nebuloFirstVisit';
       const SETUP_URL = '/setup-v2';
-      const LOCAL_WORKER_URL = '/sw.js?v=20260831-tiktok-fast-feed-cache-29';
+      const LOCAL_WORKER_URL = '/sw.js?v=20260906-local-chat-route-fix-31';
       const page = document.getElementById('page');
       let visited = false;
       try { visited = localStorage.getItem(STORAGE_KEY) === 'true'; } catch (_) {}
 
-      // Root is the first page seen in a fresh session. Ask the browser to
-      // replace any older proxy worker before it opens the local setup iframe.
-      // This is intentionally non-blocking so the N-key/new-window flow keeps
-      // its user gesture and popup permission.
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(LOCAL_WORKER_URL, { updateViaCache: 'none' }).catch(() => {});
       }
 
       const openSetup = () => {
         try { localStorage.setItem(STORAGE_KEY, 'true'); } catch (_) {}
-        const popup = window.open('about:blank', '_blank');
-        if (!popup) {
-          window.location.assign(SETUP_URL);
-          return;
-        }
-        popup.document.write('<!doctype html><html><head><title>Setup</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;overflow:hidden;background:#050706}</style></head><body><iframe title="Nebulo setup" src="' + window.location.origin + SETUP_URL + '"></iframe></body></html>');
-        popup.document.close();
-        window.location.assign('https://google.com');
+        window.location.assign(SETUP_URL);
       };
 
       document.addEventListener('keydown', (event) => {
@@ -134,13 +342,19 @@
 
       if (!visited) {
         page.className = 'first-visit';
-        page.innerHTML = '<div class="first-visit-inner"><h1>Nebulo</h1><p>Next time you load this page there will be a fake error page.<br>Press <strong>N</strong> to get to the website.</p><button class="continue-button" id="continue" type="button" disabled>Continue <span id="countdown">10s</span></button></div>';
+        page.innerHTML = '<div class="first-visit-inner">'
+          + '<div class="first-visit-brand"><span class="first-visit-dot" aria-hidden="true"></span><span class="first-visit-label">Nebulo</span></div>'
+          + '<h1>Welcome</h1>'
+          + '<div class="first-visit-divider" aria-hidden="true"></div>'
+          + '<p>Press <strong>N</strong> next time you visit to enter the site. Or continue now.</p>'
+          + '<button class="continue-button" id="continue" type="button" disabled>Continue <span class="countdown-badge" id="countdown">10</span></button>'
+          + '</div>';
         const button = document.getElementById('continue');
         const countdown = document.getElementById('countdown');
         let seconds = 10;
         const timer = setInterval(() => {
           seconds -= 1;
-          countdown.textContent = seconds + 's';
+          countdown.textContent = seconds;
           if (seconds <= 0) {
             clearInterval(timer);
             button.disabled = false;
@@ -150,7 +364,15 @@
         return;
       }
 
-      page.innerHTML = '<section class="error-shell" aria-labelledby="error-heading"><div class="press-n-prompt">PRESS N</div><div class="error-icon" aria-hidden="true"></div><h1 id="error-heading">This site can\'t be reached</h1><p>Check if there is a typo in <strong>google.com</strong>.</p><ul><li>If spelling is correct, <a href="#diagnostics">try running Windows Network Diagnostics</a>.</li></ul><div class="error-code">DNS_PROBE_FINISHED_NXDOMAIN</div><button class="reload-button" type="button">Reload</button></section>';
+      page.className = 'error-shell';
+      page.setAttribute('aria-labelledby', 'error-heading');
+      page.innerHTML = '<div class="press-n-prompt" aria-hidden="true">PRESS N</div>'
+        + '<div class="error-icon" aria-hidden="true"></div>'
+        + '<h1 id="error-heading">This site can\'t be reached</h1>'
+        + '<p>Check if there is a typo in <strong>google.com</strong>.</p>'
+        + '<ul><li>If spelling is correct, try running Windows Network Diagnostics.</li></ul>'
+        + '<div class="error-code">DNS_PROBE_FINISHED_NXDOMAIN</div>'
+        + '<button class="reload-button" type="button">Reload</button>';
       page.querySelector('.reload-button').addEventListener('click', () => window.location.reload());
     })();
   </script>

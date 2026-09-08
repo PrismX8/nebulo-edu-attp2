@@ -1,4 +1,5 @@
 const express = require('express');
+require('./services/chat/walletEvents');
 const path = require('path');
 const security = require('./middleware/security');
 const auth = require('./middleware/auth');
@@ -24,6 +25,8 @@ function mountRoutes(mountExpressRouter, io) {
   mountExpressRouter('/api/channels', require('./routes/channels'));
   mountExpressRouter('/api/tlk', compose(security.chatRoomRateLimit, tlkRoutes));
   mountExpressRouter('/api/network', require('./routes/network'));
+  mountExpressRouter('/api/wallet', require('./routes/wallet'));
+  mountExpressRouter('/api/community', require('./routes/community'));
   mountExpressRouter('/api/group-chats', require('./routes/group-chats'));
   mountExpressRouter('/api/voice', compose(security.voiceRateLimit, voiceRoutes));
   mountExpressRouter('/api/ai', require('./routes/ai'));
@@ -92,6 +95,7 @@ function installSocketHandlers(io) {
   };
 
   io.on('connection', (socket) => {
+    socket.join(`wallet:${socket.data.user.id || socket.data.user._id}`);
     const touchPresence = (roomId = '', updates = {}) => {
       const room = normalizeRoom(roomId) || socket.data.presenceRoom || '_online';
       socket.data.presenceRoom = room;
@@ -109,10 +113,11 @@ function installSocketHandlers(io) {
       if (name) socket.join(`user:${name}`);
     });
 
-    socket.on('join_room', (roomId) => {
+    socket.on('join_room', async (roomId) => {
       if (!security.socketRateLimit(socket, 'join_room', { windowMs: 10_000, max: 30 })) return;
       const room = normalizeRoom(roomId);
       if (room) {
+        try { await tlkRoutes.assertRoomAccess(room, socket.data.user); } catch (_error) { return; }
         socket.join(room);
         touchPresence(room);
       }
@@ -173,11 +178,12 @@ function installSocketHandlers(io) {
       }
     });
 
-    socket.on('typing', (data = {}) => {
+    socket.on('typing', async (data = {}) => {
       if (!security.socketRateLimit(socket, 'typing', { windowMs: 5_000, max: 12 })) return;
       const roomId = normalizeRoom(data.roomId);
       const name = username(socket);
       if (!roomId || !name) return;
+      try { await tlkRoutes.assertRoomAccess(roomId, socket.data.user, { write: true }); } catch (_error) { return; }
       socket.to(roomId).emit('user_typing', {
         roomId,
         username: name,
@@ -192,6 +198,9 @@ function installSocketHandlers(io) {
       const roomName = normalizeRoom(data.roomName);
       const participantName = username(socket);
       if (!roomName || !participantName) return;
+      if (roomName !== 'voice:general') {
+        try { await tlkRoutes.assertRoomAccess(roomName.replace(/^voice:/, ''), socket.data.user, { write: true }); } catch (_error) { return; }
+      }
       socket.data.voice = { roomName, participantName };
       socket.join(roomName);
       const sockets = await io.in(roomName).fetchSockets();

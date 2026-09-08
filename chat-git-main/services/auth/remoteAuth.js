@@ -58,7 +58,12 @@ function mapLocalUser(localUser = {}) {
     is_premium: false,
     is_booster: false,
     bio: null,
+    nameEffect: Number(localUser.community?.nameEffectUntil || 0) > Date.now() && ['glow', 'rainbow'].includes(localUser.community?.nameEffect) ? localUser.community.nameEffect : 'none',
+    equippedBadge: (localUser.community?.ownedBadges || []).includes(localUser.community?.equippedBadge) ? localUser.community.equippedBadge : 'none',
+    ownedBadges: localUser.community?.ownedBadges || [],
+    customStatus: Number(localUser.community?.customStatusUntil || 0) > Date.now() ? String(localUser.community?.customStatus || '') : '',
     coins: safe.coins,
+    authVersion: Number(safe.authVersion || 0),
     ownedEffects: safe.ownedEffects,
     ownedAvatarEffects: safe.ownedAvatarEffects || ['none'],
     ownedTags: safe.ownedTags || ['none'],
@@ -77,9 +82,12 @@ function mapLocalUser(localUser = {}) {
 function verifyLocalToken(token) {
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
+    if (decoded?.user?.source === 'database') return null;
     const userId = String(decoded?.user?.id || '').trim();
     if (!userId) return null;
     const user = userStore.findById(userId);
+    if (user?.source === 'database') return null;
+    if (user && Number(decoded.user.authVersion || 0) !== Number(user.community?.authVersion || 0)) return null;
     return user ? mapLocalUser(user) : null;
   } catch (_err) {
     return null;
@@ -95,14 +103,20 @@ function parseTokenFromSetCookie(setCookieHeader) {
   return null;
 }
 
-async function verifyToken(token) {
+async function verifyToken(token, options = {}) {
+  let databaseToken = false;
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
     const userId = String(decoded?.user?.id || '').trim();
     const source = String(decoded?.user?.source || '').trim();
     if (userId && source === 'database') {
+      databaseToken = true;
       const account = await profileStore.findAccountById(userId);
       if (account) {
+        if (Number(decoded.user.authVersion || 0) !== Number(account.authVersion || 0)) return null;
+        // Wallet refreshes need the current balance, not cosmetic lookups or
+        // identity-mirror writes on every event.
+        if (options.walletOnly) return account;
         const local = userStore.upsertRemoteUser(account) || userStore.findById(userId);
         const safe = local ? userStore.sanitizeUser(local) : null;
         const effects = await effectStore.getUserEffects(userId).catch(() => ({
@@ -115,6 +129,23 @@ async function verifyToken(token) {
         }));
         const banners = await bannerStore.getUserBanners(userId).catch(() => ({ ownedBanners:['none'], equippedBanner:'none' }));
         const profileEffects = await profileEffectStore.getUserProfileEffects(userId).catch(() => ({ ownedProfileEffects:['none'], equippedProfileEffect:'none' }));
+        let communityState = {};
+        try {
+          const communityResult = await profileStore.query(`select u.user_metadata->'nebulo_community' as community from public.users u where u.id=$1::uuid`, [userId]);
+          const row = communityResult.rows[0];
+          if (row?.community) {
+            const c = typeof row.community === 'string' ? JSON.parse(row.community) : row.community;
+            const now = Date.now();
+            const nameEffectUntil = Number(c.nameEffectUntil || 0);
+            const customStatusUntil = Number(c.customStatusUntil || 0);
+            communityState = {
+              nameEffect: (nameEffectUntil > now && ['glow','rainbow'].includes(c.nameEffect)) ? c.nameEffect : 'none',
+              equippedBadge: c.equippedBadge || 'none',
+              ownedBadges: Array.isArray(c.ownedBadges) ? c.ownedBadges : [],
+              customStatus: (customStatusUntil > now && typeof c.customStatus === 'string') ? c.customStatus : ''
+            };
+          }
+        } catch {}
         return {
           ...account,
           coins: account.coins ?? safe?.coins ?? 0,
@@ -128,12 +159,18 @@ async function verifyToken(token) {
           equippedBanner: banners.equippedBanner,
           ownedProfileEffects: profileEffects.ownedProfileEffects,
           equippedProfileEffect: profileEffects.equippedProfileEffect,
-          friends: safe?.friends || []
+          friends: safe?.friends || [],
+          ...communityState
         };
       }
       return null;
     }
-  } catch (_err) {}
+  } catch (cause) {
+    if (databaseToken) {
+      const error = new Error('Account database is temporarily unavailable');
+      error.status = 503; error.cause = cause; throw error;
+    }
+  }
 
   const localUser = verifyLocalToken(token);
   if (localUser) return localUser;

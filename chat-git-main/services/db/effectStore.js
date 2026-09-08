@@ -120,6 +120,7 @@ async function purchaseAndEquip(userId, effect) {
   await ensureAccess();
   const id = String(userId || '').trim();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     const owned = await client.query(
       'select 1 from public.chat_user_effects where user_id = $1::uuid and effect_id = $2 limit 1',
       [id, effect.id]
@@ -161,6 +162,7 @@ async function equip(userId, effectId) {
   const id = String(userId || '').trim();
   const selected = String(effectId || 'none').trim().toLowerCase();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (selected !== 'none') {
       const owned = await client.query(
         'select 1 from public.chat_user_effects where user_id = $1::uuid and effect_id = $2 limit 1',
@@ -190,6 +192,7 @@ async function purchaseAndEquipAvatar(userId, effect) {
   await ensureAvatarAccess();
   const id = String(userId || '').trim();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     const owned = await client.query(
       'select 1 from public.chat_user_avatar_effects where user_id = $1::uuid and effect_id = $2 limit 1',
       [id, effect.id]
@@ -231,6 +234,7 @@ async function equipAvatar(userId, effectId) {
   const id = String(userId || '').trim();
   const selected = String(effectId || 'none').trim().toLowerCase();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (selected !== 'none') {
       const owned = await client.query(
         'select 1 from public.chat_user_avatar_effects where user_id = $1::uuid and effect_id = $2 limit 1',
@@ -261,6 +265,7 @@ async function saveOwnedAvatarEffect(userId, effectId, equipped = false) {
   const id = String(userId || '').trim();
   const selected = String(effectId || 'none').trim().toLowerCase();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (selected !== 'none') {
       const effect = effectList.getEffect(selected);
       if (!effect || effect.scope !== 'avatar') {
@@ -295,6 +300,7 @@ async function purchaseAndEquipTag(userId, tag) {
   await ensureTagAccess();
   const id = String(userId || '').trim();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     const owned = await client.query(
       'select 1 from public.chat_user_tags where user_id = $1::uuid and tag_id = $2 limit 1',
       [id, tag.id]
@@ -333,6 +339,7 @@ async function equipTag(userId, tagId) {
   const id = String(userId || '').trim();
   const selected = String(tagId || 'none').trim().toLowerCase();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (selected !== 'none') {
       const owned = await client.query(
         'select 1 from public.chat_user_tags where user_id = $1::uuid and tag_id = $2 limit 1',

@@ -2898,7 +2898,7 @@
 
     async function initServiceWorker() {
       if (!('serviceWorker' in navigator)) return;
-      await navigator.serviceWorker.register('/sw.js?v=20260831-tiktok-fast-feed-cache-29');
+      await navigator.serviceWorker.register('/sw.js?v=20260906-local-chat-route-fix-31', { updateViaCache: 'none' });
       await navigator.serviceWorker.ready;
       if (!navigator.serviceWorker.controller) {
         await new Promise((resolve) => {

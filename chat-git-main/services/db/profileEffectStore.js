@@ -58,6 +58,7 @@ async function purchaseAndEquip(userId, effect) {
   const mode = await ensureAccess();
   const id = String(userId || '').trim();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (mode === 'banner-compat') {
       const owned = await client.query('select 1 from public.chat_user_banners where user_id = $1::uuid and banner_id = $2 limit 1', [id, ownedKey(effect.id)]);
       if (owned.rows[0]) { const error = new Error('Profile effect already owned'); error.code = 'PROFILE_EFFECT_ALREADY_OWNED'; throw error; }
@@ -97,6 +98,7 @@ async function equip(userId, effectId) {
   const id = String(userId || '').trim();
   const selected = String(effectId || 'none').trim().toLowerCase();
   return profileStore.transaction(async (client) => {
+    await client.query('select id from public.profiles where id=$1::uuid for update', [id]);
     if (mode === 'banner-compat') {
       if (selected !== 'none') {
         const owned = await client.query('select 1 from public.chat_user_banners where user_id = $1::uuid and banner_id = $2 limit 1', [id, ownedKey(selected)]);

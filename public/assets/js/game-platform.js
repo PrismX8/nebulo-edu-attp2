@@ -1,5 +1,6 @@
 // Local hosting adapter for games exported with an optional portal SDK.
 // Saves stay on this browser. No portal account, purchase, or ad reward is fabricated.
+// When logged in, saves are also synced to the server for cross-device persistence.
 (() => {
   if (window.NebuloGamePlatform) return;
   window.NebuloGamePlatform = true;
@@ -8,18 +9,90 @@
   const read = () => { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (_) { return memory; } };
   const write = data => { memory = data; try { localStorage.setItem(key, JSON.stringify(data)); } catch (_) {} };
   const select = (data, keys) => Array.isArray(keys) ? Object.fromEntries(keys.filter(k => k in data).map(k => [k, data[k]])) : data;
-  const update = (field, data) => { const save = read(); save[field] = { ...save[field], ...data }; write(save); };
+  const update = (field, data) => { const save = read(); save[field] = { ...save[field], ...data }; write(save); scheduleServerSync(); };
+
+  // ── Server sync ──
+  let syncTimer = null;
+  let serverSavesLoaded = false;
+  const getToken = () => { try { return localStorage.getItem('token') || ''; } catch (_) { return ''; } };
+  const gamePath = location.pathname.replace(/\/[^/]*$/, '/');
+
+  const scheduleServerSync = () => {
+    if (!getToken()) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => syncToServer(), 1500);
+  };
+
+  const syncToServer = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const save = read();
+      await fetch('/api/game-progress', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+        body: JSON.stringify({ gamePath, data: save })
+      });
+    } catch (_) {}
+  };
+
+  const loadFromServer = async () => {
+    const token = getToken();
+    if (!token || serverSavesLoaded) return;
+    try {
+      const res = await fetch('/api/game-progress', { headers: { 'x-auth-token': token } });
+      if (!res.ok) return;
+      const progress = await res.json();
+      if (progress.saves && progress.saves[gamePath]) {
+        const serverData = progress.saves[gamePath];
+        const localData = read();
+        // Merge: prefer newer data per field
+        const merged = { ...localData };
+        for (const [field, value] of Object.entries(serverData)) {
+          if (field === 'lastUpdated') continue;
+          if (!merged[field] || (value && typeof value === 'object' && !Array.isArray(value))) {
+            merged[field] = { ...(merged[field] || {}), ...(value || {}) };
+          }
+        }
+        write(merged);
+      }
+      serverSavesLoaded = true;
+    } catch (_) {}
+  };
+
+  // Load from server when game platform initializes
+  loadFromServer();
+
   const player = {
     getName: () => 'Local player', getUniqueID: () => 'local', getPhoto: () => '', getMode: () => 'lite',
-    isAuthorized: () => false,
-    getData: async keys => select(read().data || {}, keys), setData: async data => update('data', data),
-    getStats: async keys => select(read().stats || {}, keys), setStats: async stats => update('stats', stats),
+    isAuthorized: () => !!getToken(),
+    getData: async keys => { await loadFromServer(); return select(read().data || {}, keys); },
+    setData: async data => update('data', data),
+    getStats: async keys => { await loadFromServer(); return select(read().stats || {}, keys); },
+    setStats: async stats => update('stats', stats),
     incrementStats: async increments => {
       const stats = read().stats || {};
       for (const [name, value] of Object.entries(increments || {})) stats[name] = (Number(stats[name]) || 0) + (Number(value) || 0);
       update('stats', stats);
     },
   };
+
+  // ── Recently played tracking ──
+  const trackRecentlyPlayed = () => {
+    const token = getToken();
+    if (!token) return;
+    const gameName = document.title || location.pathname.split('/').filter(Boolean).pop() || 'Game';
+    fetch('/api/game-progress/recent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+      body: JSON.stringify({ gamePath, gameName })
+    }).catch(() => {});
+  };
+  // Track on game ready
+  window.addEventListener('nebulo-game-ready', trackRecentlyPlayed, { once: true });
+  // Fallback: track after a short delay if ready event never fires
+  setTimeout(trackRecentlyPlayed, 3000);
+
   const unavailable = async () => { throw new Error('This feature requires the original game portal.'); };
   window.YaGames = {
     init: async (options = {}) => ({
