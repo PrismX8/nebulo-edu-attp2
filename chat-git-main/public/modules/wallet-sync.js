@@ -7,6 +7,16 @@ export function createWalletSync({ read, changed, failed = () => {} }) {
     if (next === account) return;
     account = next; generation++; revision++; balance = null; flight = null;
   }
+  function commit(id, coins) {
+    const next = String(id || '');
+    const nextBalance = Number(coins);
+    if (!next || !Number.isFinite(nextBalance) || nextBalance < 0) return false;
+    if (next !== account) reset(next);
+    revision++;
+    balance = nextBalance;
+    changed(balance);
+    return true;
+  }
   async function refresh() {
     revision++;
     if (!account) return;
@@ -32,5 +42,5 @@ export function createWalletSync({ read, changed, failed = () => {} }) {
     flight = task;
     try { await task; } finally { if (flight === task) flight = null; }
   }
-  return { reset, refresh, get balance() { return balance; } };
+  return { reset, commit, refresh, get balance() { return balance; } };
 }

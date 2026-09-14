@@ -19,7 +19,7 @@ const normalizeMessageId = (value = '') => String(
 ).trim().slice(0, 240);
 const normalizeUsername = (value = '') => String(value || '').trim().slice(0, 64);
 const normalizeBody = (value = '') => String(value || '').trim().slice(0, 5000);
-const userId = (user = {}) => String(user?._id || user?.id || user?.userId || '').trim().slice(0, 120);
+const userId = (user = {}) => String(user?.userId || user?.user_id || user?._id || user?.id || '').trim().slice(0, 120);
 const username = (user = {}) => normalizeUsername(user?.username || user?.name || user?.nickname || '');
 const userKey = (user = {}) => {
   const id = userId(user);
@@ -55,8 +55,25 @@ function normalizeReply(reply = null) {
   return {
     messageId,
     author,
+    authorId: userId({ userId: reply.authorId || reply.userId || reply.user_id }) || null,
+    authorUsername: normalizeUsername(reply.authorUsername || reply.username) || null,
     preview: String(reply.preview || reply.body || 'Message').replace(/\s+/g, ' ').trim().slice(0, 140) || 'Message',
     imageUrl: attachmentUrl(imageUrl)
+  };
+}
+
+function resolveReply(room, reply = null) {
+  const normalized = normalizeReply(reply);
+  if (!normalized) return null;
+  const roomState = state.rooms[normalizeRoom(room)];
+  const target = roomState?.messages?.[normalized.messageId];
+  if (!target) return normalized;
+  const original = target.original || {};
+  return {
+    ...normalized,
+    authorId: target.authorUserId || original.userId || normalized.authorId || null,
+    authorUsername: original.username || target.authorUsername || normalized.authorUsername || null,
+    author: original.nickname || target.authorName || normalized.author
   };
 }
 
@@ -204,15 +221,20 @@ function observeMessage(room, message = {}, extras = {}) {
   const messageId = normalizeMessageId(message);
   if (!roomState || !messageId || messageId.startsWith('pending:')) return null;
   const previous = roomState.messages[messageId] || {};
+  const incomingUserId = userId(message) || null;
+  const original = previous.original || messageSnapshot(message);
+  if (incomingUserId && (!original.userId || original.userId === messageId)) original.userId = incomingUserId;
+  if (message.username && !original.username) original.username = normalizeUsername(message.username);
   const next = {
     ...previous,
     messageId,
-    authorUserId: userId(message) || previous.authorUserId || null,
-    authorUsername: normalizeUsername(message.nickname || message.username || message.name) || previous.authorUsername || 'Unknown',
+    authorUserId: incomingUserId || (previous.authorUserId === messageId ? null : previous.authorUserId) || null,
+    authorUsername: normalizeUsername(message.username) || previous.authorUsername || null,
+    authorName: normalizeUsername(message.nickname || message.name || message.username) || previous.authorName || previous.authorUsername || 'Unknown',
     userToken: String(message.user_token || message.userToken || '').trim().slice(0, 300) || previous.userToken || null,
-    original: previous.original || messageSnapshot(message),
+    original,
     nativeBody: typeof extras.nativeBody === 'string' ? normalizeBody(extras.nativeBody) : previous.nativeBody,
-    reply: normalizeReply(extras.reply || message.reply) || previous.reply || null,
+    reply: resolveReply(room, extras.reply || message.reply) || previous.reply || null,
     attachments: normalizeAttachments(extras.attachments || message.attachments).length
       ? normalizeAttachments(extras.attachments || message.attachments)
       : previous.attachments || [],
@@ -230,7 +252,13 @@ function observeMessages(room, messages = []) {
   for (const message of Array.isArray(messages) ? messages : []) {
     const roomState = ensureRoom(room);
     const id = normalizeMessageId(message);
-    if (!roomState || !id || roomState.messages[id]) continue;
+    if (!roomState || !id) continue;
+    const existing = roomState.messages[id];
+    const incomingUserId = userId(message);
+    const needsIdentityRepair = !!(existing && incomingUserId && (
+      !existing.authorUserId || existing.authorUserId === id || existing.original?.userId === id
+    ));
+    if (existing && !needsIdentityRepair) continue;
     if (observeMessage(room, message)) changed = true;
   }
   if (changed) save();
@@ -445,6 +473,7 @@ module.exports = {
   markRead,
   observeMessages,
   recordMessage,
+  resolveReply,
   roomState,
   toggleBookmark,
   togglePin,

@@ -7,12 +7,113 @@ const userStore = require("../services/auth/localStore");
 const identityStore = require("../services/network/identity");
 const security = require("../middleware/security");
 const profileStore = require("../services/db/profileStore");
+const effectStore = require("../services/db/effectStore");
+const bannerStore = require("../services/db/bannerStore");
+const profileEffectStore = require("../services/db/profileEffectStore");
 const moderationStore = require("../services/db/moderationStore");
 const notificationStore = require("../services/db/notificationStore");
 const banEvasion = require("../services/moderation/banEvasion");
 
 const router = express.Router();
 const BAN_APPEAL_TEXT = "Open a ticket to appeal: dsc.gg/nebulo";
+
+function publicProfile(user = {}) {
+  return {
+    userId: String(user._id || user.id || user.userId || ''),
+    id: String(user._id || user.id || user.userId || ''),
+    username: String(user.username || user.name || ''),
+    name: String(user.name || user.displayName || user.username || ''),
+    avatar: user.avatar ?? user.avatar_url ?? null,
+    role: String(user.role || 'user'),
+    is_owner: !!user.is_owner,
+    is_premium: !!user.is_premium,
+    is_booster: !!user.is_booster,
+    coins: Math.max(0, Number(user.coins || 0)),
+    equippedEffect: String(user.equippedEffect || 'none'),
+    equippedAvatarEffect: String(user.equippedAvatarEffect || 'none'),
+    equippedTag: String(user.equippedTag || 'none'),
+    equippedBanner: String(user.equippedBanner || 'none'),
+    equippedProfileEffect: String(user.equippedProfileEffect || 'none'),
+    nameEffect: String(user.nameEffect || 'none'),
+    equippedBadge: String(user.equippedBadge || 'none'),
+    customStatus: String(user.customStatus || '').slice(0, 80)
+  };
+}
+
+async function enrichPresenceFromDatabase(snapshot) {
+  const roomUsers = Object.values(snapshot?.users || {}).filter(Array.isArray);
+  const userIds = [...new Set(roomUsers.flat()
+    .map((user) => String(user?.userId || '').trim())
+    .filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)))];
+  if (!userIds.length) return snapshot;
+
+  const [accounts, messageEffects, avatarEffects, tags, banners, profileEffects] = await Promise.all([
+    profileStore.findAccountsByIds(userIds).catch(() => []),
+    effectStore.getEquippedMessageEffects(userIds).catch(() => null),
+    effectStore.getEquippedAvatarEffects(userIds).catch(() => null),
+    effectStore.getEquippedTags(userIds).catch(() => null),
+    bannerStore.getEquippedBanners(userIds).catch(() => null),
+    profileEffectStore.getEquippedProfileEffects(userIds).catch(() => null)
+  ]);
+  const accountsById = new Map(accounts.map((account) => [String(account.id || account._id), account]));
+
+  roomUsers.forEach((users) => users.forEach((user) => {
+    const userId = String(user?.userId || '').trim();
+    const account = accountsById.get(userId);
+    if (account) {
+      user.username = account.username || user.username;
+      user.avatar = account.avatar ?? account.avatar_url ?? null;
+      user.role = account.role || user.role || 'user';
+      user.is_owner = !!account.is_owner;
+      user.is_premium = !!account.is_premium;
+      user.is_booster = !!account.is_booster;
+      user.coins = Math.max(0, Number(account.coins || 0));
+      user.nameEffect = account.nameEffect || user.nameEffect || 'none';
+      user.equippedBadge = account.equippedBadge || user.equippedBadge || 'none';
+      if (account.customStatus) user.customStatus = account.customStatus;
+    }
+    if (messageEffects) user.equippedEffect = messageEffects.get(userId) || 'none';
+    if (avatarEffects) user.equippedAvatarEffect = avatarEffects.get(userId) || 'none';
+    if (tags) user.equippedTag = tags.get(userId) || 'none';
+    if (banners) user.equippedBanner = banners.get(userId) || 'none';
+    if (profileEffects) user.equippedProfileEffect = profileEffects.get(userId) || 'none';
+  }));
+  return snapshot;
+}
+
+async function resolvePublicProfile(identifier) {
+  const value = String(identifier || '').trim();
+  if (!value) return null;
+  const localUser = userStore.findById(value) || userStore.findByUsername(value);
+  const local = localUser ? userStore.sanitizeUser(localUser) : null;
+  let account = null;
+  try {
+    account = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+      ? await profileStore.findAccountById(value)
+      : (await profileStore.findAccountByIdentifier(value))?.account;
+  } catch {}
+  if (!account && !local) return null;
+  if (!account) return publicProfile(local);
+
+  const userId = String(account.id || account._id);
+  const [effects, avatarEffects, tags, banners, profileEffects] = await Promise.all([
+    effectStore.getUserEffects(userId).catch(() => null),
+    effectStore.getUserAvatarEffects(userId).catch(() => null),
+    effectStore.getUserTags(userId).catch(() => null),
+    bannerStore.getUserBanners(userId).catch(() => null),
+    profileEffectStore.getUserProfileEffects(userId).catch(() => null)
+  ]);
+  return publicProfile({
+    ...(local || {}),
+    ...account,
+    ...(effects || {}),
+    ...(avatarEffects || {}),
+    ...(tags || {}),
+    ...(banners || {}),
+    ...(profileEffects || {}),
+    avatar: account.avatar ?? account.avatar_url ?? local?.avatar ?? null
+  });
+}
 
 router.get("/sites", (_req, res) => {
   res.json({
@@ -26,28 +127,14 @@ router.get("/moderation", auth, (req, res) => {
   const caller = req.user;
   const role = String(caller?.role || "").toLowerCase();
   const moderation = netState.getModeration();
-  const room = String(req.query?.room || "").trim().toLowerCase();
-  const type = String(req.query?.type || "").trim().toLowerCase();
-  const excludeGlobal = type === "dm" || type === "group";
-  const effectiveSlowmode = netState.getEffectiveSlowmodeMs(room, { excludeGlobal });
   if (!caller) return res.status(401).json({ msg: "User not found" });
   if (!["owner", "admin"].includes(role)) {
     return res.json({
       lockdownActive: !!moderation.lockdownActive,
-      slowmodeMs: Number(effectiveSlowmode.slowmodeMs || 0),
-      slowmodeScope: effectiveSlowmode.scope,
-      roomSlowmodeMs: room ? netState.getRoomSlowmodeMs(room) : 0,
-      globalSlowmodeMs: Number(moderation.slowmodeMs || 0),
       warningLimit: Number(moderation.warningLimit || 3)
     });
   }
-  return res.json({
-    ...moderation,
-    slowmodeMs: Number(effectiveSlowmode.slowmodeMs || 0),
-    slowmodeScope: effectiveSlowmode.scope,
-    roomSlowmodeMs: room ? netState.getRoomSlowmodeMs(room) : 0,
-    globalSlowmodeMs: Number(moderation.slowmodeMs || 0)
-  });
+  return res.json(moderation);
 });
 
 router.put("/moderation", auth, (req, res) => {
@@ -61,16 +148,15 @@ router.put("/moderation", auth, (req, res) => {
   if (globalThis.__nebuloChatIo) {
     globalThis.__nebuloChatIo.emit("moderation_updated", {
       scope: "global",
-      lockdownActive: !!updated.lockdownActive,
-      slowmodeMs: Number(updated.slowmodeMs || 0)
+      lockdownActive: !!updated.lockdownActive
     });
   }
   res.json(updated);
 });
 
-router.get("/presence", (_req, res) => {
+router.get("/presence", async (_req, res) => {
   try {
-    return res.json(presence.enrichUsers((user) => {
+    const snapshot = presence.enrichUsers((user) => {
       const userId = String(user?.userId || '').trim();
       const byId = userId ? userStore.findById(userId) : null;
       const byName = userStore.findByUsername(user?.username || '');
@@ -89,10 +175,17 @@ router.get("/presence", (_req, res) => {
         ...(identity || {}),
         avatar: identity?.avatar || local?.avatar || null
       };
-    }));
+    });
+    return res.json(await enrichPresenceFromDatabase(snapshot));
   } catch (_error) {
     return res.json({ ttlMs: 30000, totalOnline: 0, rooms: {}, users: {} });
   }
+});
+
+router.get("/profiles/:identifier", auth, async (req, res) => {
+  const profile = await resolvePublicProfile(req.params.identifier);
+  if (!profile) return res.status(404).json({ msg: "Profile not found" });
+  return res.json({ profile });
 });
 
 router.post("/ai/summon", auth, security.writeRateLimit, (req, res) => {
@@ -304,10 +397,10 @@ router.post("/mod/actions", auth, async (req, res) => {
   const target = String(req.body?.target || "").trim();
   const reason = String(req.body?.reason || "Moderator action").trim();
   const room = String(req.body?.room || "").trim().toLowerCase();
-  if (!["warn", "ban", "banfromall", "unban", "unban_room", "unban_global", "clearwarns", "clearchat", "slowmode", "slowmode_room", "slowmode_global"].includes(action)) {
+  if (!["warn", "ban", "banfromall", "unban", "unban_room", "unban_global", "clearwarns", "clearchat"].includes(action)) {
     return res.status(400).json({ msg: "Invalid action" });
   }
-  if (!["clearchat", "slowmode", "slowmode_room", "slowmode_global"].includes(action) && !target) {
+  if (action !== "clearchat" && !target) {
     return res.status(400).json({ msg: "target is required" });
   }
 
@@ -328,38 +421,6 @@ router.post("/mod/actions", auth, async (req, res) => {
       globalThis.__nebuloChatIo.to(room).emit("chat_cleared", { room, roomId: room, cleared });
     }
     return res.json({ ok: true, action, room, cleared });
-  }
-
-  if (action === "slowmode" || action === "slowmode_room" || action === "slowmode_global") {
-    const secondsRaw = req.body?.seconds ?? target;
-    const seconds = Number(secondsRaw);
-    if (!Number.isFinite(seconds) || seconds < 0) {
-      return res.status(400).json({ msg: "seconds must be a number greater than or equal to 0" });
-    }
-    if ((action === "slowmode" || action === "slowmode_room") && !room) {
-      return res.status(400).json({ msg: "room is required for room slowmode" });
-    }
-    const slowmodeMs = action === "slowmode_global"
-      ? netState.setSlowmodeMs(Math.round(seconds * 1000))
-      : netState.setRoomSlowmodeMs(room, Math.round(seconds * 1000));
-    if (globalThis.__nebuloChatIo) {
-      const payload = {
-        scope: action === "slowmode_global" ? "global" : "room",
-        room: action === "slowmode_global" ? null : room,
-        slowmodeMs,
-        slowmodeSeconds: Math.round(slowmodeMs / 1000)
-      };
-      if (payload.scope === "global") globalThis.__nebuloChatIo.emit("moderation_updated", payload);
-      else globalThis.__nebuloChatIo.to(room).emit("moderation_updated", payload);
-    }
-    return res.json({
-      ok: true,
-      action,
-      scope: action === "slowmode_global" ? "global" : "room",
-      room: action === "slowmode_global" ? null : room,
-      slowmodeMs,
-      slowmodeSeconds: Math.round(slowmodeMs / 1000)
-    });
   }
 
   const resolved = await resolveTargetIdentity(target);
@@ -517,6 +578,15 @@ router.get("/alerts", auth, async (req, res) => {
     deviceId
   };
   const transientAlerts = netState.listAlerts(identity);
+  const localAlerts = userStore.listSystemNotifications(caller?._id || caller?.id);
+  let databaseSystemAlerts = [];
+  try {
+    databaseSystemAlerts = await profileStore.listSystemNotifications(caller?._id || caller?.id);
+  } catch (error) {
+    if (error?.code !== 'PROFILE_DB_NOT_CONFIGURED') {
+      console.warn('Could not load account update notifications:', error?.message || error);
+    }
+  }
   let persistentAlerts = [];
   try {
     persistentAlerts = await notificationStore.listActive(caller?._id || caller?.id, 50);
@@ -526,7 +596,7 @@ router.get("/alerts", auth, async (req, res) => {
     }
   }
   const alertsById = new Map();
-  [...transientAlerts, ...persistentAlerts].forEach((alert) => alertsById.set(
+  [...transientAlerts, ...localAlerts, ...databaseSystemAlerts, ...persistentAlerts].forEach((alert) => alertsById.set(
     String(alert?.id || `${alert?.type}:${alert?.message}:${alert?.at}`),
     alert
   ));
@@ -570,15 +640,26 @@ router.delete("/alerts/:id", auth, async (req, res) => {
     deviceId: String(req.header("x-chat-device-id") || "").trim()
   };
   const transientCleared = netState.clearAlert(identity, alertId);
-  let persistentCleared = false;
+  const localCleared = userStore.clearSystemNotification(caller?._id || caller?.id, alertId);
+  let databaseSystemCleared = false;
   try {
-    persistentCleared = await notificationStore.clear(caller?._id || caller?.id, alertId);
+    databaseSystemCleared = await profileStore.clearSystemNotification(caller?._id || caller?.id, alertId);
   } catch (error) {
-    if (!notificationStore.isUnavailableError(error)) {
-      console.warn('Could not clear persistent chat notification:', error?.message || error);
+    if (error?.code !== 'PROFILE_DB_NOT_CONFIGURED') {
+      console.warn('Could not clear account update notification:', error?.message || error);
     }
   }
-  return res.json({ ok: true, cleared: transientCleared || persistentCleared, id: alertId });
+  let persistentCleared = false;
+  if (!databaseSystemCleared) {
+    try {
+      persistentCleared = await notificationStore.clear(caller?._id || caller?.id, alertId);
+    } catch (error) {
+      if (!notificationStore.isUnavailableError(error)) {
+        console.warn('Could not clear persistent chat notification:', error?.message || error);
+      }
+    }
+  }
+  return res.json({ ok: true, cleared: transientCleared || localCleared || databaseSystemCleared || persistentCleared, id: alertId });
 });
 
 router.delete("/alerts", auth, async (req, res) => {
@@ -589,6 +670,15 @@ router.delete("/alerts", auth, async (req, res) => {
     deviceId: String(req.header("x-chat-device-id") || "").trim()
   };
   const transientCleared = netState.clearAlerts(identity);
+  const localCleared = userStore.clearSystemNotifications(caller?._id || caller?.id);
+  let databaseSystemCleared = 0;
+  try {
+    databaseSystemCleared = await profileStore.clearSystemNotifications(caller?._id || caller?.id);
+  } catch (error) {
+    if (error?.code !== 'PROFILE_DB_NOT_CONFIGURED') {
+      console.warn('Could not clear account update notifications:', error?.message || error);
+    }
+  }
   let persistentCleared = 0;
   try {
     persistentCleared = await notificationStore.clearAll(caller?._id || caller?.id);
@@ -597,7 +687,7 @@ router.delete("/alerts", auth, async (req, res) => {
       console.warn('Could not clear persistent chat notifications:', error?.message || error);
     }
   }
-  return res.json({ ok: true, cleared: Number(transientCleared || 0) + Number(persistentCleared || 0) });
+  return res.json({ ok: true, cleared: Number(transientCleared || 0) + Number(localCleared || 0) + Number(databaseSystemCleared || 0) + Number(persistentCleared || 0) });
 });
 
 router.delete("/messages/:id", auth, (req, res) => {

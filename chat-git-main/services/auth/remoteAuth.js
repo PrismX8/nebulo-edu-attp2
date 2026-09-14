@@ -119,16 +119,22 @@ async function verifyToken(token, options = {}) {
         if (options.walletOnly) return account;
         const local = userStore.upsertRemoteUser(account) || userStore.findById(userId);
         const safe = local ? userStore.sanitizeUser(local) : null;
-        const effects = await effectStore.getUserEffects(userId).catch(() => ({
+        const [effects, avatarEffects, tags, banners, profileEffects] = await Promise.all([
+          effectStore.getUserEffects(userId).catch(() => ({
           ownedEffects: safe?.ownedEffects || ['none'],
-          equippedEffect: safe?.equippedEffect || 'none',
-          ownedAvatarEffects: safe?.ownedAvatarEffects || ['none'],
-          equippedAvatarEffect: safe?.equippedAvatarEffect || 'none',
-          ownedTags: ['none'],
-          equippedTag: 'none'
-        }));
-        const banners = await bannerStore.getUserBanners(userId).catch(() => ({ ownedBanners:['none'], equippedBanner:'none' }));
-        const profileEffects = await profileEffectStore.getUserProfileEffects(userId).catch(() => ({ ownedProfileEffects:['none'], equippedProfileEffect:'none' }));
+          equippedEffect: safe?.equippedEffect || 'none'
+          })),
+          effectStore.getUserAvatarEffects(userId).catch(() => ({
+            ownedAvatarEffects: safe?.ownedAvatarEffects || ['none'],
+            equippedAvatarEffect: safe?.equippedAvatarEffect || 'none'
+          })),
+          effectStore.getUserTags(userId).catch(() => ({
+            ownedTags: safe?.ownedTags || ['none'],
+            equippedTag: safe?.equippedTag || 'none'
+          })),
+          bannerStore.getUserBanners(userId).catch(() => ({ ownedBanners:['none'], equippedBanner:'none' })),
+          profileEffectStore.getUserProfileEffects(userId).catch(() => ({ ownedProfileEffects:['none'], equippedProfileEffect:'none' }))
+        ]);
         let communityState = {};
         try {
           const communityResult = await profileStore.query(`select u.user_metadata->'nebulo_community' as community from public.users u where u.id=$1::uuid`, [userId]);
@@ -151,10 +157,10 @@ async function verifyToken(token, options = {}) {
           coins: account.coins ?? safe?.coins ?? 0,
           ownedEffects: effects.ownedEffects,
           equippedEffect: effects.equippedEffect,
-          ownedAvatarEffects: effects.ownedAvatarEffects || ['none'],
-          equippedAvatarEffect: effects.equippedAvatarEffect || 'none',
-          ownedTags: effects.ownedTags || ['none'],
-          equippedTag: effects.equippedTag || 'none',
+          ownedAvatarEffects: avatarEffects.ownedAvatarEffects || ['none'],
+          equippedAvatarEffect: avatarEffects.equippedAvatarEffect || 'none',
+          ownedTags: tags.ownedTags || ['none'],
+          equippedTag: tags.equippedTag || 'none',
           ownedBanners: banners.ownedBanners,
           equippedBanner: banners.equippedBanner,
           ownedProfileEffects: profileEffects.ownedProfileEffects,

@@ -16,6 +16,10 @@ let community = model.normalize({ casinoCredits: 1000, streak: 4, bestStreak: 7,
 const cosmetics = { ownedEffects:['none'], equippedEffect:'none', ownedBanners:['none'], equippedBanner:'none', ownedAvatarEffects:['none'], equippedAvatarEffect:'none', ownedProfileEffects:['none'], equippedProfileEffect:'none', ownedTags:['none'], equippedTag:'none' };
 const transactions = [];
 let failNext = false;
+let failNextCommunity = false;
+let nextCommunityRandom = null;
+let chatSequence = 0;
+const chatMessages = [];
 const user = () => ({ id: 'coin-fixture', _id: 'coin-fixture', username: 'alexmorgan', name: 'Alex Morgan', displayName: 'Alex Morgan', role: 'user', coins, ...cosmetics, ...model.snapshot(community,coins).store });
 app.use(express.json());
 app.get('/kchat', (req, res) => res.type('html').send(readFileSync(`${root}/index.html`, 'utf8').replace('<head>', `<head><script>localStorage.setItem('token','fixture');localStorage.setItem('user',${JSON.stringify(JSON.stringify(user()))});</script>`)));
@@ -50,7 +54,10 @@ app.post(/^\/api\/(?:tlk\/)?(chat-effects|chat-banners|chat-avatar-effects|chat-
 });
 app.post('/api/community/action', (req, res) => {
   try {
-    const next = model.action(community, coins, req.body);
+    if (failNextCommunity) { failNextCommunity = false; return res.status(503).json({msg:'Simulated community save failure'}); }
+    const forcedRandom = nextCommunityRandom;
+    nextCommunityRandom = null;
+    const next = model.action(community, coins, req.body, forcedRandom === null ? {} : { randomInt: max => Math.min(max - 1, forcedRandom) });
     community = next.state; coins = next.coins;
     io.emit('wallet_changed');
     res.json({state:model.snapshot(community,coins), result:next.result});
@@ -64,20 +71,38 @@ app.put('/api/community/privacy', (req,res) => {
   try {community=model.updatePrivacy(community,req.body);res.json(model.snapshot(community,coins));}
   catch(error){res.status(error.status||500).json({msg:error.message});}
 });
-app.get('/api/community/leaderboard', (req,res) => res.json({metric:req.query.metric||'coins',users:[
+app.get('/api/community/leaderboard', (req,res) => res.json({metric:req.query.metric||'coins',entries:[
   {username:'maya',displayName:'Maya',coins:6420,streak:12,wins:38},
   {username:'oliver',displayName:'Oliver',coins:3810,streak:9,wins:24},
   {username:'alexmorgan',displayName:'Alex Morgan',coins,streak:community.streak,wins:community.wins}
 ]}));
+app.get('/api/tlk/rooms/:room/messages', (req,res) => res.json({messages:chatMessages.filter(message => message.roomId === req.params.room)}));
 app.post('/__test/credit', (req, res) => {
   coins += 5; io.emit('wallet_changed'); io.emit('chat_reward', { balance: coins, coinsEarned: 5 }); res.json({ coins });
 });
 app.post('/__test/offline', (req, res) => { offline = !!req.body.offline; io.emit('wallet_changed'); res.json({ offline }); });
-app.post('/__test/fail-next', (req,res) => {failNext=true;res.json({ok:true});});
+app.post('/__test/fail-next', (req,res) => { if (req.body?.community) failNextCommunity=true; else failNext=true; res.json({ok:true}); });
+app.post('/__test/random-next', (req,res) => { nextCommunityRandom = Math.max(0, Number(req.body?.value) || 0); res.json({ok:true}); });
 app.get('/__test/state', (req,res) => res.json({user:user(),transactions,community:model.snapshot(community,coins)}));
 app.use('/api', (req, res) => res.json({ messages: [], users: [], sites: [], friends: [], groups: [], channels: [], alerts: [], rooms: [], requests: [], participants: [] }));
 io.on('connection', socket => {
-  socket.on('send_message', (data, ack) => { ack?.({ ok: true }); });
+  socket.on('send_message', (data, ack) => {
+    const sequence = ++chatSequence;
+    const message = {
+      id:`fixture-message-${sequence}`,
+      roomId:String(data.roomId || 'global'),
+      body:String(data.body || ''),
+      clientNonce:String(data.clientNonce || ''),
+      userId:'coin-fixture', username:'alexmorgan', nickname:'Alex Morgan',
+      date:new Date(Date.now() + sequence).toISOString()
+    };
+    chatMessages.push(message);
+    const delays = [420, 60, 230, 100];
+    setTimeout(() => {
+      io.emit('receive_message', {roomId:message.roomId,message});
+      ack?.({ok:true,status:200,message});
+    }, delays[(sequence - 1) % delays.length]);
+  });
 });
 const port = Number(process.env.COIN_FIXTURE_PORT || 4319);
 server.listen(port, '127.0.0.1', () => console.log(`Coin browser fixture: http://127.0.0.1:${port}/kchat`));

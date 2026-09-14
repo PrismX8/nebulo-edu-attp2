@@ -915,6 +915,46 @@
   text-align: right;
 }
 
+.ch-store-lottery-inner small {
+  display: block;
+  margin-top: 4px;
+  color: #7a8a9a;
+  font-size: 10px;
+}
+
+.ch-store-lottery-form {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid #2a3a4a;
+}
+
+.ch-store-lottery-form label {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+  color: #8da0b2;
+  font-size: 10px;
+}
+
+.ch-store-lottery-form input {
+  min-height: 36px;
+  border: 1px solid #34495d;
+  border-radius: 5px;
+  background: #151d28;
+  padding: 7px 9px;
+  color: #e0e4ea;
+}
+
+.ch-store-lottery-ticket,
+.ch-store-lottery-last {
+  padding: 10px 14px;
+  border-top: 1px solid #2a3a4a;
+  color: #91a99a;
+  font-size: 11px;
+}
+
 /* ── Store: Active Statuses ────────────────────────────────────────────────── */
 
 .ch-store-statuses {
@@ -2113,14 +2153,14 @@ button.ch-playing-card.is-held {
 
 @media (max-width: 720px) {
   .modal-box:has(.community-hub) {
-    width: calc(100vw - 16px) !important;
-    border-radius: 8px !important;
-    max-height: calc(100dvh - 16px) !important;
+    width: calc(100vw - 12px) !important;
+    border-radius: 10px !important;
+    max-height: calc(var(--chat-viewport-h, 100dvh) - 12px) !important;
   }
 
   .community-hub {
-    height: calc(100dvh - 24px);
-    max-height: calc(100dvh - 24px);
+    height: calc(var(--chat-viewport-h, 100dvh) - 18px);
+    max-height: calc(var(--chat-viewport-h, 100dvh) - 18px);
     flex-direction: column;
   }
 
@@ -2138,10 +2178,13 @@ button.ch-playing-card.is-held {
 
   .ch-navigation {
     display: flex;
-    padding: 8px;
+    padding: 7px 8px;
     gap: 10px;
     overflow-x: auto;
     flex: none;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
   }
 
   .ch-nav-group {
@@ -2161,9 +2204,10 @@ button.ch-playing-card.is-held {
   .ch-navigation button {
     width: auto;
     white-space: nowrap;
-    min-height: 36px;
-    font-size: 11px;
-    padding: 8px 10px;
+    min-height: 44px;
+    font-size: 12px;
+    padding: 10px 12px;
+    scroll-snap-align: start;
   }
 
   .ch-nav-tag {
@@ -2171,13 +2215,23 @@ button.ch-playing-card.is-held {
   }
 
   .ch-header {
-    padding: 10px 16px;
-    min-height: 46px;
+    padding: 8px 10px 8px 16px;
+    min-height: 52px;
+  }
+
+  .ch-header .ch-button {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
   }
 
   .ch-body {
     padding: 22px 18px;
     max-height: none;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-block: 16px 32px;
   }
 
   .ch-footer {
@@ -2224,6 +2278,15 @@ button.ch-playing-card.is-held {
   .ch-field select,
   .ch-field textarea {
     font-size: 16px;
+  }
+
+  .ch-field input,
+  .ch-field select {
+    min-height: 44px;
+  }
+
+  .ch-field textarea {
+    min-height: 96px;
   }
 
   .ch-inline {
@@ -2286,7 +2349,7 @@ button.ch-playing-card.is-held {
 
   .ch-game-actions .ch-button {
     flex: 1;
-    min-height: 40px;
+    min-height: 44px;
   }
 
   .ch-deal-form {
@@ -2299,7 +2362,7 @@ button.ch-playing-card.is-held {
   }
 
   .ch-deal-form .ch-button {
-    min-height: 40px;
+    min-height: 44px;
   }
 
   .ch-mines-grid {
@@ -2307,7 +2370,7 @@ button.ch-playing-card.is-held {
   }
 
   .ch-mines-cell {
-    min-height: 38px;
+    min-height: 44px;
     font-size: 12px;
   }
 
@@ -2342,7 +2405,14 @@ button.ch-playing-card.is-held {
   }
 
   .ch-button {
-    min-height: 38px;
+    min-height: 44px;
+  }
+
+  .ch-blocked li,
+  .ch-leaderboard li,
+  .ch-ticket,
+  .ch-sound-list li {
+    min-height: 44px;
   }
 
   .ch-chats {

@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-09-09T10:43:01.453Z",
+  "source": "https://github.com/gn-math/html",
+  "htmlCommit": "9b343737669dd2067dd6cd731859a99008772388",
+  "metadata": "https://raw.githubusercontent.com/gn-math/assets/main/zones.json",
+  "coversCommit": "3bfb22256e61f428e35535bfa02cafe9f8385e67",
+  "sourceHtmlFiles": 843,
+  "importedGames": 841,
+  "skipped": [
+    {
+      "file": "254.html",
+      "reason": "The source file is a removal notice, not a playable game."
+    },
+    {
+      "file": "596-fixx.html",
+      "reason": "The source file is the collection comments utility, not a game."
+    }
+  ],
+  "catalogGames": 663,
+  "duplicateCatalogEntriesRemoved": 188
+}

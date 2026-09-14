@@ -163,7 +163,11 @@ function bindToken(token, profile) {
     equippedEffect: profile.equippedEffect || "none",
     equippedAvatarEffect: profile.equippedAvatarEffect || "none",
     equippedTag: profile.equippedTag || "none",
+    equippedBanner: profile.equippedBanner || "none",
     equippedProfileEffect: profile.equippedProfileEffect || "none",
+    nameEffect: profile.nameEffect || "none",
+    equippedBadge: profile.equippedBadge || "none",
+    customStatus: profile.customStatus || "",
     updatedAt: Date.now()
   };
   writeState(state);

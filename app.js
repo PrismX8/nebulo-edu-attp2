@@ -17,6 +17,7 @@ import "dotenv/config";
 import Ably from "ably";
 import { registerYouTubePlaybackRoutes } from "./services/youtubePlayback.js";
 import { registerPlatinumGameMirrorRoutes } from "./services/platinumGameMirror.js";
+import { createGameProgressStore } from "./services/gameProgressStore.js";
 
 // Keep the Fastify chat endpoints and the embedded Express chat modules on the
 // same signing key. Production deployments should provide JWT_SECRET in .env.
@@ -46,6 +47,35 @@ const { moderatePublicMessage } = require("./chat-git-main/services/moderation/p
 const tlkRoutes = require("./chat-git-main/routes/tlk");
 require("./chat-git-main/services/chat/walletEvents");
 const communityStore = require("./chat-git-main/services/chat/communityStore");
+
+const COIN_RESET_VERSION = "2026-09-13-wallet-casino-reset-v1";
+const COIN_RESET_MESSAGE = "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.";
+let coinResetMigrationPromise = null;
+
+async function applyCoinResetMigration() {
+  if (coinResetMigrationPromise) return coinResetMigrationPromise;
+  coinResetMigrationPromise = (async () => {
+    const local = chatUserStore.resetAllCoinsOnce({
+      version: COIN_RESET_VERSION,
+      message: COIN_RESET_MESSAGE
+    });
+    let database = { applied: false, accounts: 0, previousTotal: 0, unavailable: false };
+    try {
+      database = await profileStore.resetAllCoinsOnce({
+        version: COIN_RESET_VERSION,
+        message: COIN_RESET_MESSAGE
+      });
+    } catch (error) {
+      if (error?.code !== "PROFILE_DB_NOT_CONFIGURED") throw error;
+      database.unavailable = true;
+    }
+    if (process.env.SILENT !== "1" && (local.applied || database.applied)) {
+      console.log(`Coin reset applied: ${local.accounts} local records, ${database.accounts} database accounts.`);
+    }
+    return { local, database };
+  })();
+  return coinResetMigrationPromise;
+}
 
 const libcurlPath = fileURLToPath(
   new URL("node_modules/@mercuryworkshop/libcurl-transport/dist/", import.meta.url)
@@ -205,10 +235,16 @@ if (cluster.isPrimary && WORKERS > 1) {
       avatar: account.avatar ?? account.avatar_url ?? safe?.avatar ?? null,
       avatar_url: account.avatar_url ?? account.avatar ?? safe?.avatar ?? null,
       coins: account.coins ?? safe?.coins ?? 0,
-      ownedEffects: safe?.ownedEffects || ["none"],
-      ownedAvatarEffects: safe?.ownedAvatarEffects || ["none"],
-      equippedEffect: safe?.equippedEffect || "none",
-      equippedAvatarEffect: safe?.equippedAvatarEffect || "none",
+      ownedEffects: account.ownedEffects || safe?.ownedEffects || ["none"],
+      ownedAvatarEffects: account.ownedAvatarEffects || safe?.ownedAvatarEffects || ["none"],
+      ownedTags: account.ownedTags || safe?.ownedTags || ["none"],
+      ownedBanners: account.ownedBanners || safe?.ownedBanners || ["none"],
+      ownedProfileEffects: account.ownedProfileEffects || safe?.ownedProfileEffects || ["none"],
+      equippedEffect: account.equippedEffect || safe?.equippedEffect || "none",
+      equippedAvatarEffect: account.equippedAvatarEffect || safe?.equippedAvatarEffect || "none",
+      equippedTag: account.equippedTag || safe?.equippedTag || "none",
+      equippedBanner: account.equippedBanner || safe?.equippedBanner || "none",
+      equippedProfileEffect: account.equippedProfileEffect || safe?.equippedProfileEffect || "none",
       friends: safe?.friends || []
     };
     databaseAccountCache.set(account.id, merged);
@@ -887,6 +923,12 @@ if (cluster.isPrimary && WORKERS > 1) {
       const merged = mergeDatabaseAccountMetadata({ ...account, ...updated, email: account.email });
       chatUserStore.updateProfile(account.id, { avatar });
       chatIdentityStore.updateByUserId(account.id, { avatar });
+      globalThis.__nebuloChatIo?.emit("identity_updated", {
+        userId: account.id,
+        username: merged.username,
+        name: merged.name || merged.displayName || merged.username,
+        avatar
+      });
       const token = signAuthToken(merged, "database");
       return { profile: merged, user: { ...merged, token }, token, msg: avatar ? "Profile picture updated" : "Profile picture removed" };
     } catch (error) {
@@ -896,6 +938,12 @@ if (cluster.isPrimary && WORKERS > 1) {
       const merged = { ...account, ...chatUserStore.sanitizeUser(mirrored), avatar, avatar_url: avatar };
       databaseAccountCache.set(account.id, merged);
       chatIdentityStore.updateByUserId(account.id, { avatar });
+      globalThis.__nebuloChatIo?.emit("identity_updated", {
+        userId: account.id,
+        username: merged.username,
+        name: merged.name || merged.displayName || merged.username,
+        avatar
+      });
       const token = signAuthToken(merged, "database");
       return {
         profile: merged,
@@ -924,7 +972,17 @@ if (cluster.isPrimary && WORKERS > 1) {
     try {
       const updated = await profileStore.updateUsername(account.id, username);
       const merged = mergeDatabaseAccountMetadata(updated);
-      chatIdentityStore.updateByUserId(account.id, { username, name: username });
+      chatIdentityStore.updateByUserId(account.id, {
+        username: merged.username,
+        name: merged.name || merged.displayName || merged.username
+      });
+      globalThis.__nebuloChatIo?.emit("identity_updated", {
+        userId: account.id,
+        username: merged.username,
+        previousUsername: account.username,
+        name: merged.name || merged.displayName || merged.username,
+        avatar: merged.avatar || merged.avatar_url || null
+      });
       const token = signAuthToken(merged, "database");
       return { profile: merged, user: { ...merged, token }, token, msg: "Username updated" };
     } catch (error) {
@@ -948,6 +1006,12 @@ if (cluster.isPrimary && WORKERS > 1) {
       const updated = await profileStore.updateDisplayName(account.id, displayName);
       const merged = mergeDatabaseAccountMetadata(updated);
       chatIdentityStore.updateByUserId(account.id, { username: merged.username, name: merged.name });
+      globalThis.__nebuloChatIo?.emit("identity_updated", {
+        userId: account.id,
+        username: merged.username,
+        name: merged.name || merged.displayName || displayName,
+        avatar: merged.avatar || merged.avatar_url || null
+      });
       const token = signAuthToken(merged, "database");
       return { profile: merged, user: { ...merged, token }, token, msg: "Display name updated" };
     } catch (error) {
@@ -2243,9 +2307,9 @@ if (cluster.isPrimary && WORKERS > 1) {
       entryCategories.forEach((category) => categories.add(category));
 
       const rawImage = String(entry?.image || "").trim();
-      const image = /^\/(?:assets\/img\/game|games\/platinum\/cover)\//.test(rawImage) && !rawImage.startsWith("//")
-        ? rawImage
-        : "";
+      const localImage = /^\/(?:assets\/img\/game|assets\/imgs|games\/platinum\/cover)\//.test(rawImage) && !rawImage.startsWith("//");
+      const gnMathImage = /^https:\/\/raw\.githubusercontent\.com\/gn-math\/covers\/[a-f0-9]{40}\/[a-z0-9._-]+\.(?:png|jpe?g|webp|gif)$/i.test(rawImage);
+      const image = localImage || gnMathImage ? rawImage : "";
 
       games.push({
         id: String(entry?.id || `game-${games.length}`).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80),
@@ -2301,68 +2365,37 @@ if (cluster.isPrimary && WORKERS > 1) {
   });
 
   // ── Game progress (per-user saves + recently played) ──────────────────────
-  const gameProgressDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "data", "game-progress");
-  const ensureGameProgressDir = () => { try { fs.mkdirSync(gameProgressDir, { recursive: true }); } catch (_) {} };
+  const gameProgressStore = createGameProgressStore(path.join(path.dirname(fileURLToPath(import.meta.url)), "data", "game-progress"));
 
-  const getGameProgressFile = (userId) => path.join(gameProgressDir, `${userId}.json`);
-
-  const readGameProgress = (userId) => {
-    try { return JSON.parse(fs.readFileSync(getGameProgressFile(userId), "utf8")); }
-    catch { return { saves: {}, recentlyPlayed: [] }; }
-  };
-
-  const writeGameProgress = (userId, data) => {
-    ensureGameProgressDir();
-    try { fs.writeFileSync(getGameProgressFile(userId), JSON.stringify(data, null, 2), "utf8"); } catch (_) {}
-  };
-
-  const requireAuth = (req, reply) => {
-    const auth = decodeRequestToken(req);
-    const userId = String(auth?.decoded?.user?.id || "").trim();
-    if (!userId) return reply.code(401).send({ msg: "Authentication required" });
+  const requireGameProgressAuth = async (req, reply) => {
+    const user = await getAuthenticatedUser(req);
+    const userId = String(user?._id || user?.id || "").trim();
+    if (!userId) { reply.code(401).send({ msg: "Authentication required" }); return null; }
     return userId;
   };
 
   // Load all game saves for the user
   fastify.get("/api/game-progress", async (req, reply) => {
-    const userId = requireAuth(req, reply);
-    if (userId === undefined) return;
-    const progress = readGameProgress(userId);
-    return reply.header("Cache-Control", "no-store").send(progress);
+    const userId = await requireGameProgressAuth(req, reply);
+    if (!userId) return;
+    try { return reply.header("Cache-Control", "no-store").send(await gameProgressStore.read(userId)); }
+    catch (error) { return reply.code(error?.statusCode || 503).send({ msg: error?.message || "Game progress is temporarily unavailable." }); }
   });
 
   // Save game progress for a specific game
   fastify.put("/api/game-progress", async (req, reply) => {
-    const userId = requireAuth(req, reply);
-    if (userId === undefined) return;
-    const { gamePath, data, recentlyPlayed } = req.body || {};
-    const progress = readGameProgress(userId);
-
-    if (gamePath && data) {
-      progress.saves[gamePath] = { ...progress.saves[gamePath], ...data, lastUpdated: Date.now() };
-    }
-    if (Array.isArray(recentlyPlayed)) {
-      progress.recentlyPlayed = recentlyPlayed.slice(0, 20);
-    }
-
-    writeGameProgress(userId, progress);
-    return { ok: true };
+    const userId = await requireGameProgressAuth(req, reply);
+    if (!userId) return;
+    try { return await gameProgressStore.updateSave(userId, req.body?.gamePath, req.body?.data); }
+    catch (error) { return reply.code(error?.statusCode || 503).send({ msg: error?.message || "Game progress could not be saved." }); }
   });
 
   // Record a recently played game
   fastify.post("/api/game-progress/recent", async (req, reply) => {
-    const userId = requireAuth(req, reply);
-    if (userId === undefined) return;
-    const { gamePath, gameName, gameImage, gameCategories } = req.body || {};
-    if (!gamePath || !gameName) return reply.code(400).send({ msg: "gamePath and gameName required" });
-
-    const progress = readGameProgress(userId);
-    const recent = progress.recentlyPlayed || [];
-    const filtered = recent.filter(g => g.gamePath !== gamePath);
-    filtered.unshift({ gamePath, gameName, gameImage: gameImage || null, gameCategories: gameCategories || [], playedAt: Date.now() });
-    progress.recentlyPlayed = filtered.slice(0, 20);
-    writeGameProgress(userId, progress);
-    return { ok: true, recentlyPlayed: progress.recentlyPlayed };
+    const userId = await requireGameProgressAuth(req, reply);
+    if (!userId) return;
+    try { return await gameProgressStore.recordRecent(userId, req.body || {}); }
+    catch (error) { return reply.code(error?.statusCode || 503).send({ msg: error?.message || "Recently played could not be saved." }); }
   });
 
   // Serve the interstitial at the root
@@ -2669,6 +2702,15 @@ if (cluster.isPrimary && WORKERS > 1) {
       if (now >= v.until) bans.delete(k);
     }
   }, BAN_CLEANUP_MS).unref();
+
+  let lotterySettlementWarningAt = 0;
+  const runLotterySettlement = () => communityStore.settleAllLotteries().catch(error => {
+    if (Date.now() - lotterySettlementWarningAt < 60 * 60 * 1000) return;
+    lotterySettlementWarningAt = Date.now();
+    console.warn('Weekly lottery settlement deferred:', error.code || error.name);
+  });
+  setInterval(runLotterySettlement, 60 * 1000).unref();
+  setImmediate(runLotterySettlement);
 
   const FILTER_CACHE_TTL_MS = 60 * 1000;
   const filterCache = new Map();
@@ -3011,6 +3053,7 @@ if (cluster.isPrimary && WORKERS > 1) {
   const initialPort = Number.isFinite(requestedPort) ? requestedPort : 400;
 
   async function startServer() {
+    await applyCoinResetMigration();
     let port = initialPort;
     const maxAttempts = 15;
 

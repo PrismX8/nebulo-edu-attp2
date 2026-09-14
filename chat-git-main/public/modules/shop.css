@@ -1,0 +1,433 @@
+/* Store surfaces are scoped; the cosmetics remain their own product artwork. */
+#cosmetics-page,.cosmetic-preview-modal{--shop-paper:#f4f2ed;--shop-surface:#fff;--shop-ink:#202824;--shop-muted:#687068;--shop-green:#3f5d49;--shop-soft:#e9eee7;--shop-line:#dedfd7;color:var(--shop-ink);font-family:Inter,sans-serif;font-size:14px;line-height:1.5;color-scheme:light}
+#cosmetics-page{background:var(--shop-paper);--ch-surface:#fff;--ch-border:#dedfd7;--ch-muted:#687068;--ch-text:#202824;--ch-accent:#3f5d49;--ch-radius:8px;min-width:0;overflow:hidden}
+#cosmetics-page [hidden]{display:none!important}
+#cosmetics-page :is(button,input,select,textarea){font-family:inherit}
+#cosmetics-page button{font-weight:500;transition:background .15s,border-color .15s,color .15s;box-shadow:none;transform:none}
+#cosmetics-page :is(button,input,select,textarea):focus-visible,.cosmetic-preview-modal button:focus-visible{outline:2px solid var(--shop-green);outline-offset:3px}
+#cosmetics-page button:disabled{cursor:not-allowed;opacity:.65}
+#cosmetics-page .cosmetics-page-header{min-height:76px;padding:14px 36px;position:relative;flex-shrink:0;border-color:var(--shop-line);background:var(--shop-surface);gap:20px}
+#cosmetics-page .shop-store-logo{width:35px;height:35px;border-radius:8px;background:var(--shop-green);box-shadow:none}
+#cosmetics-page .cosmetics-header-left{gap:11px}
+#cosmetics-page .cosmetics-page-header h1{display:flex;align-items:baseline;gap:12px;color:var(--shop-ink);font-size:21px;letter-spacing:-.6px;font-weight:600}
+#cosmetics-page .cosmetics-page-header h1>span{font-size:12px;font-weight:400;letter-spacing:0;color:var(--shop-muted);border-left:1px solid var(--shop-line);padding-left:12px}
+#cosmetics-page .cosmetics-header-actions{gap:10px;flex-wrap:wrap}
+#cosmetics-page .cosmetics-coins{padding:0 12px 0 0;min-height:38px;background:none;border:0;border-right:1px solid var(--shop-line);border-radius:0;font-size:14px;color:var(--shop-ink);font-weight:600;gap:6px;font-variant-numeric:tabular-nums}
+#cosmetics-page .cosmetics-coins .material-icons-round{color:var(--shop-green);font-size:18px}
+#cosmetics-page .cosmetics-coins>span:last-child{color:var(--shop-muted);font-size:12px;font-weight:400}
+#cosmetics-page :is(.shop-primary-btn,.shop-claim-btn,.shop-submit-btn,.modal-btn-primary,.ch-button.ch-primary,.ch-button.ch-accent-btn){background:var(--shop-green);border:1px solid var(--shop-green);border-radius:6px;color:white;box-shadow:none;font-weight:600;font-size:13px;min-height:40px;padding:9px 15px}
+#cosmetics-page :is(.shop-primary-btn,.shop-claim-btn,.shop-submit-btn,.modal-btn-primary,.ch-button.ch-primary):hover:not(:disabled){background:#304a39;border-color:#304a39;color:white}
+#cosmetics-page .shop-loading-state{min-height:240px;display:grid;place-items:center;align-content:center;gap:8px;color:var(--shop-ink);text-align:center;background:var(--shop-paper);border:1px solid var(--shop-line);border-radius:8px}
+#cosmetics-page .shop-loading-state .material-icons-round{font-size:26px;color:var(--shop-green);animation:shop-sync-spin .8s linear infinite}
+#cosmetics-page .shop-loading-state strong{font-size:15px;font-weight:650}
+#cosmetics-page .shop-loading-state small{font-size:12px;color:var(--shop-muted)}
+@keyframes shop-sync-spin{to{transform:rotate(360deg)}}
+#cosmetics-page :is(.cosmetics-icon-button,.ch-button){background:#fff;border:1px solid var(--shop-line);border-radius:6px;color:var(--shop-ink);min-height:40px;padding:9px 13px;font-size:13px;font-weight:500;box-shadow:none}
+#cosmetics-page :is(.cosmetics-icon-button,.ch-button):hover{background:var(--shop-soft);border-color:#9dab9a;color:var(--shop-green);transform:none;box-shadow:none}
+#cosmetics-page .shop-primary-nav{display:flex;padding:0 36px;gap:28px;min-height:52px;flex-shrink:0;background:var(--shop-surface);border-bottom:1px solid var(--shop-line)}
+#cosmetics-page .shop-primary-nav button{position:relative;border:0;background:none;padding:14px 0;color:var(--shop-muted);font-size:14px}
+#cosmetics-page .shop-primary-nav button:is(:hover,.active){color:var(--shop-green)}
+#cosmetics-page .shop-primary-nav button.active{font-weight:600}
+#cosmetics-page .shop-primary-nav button.active::after{position:absolute;content:'';height:2px;background:var(--shop-green);bottom:-1px;left:0;right:0}
+#cosmetics-page .cosmetics-page-body{display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+#cosmetics-page .cosmetics-category-nav{display:flex;flex-direction:row;flex-shrink:0;gap:5px;padding:12px 36px;overflow-x:auto;overflow-y:hidden;background:var(--shop-paper);border:0;border-bottom:1px solid var(--shop-line);scrollbar-width:thin;scrollbar-color:#c3c9bd transparent}
+#cosmetics-page .cosmetics-category-nav button{display:block;width:auto;flex:0 0 auto;white-space:nowrap;font-size:12px;padding:8px 11px;border-radius:5px;min-height:36px;color:var(--shop-muted);font-weight:500}
+#cosmetics-page .cosmetics-category-nav button.active{background:var(--shop-soft);color:var(--shop-green);font-weight:600}
+#cosmetics-page .cosmetics-category-nav button:hover{background:#eae9e2;color:var(--shop-ink)}
+#cosmetics-page .cosmetics-catalog{padding:32px 36px 24px;background:var(--shop-paper);flex:1;min-height:0;min-width:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#bec5b8 transparent}
+#cosmetics-page .shop-catalog-inner{max-width:1180px;animation:none;margin:0 auto}
+#cosmetics-page .cosmetics-catalog-head{align-items:center;margin-bottom:26px;gap:16px;flex-wrap:wrap}
+#cosmetics-page .shop-eyebrow{display:block;font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--shop-muted);margin-bottom:7px}
+#cosmetics-page .cosmetics-catalog-head h2{color:var(--shop-ink);font-size:28px;line-height:1.2;letter-spacing:-.9px;font-weight:500;margin:0}
+#cosmetics-page .cosmetics-catalog-head p{color:var(--shop-muted);font-size:13px;line-height:1.6;max-width:620px;margin:8px 0 0}
+#cosmetics-page .shop-catalog-tools{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:24px;border-top:1px solid var(--shop-line);border-bottom:1px solid var(--shop-line);padding:15px 0}
+#cosmetics-page .cosmetics-search{background:white;border:1px solid var(--shop-line);border-radius:6px;box-shadow:none;min-width:180px;width:280px;max-width:100%;height:40px;gap:8px}
+#cosmetics-page .cosmetics-search .material-icons-round{color:var(--shop-muted);font-size:19px}
+#cosmetics-page .cosmetics-search input{width:100%;min-width:0;color:var(--shop-ink);font-size:13px}
+#cosmetics-page .cosmetics-search input::placeholder{color:var(--shop-muted)}
+#cosmetics-page .shop-filter-controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#cosmetics-page .shop-filter-controls label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--shop-muted)}
+#cosmetics-page .shop-filter-controls select{height:40px;max-width:180px;background:#fff;color:var(--shop-ink);border:1px solid var(--shop-line);padding:7px 28px 7px 10px;border-radius:6px;font-size:12px}
+#cosmetics-page #shop-results-count{font-size:12px;color:var(--shop-muted);margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+#cosmetics-page .cosmetics-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
+#cosmetics-page :is(.cosmetics-grid-banner,.shop-featured-grid){grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+#cosmetics-page .cosmetic-shop-card{color:var(--shop-ink);background:white;border:1px solid var(--shop-line);border-radius:8px;box-shadow:none;animation:none;min-width:0;transition:border-color .15s;contain:layout paint style;content-visibility:auto;contain-intrinsic-block-size:250px}
+#cosmetics-page .cosmetic-shop-card:hover{border-color:#91a18a;box-shadow:none;transform:none}
+#cosmetics-page .cosmetic-shop-card :is(.cosmetic-banner-visual,.cosmetic-profile-visual,.cosmetic-message-visual,.cosmetic-avatar-visual,.cosmetic-tag-visual) *{animation-play-state:paused!important}
+#cosmetics-page .cosmetic-shop-card:is(:hover,:focus-visible) :is(.cosmetic-banner-visual,.cosmetic-profile-visual,.cosmetic-message-visual,.cosmetic-avatar-visual,.cosmetic-tag-visual) *{animation-play-state:running!important}
+#cosmetics-page .cosmetic-shop-card.active{border-color:var(--shop-green);box-shadow:0 0 0 1px var(--shop-green)}
+#cosmetics-page .cosmetic-shop-card.owned{border-color:#bbc8b7}
+#cosmetics-page .cosmetic-card-badge{top:10px;left:10px;padding:4px 8px;border-radius:4px;background:#fff;color:var(--shop-ink);font-size:10px;letter-spacing:0;text-transform:none;font-weight:500;border:1px solid var(--shop-line);box-shadow:0 1px 3px #00000012}
+#cosmetics-page .cosmetic-card-badge.equipped{background:var(--shop-green);color:white;border-color:var(--shop-green)}
+#cosmetics-page .cosmetic-card-badge.owned{background:var(--shop-soft);color:#2e4836}
+#cosmetics-page .cosmetic-card-copy{gap:7px;padding:16px 17px 17px;width:100%;flex:1}
+#cosmetics-page .shop-product-type{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--shop-muted);font-weight:500}
+#cosmetics-page .cosmetic-card-copy>strong{font-size:14px;letter-spacing:-.15px;font-weight:600;color:var(--shop-ink);line-height:1.4}
+#cosmetics-page .shop-card-meta{margin-top:5px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#cosmetics-page .cosmetic-card-price{font-size:12px;font-weight:500;color:var(--shop-ink);font-variant-numeric:tabular-nums}
+#cosmetics-page .cosmetic-card-price .material-icons-round{font-size:15px;color:var(--shop-green)}
+#cosmetics-page .cosmetic-card-preview{font-size:11px;display:flex;gap:3px;align-items:center;color:var(--shop-green)}
+#cosmetics-page .cosmetic-card-preview .material-icons-round{font-size:15px}
+#cosmetics-page :is(.cosmetic-none-visual,.cosmetic-tag-visual,.cosmetic-avatar-visual){background:#e9eae4;border-color:var(--shop-line);height:164px;min-height:164px}
+#cosmetics-page .cosmetic-avatar-visual{background:#29342e}
+#cosmetics-page .cosmetic-profile-visual{background:#242c28;border-color:var(--shop-line)}
+#cosmetics-page .cosmetic-message-visual{background:#252c28;min-height:164px;height:164px;border-color:var(--shop-line)}
+#cosmetics-page .cosmetic-none-visual .material-icons-round{color:#a2ac9a}
+#cosmetics-page .cosmetic-banner-visual{min-height:150px;height:150px;border-bottom-color:var(--shop-line)}
+#cosmetics-page .cosmetic-card-status{background:var(--shop-soft);color:var(--shop-green);padding:4px 7px;font-weight:500;border-radius:4px;align-self:flex-start;text-transform:none;letter-spacing:0}
+#cosmetics-page .cosmetics-grid-store .cosmetic-shop-card{padding:20px;gap:14px;min-height:245px}
+#cosmetics-page .cosmetics-grid-store .cosmetic-card-badge{position:static;align-self:flex-start;box-shadow:none}
+#cosmetics-page .cosmetics-grid-store .cosmetic-card-store-icon{position:absolute;top:20px;right:20px;background:var(--shop-soft);border-radius:6px;font-size:21px;width:36px;height:36px}
+#cosmetics-page .cosmetics-grid-store .cosmetic-card-copy{padding:0;gap:10px}
+#cosmetics-page .cosmetics-grid-store .cosmetic-card-copy>small{font-size:12px;line-height:1.6;color:var(--shop-muted)}
+#cosmetics-page .cosmetic-card-buy{margin-top:auto;border-radius:5px;background:var(--shop-green);color:#fff;font-weight:500;font-size:12px;padding:10px}
+#cosmetics-page .cosmetic-shop-card:disabled{opacity:1;background:#efeee8;cursor:default}
+#cosmetics-page .cosmetic-shop-card:disabled .cosmetic-card-buy{background:#dedfd7;color:#626b60}
+#cosmetics-page .shop-unavailable-reason{color:#745027!important}
+#cosmetics-page .cosmetics-empty:not([hidden]){display:flex;flex-direction:column;align-items:center;padding:40px 20px;gap:10px;color:var(--shop-muted);background:white;border:1px dashed #c5ccbf;border-radius:8px}
+#cosmetics-page .cosmetics-empty h3{font-size:16px;margin:0;color:var(--shop-ink);font-weight:500}
+#cosmetics-page .cosmetics-empty p{margin:0 0 7px}
+#cosmetics-page .shop-footer-note{padding:22px 0 0;margin-top:30px;border:0;border-top:1px solid var(--shop-line);background:none;border-radius:0;display:flex;align-items:center;justify-content:space-between;color:var(--shop-muted);font-size:11px;gap:16px}
+#cosmetics-page .shop-text-button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:4px 0;color:var(--shop-green);font-size:12px;text-align:left}
+#cosmetics-page .shop-text-button .material-icons-round{font-size:16px;color:inherit}
+#cosmetics-page .shop-text-button:hover{text-decoration:underline;text-underline-offset:4px;background:none}
+#cosmetics-page .shop-discover{display:grid;grid-template-columns:1.1fr 1fr;border:1px solid var(--shop-line);border-radius:8px;overflow:hidden;background:#fff;margin-bottom:34px}
+#cosmetics-page .shop-directory{padding:0 22px}
+#cosmetics-page .shop-directory-item{display:flex;gap:17px;align-items:center;text-align:left;padding:18px 0;width:100%;border:0;border-bottom:1px solid var(--shop-line);background:none;color:var(--shop-ink)}
+#cosmetics-page .shop-directory-item:last-child{border-bottom:0}
+#cosmetics-page .shop-directory-item:hover{background:#f5f6f1}
+#cosmetics-page .shop-directory-number{font-size:11px;color:#788370;font-variant-numeric:tabular-nums}
+#cosmetics-page .shop-directory-copy{display:flex;flex-direction:column;gap:3px;flex:1}
+#cosmetics-page .shop-directory-copy strong{font-weight:500;font-size:14px}
+#cosmetics-page .shop-directory-copy small{font-size:11px;color:var(--shop-muted)}
+#cosmetics-page .shop-directory-item>.material-icons-round{font-size:18px;color:var(--shop-green)}
+#cosmetics-page .shop-discover-aside{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:30px 36px;background:#e8ede5;border-left:1px solid var(--shop-line)}
+#cosmetics-page .shop-discover-aside h3{font-size:clamp(24px,2.2vw,34px);line-height:1.15;letter-spacing:-1.2px;font-weight:500;margin:6px 0 13px;color:#304838}
+#cosmetics-page .shop-discover-aside p{font-size:12px;line-height:1.7;max-width:280px;color:#54634f;margin:0 0 14px}
+#cosmetics-page .shop-discover-note{display:flex;gap:12px;align-items:center;border-top:1px solid #cbd5c5;margin-top:26px;padding-top:20px;width:100%;font-size:11px}
+#cosmetics-page .shop-discover-note>.material-icons-round{color:var(--shop-green);font-size:24px}
+#cosmetics-page .shop-discover-note strong{font-weight:500;display:block;font-size:11px;margin-bottom:3px}
+#cosmetics-page .shop-discover-note .shop-text-button{font-size:11px}
+#cosmetics-page .shop-inline-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:16px}
+#cosmetics-page .shop-inline-heading h3{font-size:21px;font-weight:500;letter-spacing:-.5px;margin:0;color:var(--shop-ink)}
+#cosmetics-page .shop-utility-links{display:flex;flex-wrap:wrap;gap:24px;border-top:1px solid var(--shop-line);margin-top:30px;padding-top:18px}
+#cosmetics-page .shop-utility-links button{display:flex;align-items:center;gap:9px;background:none;border:0;padding:8px 0;color:var(--shop-ink);font-size:12px}
+#cosmetics-page .shop-utility-links .material-icons-round{font-size:17px;color:var(--shop-green)}
+/* Rewards and account utilities. */
+#cosmetics-page .shop-rewards-hero{background:#e8ede5;border:1px solid var(--shop-line);border-radius:8px;box-shadow:none;color:var(--shop-ink);padding:20px 24px;gap:20px}
+#cosmetics-page .shop-coins-big .material-icons-round{background:#d6e0d0;color:var(--shop-green);border-radius:8px}
+#cosmetics-page :is(.shop-coins-big small,.shop-streak-stat small){color:#596952;font-size:10px;letter-spacing:.03em;font-weight:500}
+#cosmetics-page :is(.shop-coins-big strong,.shop-streak-stat strong){font-size:24px;font-weight:500}
+#cosmetics-page .shop-streak-divider{background:#c9d3c1}
+#cosmetics-page :is(.shop-rewards-section,.shop-support-form,.shop-ticket){border-color:var(--shop-line);border-radius:8px;padding:20px;background:#fff;box-shadow:none}
+#cosmetics-page .shop-section-head h3{font-size:15px;font-weight:500;color:var(--shop-ink)}
+#cosmetics-page .shop-section-head>.material-icons-round{color:var(--shop-green);font-size:20px}
+#cosmetics-page :is(.shop-section-desc,.shop-muted,.shop-ticket p){color:var(--shop-muted);font-size:12px;line-height:1.7}
+#cosmetics-page .shop-badge{background:var(--shop-soft);color:var(--shop-green);font-weight:500;border-radius:5px;font-size:10px}
+#cosmetics-page .shop-streak-bar{background:#e8ebe3;height:5px}
+#cosmetics-page .shop-streak-fill{background:var(--shop-green)}
+#cosmetics-page .shop-streak-labels{font-weight:400;color:var(--shop-muted)}
+#cosmetics-page .shop-week li{border-radius:6px;background:#f8f8f3;border-color:var(--shop-line)}
+#cosmetics-page .shop-week li span{font-size:10px;font-weight:500;color:var(--shop-muted)}
+#cosmetics-page .shop-week li b{font-weight:500;color:var(--shop-ink)}
+#cosmetics-page .shop-week li.earned{background:#e9eee6;border-color:#d0dbc8}
+#cosmetics-page .shop-week li.next{border-color:var(--shop-green);box-shadow:none}
+#cosmetics-page .shop-recent-list{gap:0}
+#cosmetics-page .shop-recent-item{padding:12px 0;background:none;border:0;border-bottom:1px solid #edede6;border-radius:0;color:var(--shop-ink);font-size:12px}
+#cosmetics-page .shop-recent-item:last-child{border-bottom:0}
+#cosmetics-page .shop-recent-item small{display:block;color:var(--shop-muted);font-size:11px;margin-top:3px}
+#cosmetics-page .shop-recent-item strong{font-weight:500}
+#cosmetics-page .shop-positive{color:#3c6241;font-weight:600}
+#cosmetics-page .shop-claim-btn:is(:disabled,.disabled){background:#e3e7df;color:#687563;border-color:#e3e7df;opacity:1}
+#cosmetics-page :is(.shop-leaderboard-header,.shop-support-header){display:none}
+#cosmetics-page .shop-lb-controls{gap:8px;flex-wrap:wrap}
+#cosmetics-page .shop-lb-tab{border-radius:6px;border-color:var(--shop-line);color:var(--shop-muted);background:white;min-height:40px}
+#cosmetics-page .shop-lb-tab.active{color:#fff;background:var(--shop-green);border-color:var(--shop-green)}
+#cosmetics-page .shop-lb-entry,#cosmetics-page .shop-lb-entry:first-child{border-color:var(--shop-line);border-radius:6px;box-shadow:none}
+#cosmetics-page .shop-lb-rank{background:var(--shop-soft);color:var(--shop-green);border-radius:5px;font-weight:500}
+#cosmetics-page :is(.shop-lb-user strong,.shop-lb-score,.shop-ticket-head strong){color:var(--shop-ink);font-weight:500}
+#cosmetics-page .shop-lb-user small{color:var(--shop-muted)}
+#cosmetics-page .shop-support-form{max-width:760px;gap:18px}
+#cosmetics-page .shop-form-label{display:flex;flex-direction:column;gap:7px;color:var(--shop-ink);font-size:12px}
+#cosmetics-page :is(.shop-input,.modal-input,.setting-select,.ch-field input){background:#fff;border:1px solid var(--shop-line);border-radius:6px;color:var(--shop-ink);font-family:inherit;min-height:40px;box-shadow:none;max-width:100%;font-size:13px}
+#cosmetics-page :is(.shop-input,.modal-input)::placeholder{color:#77806f}
+#cosmetics-page .shop-submit-btn{justify-self:start;min-width:140px}
+#cosmetics-page .shop-ticket-reply{border-radius:6px;background:var(--shop-soft);border-color:#ced9c5;color:var(--shop-ink)}
+#cosmetics-page .shop-empty-hint{border-color:var(--shop-line);border-radius:6px;color:var(--shop-muted);background:#fff}
+#cosmetics-page .cosmetics-lottery-pot{background:#eeece2;border-color:#dedbcf;border-radius:6px;color:#5e644f;flex-wrap:wrap;font-weight:400}
+#cosmetics-page .cosmetics-lottery-pot .material-icons-round{color:var(--shop-green)}
+/* Compact game lobby and readable tables. */
+#cosmetics-page .shop-casino-hero{padding:0 0 14px;border:0;border-bottom:1px solid var(--shop-line);border-radius:0;background:none;gap:12px;margin-bottom:16px}
+#cosmetics-page .shop-casino-icon{width:36px;height:36px;border-radius:6px;background:var(--shop-soft);color:var(--shop-green)}
+#cosmetics-page .shop-casino-icon .material-icons-round{font-size:21px}
+#cosmetics-page .shop-casino-hero h3{font-size:16px;font-weight:500;color:var(--shop-ink)}
+#cosmetics-page .shop-casino-hero p{font-size:12px;color:var(--shop-muted)}
+#cosmetics-page[data-category="casino"] .cosmetics-catalog-head{margin-bottom:18px}
+#cosmetics-page .shop-casino-balance{background:#e8ede5;color:var(--shop-ink);border:1px solid #d6dece;border-radius:6px;font-size:12px;margin-bottom:16px;padding:10px 14px}
+#cosmetics-page .shop-casino-balance strong{font-size:13px;font-weight:500}
+#cosmetics-page .shop-casino-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+#cosmetics-page .shop-game-card{padding:18px;gap:7px;border-radius:8px;border-color:var(--shop-line);background:white;min-height:168px;position:relative}
+#cosmetics-page .shop-game-card:hover{border-color:#91a18a;box-shadow:none;transform:none}
+#cosmetics-page .shop-game-emoji{font-size:23px;color:var(--shop-green);margin-bottom:5px}
+#cosmetics-page .shop-game-card strong{color:var(--shop-ink);font-size:14px;font-weight:500}
+#cosmetics-page .shop-game-card small{color:var(--shop-muted);font-size:12px}
+#cosmetics-page .shop-game-tag{background:none;color:var(--shop-green);font-size:10px;padding:0;margin-top:auto;font-weight:500;letter-spacing:0;text-transform:none}
+#cosmetics-page .ch-table-toolbar{font-size:12px;color:var(--shop-muted);margin:0 0 12px}
+#cosmetics-page .ch-table-toolbar .ch-button{padding:8px 12px;min-height:36px;border:1px solid var(--shop-line);color:var(--shop-ink);background:white}
+#cosmetics-page .ch-game-table{background:#fff;color:var(--shop-ink);border:1px solid var(--shop-line);border-radius:8px;padding:20px;min-height:180px}
+#cosmetics-page .ch-table-empty{padding:15px 10px}
+#cosmetics-page .ch-table-empty h4{font-size:16px;font-weight:500;color:var(--shop-ink)}
+#cosmetics-page :is(.ch-table-empty p,.ch-table-instruction,.ch-crash-label,.ch-guess-range,.ch-hand-label,.ch-hand-label>span){color:var(--shop-muted);font-size:12px;font-weight:400}
+#cosmetics-page :is(.ch-table-mark,.ch-trivia-category,.ch-trivia-key){background:var(--shop-soft);color:var(--shop-green);border-radius:6px}
+#cosmetics-page .ch-table-rule{background:var(--shop-line)}
+#cosmetics-page :is(.ch-playing-card,.ch-hl-card){background:#fff;border:1px solid #cdd3c6;color:var(--shop-ink);border-radius:6px;box-shadow:0 2px 4px #2531210a}
+#cosmetics-page .ch-playing-card small{color:var(--shop-muted)}
+#cosmetics-page :is(.ch-playing-card.ch-red,.ch-hl-card.ch-red){color:#a33f33}
+#cosmetics-page .ch-playing-card.ch-card-hidden{color:#fff;background:#3f5d49;border-color:#3f5d49;background-image:none}
+#cosmetics-page .ch-playing-card.is-held{border-color:var(--shop-green);box-shadow:0 0 0 2px #bed0b3}
+#cosmetics-page .ch-hand-result{border:1px solid #cad8bf;background:#eff3eb;color:#3b5935;border-radius:6px}
+#cosmetics-page :is(.ch-game-actions,.ch-deal-form){background:#fff;border:1px solid var(--shop-line);border-radius:6px;padding:14px;color:var(--shop-ink);margin-top:12px;gap:12px}
+#cosmetics-page .ch-game-actions>div{display:flex;gap:8px;flex-wrap:wrap}
+#cosmetics-page .ch-field{color:var(--shop-muted);font-size:11px;font-weight:500;letter-spacing:.02em}
+#cosmetics-page .ch-deal-form{display:flex;align-items:flex-end;flex-wrap:wrap}
+#cosmetics-page .ch-field input{width:170px;min-width:0;padding:9px 11px}
+#cosmetics-page .ch-mines-grid{max-width:330px;gap:7px}
+#cosmetics-page .ch-mines-cell{background:#e9eee5;border:1px solid #d2dbca;border-radius:6px;color:var(--shop-green);font-family:inherit}
+#cosmetics-page .ch-mines-cell:hover:not(:disabled){background:#dbe5d4;border-color:#91a184}
+#cosmetics-page .ch-mines-cell.ch-mines-safe{background:#dce9d3;color:#32552a;border-color:#abc697}
+#cosmetics-page .ch-mines-cell.ch-mines-mine{background:#f5e3df;color:#a13e32;border-color:#d9a69d}
+#cosmetics-page .ch-mines-cell:disabled{opacity:1}
+#cosmetics-page :is(.ch-crash-low,.ch-crash-mid,.ch-crash-high){color:var(--shop-green)}
+#cosmetics-page .ch-crash-crashed{color:#ad4535}
+#cosmetics-page .ch-trivia-question{font-size:17px;font-weight:500;color:var(--shop-ink)}
+#cosmetics-page .ch-trivia-option{color:var(--shop-ink);background:#fff;border:1px solid var(--shop-line);border-radius:6px;font-weight:400;font-size:13px}
+#cosmetics-page .ch-trivia-option:hover:not(:disabled){background:var(--shop-soft);border-color:#9aaa8e}
+#cosmetics-page .ch-guess-input{background:white;color:var(--shop-ink);border-color:var(--shop-line)}
+/* Owner-only controls. */
+#cosmetics-page .owner-tag-editor{background:#fff;border:1px solid var(--shop-line);border-radius:8px;grid-template-columns:220px minmax(0,1fr);padding:0;gap:0}
+#cosmetics-page .owner-tag-editor-preview{background:#e8ede5;border:0;border-right:1px solid var(--shop-line);border-radius:0;min-height:200px}
+#cosmetics-page .owner-tag-editor-fields{padding:20px;grid-template-columns:minmax(0,1.3fr) minmax(70px,.7fr) 60px minmax(110px,1fr)}
+#cosmetics-page :is(.owner-tag-editor-fields label>span,.owner-tag-status){color:var(--shop-muted);font-weight:500;font-size:10px}
+#cosmetics-page .owner-tag-color{border-color:var(--shop-line);background:#fff;border-radius:6px}
+#cosmetics-page :is(.owner-tag-list,.owner-tag-row){background:#fff;border-color:var(--shop-line);border-radius:6px}
+#cosmetics-page .owner-tag-row{display:flex;flex-wrap:wrap;gap:12px;min-width:0}
+#cosmetics-page :is(.owner-tag-row-copy strong,.owner-tag-list-head h3){color:var(--shop-ink);font-size:13px;font-weight:500}
+#cosmetics-page :is(.owner-tag-row-copy span,.owner-tag-list-head p){color:var(--shop-muted);font-size:11px}
+#cosmetics-page .owner-tag-list-head>span{background:var(--shop-soft);color:var(--shop-green);border-radius:5px}
+/* Product preview dialog. */
+#modal-overlay .modal-box:has(.cosmetic-preview-modal){background:#fff;color:#202824;border:1px solid #dedfd7;border-radius:10px;box-shadow:0 20px 70px #15211744;padding:0;overflow:hidden;max-width:min(600px,calc(100vw - 24px))}
+.cosmetic-preview-modal{background:#fff;color:var(--shop-ink)}
+.cosmetic-preview-modal .cosmetic-preview-close{background:#fff;color:var(--shop-ink);border:1px solid var(--shop-line);border-radius:6px;width:36px;height:36px;z-index:20}
+.cosmetic-preview-modal .cosmetic-preview-details{padding:26px}
+.cosmetic-preview-modal .cosmetic-preview-type{color:var(--shop-green);font-size:10px;font-weight:600;letter-spacing:.12em}
+.cosmetic-preview-modal .cosmetic-preview-details h2{color:var(--shop-ink);font-weight:500;font-size:25px;letter-spacing:-.5px;margin:7px 0 10px}
+.cosmetic-preview-modal .cosmetic-preview-details p{color:var(--shop-muted);font-size:13px;line-height:1.7}
+.cosmetic-preview-modal .cosmetic-preview-purchase{background:#f4f2ed;border:1px solid var(--shop-line);border-radius:7px;padding:16px;margin-top:20px;gap:20px}
+.cosmetic-preview-modal .cosmetic-preview-purchase strong{color:var(--shop-ink);font-weight:500;font-size:17px}
+.cosmetic-preview-modal .cosmetic-preview-purchase :is(span,small){color:var(--shop-muted)}
+.cosmetic-preview-modal .cosmetic-preview-purchase .modal-btn{background:var(--shop-green);border:1px solid var(--shop-green);border-radius:6px;color:white;font-size:13px;font-weight:500;min-height:42px;padding:10px 18px;box-shadow:none}
+.cosmetic-preview-modal .cosmetic-preview-purchase .modal-btn:disabled{background:#dce3d6;color:#53684b;border-color:#dce3d6;opacity:1}
+.cosmetic-preview-modal :is(.cosmetic-replay,.cosmetic-preview-duration){background:var(--shop-soft);border-color:var(--shop-line);border-radius:6px;color:var(--shop-green);font-weight:500}
+.cosmetic-preview-modal :is(.cosmetic-preview-none,.cosmetic-preview-tag){background:#e9eae4;color:#778570}
+.cosmetic-preview-modal :is(.cosmetic-preview-message,.cosmetic-preview-avatar){background:#252f28}
+@media(max-width:900px){
+  #cosmetics-page .cosmetics-page-header{padding:14px 22px}
+  #cosmetics-page .shop-primary-nav{padding:0 22px}
+  #cosmetics-page .cosmetics-category-nav{padding:10px 22px}
+  #cosmetics-page .cosmetics-catalog{padding:26px 22px}
+  #cosmetics-page .shop-discover-aside{padding:24px}
+  #cosmetics-page .cosmetics-grid-banner{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  #cosmetics-page .owner-tag-editor{grid-template-columns:1fr}
+  #cosmetics-page .owner-tag-editor-preview{min-height:110px;border-right:0;border-bottom:1px solid var(--shop-line)}
+}
+@media(max-width:600px){
+  #cosmetics-page .cosmetics-page-header{padding:12px 16px;gap:12px;min-height:0;align-items:center}
+  #cosmetics-page .cosmetics-header-left{gap:8px}
+  #cosmetics-page .cosmetics-page-header h1{font-size:20px}
+  #cosmetics-page .cosmetics-page-header h1>span{display:none}
+  #cosmetics-page .shop-store-logo{width:31px;height:31px}
+  #cosmetics-page .shop-store-logo .material-icons-round{font-size:19px}
+  #cosmetics-page .cosmetics-header-actions{gap:7px;flex:1;justify-content:flex-end}
+  #cosmetics-page .cosmetics-coins{font-size:12px;padding:0;border:0;min-height:36px}
+  #cosmetics-page .cosmetics-coins>span:last-child{display:none}
+  #cosmetics-page .shop-primary-btn{font-size:11px;padding:8px 10px;min-height:36px}
+  #cosmetics-page .shop-back-chat{min-height:36px;width:34px;padding:0}
+  #cosmetics-page .shop-back-chat>span:not(.material-icons-round){display:none}
+  #cosmetics-page .shop-primary-nav{padding:0 16px;gap:26px;min-height:48px}
+  #cosmetics-page .shop-primary-nav button{font-size:13px;padding:13px 0}
+  #cosmetics-page .cosmetics-category-nav{padding:9px 16px;gap:4px}
+  #cosmetics-page .cosmetics-category-nav button{font-size:11px;padding:7px 10px}
+  #cosmetics-page .cosmetics-catalog{padding:25px 16px 30px}
+  #cosmetics-page .cosmetics-catalog-head{margin-bottom:21px;align-items:flex-start}
+  #cosmetics-page .cosmetics-catalog-head h2{font-size:26px}
+  #cosmetics-page .cosmetics-catalog-head p{font-size:12px}
+  #cosmetics-page .shop-discover{grid-template-columns:1fr;gap:0}
+  #cosmetics-page .shop-directory{padding:0 18px}
+  #cosmetics-page .shop-directory-item{padding:15px 0}
+  #cosmetics-page .shop-discover-aside{border-left:0;border-top:1px solid var(--shop-line);padding:24px}
+  #cosmetics-page .shop-discover-aside h3{font-size:28px}
+  #cosmetics-page .shop-discover-note{margin-top:20px}
+  #cosmetics-page :is(.cosmetics-grid,.cosmetics-grid-banner,.cosmetics-grid-store){grid-template-columns:minmax(0,1fr);gap:16px}
+  #cosmetics-page .shop-catalog-tools{gap:12px;margin-bottom:20px}
+  #cosmetics-page .cosmetics-search{width:100%;min-width:0}
+  #cosmetics-page .shop-filter-controls{width:100%;justify-content:space-between;gap:8px}
+  #cosmetics-page .shop-filter-controls label{flex-direction:column;align-items:flex-start;gap:4px;flex:1}
+  #cosmetics-page .shop-filter-controls select{max-width:none;width:100%;font-size:11px}
+  #cosmetics-page #shop-results-count{margin-left:0}
+  #cosmetics-page .shop-footer-note{align-items:flex-start;flex-direction:column;gap:8px}
+  #cosmetics-page .shop-utility-links{gap:20px}
+  #cosmetics-page .shop-rewards-hero{grid-template-columns:1fr;padding:18px}
+  #cosmetics-page .shop-rewards-hero-right{justify-content:flex-start}
+  #cosmetics-page .shop-week{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  #cosmetics-page .shop-week li{padding:9px 3px}
+  #cosmetics-page :is(.shop-rewards-section,.shop-support-form){padding:16px}
+  #cosmetics-page .shop-casino-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  #cosmetics-page .shop-game-card{min-height:115px;padding:16px 16px 16px 56px}
+  #cosmetics-page .shop-game-emoji{position:absolute;left:17px;top:18px;font-size:23px}
+  #cosmetics-page .shop-game-card strong{font-size:14px}
+  #cosmetics-page .shop-game-card small{font-size:12px}
+  #cosmetics-page .shop-casino-hero{align-items:flex-start}
+  #cosmetics-page .ch-game-table{padding:16px 12px;min-height:180px}
+  #cosmetics-page .ch-playing-card{width:50px;min-width:45px;height:78px;padding:8px 5px}
+  #cosmetics-page .ch-cards{gap:5px}
+  #cosmetics-page .ch-game-actions{align-items:flex-start}
+  #cosmetics-page .ch-game-actions>div{width:100%}
+  #cosmetics-page .ch-game-actions .ch-button{flex:1;font-size:12px;padding:8px}
+  #cosmetics-page .ch-deal-form{flex-wrap:nowrap;align-items:flex-end}
+  #cosmetics-page .ch-deal-form .ch-field{flex:1;min-width:0}
+  #cosmetics-page .ch-field input{width:100%}
+  #cosmetics-page .ch-deal-form>.ch-button{width:auto;flex-shrink:0;margin:0}
+  #cosmetics-page .ch-mines-grid{gap:5px}
+  #cosmetics-page .ch-mines-cell{font-size:14px}
+  #cosmetics-page .ch-trivia-question{font-size:15px}
+  #cosmetics-page .owner-tag-editor-fields{padding:16px;grid-template-columns:1fr 1fr}
+  #cosmetics-page .owner-tag-editor-actions{flex-wrap:wrap}
+  #cosmetics-page .owner-tag-row-preview{max-width:100%}
+  #cosmetics-page .owner-tag-row-copy{flex-basis:120px}
+  #cosmetics-page .owner-tag-row .cosmetics-icon-button{min-height:36px}
+  #cosmetics-page .shop-lb-tab{font-size:11px;padding:8px 11px}
+  #cosmetics-page :is(.cosmetics-icon-button,.ch-button,.shop-primary-btn,.shop-claim-btn,.shop-submit-btn,.modal-btn-primary){min-height:44px}
+  #cosmetics-page .cosmetics-coins,#cosmetics-page .shop-back-chat,#cosmetics-page .shop-primary-nav button{min-height:44px}
+  #cosmetics-page .shop-back-chat{width:44px}
+  #cosmetics-page .cosmetics-category-nav{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  #cosmetics-page .cosmetics-category-nav button{min-height:44px;scroll-snap-align:start}
+  #cosmetics-page .cosmetics-search{height:44px}
+  #cosmetics-page .cosmetics-search input,#cosmetics-page .ch-field input,#cosmetics-page .ch-field select,#cosmetics-page .ch-field textarea{font-size:16px}
+  #cosmetics-page .shop-text-button,#cosmetics-page .shop-utility-links button{min-height:44px}
+  #cosmetics-page .ch-mines-cell{min-height:44px}
+  .cosmetic-preview-modal .cosmetic-preview-details{padding:20px}
+  .cosmetic-preview-modal .cosmetic-preview-purchase{flex-direction:column;align-items:stretch}
+  .cosmetic-preview-modal .cosmetic-preview-purchase .modal-btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){#cosmetics-page button{transition:none}}
+.shop-identity-name{overflow:hidden;text-overflow:ellipsis}
+.shop-identity-glow{color:#fef3c7;text-shadow:0 0 8px #eab30890,0 0 15px #eab30850}
+.shop-identity-rainbow{background:linear-gradient(90deg,#fda4af,#fcd34d,#86efac,#7dd3fc,#c4b5fd,#fda4af);background-size:200% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:shop-identity-shift 6s linear infinite}
+.shop-identity-badge{font-size:14px;vertical-align:middle;color:#fbbf24;margin-left:4px;flex-shrink:0}
+@keyframes shop-identity-shift{to{background-position:200% 0}}
+@media(prefers-reduced-motion:reduce){.shop-identity-rainbow{animation:none}}
+#cosmetics-page .shop-pending-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #d2c7a3;background:#f7f1df;color:#66522a;padding:14px;border-radius:6px;margin-bottom:18px;font-size:12px}
+#cosmetics-page .ch-hand-result{display:flex;flex-direction:column;gap:4px}
+
+/* Casino interactions stay restrained so settled rounds can feel exceptional. */
+#cosmetics-page .shop-casino-surface{position:relative;min-height:260px;isolation:isolate}
+#cosmetics-page [aria-busy="true"]{cursor:wait;opacity:.68}
+#cosmetics-page .ch-playing-card[aria-pressed="true"]{transform:translateY(-4px)}
+
+/* Weekly lottery */
+#cosmetics-page .shop-lottery{position:relative;overflow:hidden;border:1px solid #d7d8cf;background:#fff;border-radius:8px;margin-bottom:18px;padding:22px}
+#cosmetics-page .shop-lottery-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding-bottom:20px;border-bottom:1px solid var(--shop-line)}
+#cosmetics-page .shop-lottery-heading h3{margin:4px 0 7px;color:var(--shop-ink);font-size:23px;font-weight:520;letter-spacing:-.025em}
+#cosmetics-page .shop-lottery-heading p{margin:0;color:var(--shop-muted);font-size:12px;line-height:1.6;max-width:570px}
+#cosmetics-page .shop-lottery-live{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:var(--shop-green);font-size:11px;font-weight:600;border:1px solid #ced9c8;background:#edf2e9;padding:7px 9px;border-radius:5px}
+#cosmetics-page .shop-lottery-live>span{width:7px;height:7px;border-radius:50%;background:#56805f;box-shadow:0 0 0 3px #56805f1f}
+#cosmetics-page .shop-lottery-pot{padding:28px 0 24px;border-bottom:1px solid var(--shop-line)}
+#cosmetics-page .shop-lottery-pot>span{display:block;color:var(--shop-muted);font-size:10px;font-weight:650;text-transform:uppercase;letter-spacing:.09em}
+#cosmetics-page .shop-lottery-pot>strong{display:block;margin:5px 0 3px;color:var(--shop-ink);font-size:38px;font-weight:540;line-height:1;letter-spacing:-.04em}
+#cosmetics-page .shop-lottery-pot>strong small{font-size:15px;font-weight:550;letter-spacing:0;color:var(--shop-muted)}
+#cosmetics-page .shop-lottery-pot>p{margin:0;color:var(--shop-muted);font-size:11px}
+#cosmetics-page .shop-lottery-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--shop-line)}
+#cosmetics-page .shop-lottery-stats>div{display:flex;flex-direction:column;gap:5px;padding:18px 20px 18px 0}
+#cosmetics-page .shop-lottery-stats>div+div{border-left:1px solid var(--shop-line);padding-left:20px}
+#cosmetics-page .shop-lottery-stats span{color:var(--shop-muted);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+#cosmetics-page .shop-lottery-stats strong{color:var(--shop-ink);font-size:16px;font-weight:540}
+#cosmetics-page .shop-lottery-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 14px;align-items:end;padding:20px 0 4px}
+#cosmetics-page .shop-lottery-entry label>span{display:block;margin-bottom:7px;color:var(--shop-ink);font-size:11px;font-weight:600}
+#cosmetics-page .shop-lottery-input{display:flex;align-items:center;min-height:43px;border:1px solid var(--shop-line);border-radius:6px;background:#fff;overflow:hidden}
+#cosmetics-page .shop-lottery-input>.material-icons-round{padding-left:11px;color:var(--shop-green);font-size:18px}
+#cosmetics-page .shop-lottery-input input{width:100%;min-width:80px;border:0;outline:0;background:transparent;padding:10px;color:var(--shop-ink);font-family:inherit;font-size:14px;font-weight:600}
+#cosmetics-page .shop-lottery-input button{align-self:stretch;border:0;border-left:1px solid var(--shop-line);background:var(--shop-soft);padding:0 13px;color:var(--shop-green);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer}
+#cosmetics-page .shop-lottery-entry>small{grid-column:1/-1;color:var(--shop-muted);font-size:10px;line-height:1.5}
+#cosmetics-page .shop-lottery-ticket{display:flex;align-items:flex-start;gap:12px;margin-top:20px;padding:16px;border:1px solid #cad8c8;border-radius:6px;background:#eef3eb;color:var(--shop-ink)}
+#cosmetics-page .shop-lottery-ticket>.material-icons-round{color:var(--shop-green);font-size:22px}
+#cosmetics-page .shop-lottery-ticket strong{display:block;font-size:13px}
+#cosmetics-page .shop-lottery-ticket p{margin:4px 0 0;color:var(--shop-muted);font-size:11px;line-height:1.55}
+#cosmetics-page .shop-lottery-last{display:flex;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--shop-line);font-size:11px;color:var(--shop-muted)}
+#cosmetics-page .shop-lottery-last .material-icons-round{font-size:17px;color:var(--shop-green)}
+#cosmetics-page .shop-lottery-last strong{color:var(--shop-ink);font-weight:550}
+#cosmetics-page .shop-lottery-last small{margin-left:auto}
+#cosmetics-page .shop-lottery-notice{margin:12px 0 0;padding:10px;border-radius:5px;background:#f5f1e8;color:#70654c;font-size:10px}
+
+/* One reusable settled-round screen for casino and instant lottery results. */
+#cosmetics-page .shop-outcome{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;min-height:360px;padding:52px 28px 28px;text-align:center;border:1px solid transparent;border-radius:8px;animation:shop-outcome-enter .42s cubic-bezier(.2,.8,.2,1) both;outline:0}
+#cosmetics-page .shop-outcome:focus-visible{box-shadow:inset 0 0 0 3px #fff9,0 0 0 3px var(--shop-green)}
+#cosmetics-page .shop-outcome.is-leaving{animation:shop-outcome-leave .18s ease both}
+#cosmetics-page .shop-outcome-win{background:radial-gradient(circle at 50% 34%,#fff9d4 0,#f7e7a8 31%,#d8bc62 72%,#9a7a2d 125%);border-color:#cfb34f;color:#1e321f}
+#cosmetics-page .shop-outcome-loss{background:linear-gradient(180deg,#35434f 0%,#29343e 58%,#222c34 100%);border-color:#536573;color:#f1f4f5}
+#cosmetics-page .shop-outcome-push{background:#e8ede9;border-color:#cad3cb;color:var(--shop-ink)}
+#cosmetics-page .shop-outcome-copy{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+#cosmetics-page .shop-outcome-kicker{margin-bottom:10px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.72}
+#cosmetics-page .shop-outcome h3{margin:0;font-size:clamp(43px,8vw,82px);font-weight:800;line-height:.88;letter-spacing:-.065em;text-wrap:balance}
+#cosmetics-page .shop-outcome-copy>strong{display:block;margin-top:17px;font-size:clamp(20px,3.3vw,32px);font-weight:700;letter-spacing:-.03em}
+#cosmetics-page .shop-outcome-copy p{max-width:510px;margin:11px auto 0;color:inherit;font-size:13px;line-height:1.6;opacity:.78}
+#cosmetics-page .shop-outcome-loss h3{color:#e1e6e9;text-shadow:0 2px 0 #111a21}
+#cosmetics-page .shop-outcome-loss .shop-outcome-copy>strong{color:#b9c7cf}
+#cosmetics-page .shop-outcome-win h3{color:#294a31;text-shadow:0 2px 0 #fff5c4}
+#cosmetics-page .shop-outcome-win .shop-outcome-copy>strong{color:#4c5527}
+#cosmetics-page .shop-outcome-actions{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:24px}
+#cosmetics-page .shop-outcome .ch-button{min-height:42px;padding:10px 17px;border-color:#ffffff8c;background:#ffffffd9;color:#26302a;font-weight:600;box-shadow:0 4px 18px #26351f1c}
+#cosmetics-page .shop-outcome .ch-button.ch-primary{background:#3f5d49;border-color:#3f5d49;color:#fff}
+#cosmetics-page .shop-outcome-loss .ch-button{background:#e7ebed;border-color:#e7ebed;color:#29343d}
+#cosmetics-page .shop-outcome-loss .ch-button.ch-primary{background:#81939f;border-color:#81939f;color:#15212a}
+#cosmetics-page .shop-outcome-close{position:absolute;z-index:3;right:14px;top:14px;display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid #ffffff70;border-radius:6px;background:#ffffff80;color:inherit}
+#cosmetics-page .shop-outcome-loss .shop-outcome-close{background:#1c273080;border-color:#ffffff24;color:#e4eaed}
+#cosmetics-page .shop-outcome-close .material-icons-round{font-size:19px}
+#cosmetics-page .shop-outcome-atmosphere{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#cosmetics-page .shop-outcome-win .shop-outcome-atmosphere i{position:absolute;left:var(--x);top:-18px;width:8px;height:18px;border-radius:2px;background:#3f5d49;transform:rotate(var(--r));animation:shop-confetti-fall 1.75s cubic-bezier(.2,.6,.3,1) calc(var(--i) * 34ms) both}
+#cosmetics-page .shop-outcome-win .shop-outcome-atmosphere i:nth-child(3n){width:12px;height:12px;border-radius:50%;background:#fff7ca}
+#cosmetics-page .shop-outcome-win .shop-outcome-atmosphere i:nth-child(3n+2){background:#b6533d}
+#cosmetics-page .shop-outcome-loss .shop-outcome-atmosphere i{position:absolute;left:var(--x);top:-28%;width:1px;height:88px;background:linear-gradient(180deg,transparent,#a9bdc8aa);opacity:.7;animation:shop-rain-fall 2.8s linear calc(var(--i) * 110ms) 2}
+@keyframes shop-outcome-enter{from{opacity:0;transform:scale(.975)}to{opacity:1;transform:scale(1)}}
+@keyframes shop-outcome-leave{to{opacity:0;transform:scale(.99)}}
+@keyframes shop-confetti-fall{0%{opacity:0;transform:translateY(-20px) rotate(var(--r))}15%{opacity:1}100%{opacity:0;transform:translateY(390px) rotate(calc(var(--r) + 420deg))}}
+@keyframes shop-rain-fall{from{transform:translateY(-40px)}to{transform:translateY(520px)}}
+
+@media(max-width:600px){
+  #cosmetics-page .shop-lottery{padding:17px}
+  #cosmetics-page .shop-lottery-heading{display:block}
+  #cosmetics-page .shop-lottery-heading h3{font-size:20px}
+  #cosmetics-page .shop-lottery-live{margin-top:13px}
+  #cosmetics-page .shop-lottery-stats{grid-template-columns:1fr 1fr}
+  #cosmetics-page .shop-lottery-stats>div{padding:14px 8px 14px 0}
+  #cosmetics-page .shop-lottery-stats>div+div{padding-left:12px}
+  #cosmetics-page .shop-lottery-stats>div:last-child{grid-column:1/-1;border-left:0;border-top:1px solid var(--shop-line);padding-left:0}
+  #cosmetics-page .shop-lottery-entry{grid-template-columns:1fr}
+  #cosmetics-page .shop-lottery-entry .shop-primary-btn{width:100%}
+  #cosmetics-page .shop-lottery-last{align-items:flex-start;flex-wrap:wrap}
+  #cosmetics-page .shop-lottery-last small{width:100%;margin-left:25px}
+  #cosmetics-page .shop-outcome{min-height:390px;padding:54px 20px 24px}
+  #cosmetics-page .shop-outcome h3{font-size:43px}
+  #cosmetics-page .shop-outcome-actions{width:100%;flex-direction:column}
+  #cosmetics-page .shop-outcome .ch-button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  #cosmetics-page .shop-outcome,#cosmetics-page .shop-outcome.is-leaving,#cosmetics-page .shop-outcome-atmosphere i{animation:none}
+  #cosmetics-page .ch-playing-card[aria-pressed="true"]{transform:none}
+}
+.shop-casino-surface.is-processing [data-shop-casino-form] button,
+.shop-casino-surface.is-processing [data-shop-action] {
+  pointer-events: none;
+}
+.shop-casino-surface.is-processing [aria-busy="true"] {
+  opacity: .72;
+}

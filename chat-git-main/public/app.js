@@ -1,6 +1,6 @@
-import { createWalletSync } from './modules/wallet-sync.js?v=20260906-coins-1';
+import { createWalletSync } from './modules/wallet-sync.js?v=20260909-shop-speed-1';
 // UBG Chat — comprehensive self-contained frontend
-import { initCommunityHub } from './modules/community-hub.js?v=20260906-workspace-2';
+import { initCommunityHub } from './modules/community-hub.js?v=20260913-compact-coins-2';
 
 // ─── Effects catalog ──────────────────────────────────────────────────────────
 const EFFECTS = [
@@ -201,10 +201,11 @@ const S = {
   dmsLoaded: false, groupsLoaded: false, dmsLoadPromise: null, groupsLoadPromise: null, groupLimit: 15,
   friendRequests: { incoming: [], outgoing: [] },
   lastMsgs: [], typingUsers: new Map(),
-  sendQueue: [], sendQueueProcessing: false, localMessageSequence: 0,
+  sendQueue: [], sendInFlight: new Map(), sendQueueProcessing: false, localMessageSequence: 0,
   pollTimer: null, pollIntervalMs: 0, metaTimer: null, pollFailures: 0, pollInFlight: false,
+  scrollBottomFrame: 0, scrollBottomTimer: 0,
   roomLoadSeq: 0,
-  slowmodeMs: 0, slowmodeUntil: 0, slowmodeTimer: null, lockdownActive: false,
+  lockdownActive: false,
   replyTarget: null, pendingFiles: [],
   roomState: { read: null, pinned: [], bookmarkIds: [] },
   allowedReactions: ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '💯'],
@@ -218,6 +219,8 @@ const S = {
   catalogRefreshInFlight: null, catalogRefreshAt: 0,
   equippedEffect: 'none', equippedTag: 'none', equippedBanner: 'none', equippedAvatarEffect: 'none', equippedProfileEffect: 'none',
   cosmeticsCategory: 'banners', cosmeticsSearch: '', tagManagerOpen: false,
+  communityStoreData: null, communityStoreFetchedAt: 0, communityStoreFlight: null,
+  publicProfileCache: new Map(),
   uiActionToken: `ui-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`,
   globalRoom: null,
   voice: { roomName: null, roomType: null, localStream: null, peers: new Map(), muted: false, deafened: false, localSpeaking: false, screenOpen: false, audioContext: null, analyser: null, speakingFrame: null, roster: [], rotation: 0, rotationTimer: null, presenceTimer: null, presenceInFlight: false },
@@ -311,7 +314,7 @@ function restoreRoomDraft(roomId) {
   if (input) {
     input.value = String(draft?.text || '');
     input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    input.style.height = Math.min(input.scrollHeight, isMobileChat() ? 112 : 120) + 'px';
   }
   clearReply({ saveDraft: false });
   if (draft?.reply) setReply(draft.reply, { saveDraft: false });
@@ -337,37 +340,119 @@ function applyChatPreferences() {
 }
 
 const mobileChatQuery = window.matchMedia('(max-width: 820px)');
+let mobilePanelReturnFocus = null;
+let mobileLayoutViewportHeight = window.innerHeight;
 
 function isMobileChat() {
   return mobileChatQuery.matches;
 }
 
+function syncMobileViewport() {
+  if (!isMobileChat()) {
+    document.documentElement.style.removeProperty('--chat-viewport-h');
+    document.documentElement.style.removeProperty('--chat-viewport-top');
+    document.body.classList.remove('mobile-keyboard-open');
+    ['section-panel', 'members-panel'].forEach((id) => {
+      const panel = document.getElementById(id);
+      panel?.removeAttribute('aria-hidden');
+      panel?.removeAttribute('aria-modal');
+      panel?.removeAttribute('role');
+    });
+    return;
+  }
+  const viewportHeight = Math.max(320, Math.round(window.visualViewport?.height || window.innerHeight));
+  const viewportTop = Math.max(0, Math.round(window.visualViewport?.offsetTop || 0));
+  const active = document.activeElement;
+  const editing = !!active?.matches?.('input, textarea, select, [contenteditable="true"]');
+  if (!editing) mobileLayoutViewportHeight = Math.max(window.innerHeight, viewportHeight);
+  const keyboardOpen = editing && viewportHeight < mobileLayoutViewportHeight - 80;
+  const wasNearBottom = isNearMessageBottom(120);
+  document.documentElement.style.setProperty('--chat-viewport-h', `${viewportHeight}px`);
+  document.documentElement.style.setProperty('--chat-viewport-top', `${viewportTop}px`);
+  document.body.classList.toggle('mobile-keyboard-open', keyboardOpen);
+  requestAnimationFrame(() => {
+    if (wasNearBottom) scrollBottom();
+    if (keyboardOpen && active?.isConnected) {
+      const rect = active.getBoundingClientRect();
+      const usableBottom = viewportTop + viewportHeight - 12;
+      if (rect.bottom > usableBottom || rect.top < viewportTop + 8) {
+        active.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+      }
+    }
+  });
+}
+
 function syncMobilePanelBackdrop() {
   const active = isMobileChat() && !!document.querySelector('#section-panel.mobile-open, #members-panel.mobile-open, #mobile-more-menu.mobile-open');
   document.getElementById('mobile-panel-backdrop')?.classList.toggle('active', active);
+  document.getElementById('mobile-panel-backdrop')?.setAttribute('aria-hidden', active ? 'false' : 'true');
+  document.body.classList.toggle('mobile-panel-active', active);
 }
 
-function closeMobilePanels() {
-  document.getElementById('section-panel')?.classList.remove('mobile-open');
-  document.getElementById('members-panel')?.classList.remove('mobile-open');
+function closeMessageActionTray(options = {}) {
+  const openItem = document.querySelector('.msg-virtual-item.mobile-actions-open');
+  if (!openItem) return false;
+  const toggle = openItem.querySelector('.msg-action-toggle');
+  openItem.classList.remove('mobile-actions-open');
+  toggle?.setAttribute('aria-expanded', 'false');
+  if (options.restoreFocus) toggle?.focus({ preventScroll: true });
+  return true;
+}
+
+function closeMobilePanels(options = {}) {
+  closeMessageActionTray();
+  const section = document.getElementById('section-panel');
+  const members = document.getElementById('members-panel');
+  section?.classList.remove('mobile-open');
+  members?.classList.remove('mobile-open');
+  if (isMobileChat()) {
+    section?.setAttribute('aria-hidden', 'true');
+    members?.setAttribute('aria-hidden', 'true');
+    section?.removeAttribute('aria-modal');
+    members?.removeAttribute('aria-modal');
+  }
   const more = document.getElementById('mobile-more-menu');
   more?.classList.remove('mobile-open');
   more?.setAttribute('aria-hidden', 'true');
+  more?.removeAttribute('aria-modal');
+  document.getElementById('mobile-sections-btn')?.setAttribute('aria-expanded', 'false');
+  document.getElementById('toggle-members-btn')?.setAttribute('aria-expanded', 'false');
+  document.getElementById('mobile-more-btn')?.setAttribute('aria-expanded', 'false');
   syncMobilePanelBackdrop();
+  if (options.restoreFocus && mobilePanelReturnFocus?.isConnected) {
+    mobilePanelReturnFocus.focus({ preventScroll: true });
+  }
+  if (!document.querySelector('#section-panel.mobile-open, #members-panel.mobile-open, #mobile-more-menu.mobile-open')) {
+    mobilePanelReturnFocus = null;
+  }
 }
 
 function openMobileSectionPanel() {
   if (!isMobileChat()) return;
   closeMobilePanels();
-  document.getElementById('section-panel')?.classList.add('mobile-open');
+  mobilePanelReturnFocus = document.activeElement;
+  const panel = document.getElementById('section-panel');
+  panel?.classList.add('mobile-open');
+  panel?.setAttribute('aria-hidden', 'false');
+  panel?.setAttribute('role', 'dialog');
+  panel?.setAttribute('aria-modal', 'true');
+  document.getElementById('mobile-sections-btn')?.setAttribute('aria-expanded', 'true');
   syncMobilePanelBackdrop();
+  requestAnimationFrame(() => document.getElementById('mobile-section-close')?.focus({ preventScroll: true }));
 }
 
 function openMobileMembersPanel() {
   if (!isMobileChat()) return;
   closeMobilePanels();
-  document.getElementById('members-panel')?.classList.add('mobile-open');
+  mobilePanelReturnFocus = document.activeElement;
+  const panel = document.getElementById('members-panel');
+  panel?.classList.add('mobile-open');
+  panel?.setAttribute('aria-hidden', 'false');
+  panel?.setAttribute('role', 'dialog');
+  panel?.setAttribute('aria-modal', 'true');
+  document.getElementById('toggle-members-btn')?.setAttribute('aria-expanded', 'true');
   syncMobilePanelBackdrop();
+  requestAnimationFrame(() => document.getElementById('mobile-members-close')?.focus({ preventScroll: true }));
 }
 
 function toggleMobileMoreMenu() {
@@ -376,8 +461,13 @@ function toggleMobileMoreMenu() {
   const shouldOpen = !more?.classList.contains('mobile-open');
   closeMobilePanels();
   if (shouldOpen && more) {
+    mobilePanelReturnFocus = document.activeElement;
     more.classList.add('mobile-open');
     more.setAttribute('aria-hidden', 'false');
+    more.setAttribute('role', 'dialog');
+    more.setAttribute('aria-modal', 'true');
+    document.getElementById('mobile-more-btn')?.setAttribute('aria-expanded', 'true');
+    requestAnimationFrame(() => document.getElementById('mobile-more-close')?.focus({ preventScroll: true }));
   }
   syncMobilePanelBackdrop();
 }
@@ -609,7 +699,7 @@ async function api(url, opts = {}) {
   try { res = await fetch(fullUrl, { method, headers, body, cache: opts.cache, keepalive: opts.keepalive === true }); }
   finally {
     // An interrupted response can follow a successfully committed charge.
-    if (method !== 'GET' && S.user) void walletSync.refresh();
+    if (method !== 'GET' && S.user && opts.skipWalletRefresh !== true) void walletSync.refresh();
   }
   if (!res.ok) {
     const err = new Error(`${method} ${url} → ${res.status}`);
@@ -661,7 +751,8 @@ function updateWalletDisplays() {
   for (const node of document.querySelectorAll('[data-wallet-coins]')) {
     const owner = node.dataset.walletUser;
     if (owner && ![S.user.id, S.user._id, S.user.username].some(id => String(id || '').toLowerCase() === owner.toLowerCase())) continue;
-    node.textContent = Number(S.user.coins || 0).toLocaleString();
+    node.textContent = formatCoins(S.user.coins);
+    node.title = `${Math.trunc(Number(S.user.coins || 0)).toLocaleString('en-US')} coins`;
   }
 }
 function setUser(user) {
@@ -798,7 +889,12 @@ function openModal(html) {
   document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal-overlay').style.display = 'flex';
 }
-function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+let cosmeticPreviewReturnFocus = null;
+function closeModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+  if (cosmeticPreviewReturnFocus?.isConnected) cosmeticPreviewReturnFocus.focus();
+  cosmeticPreviewReturnFocus = null;
+}
 window.closeModal = closeModal;
 
 function confirmAction(message, confirmLabel = 'Confirm') {
@@ -842,7 +938,35 @@ async function fetchAlerts() {
     items.forEach(alert => {
       if (alert.type === 'ban' || alert.type === 'warn') showAlertBanner(alert.message || String(alert.type), alert.type);
     });
+    showCoinResetNotice(items);
   } catch {}
+}
+
+function showCoinResetNotice(items = []) {
+  const notice = items.find((alert) => alert?.metadata?.kind === 'coin_balance_reset');
+  const alertId = String(notice?.id || '');
+  if (!alertId || S.coinResetNoticeShown === alertId) return;
+  S.coinResetNoticeShown = alertId;
+  openModal(`<div style="display:grid;gap:14px">
+    <div style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(96,165,250,.13);color:#60a5fa"><span class="material-icons-round">account_balance_wallet</span></div>
+    <div><h3 style="font-size:18px;font-weight:750;color:#f4f4f5;margin:0 0 7px">Coin balance reset</h3>
+    <p style="font-size:13px;line-height:1.6;color:#a1a1aa;margin:0">${esc(notice.message || '')}</p></div>
+    <button id="coin-reset-notice-ok" class="modal-btn modal-btn-primary" style="width:100%">Got it</button>
+  </div>`);
+  document.getElementById('coin-reset-notice-ok')?.addEventListener('click', async () => {
+    closeModal();
+    try {
+      await chatApi(`/api/network/alerts/${encodeURIComponent(alertId)}`, { method: 'DELETE' });
+      S.alerts = S.alerts.filter((alert) => String(alert?.id || '') !== alertId);
+      const badge = document.getElementById('alerts-badge');
+      if (badge) {
+        badge.style.display = S.alerts.length ? 'flex' : 'none';
+        badge.textContent = S.alerts.length > 9 ? '9+' : String(S.alerts.length);
+      }
+    } catch {
+      S.coinResetNoticeShown = '';
+    }
+  }, { once: true });
 }
 
 // ─── Desktop Notifications ────────────────────────────────────────────────────
@@ -1056,7 +1180,11 @@ function handleRealtimeMessage(data = {}) {
       __localReceivedAt: pending.__localReceivedAt || messageTimeValue(displayMsg)
     });
     S.lastMsgs = sortMessagesStable(S.lastMsgs);
-    renderMessages(S.lastMsgs);
+    const confirmed = S.lastMsgs.find((message) => {
+      const nonce = String(message.clientNonce || message.client_nonce || '').trim();
+      return clientNonce ? nonce === clientNonce : String(getMessageId(message)) === String(getMessageId(displayMsg));
+    });
+    if (!confirmed || !patchConfirmedMessage(pending, confirmed)) renderMessages(S.lastMsgs);
     scheduleMarkRead();
     return;
   }
@@ -1116,6 +1244,7 @@ function mergeMessageUpdate(incoming = {}) {
   const incomingId = String(getMessageId(incoming) || '');
   if (!incomingId) return false;
   let changed = false;
+  let changedPair = null;
   S.lastMsgs = S.lastMsgs.map((message) => {
     if (String(getMessageId(message) || '') !== incomingId) return message;
     const hasIncoming = (key) => Object.prototype.hasOwnProperty.call(incoming, key);
@@ -1143,12 +1272,30 @@ function mergeMessageUpdate(incoming = {}) {
       is_premium: message.is_premium || incoming.is_premium,
       is_booster: message.is_booster || incoming.is_booster
     };
-    changed = JSON.stringify(message) !== JSON.stringify(merged);
+    const recordChanged = JSON.stringify(message) !== JSON.stringify(merged);
+    if (recordChanged) {
+      changed = true;
+      changedPair = { previous: message, next: merged };
+    }
     return merged;
   });
   if (changed) S.lastMsgs = sortMessagesStable(S.lastMsgs);
-  if (changed) renderMessages(S.lastMsgs);
+  if (changed && (!changedPair || !patchConfirmedMessage(changedPair.previous, changedPair.next, { forceScroll: false }))) {
+    renderMessages(S.lastMsgs);
+  }
   return changed;
+}
+
+const compactCoinFormatter = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  compactDisplay: 'short',
+  maximumFractionDigits: 1
+});
+function formatCoins(value) {
+  const coins = Number(value || 0);
+  if (!Number.isFinite(coins)) return '0';
+  if (Math.abs(coins) < 10_000) return Math.trunc(coins).toLocaleString('en-US');
+  return compactCoinFormatter.format(Math.trunc(coins));
 }
 
 function mergeReceiptUpdates(receipts = []) {
@@ -1159,6 +1306,7 @@ function mergeReceiptUpdates(receipts = []) {
   if (!byId.size) return false;
 
   let changed = false;
+  const changedPairs = [];
   S.lastMsgs = S.lastMsgs.map((message) => {
     const id = String(getMessageId(message) || '');
     const nextReceipts = byId.get(id);
@@ -1167,9 +1315,14 @@ function mergeReceiptUpdates(receipts = []) {
     const next = JSON.stringify(nextReceipts || {});
     if (prev === next) return message;
     changed = true;
-    return { ...message, receipts: nextReceipts };
+    const updated = { ...message, receipts: nextReceipts };
+    changedPairs.push({ previous: message, next: updated });
+    return updated;
   });
-  if (changed) renderMessages(S.lastMsgs);
+  if (changed) {
+    const patched = changedPairs.every((pair) => patchConfirmedMessage(pair.previous, pair.next, { forceScroll: false }));
+    if (!patched) renderMessages(S.lastMsgs);
+  }
   return changed;
 }
 
@@ -1180,17 +1333,101 @@ function handleReceiptUpdate(data = {}) {
   mergeReceiptUpdates(data.receipts || []);
 }
 
+function applyChatIdentityUpdate(data = {}) {
+  const userId = String(data.userId || data.id || '').trim().toLowerCase();
+  const username = String(data.username || '').trim();
+  const previousUsername = String(data.previousUsername || '').trim().toLowerCase();
+  const displayName = String(data.name || data.displayName || username || '').trim();
+  if (!userId && !username && !previousUsername) return;
+
+  const matches = (value = {}) => {
+    const valueId = String(value.userId || value.user_id || value.authorId || '').trim().toLowerCase();
+    const valueUsername = String(value.username || value.userName || value.authorUsername || '').trim().toLowerCase();
+    return !!((userId && valueId === userId) || (previousUsername && valueUsername === previousUsername) || (username && valueUsername === username.toLowerCase()));
+  };
+  let changed = false;
+  S.lastMsgs = S.lastMsgs.map((message) => {
+    let next = message;
+    if (matches(message)) {
+      changed = true;
+      next = {
+        ...next,
+        ...(userId ? { userId: data.userId || data.id } : {}),
+        ...(username ? { username } : {}),
+        ...(displayName ? { nickname: displayName } : {}),
+        ...(Object.prototype.hasOwnProperty.call(data, 'avatar') ? { avatar: data.avatar || null } : {})
+      };
+    }
+    const reply = next.reply || next.replyTo;
+    if (reply && typeof reply === 'object' && matches(reply)) {
+      changed = true;
+      const patchedReply = {
+        ...reply,
+        ...(userId ? { authorId: data.userId || data.id } : {}),
+        ...(username ? { authorUsername: username } : {}),
+        ...(displayName ? { author: displayName } : {})
+      };
+      next = { ...next, ...(next.reply ? { reply: patchedReply } : { replyTo: patchedReply }) };
+    }
+    return next;
+  });
+
+  if (S.replyTarget && matches(S.replyTarget)) {
+    S.replyTarget = {
+      ...S.replyTarget,
+      ...(userId ? { authorId: data.userId || data.id } : {}),
+      ...(username ? { authorUsername: username } : {}),
+      ...(displayName ? { author: displayName } : {})
+    };
+    const replyName = document.getElementById('reply-name');
+    if (replyName) replyName.textContent = replyAuthorLabel(S.replyTarget);
+  }
+  let memberChanged = false;
+  S.currentMembers = (S.currentMembers || []).map((member) => {
+    if (!matches(member)) return member;
+    memberChanged = true;
+    return {
+      ...member,
+      ...(userId ? { userId: data.userId || data.id } : {}),
+      ...(username ? { username } : {}),
+      ...(Object.prototype.hasOwnProperty.call(data, 'avatar') ? { avatar: data.avatar || null } : {}),
+      ...(data.equippedEffect ? { equippedEffect: data.equippedEffect } : {}),
+      ...(data.equippedAvatarEffect ? { equippedAvatarEffect: data.equippedAvatarEffect } : {}),
+      ...(data.equippedTag ? { equippedTag: data.equippedTag } : {}),
+      ...(data.equippedBanner ? { equippedBanner: data.equippedBanner } : {}),
+      ...(data.equippedProfileEffect ? { equippedProfileEffect: data.equippedProfileEffect } : {}),
+      ...(data.nameEffect ? { nameEffect: data.nameEffect } : {}),
+      ...(data.equippedBadge ? { equippedBadge: data.equippedBadge } : {}),
+      ...(data.status ? { status: data.status } : {}),
+      ...(Object.prototype.hasOwnProperty.call(data, 'customStatus') ? { customStatus: data.customStatus || '' } : {})
+    };
+  });
+  if (memberChanged) renderCurrentMemberList();
+  for (const key of S.publicProfileCache.keys()) {
+    if (key === userId || key === previousUsername || key === username.toLowerCase()) S.publicProfileCache.delete(key);
+  }
+  if (changed) renderMessages(S.lastMsgs);
+}
+
 function initSocket() {
   if (S.socket) return;
   const token = S.token || localStorage.getItem('token');
   if (!token || typeof io === 'undefined') return;
   S.socket = io(S.apiBase || window.location.origin, {
-    auth: { token, clientId: getClientId() }, transports: ['websocket','polling'], reconnectionAttempts: 8,
+    auth: { token, clientId: getClientId() },
+    transports: ['websocket', 'polling'],
+    tryAllTransports: true,
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 400,
+    reconnectionDelayMax: 4_000,
+    randomizationFactor: 0.25,
+    timeout: 8_000,
   });
   S.socket.on('connect', () => {
     S.socket.emit('identify_user');
     if (S.room) S.socket.emit('join_room', S.room);
-    startPolling(30_000);
+    startPolling(8_000);
     void pollMessages();
     startMeta();
     void walletSync.refresh();
@@ -1205,6 +1442,11 @@ function initSocket() {
     if (Number(reward.coinsEarned) > 0) showCoinReward(reward.coinsEarned);
   });
   S.socket.on('receive_message', handleRealtimeMessage);
+  S.socket.on('identity_updated', applyChatIdentityUpdate);
+  S.socket.on('presence_updated', (data = {}) => {
+    if (String(data.roomId || '') !== String(S.room || '')) return;
+    applyChatIdentityUpdate(data);
+  });
   S.socket.on('message_receipts_updated', handleReceiptUpdate);
   S.socket.on('message_edited', (data = {}) => {
     if (String(data.roomId || '') !== String(S.room || '')) return;
@@ -1247,11 +1489,8 @@ function initSocket() {
     if (list) list.innerHTML = emptyPlaceholder();
   });
   S.socket.on('moderation_updated', (data = {}) => {
-    const appliesToRoom = data.scope === 'global' || String(data.room || '').trim().toLowerCase() === String(S.room || '').trim().toLowerCase();
-    if (!appliesToRoom) return;
-    S.slowmodeMs = Math.max(0, Number(data.slowmodeMs || 0));
     if (data.lockdownActive !== undefined) S.lockdownActive = !!data.lockdownActive;
-    renderSlowmodeConfig();
+    renderComposerPolicy();
   });
   S.socket.on('room_effect', (data) => {
     if (data?.room !== S.room) return;
@@ -1281,8 +1520,8 @@ function initSocket() {
     const peer = S.voice.peers.get(data?.peerId);
     if (peer) { peer.speaking = !!data.isSpeaking; renderVoiceBar(); renderCurrentMemberList(); }
   });
-  S.socket.on('disconnect', () => { startPolling(2_500); });
-  S.socket.on('connect_error', () => { startPolling(2_500); });
+  S.socket.on('disconnect', () => { startPolling(1_500); });
+  S.socket.on('connect_error', () => { startPolling(1_500); });
 }
 
 // ─── Voice ────────────────────────────────────────────────────────────────────
@@ -1627,7 +1866,7 @@ function toggleVoiceDeafen() {
 }
 
 // ─── Polling Fallback ─────────────────────────────────────────────────────────
-function startPolling(intervalMs = S.socket?.connected ? 30_000 : 2_500) {
+function startPolling(intervalMs = S.socket?.connected ? 8_000 : 1_500) {
   const nextInterval = Math.max(900, Number(intervalMs) || 2_500);
   if (S.pollTimer && S.pollIntervalMs === nextInterval) return;
   stopPolling();
@@ -1650,13 +1889,20 @@ async function pollMessages() {
     const data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomAtStart)}/messages?${query}`, { cache: 'no-store' });
     if (String(S.room) !== roomAtStart) return;
     const msgs = Array.isArray(data) ? data : (data?.messages || []);
-    if (!msgs.length) return;
+    if (!msgs.length) {
+      S.pollFailures = 0;
+      return;
+    }
     const beforeKeys = new Set(S.lastMsgs.flatMap(messageDedupKeys));
-    const normalized = msgs.map(withLocalMessageIdentity);
-    const hasFresh = normalized.some(message => !messageDedupKeys(message).some(key => beforeKeys.has(key)));
-    S.lastMsgs = mergeMessageBatch(S.lastMsgs, normalized);
-    renderMessages(S.lastMsgs, { forceScroll: false });
-    if (hasFresh) updateJumpToLatest();
+    const pendingNonces = new Set(S.lastMsgs.filter(message => message.__pending).map(message => String(message.clientNonce || message.client_nonce || '').trim()).filter(Boolean));
+    const normalized = msgs.map(message => withLocalMessageIdentity({ ...message, __pending:false }));
+    const changed = normalized.filter(message => {
+      const nonce = String(message.clientNonce || message.client_nonce || '').trim();
+      if (nonce && pendingNonces.has(nonce)) return true;
+      return !messageDedupKeys(message).some(key => beforeKeys.has(key));
+    });
+    changed.forEach(message => handleRealtimeMessage({ roomId:roomAtStart, message }));
+    if (changed.length) updateJumpToLatest();
     S.pollFailures = 0;
   } catch {
     S.pollFailures++;
@@ -1692,44 +1938,31 @@ function presencePayload() {
     equippedAvatarEffect: S.equippedAvatarEffect || 'none',
     equippedTag: S.equippedTag || 'none',
     equippedBanner: S.equippedBanner || 'none',
-    equippedProfileEffect: S.equippedProfileEffect || 'none'
+    equippedProfileEffect: S.equippedProfileEffect || 'none',
+    nameEffect: S.user?.nameEffect || 'none',
+    equippedBadge: S.user?.equippedBadge || 'none'
   };
 }
 
-// ─── Slowmode ─────────────────────────────────────────────────────────────────
+// ─── Composer moderation state ────────────────────────────────────────────────
 async function fetchModeration() {
   if (!S.room) return;
   try {
     const type = S.roomMeta?.type;
     const data = await api(`/api/network/moderation?room=${encodeURIComponent(S.room)}&type=${encodeURIComponent(type || 'channel')}`);
-    const ms = Number(data?.slowmodeMs || 0);
-    S.slowmodeMs = ms;
     S.lockdownActive = !!data?.lockdownActive;
-    renderSlowmodeConfig();
+    renderComposerPolicy();
   } catch {}
 }
 
-function renderSlowmodeConfig() {
-  const bar = document.getElementById('slowmode-bar');
-  const txt = document.getElementById('slowmode-text');
+function renderComposerPolicy() {
+  const bar = document.getElementById('moderation-bar');
+  const txt = document.getElementById('moderation-text');
   if (!bar || !txt) return;
-  const remaining = S.slowmodeUntil > Date.now() ? Math.ceil((S.slowmodeUntil - Date.now()) / 1000) : 0;
   const lockdownBlocked = S.lockdownActive && S.roomMeta?.type === 'channel' && !isStaff();
   if (lockdownBlocked) {
     bar.style.display = 'flex';
-    bar.style.background = 'rgba(248,113,113,.09)';
-    bar.style.color = '#f87171';
     txt.textContent = 'Global lockdown: only staff can send in public channels';
-  } else if (remaining > 0) {
-    bar.style.display = 'flex';
-    bar.style.background = '';
-    bar.style.color = '';
-    txt.textContent = `Slowmode: wait ${remaining}s`;
-  } else if (S.slowmodeMs > 0 && !isStaff()) {
-    bar.style.display = 'flex';
-    bar.style.background = '';
-    bar.style.color = '';
-    txt.textContent = `Slowmode: ${Math.round(S.slowmodeMs / 1000)}s between messages`;
   } else {
     bar.style.display = 'none';
   }
@@ -1740,8 +1973,7 @@ function syncComposerAccess() {
   const input = document.getElementById('message-input');
   const sendBtn = document.getElementById('send-btn');
   const lockdownBlocked = S.lockdownActive && S.roomMeta?.type === 'channel' && !isStaff();
-  const cooldownBlocked = S.slowmodeUntil > Date.now() && !isStaff();
-  const blocked = lockdownBlocked || cooldownBlocked;
+  const blocked = lockdownBlocked;
   if (input) {
     input.disabled = blocked;
     input.placeholder = lockdownBlocked
@@ -1749,21 +1981,6 @@ function syncComposerAccess() {
       : (input.dataset.roomPlaceholder || 'Message');
   }
   if (sendBtn) sendBtn.disabled = blocked;
-}
-
-function startSlowmodeCooldown() {
-  if (!S.slowmodeMs || isStaff()) return;
-  S.slowmodeUntil = Date.now() + S.slowmodeMs;
-  syncComposerAccess();
-  clearInterval(S.slowmodeTimer);
-  S.slowmodeTimer = setInterval(() => {
-    const remaining = Math.ceil((S.slowmodeUntil - Date.now()) / 1000);
-    renderSlowmodeConfig();
-    if (remaining <= 0) {
-      clearInterval(S.slowmodeTimer);
-      syncComposerAccess();
-    }
-  }, 250);
 }
 
 // ─── Room Background ──────────────────────────────────────────────────────────
@@ -1918,6 +2135,16 @@ function userTagBadge(msg) {
   return tagBadgeHtml(tag);
 }
 
+function shopIdentityName(user = {}, displayName = '') {
+  const username = String(user.username || user.name || '').toLowerCase();
+  const self = isOwnMessage(user) || (username && username === myUsername().toLowerCase());
+  const present = (S.currentMembers || []).find(member => String(member.username || '').toLowerCase() === username);
+  const identity = self ? S.user || user : { ...user, ...(present || {}) };
+  const effect = ['glow','rainbow'].includes(identity.nameEffect) ? identity.nameEffect : 'none';
+  const badge = { badge_star:['star','Star collectible badge'], badge_verified:['verified','Verified collectible badge'] }[identity.equippedBadge];
+  return `<span class="shop-identity-name${effect !== 'none' ? ' shop-identity-' + effect : ''}">${esc(displayName || getUsername(user))}</span>${badge ? `<span class="shop-identity-badge material-icons-round" title="${badge[1]}" aria-label="${badge[1]}">${badge[0]}</span>` : ''}`;
+}
+
 function roleBadge(msg) {
   const role = String(msg?.role || '').toLowerCase();
   const badges = [];
@@ -2019,7 +2246,7 @@ text = text.replace(/\[img:(?:<a[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>|((?:https
     const proxied = proxiedImageSrc(url);
     text = text.replace(
       `\x01IMG${i}\x01`,
-      `<img src="${proxied}" alt="img" loading="lazy" style="max-width:320px;max-height:240px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'">`
+      `<img src="${proxied}" data-full-image="${esc(url)}" alt="Shared image" loading="lazy" style="max-width:320px;max-height:240px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'">`
     );
   });
 
@@ -2059,6 +2286,41 @@ function proxiedImageSrc(url = '') {
   if (!url) return '';
   if (/^\/api\/upload\/image\//i.test(url) || /^data:/i.test(url)) return url;
   return `/api/upload/proxy?url=${encodeURIComponent(url)}`;
+}
+
+function closeChatImageViewer() {
+  const viewer = document.getElementById('chat-image-viewer');
+  if (!viewer) return;
+  viewer.classList.remove('visible');
+  viewer.setAttribute('aria-hidden', 'true');
+  const image = viewer.querySelector('img');
+  if (image) image.removeAttribute('src');
+}
+
+function openChatImageViewer(url = '', alt = 'Shared image') {
+  const source = String(url || '').trim();
+  if (!source) return;
+  let viewer = document.getElementById('chat-image-viewer');
+  if (!viewer) {
+    viewer = document.createElement('div');
+    viewer.id = 'chat-image-viewer';
+    viewer.className = 'chat-image-viewer';
+    viewer.setAttribute('role', 'dialog');
+    viewer.setAttribute('aria-modal', 'true');
+    viewer.setAttribute('aria-label', 'Image preview');
+    viewer.setAttribute('aria-hidden', 'true');
+    viewer.innerHTML = '<button type="button" class="chat-image-viewer-close" aria-label="Close image"><span class="material-icons-round">close</span></button><img alt="">';
+    viewer.addEventListener('click', event => {
+      if (event.target === viewer || event.target.closest('.chat-image-viewer-close')) closeChatImageViewer();
+    });
+    document.body.appendChild(viewer);
+  }
+  const image = viewer.querySelector('img');
+  image.alt = String(alt || 'Shared image');
+  image.src = proxiedImageSrc(source);
+  viewer.classList.add('visible');
+  viewer.setAttribute('aria-hidden', 'false');
+  viewer.querySelector('.chat-image-viewer-close')?.focus({ preventScroll: true });
 }
 
 function stripLeadingReplyQuote(value = '') {
@@ -2107,6 +2369,8 @@ function buildReplySnapshot(msg = {}) {
     return {
       messageId: String(msg.messageId),
       author: String(msg.author).slice(0, 64),
+      authorId: String(msg.authorId || msg.userId || msg.user_id || '').slice(0, 120),
+      authorUsername: String(msg.authorUsername || msg.username || '').slice(0, 64),
       preview: String(msg.preview || 'Message').replace(/\s+/g, ' ').slice(0, 140),
       imageUrl: String(msg.imageUrl || '')
     };
@@ -2116,9 +2380,27 @@ function buildReplySnapshot(msg = {}) {
   return {
     messageId: String(getMessageId(msg) || ''),
     author: getUsername(msg),
+    authorId: String(msg.userId || msg.user_id || '').slice(0, 120),
+    authorUsername: String(msg.username || msg.userName || '').slice(0, 64),
     preview: imageUrl ? 'Image' : (body.replace(/\s+/g, ' ').slice(0, 140) || 'Message'),
     imageUrl: imageUrl || ''
   };
+}
+
+function replyAuthorLabel(reply = {}) {
+  const messageId = String(reply.messageId || '').trim();
+  const target = messageId
+    ? S.lastMsgs.find(message => String(getMessageId(message)) === messageId)
+    : null;
+  if (target) return getUsername(target);
+  const authorId = String(reply.authorId || '').trim().toLowerCase();
+  const authorUsername = String(reply.authorUsername || '').trim().toLowerCase();
+  const matchingAuthor = [...S.lastMsgs].reverse().find((message) => {
+    const messageUserId = String(message.userId || message.user_id || '').trim().toLowerCase();
+    const messageUsername = String(message.username || message.userName || '').trim().toLowerCase();
+    return (authorId && messageUserId === authorId) || (authorUsername && messageUsername === authorUsername);
+  });
+  return matchingAuthor ? getUsername(matchingAuthor) : String(reply.author || 'Unknown');
 }
 
 function renderReplyQuoteHtml(value = '') {
@@ -2128,8 +2410,8 @@ function renderReplyQuoteHtml(value = '') {
   const messageId = esc(reply?.messageId || '');
   const jumpAttrs = messageId ? `data-jump-message-id="${messageId}" title="Jump to replied message"` : '';
   return `<button type="button" class="msg-quote${imageUrl ? ' msg-quote-image' : ''}" ${jumpAttrs}>
-    ${imageUrl ? `<img src="${proxiedImageSrc(imageUrl)}" alt="Reply image" loading="lazy" onerror="this.style.display='none'">` : ''}
-    <span>${reply?.author ? `<b>${esc(reply.author)}</b>` : ''}${esc((cleanText || 'Message').slice(0, 100))}</span>
+    ${imageUrl ? `<img src="${proxiedImageSrc(imageUrl)}" data-full-image="${esc(imageUrl)}" alt="Reply image" loading="lazy" onerror="this.style.display='none'">` : ''}
+    <span>${reply?.author ? `<b>${esc(replyAuthorLabel(reply))}</b>` : ''}${esc((cleanText || 'Message').slice(0, 100))}</span>
   </button>`;
 }
 
@@ -2172,15 +2454,16 @@ function msgActionsHtml(msg) {
   const mine = isMine(msg);
   const canDel = mine || isStaff();
   const messageId = esc(id);
-  let btns = `<button type="button" data-message-action="reply" data-message-id="${messageId}" title="Reply"><span class="material-icons-round">reply</span></button>`;
-  btns += `<button type="button" data-message-action="react" data-message-id="${messageId}" title="Add reaction"><span class="material-icons-round">add_reaction</span></button>`;
-  btns += `<button type="button" data-message-action="bookmark" data-message-id="${messageId}" title="${msg.bookmarked ? 'Remove bookmark' : 'Bookmark'}"><span class="material-icons-round">${msg.bookmarked ? 'bookmark' : 'bookmark_border'}</span></button>`;
-  if (mine) btns += `<button type="button" data-message-action="edit" data-message-id="${messageId}" title="Edit"><span class="material-icons-round">edit</span></button>`;
-  if (isStaff()) btns += `<button type="button" data-message-action="pin" data-message-id="${messageId}" title="${msg.pinned ? 'Unpin' : 'Pin'}"><span class="material-icons-round">${msg.pinned ? 'push_pin' : 'push_pin'}</span></button>`;
-  if (canDel) btns += `<button type="button" data-message-action="delete" data-message-id="${messageId}" title="Delete"><span class="material-icons-round">delete</span></button>`;
-  if (!mine && isStaff()) btns += `<button type="button" data-message-action="moderate" data-message-id="${messageId}" title="Moderate"><span class="material-icons-round">shield</span></button>`;
-  if (!mine && !isStaff()) btns += `<button type="button" data-message-action="report" data-message-id="${messageId}" title="Report"><span class="material-icons-round">flag</span></button>`;
-  return `<div class="msg-actions">${btns}</div>`;
+  const actionId = `message-actions-${String(id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+  let btns = `<button type="button" data-message-action="reply" data-message-id="${messageId}" title="Reply" aria-label="Reply"><span class="material-icons-round">reply</span></button>`;
+  btns += `<button type="button" data-message-action="react" data-message-id="${messageId}" title="Add reaction" aria-label="React"><span class="material-icons-round">add_reaction</span></button>`;
+  btns += `<button type="button" data-message-action="bookmark" data-message-id="${messageId}" title="${msg.bookmarked ? 'Remove bookmark' : 'Bookmark'}" aria-label="${msg.bookmarked ? 'Unsave' : 'Save'}"><span class="material-icons-round">${msg.bookmarked ? 'bookmark' : 'bookmark_border'}</span></button>`;
+  if (mine) btns += `<button type="button" data-message-action="edit" data-message-id="${messageId}" title="Edit" aria-label="Edit"><span class="material-icons-round">edit</span></button>`;
+  if (isStaff()) btns += `<button type="button" data-message-action="pin" data-message-id="${messageId}" title="${msg.pinned ? 'Unpin' : 'Pin'}" aria-label="${msg.pinned ? 'Unpin' : 'Pin'}"><span class="material-icons-round">push_pin</span></button>`;
+  if (canDel) btns += `<button type="button" data-message-action="delete" data-message-id="${messageId}" title="Delete" aria-label="Delete"><span class="material-icons-round">delete</span></button>`;
+  if (!mine && isStaff()) btns += `<button type="button" data-message-action="moderate" data-message-id="${messageId}" title="Moderate" aria-label="Moderate"><span class="material-icons-round">shield</span></button>`;
+  if (!mine && !isStaff()) btns += `<button type="button" data-message-action="report" data-message-id="${messageId}" title="Report" aria-label="Report"><span class="material-icons-round">flag</span></button>`;
+  return `<button type="button" class="msg-action-toggle" data-message-actions-toggle data-message-id="${messageId}" aria-label="Message actions" aria-expanded="false" aria-controls="${actionId}"><span class="material-icons-round">more_horiz</span></button><div class="msg-actions" id="${actionId}">${btns}</div>`;
 }
 
 function messageReactionsHtml(msg = {}) {
@@ -2199,7 +2482,7 @@ function messageAttachmentsHtml(msg = {}, rawBody = '') {
   );
   if (!attachments.length) return '';
   return `<div class="msg-attachment-grid">${attachments.map(item =>
-    `<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><img src="${proxiedImageSrc(item.url)}" alt="${esc(item.name || 'Image attachment')}" loading="lazy"></a>`
+    `<a href="${esc(item.url)}" data-chat-image-link="1" target="_blank" rel="noopener noreferrer"><img src="${proxiedImageSrc(item.url)}" data-full-image="${esc(item.url)}" alt="${esc(item.name || 'Image attachment')}" loading="lazy"></a>`
   ).join('')}</div>`;
 }
 
@@ -2236,7 +2519,7 @@ function buildMsgHtml(msg, isFirst) {
       <button type="button" class="msg-profile-target msg-reply-avatar" data-profile-message-id="${replyId}" data-profile-username="${esc(mentionName)}" title="View ${esc(name)}'s profile">${avatarEl(name, 36, avatarUrl, avatarEffect)}</button>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:3px">
-          <button type="button" class="msg-reply-target msg-mention-target" data-mention-name="${esc(mentionName)}" title="Mention @${esc(mentionName)}" style="background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:600;color:#fff;cursor:pointer;text-align:left">${esc(name)}</button>
+          <button type="button" class="msg-reply-target msg-mention-target" data-mention-name="${esc(mentionName)}" title="Mention @${esc(mentionName)}" style="background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:600;color:#fff;cursor:pointer;text-align:left">${shopIdentityName(displayMsg, name)}</button>
           ${roleBadge(msg)}
           ${userTagBadge(msg)}
         </div>
@@ -2258,7 +2541,83 @@ function emptyPlaceholder() {
   </div>`;
 }
 
+function startsMessageGroup(message, previousMessage = null) {
+  if (!previousMessage) return true;
+  const dateStr = messageTimeValue(message);
+  const previousDate = messageTimeValue(previousMessage);
+  const timestamp = dateStr ? new Date(dateStr).getTime() : 0;
+  const previousTimestamp = previousDate ? new Date(previousDate).getTime() : 0;
+  return !sameDay(previousDate, dateStr) ||
+    messageAuthorKey(message) !== messageAuthorKey(previousMessage) ||
+    timestamp - previousTimestamp > 5 * 60_000 ||
+    !!message.system;
+}
+
+function messageVirtualItemHtml(message, startsGroup) {
+  const nonce = String(message.clientNonce || message.client_nonce || '').trim();
+  const nonceAttr = nonce ? ` data-message-nonce="${esc(nonce)}"` : '';
+  return `<div class="msg-virtual-item ${startsGroup&&!message.system?'msg-group':'mt-0.5'}" data-message-id="${esc(getMessageId(message))}"${nonceAttr}>${buildMsgHtml(message, startsGroup&&!message.system)}</div>`;
+}
+
+function buildMessageListHtml(orderedMessages = []) {
+  let html = '';
+  let previousMessage = null;
+  S.__unreadDividerInserted = false;
+  for (const message of orderedMessages) {
+    const dateStr = messageTimeValue(message);
+    const newDay = !previousMessage || !sameDay(messageTimeValue(previousMessage), dateStr);
+    const newGroup = startsMessageGroup(message, previousMessage);
+    if (newDay && dateStr) html += `<div class="date-div">${formatDateLabel(dateStr)}</div>`;
+    if (shouldInsertUnreadDivider(message)) html += '<div class="unread-divider"><span>New messages</span></div>';
+    html += messageVirtualItemHtml(message, newGroup);
+    previousMessage = message;
+  }
+  return html;
+}
+
+function patchConfirmedMessage(previousMessage, confirmedMessage, options = {}) {
+  const list = document.getElementById('messages-list');
+  if (!list || list.__nebuloMessageRoom !== String(S.room || '')) return false;
+  const shouldStick = options.forceScroll === true || isNearMessageBottom();
+  const messagesContainer = document.getElementById('messages-container');
+  const previousId = String(getMessageId(previousMessage) || '').trim();
+  const nonce = String(confirmedMessage.clientNonce || confirmedMessage.client_nonce || previousMessage.clientNonce || previousMessage.client_nonce || '').trim();
+  const item = [...list.querySelectorAll('.msg-virtual-item')].find((candidate) =>
+    (previousId && candidate.dataset.messageId === previousId) ||
+    (nonce && candidate.dataset.messageNonce === nonce)
+  );
+  if (!item) return false;
+
+  const orderedMessages = canonicalizeMessageAuthors(S.lastMsgs);
+  S.lastMsgs = orderedMessages;
+  const index = orderedMessages.findIndex((message) => {
+    const messageNonce = String(message.clientNonce || message.client_nonce || '').trim();
+    return nonce ? messageNonce === nonce : String(getMessageId(message)) === String(getMessageId(confirmedMessage));
+  });
+  if (index < 0) return false;
+
+  const template = document.createElement('template');
+  template.innerHTML = messageVirtualItemHtml(orderedMessages[index], startsMessageGroup(orderedMessages[index], orderedMessages[index - 1] || null));
+  const replacement = template.content.firstElementChild;
+  if (!replacement) return false;
+  const previousTop = item.getBoundingClientRect().top;
+  const previousHeight = item.getBoundingClientRect().height;
+  item.replaceWith(replacement);
+  if (!shouldStick && messagesContainer && previousTop < messagesContainer.getBoundingClientRect().top) {
+    messagesContainer.scrollTop += replacement.getBoundingClientRect().height - previousHeight;
+  }
+  list.__nebuloMessageSourceHtml = buildMessageListHtml(orderedMessages);
+  list.__nebuloMessageRoom = String(S.room || '');
+  scrollBottomSoon({ force: shouldStick });
+  void renderLinkEmbeds(replacement, { preserveScroll: !shouldStick })
+    .finally(() => scrollBottomSoon({ force: shouldStick }));
+  return true;
+}
+
 function renderMessages(msgs, options = {}) {
+  // Keep the live message model current while the shop is open, but avoid
+  // rebuilding the hidden conversation DOM behind the product catalog.
+  if (S.section === 'cosmetics' && options.forceWhileHidden !== true) return;
   const list = document.getElementById('messages-list');
   if (!list) return;
   const orderedMessages = canonicalizeMessageAuthors(msgs);
@@ -2274,24 +2633,10 @@ function renderMessages(msgs, options = {}) {
   }
   const shouldStick = options.forceScroll || isNearMessageBottom();
 
-  let html = '';
-  let prevDate = null, prevAuthor = null, prevTs = 0;
-  S.__unreadDividerInserted = false;
-
-  for (const msg of orderedMessages) {
-    const dateStr = messageTimeValue(msg);
-    const author = messageAuthorKey(msg);
-    const ts = dateStr ? new Date(dateStr).getTime() : 0;
-    const newDay = !sameDay(prevDate, dateStr);
-    const newGroup = newDay || author !== prevAuthor || ts - prevTs > 5*60_000 || msg.system;
-
-    if (newDay && dateStr) html += `<div class="date-div">${formatDateLabel(dateStr)}</div>`;
-    if (shouldInsertUnreadDivider(msg)) html += `<div class="unread-divider"><span>New messages</span></div>`;
-    html += `<div class="msg-virtual-item ${newGroup&&!msg.system?'msg-group':'mt-0.5'}" data-message-id="${esc(getMessageId(msg))}">${buildMsgHtml(msg, newGroup&&!msg.system)}</div>`;
-    prevDate = dateStr; prevAuthor = author; prevTs = ts;
-  }
+  const html = buildMessageListHtml(orderedMessages);
 
   const roomKey = String(S.room || '');
+  const previousSourceHtml = String(list.__nebuloMessageSourceHtml || '');
   const htmlChanged = list.__nebuloMessageSourceHtml !== html ||
     list.__nebuloMessageRoom !== roomKey ||
     !list.querySelector('.msg-virtual-item');
@@ -2303,6 +2648,19 @@ function renderMessages(msgs, options = {}) {
   const container = document.getElementById('messages-container');
   const previousScrollTop = container?.scrollTop || 0;
   const previousScrollHeight = container?.scrollHeight || 0;
+  const canAppendIncrementally = list.__nebuloMessageRoom === roomKey &&
+    previousSourceHtml && html.startsWith(previousSourceHtml) &&
+    html.length > previousSourceHtml.length && !!list.querySelector('.msg-virtual-item');
+  if (canAppendIncrementally) {
+    list.insertAdjacentHTML('beforeend', html.slice(previousSourceHtml.length));
+    list.__nebuloMessageSourceHtml = html;
+    list.__nebuloMessageRoom = roomKey;
+    scrollBottomSoon({ force: shouldStick });
+    const newestItem = list.lastElementChild;
+    if (newestItem) void renderLinkEmbeds(newestItem, { preserveScroll: !shouldStick })
+      .finally(() => scrollBottomSoon({ force: shouldStick }));
+    return;
+  }
   list.innerHTML = html;
   list.__nebuloMessageSourceHtml = html;
   list.__nebuloMessageRoom = roomKey;
@@ -2337,9 +2695,16 @@ function scrollBottom() {
 function scrollBottomSoon(options = {}) {
   if (!options.force && !isNearMessageBottom()) return;
   scrollBottom();
-  requestAnimationFrame(scrollBottom);
-  setTimeout(scrollBottom, 60);
-  setTimeout(scrollBottom, 220);
+  cancelAnimationFrame(S.scrollBottomFrame);
+  clearTimeout(S.scrollBottomTimer);
+  S.scrollBottomFrame = requestAnimationFrame(() => {
+    S.scrollBottomFrame = 0;
+    scrollBottom();
+  });
+  S.scrollBottomTimer = setTimeout(() => {
+    S.scrollBottomTimer = 0;
+    if (options.force || isNearMessageBottom(140)) scrollBottom();
+  }, 90);
 }
 
 function shouldInsertUnreadDivider(msg) {
@@ -2725,7 +3090,7 @@ function setReply(msgJson, options = {}) {
     const nameEl = document.getElementById('reply-name');
     const quoteEl = document.getElementById('reply-quote');
     if (bar) bar.style.display = 'flex';
-    if (nameEl) nameEl.textContent = snapshot.author;
+    if (nameEl) nameEl.textContent = replyAuthorLabel(snapshot);
     if (quoteEl) quoteEl.textContent = snapshot.imageUrl ? 'Image' : snapshot.preview;
     if (options.saveDraft !== false) scheduleDraftSave();
     document.getElementById('message-input')?.focus();
@@ -3734,7 +4099,7 @@ function toggleEffectsPopover() {
   pop.style.display = 'block';
   pop.innerHTML = `
     <div style="font-size:11px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-      <span style="color:#fbbf24;display:flex;align-items:center;gap:3px"><span class="material-icons-round" style="font-size:13px">toll</span><span data-wallet-coins>${esc(String(coins))}</span></span>
+      <span style="color:#fbbf24;display:flex;align-items:center;gap:3px"><span class="material-icons-round" style="font-size:13px">toll</span><span data-wallet-coins>${esc(formatCoins(coins))}</span></span>
     </div>
     <div style="font-size:11px;font-weight:600;color:#fbbf24;margin:6px 0 4px;display:flex;align-items:center;gap:5px"><span class="material-icons-round" style="font-size:14px">theater_comedy</span>Room Effects — everyone in the room sees this</div>
     ${roomEffects.map(e => effectRow(e, 'activateRoomEffect')).join('')}
@@ -3772,8 +4137,12 @@ async function setEquippedEffect(id) {
   }
 
   try {
-    await api('/api/tlk/chat-effects/equip', { method: 'POST', body: { effectId: id } });
-  } catch {}
+    const data = await api('/api/tlk/chat-effects/equip', { method: 'POST', body: { effectId: id } });
+    if (data?.user) setUser({ ...(S.user || {}), ...data.user });
+  } catch (error) {
+    toast(error?.data?.msg || 'Could not equip this effect. Please try again.', 'error');
+    return;
+  }
   S.equippedEffect = id;
   localStorage.setItem('equippedEffect', id);
   if (S.user) S.user.equippedEffect = id;
@@ -4148,8 +4517,6 @@ window.clearAttachment = clearAttachment;
 const SLASH_COMMANDS = [
   { usage: '/help', insert: '/help', desc: 'Show every command', roles: ['user','mod','admin','owner'] },
   { usage: '/public <message>', insert: '/public ', desc: 'Broadcast a public message (150 coins)', roles: ['user','mod','admin','owner'] },
-  { usage: '/slowmode <seconds>', insert: '/slowmode ', desc: 'Set slowmode for this room; use 0 or off to disable', roles: ['admin','owner'] },
-  { usage: '/slowmode global <seconds>', insert: '/slowmode global ', desc: 'Set slowmode across public rooms', roles: ['admin','owner'] },
   { usage: '/warn <user> [reason]', insert: '/warn ', desc: 'Warn a user', roles: ['admin','owner'] },
   { usage: '/ban <user> [reason]', insert: '/ban ', desc: 'Ban a user from this room', roles: ['admin','owner'] },
   { usage: '/unban <user>', insert: '/unban ', desc: 'Remove a room ban', roles: ['admin','owner'] },
@@ -4217,8 +4584,6 @@ async function handleSlashCommand(text) {
       '/banfromall <user> [reason] — Global ban (owner)',
       '/unban <user> — Unban user (owner)',
       '/clearwarns <user> — Clear warnings (mod)',
-      '/slowmode <seconds|off> — Room slowmode (admin/owner)',
-      '/slowmode global <seconds|off> — Global slowmode (admin/owner)',
       '/delete <messageId> — Delete message by ID (admin/owner)',
       '/clearchat — Clear room (owner)',
     ];
@@ -4256,28 +4621,6 @@ async function handleSlashCommand(text) {
       await api('/api/network/mod/actions', { method: 'POST', body: { action: modActions[cmd], target, reason, room: S.room } });
       toast(`Action /${cmd} applied to ${target}`, 'success');
     } catch (err) { toast(err.data?.msg || 'Action failed', 'error'); }
-    return true;
-  }
-
-  if (cmd === 'slowmode-room' || cmd === 'roomslowmode' || (cmd === 'slowmode' && args[0]?.toLowerCase() !== 'global')) {
-    const rawSeconds = cmd === 'slowmode' && args[0]?.toLowerCase() === 'room' ? args[1] : args[0];
-    const seconds = String(rawSeconds || '').toLowerCase() === 'off' ? 0 : Number(rawSeconds);
-    if (!Number.isFinite(seconds)) { toast('Usage: /slowmode-room <seconds>', 'warn'); return true; }
-    try {
-      await api('/api/network/mod/actions', { method: 'POST', body: { action: 'slowmode_room', seconds, room: S.room } });
-      toast(`Room slowmode set to ${seconds}s`, 'success');
-    } catch (err) { toast(err.data?.msg || 'Failed', 'error'); }
-    return true;
-  }
-
-  if (cmd === 'slowmode-global' || cmd === 'globalslowmode' || cmd === 'global-slowmode' || (cmd === 'slowmode' && args[0]?.toLowerCase() === 'global')) {
-    const rawSeconds = cmd === 'slowmode' ? args[1] : args[0];
-    const seconds = String(rawSeconds || '').toLowerCase() === 'off' ? 0 : Number(rawSeconds);
-    if (!Number.isFinite(seconds)) { toast('Usage: /slowmode-global <seconds>', 'warn'); return true; }
-    try {
-      await api('/api/network/mod/actions', { method: 'POST', body: { action: 'slowmode_global', seconds } });
-      toast(`Global slowmode set to ${seconds}s`, 'success');
-    } catch (err) { toast(err.data?.msg || 'Failed', 'error'); }
     return true;
   }
 
@@ -4348,7 +4691,7 @@ function sendMessageOverSocket(job) {
       const error = new Error('Realtime send timed out');
       error.transportUnavailable = true;
       finish(reject, error);
-    }, 13_000);
+    }, 6_000);
     socket.once?.('disconnect', onDisconnect);
     socket.emit('send_message', outgoingMessagePayload(job), (ack = {}) => {
       if (ack?.ok && ack.message) {
@@ -4375,46 +4718,56 @@ async function sendQueuedMessage(job) {
   }
 }
 
-async function processOutgoingQueue() {
-  if (S.sendQueueProcessing) return;
-  S.sendQueueProcessing = true;
+async function deliverOutgoingMessage(job) {
   try {
-    while (S.sendQueue.length) {
-      const job = S.sendQueue[0];
-      try {
-        const sendData = await sendQueuedMessage(job);
-        void walletSync.refresh();
-        if (String(S.room) === String(job.roomId)) {
-          handleRealtimeMessage({ roomId: job.roomId, message: ownOutgoingMessage(sendData) });
-        }
-        if (sendData?.reward?.balance != null && S.user) {
-          setUser({ ...S.user, coins: sendData.reward.balance });
-          showCoinReward(sendData.reward.coinsEarned);
-        }
-        startSlowmodeCooldown();
-      } catch (err) {
-        if (String(S.room) === String(job.roomId)) {
-          S.lastMsgs = S.lastMsgs.filter((message) =>
-            String(message.clientNonce || message.client_nonce || '') !== job.clientNonce
-          );
-          renderMessages(S.lastMsgs);
-          const input = document.getElementById('message-input');
-          if (input && !input.value.trim() && S.sendQueue.length === 1) {
-            input.value = job.rawText;
-            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-            S.pendingFiles = job.filesBeforeSend;
-            renderAttachmentPreview();
-            if (job.reply) setReply(job.reply, { saveDraft: false });
-            saveCurrentDraft();
-          }
-        }
-        toast(err.data?.msg || 'Failed to send message', 'error');
-      } finally {
-        S.sendQueue.shift();
+    const sendData = await sendQueuedMessage(job);
+    if (String(S.room) === String(job.roomId)) {
+      const alreadyConfirmed = S.lastMsgs.some((message) =>
+        !message.__pending &&
+        String(message.clientNonce || message.client_nonce || '').trim() === job.clientNonce
+      );
+      // The room broadcast normally confirms our optimistic copy before
+      // the acknowledgement returns. Only apply the acknowledgement when
+      // that broadcast was missed, avoiding a second DOM replacement.
+      if (!alreadyConfirmed) {
+        handleRealtimeMessage({ roomId: job.roomId, message: ownOutgoingMessage(sendData) });
       }
     }
-  } finally {
-    S.sendQueueProcessing = false;
+    if (sendData?.reward?.balance != null && S.user) {
+      setUser({ ...S.user, coins: sendData.reward.balance });
+      showCoinReward(sendData.reward.coinsEarned);
+    }
+  } catch (err) {
+    if (String(S.room) === String(job.roomId)) {
+      S.lastMsgs = S.lastMsgs.filter((message) =>
+        String(message.clientNonce || message.client_nonce || '') !== job.clientNonce
+      );
+      renderMessages(S.lastMsgs);
+      const input = document.getElementById('message-input');
+      if (input && !input.value.trim() && S.sendQueue.length === 0 && S.sendInFlight.size === 1) {
+        input.value = job.rawText;
+        input.style.height = Math.min(input.scrollHeight, isMobileChat() ? 112 : 120) + 'px';
+        S.pendingFiles = job.filesBeforeSend;
+        renderAttachmentPreview();
+        if (job.reply) setReply(job.reply, { saveDraft: false });
+        saveCurrentDraft();
+      }
+    }
+    toast(err.data?.msg || 'Failed to send message', 'error');
+  }
+}
+
+function processOutgoingQueue() {
+  const concurrency = 4;
+  while (S.sendQueue.length && S.sendInFlight.size < concurrency) {
+    const job = S.sendQueue.shift();
+    const task = deliverOutgoingMessage(job).finally(() => {
+      S.sendInFlight.delete(job.clientNonce);
+      S.sendQueueProcessing = S.sendInFlight.size > 0;
+      processOutgoingQueue();
+    });
+    S.sendInFlight.set(job.clientNonce, task);
+    S.sendQueueProcessing = true;
   }
 }
 
@@ -4471,8 +4824,7 @@ async function sendMessage() {
     __localSequence: ++S.localMessageSequence,
     __pending: true
   });
-handleRealtimeMessage({ roomId: S.room, message: optimisticMessage });
-  scrollBottomSoon({ force: true });
+  handleRealtimeMessage({ roomId: S.room, message: optimisticMessage });
   updateJumpToLatest();
   queueOutgoingMessage({
     roomId: S.room,
@@ -4516,10 +4868,10 @@ function renderMemberList(users = []) {
     return `<button type="button" class="member-item${bannerClass}${speaking ? ' speaking' : ''}" data-member-name="${name}" onclick="openUserCardFromElement(this)">
       <span class="member-avatar-status">${avatarEl(u.username || '?', 28, memberAvatar, memberAvatarEffect)}<i class="presence-dot status-${status}" title="${status === 'dnd' ? 'Do not disturb' : status}"></i></span>
       <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:#e4e4e7;white-space:nowrap;overflow:hidden"><span style="overflow:hidden;text-overflow:ellipsis">${name}</span>${speaking ? '<span class="material-icons-round" title="Speaking" style="font-size:13px;color:#4ade80">graphic_eq</span>' : ''}</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:#e4e4e7;white-space:nowrap;overflow:hidden">${shopIdentityName(u, rawName)}${speaking ? '<span class="material-icons-round" title="Speaking" style="font-size:13px;color:#4ade80">graphic_eq</span>' : ''}</div>
         ${badges ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:1px">${badges}</div>` : ''}
         ${customStatus ? `<div class="member-custom-status">${esc(customStatus)}</div>` : ''}
-        <div style="display:flex;align-items:center;gap:3px;margin-top:2px;color:#fbbf24;font-size:10px"><span class="material-icons-round" style="font-size:11px">toll</span><span data-wallet-coins data-wallet-user="${esc(u.id || u._id || u.username)}">${esc(String(u.coins ?? 0))}</span></div>
+        <div style="display:flex;align-items:center;gap:3px;margin-top:2px;color:#fbbf24;font-size:10px"><span class="material-icons-round" style="font-size:11px">toll</span><span data-wallet-coins data-wallet-user="${esc(u.id || u._id || u.username)}">${esc(formatCoins(u.coins))}</span></div>
       </div>
     </button>`;
   }).join('');
@@ -4772,12 +5124,12 @@ window.setProfileCardEffectMotion = function(card, animate) {
   });
 };
 
-function openUserCard(username, fallbackUser = null) {
+async function openUserCard(username, fallbackUser = null) {
   const member = (Array.isArray(S.currentMembers) ? S.currentMembers : []).find(
     item => String(item?.username || '').toLowerCase() === String(username || '').toLowerCase()
   );
   const fallback = fallbackUser && typeof fallbackUser === 'object' ? fallbackUser : null;
-  const user = (member || fallback) ? {
+  let user = (member || fallback) ? {
     ...(fallback || {}),
     ...(member || {}),
     username: member?.username || fallback?.username || username,
@@ -4789,6 +5141,32 @@ function openUserCard(username, fallbackUser = null) {
     equippedProfileEffect: member?.equippedProfileEffect || fallback?.equippedProfileEffect || 'none'
   } : null;
   if (!user) return toast('That member is no longer online', 'info');
+  const initialName = String(user.username || username || '').trim();
+  const isInitialSelf = initialName.toLowerCase() === myUsername().toLowerCase();
+  if (isInitialSelf && S.user) {
+    user = { ...user, ...S.user, username: S.user.username || initialName };
+  } else {
+    const lookup = String(user.userId || user.id || user._id || initialName).trim();
+    const cacheKey = lookup.toLowerCase();
+    const cached = S.publicProfileCache.get(cacheKey);
+    if (cached && Date.now() - Number(cached.fetchedAt || 0) < 15_000) {
+      user = { ...user, ...cached.profile };
+    } else if (lookup) {
+      try {
+        const data = await api(`/api/network/profiles/${encodeURIComponent(lookup)}`);
+        if (data?.profile) {
+          user = { ...user, ...data.profile };
+          S.publicProfileCache.set(cacheKey, { profile: data.profile, fetchedAt: Date.now() });
+          S.currentMembers = (S.currentMembers || []).map((item) => {
+            const sameId = String(item?.userId || item?.id || '').trim() && String(item?.userId || item?.id || '') === String(data.profile.userId || data.profile.id || '');
+            const sameName = String(item?.username || '').toLowerCase() === initialName.toLowerCase();
+            return sameId || sameName ? { ...item, ...data.profile } : item;
+          });
+          renderCurrentMemberList();
+        }
+      } catch {}
+    }
+  }
   const tag = user.equippedTag && user.equippedTag !== 'none' ? EFFECT_MAP.get(user.equippedTag) : null;
   const equippedBanner = String(user.equippedBanner || '');
   const bannerId = EFFECT_MAP.get(equippedBanner)?.scope === 'banner' ? equippedBanner : '';
@@ -4816,7 +5194,7 @@ function openUserCard(username, fallbackUser = null) {
         <div class="profile-card-badges">${roleBadge(user)}${tagBadgeHtml(tag)}</div>
       </div>
       <div class="profile-card-stats">
-        <div><span>Coins</span><strong><span class="material-icons-round">toll</span><span data-wallet-coins data-wallet-user="${esc(user.id || user._id || user.username)}">${esc(String(user.coins ?? 0))}</span></strong></div>
+        <div><span>Coins</span><strong><span class="material-icons-round">toll</span><span data-wallet-coins data-wallet-user="${esc(user.id || user._id || user.username)}">${esc(formatCoins(user.coins))}</span></strong></div>
         <div><span>Role</span><strong>${esc(role || 'user')}</strong></div>
         <div><span>Banner</span><strong>${esc(bannerLabel)}</strong></div>
       </div>
@@ -4972,7 +5350,10 @@ async function openMonitorRoom(roomId, type) {
     const data = await chatApi(`/api/tlk/rooms/${encodeURIComponent(roomId)}/messages?limit=80&monitor=1`);
     if (loadSeq !== S.roomLoadSeq || String(S.room) !== String(roomId)) return;
     const msgs = (data && Array.isArray(data.messages)) ? data.messages : (Array.isArray(data) ? data : []);
-    S.lastMsgs = mergeMessageBatch([], msgs.map(withLocalMessageIdentity));
+    // Messages can arrive over the socket while initial history is loading.
+    // Merge those live arrivals into the snapshot so changing rooms never
+    // drops a message that landed between subscribe and fetch completion.
+    S.lastMsgs = mergeMessageBatch(msgs.map(withLocalMessageIdentity), S.lastMsgs);
     S.hasOlderMessages = msgs.length > 0;
     renderMessages(S.lastMsgs, { forceScroll: true });
     scheduleMarkRead();
@@ -5040,7 +5421,7 @@ async function joinRoom(roomId, type, name) {
     headerActions.innerHTML = `${groupActions}
       <button class="icon-btn" title="Pinned messages" onclick="showPinnedMessages()"><span class="material-icons-round">push_pin</span></button>
       <button class="icon-btn" title="Bookmarks" onclick="showBookmarks()"><span class="material-icons-round">bookmarks</span></button>
-      <button id="toggle-members-btn" class="icon-btn" title="Toggle members"><span class="material-icons-round">people</span></button>`;
+      <button id="toggle-members-btn" class="icon-btn" title="Toggle members" aria-label="Open members" aria-expanded="false" aria-controls="members-panel"><span class="material-icons-round">people</span></button>`;
     document.getElementById('toggle-members-btn')?.addEventListener('click', toggleMembersPanel);
   }
 
@@ -5053,9 +5434,9 @@ async function joinRoom(roomId, type, name) {
   const list = document.getElementById('messages-list');
   if (list) list.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;padding:40px;color:#52525b;gap:7px;font-size:13px"><span class="material-icons-round spin" style="font-size:17px">refresh</span>Loading…</div>`;
 
-  // Fetch slowmode
+  // Refresh moderation state for this room.
   fetchModeration();
-  renderSlowmodeConfig();
+  renderComposerPolicy();
 
   try {
     const [data, stateData] = await Promise.all([
@@ -5072,7 +5453,9 @@ async function joinRoom(roomId, type, name) {
       };
       if (Array.isArray(stateData.allowedReactions)) S.allowedReactions = stateData.allowedReactions;
     }
-    S.lastMsgs = mergeMessageBatch([], msgs.map(withLocalMessageIdentity));
+    // Keep any realtime arrivals received after the socket subscription and
+    // before this history request completed.
+    S.lastMsgs = mergeMessageBatch(msgs.map(withLocalMessageIdentity), S.lastMsgs);
     S.hasOlderMessages = msgs.length > 0;
     renderMessages(S.lastMsgs, { forceScroll: true });
     restoreRoomDraft(roomId);
@@ -5086,7 +5469,7 @@ async function joinRoom(roomId, type, name) {
 
   // Keep a lightweight live poll running as a safety net for dropped websocket
   // room subscriptions. Socket.IO remains the immediate delivery path.
-  startPolling(S.socket?.connected ? 30_000 : 2_500);
+  startPolling(S.socket?.connected ? 8_000 : 1_500);
 }
 
 // ─── Group Actions ────────────────────────────────────────────────────────────
@@ -5119,13 +5502,17 @@ window.showGroupCode = showGroupCode;
 
 // ─── Section Rendering ────────────────────────────────────────────────────────
 async function renderSection(section) {
+  closeMessageActionTray();
   if (section === 'admin' && !isOwner()) {
     toast('Owner access required', 'error');
     section = 'channels';
   }
+  const leavingCosmetics = S.section === 'cosmetics' && section !== 'cosmetics';
+  if (leavingCosmetics) shopStopCrashUpdates();
   S.section = section;
   document.body.classList.toggle('cosmetics-open', section === 'cosmetics');
   if (section !== 'cosmetics') document.getElementById('cosmetics-page')?.remove();
+  if (leavingCosmetics) renderMessages(S.lastMsgs, { forceScroll:false });
   const titleEl = document.getElementById('section-title');
   const titles = { channels:'Channels', dms:'Direct Messages', groups:'Groups', cosmetics:'Cosmetics Shop', settings:'Settings', alerts:'Alerts', admin:'Owner Admin' };
   if (titleEl) titleEl.textContent = titles[section] || section;
@@ -5444,7 +5831,7 @@ try {
     const moderation = overview?.moderation || {};
     const users = directory?.users || [];
     const reports = reportData?.reports || [];
-    const formatNumber = value => Number(value || 0).toLocaleString();
+    const formatNumber = value => formatCoins(value);
     const userOptions = users.map(user => `<option value="${esc(user.id || user._id)}">${esc(user.username)} · ${formatNumber(user.coins)} coins</option>`).join('');
 
     list.innerHTML = `<div style="padding:5px 4px 10px">
@@ -5482,8 +5869,6 @@ try {
       <div class="admin-card">
         <div class="admin-card-title"><span class="material-icons-round">gavel</span>Chat moderation</div>
         <div class="setting-row" style="padding:4px 0 9px"><div class="setting-copy"><div class="setting-title">Global lockdown</div><div class="setting-desc">Only staff can send public messages</div></div><label class="mini-switch"><input id="admin-lockdown" type="checkbox" ${moderation.lockdownActive ? 'checked' : ''}><span></span></label></div>
-        <label class="modal-label" for="admin-slowmode">Global slowmode (seconds)</label>
-        <input id="admin-slowmode" class="modal-input" type="number" min="0" max="3600" value="${Math.round(Number(moderation.slowmodeMs || 0) / 1000)}" style="margin-bottom:8px">
         <label class="modal-label" for="admin-blocked-words">Blocked words, one per line</label>
         <textarea id="admin-blocked-words" class="modal-input" rows="4" style="resize:vertical;margin-bottom:8px">${esc((moderation.blockedWords || []).join('\n'))}</textarea>
         <button id="admin-save-moderation" class="modal-btn modal-btn-primary" style="width:100%;padding:7px">Save moderation</button>
@@ -5643,9 +6028,8 @@ try {
     document.getElementById('admin-save-moderation')?.addEventListener('click', async () => {
       const blockedWords = (document.getElementById('admin-blocked-words')?.value || '').split('\n').map(word => word.trim()).filter(Boolean);
       const lockdownActive = !!document.getElementById('admin-lockdown')?.checked;
-      const slowmodeMs = Math.max(0, Number(document.getElementById('admin-slowmode')?.value || 0)) * 1000;
       try {
-        await api('/api/network/moderation', { method: 'PUT', body: { blockedWords, lockdownActive, slowmodeMs } });
+        await api('/api/network/moderation', { method: 'PUT', body: { blockedWords, lockdownActive } });
         toast('Moderation settings saved', 'success');
       } catch (error) { toast(error.data?.msg || 'Could not save moderation', 'error'); }
     });
@@ -5743,7 +6127,7 @@ function renderSettings() {
       </div>
       <div class="settings-profile-meta">
         <div class="settings-profile-name">${esc(name)}</div>
-        <div class="settings-profile-coins"><span class="material-icons-round" style="font-size:15px">toll</span><span data-wallet-coins>${esc(String(u?.coins ?? 0))}</span> coins</div>
+        <div class="settings-profile-coins"><span class="material-icons-round" style="font-size:15px">toll</span><span data-wallet-coins>${esc(formatCoins(u?.coins))}</span> coins</div>
         ${roleBadge || badges ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">${roleBadge}${badges}</div>` : ''}
       </div>
       <button id="profile-edit-btn" type="button" title="Edit profile" style="display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.055);color:#d4d4d8;font:800 11px 'Inter',sans-serif;cursor:pointer"><span class="material-icons-round" style="font-size:15px">edit</span>Edit</button>
@@ -5782,6 +6166,7 @@ function renderSettings() {
       settingToggleHtml('setting-voice-echo', 'voiceEchoCancellation', 'Echo cancellation', 'Reduce speaker echo in your mic', true) +
       settingToggleHtml('setting-voice-gain', 'voiceAutoGain', 'Automatic gain', 'Automatically balance microphone volume', true)
     )}`;
+  window.NebuloAds?.mount(list);
 
   if (action) {
     action.innerHTML = `<button id="logout-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:9px;border:none;background:rgba(248,113,113,.1);color:#f87171;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
@@ -6055,6 +6440,11 @@ function openProfileEditor() {
       status('Saving display name…');
       const data = await api('/api/account/profile/display-name', { method:'PUT', body:{ displayName } });
       applyAccountUpdate(data);
+      applyChatIdentityUpdate({
+        userId: data?.user?._id || data?.user?.id || S.user?._id || S.user?.id,
+        username: data?.user?.username || S.user?.username,
+        name: data?.user?.name || data?.user?.displayName || displayName
+      });
       updateNavAvatar();
       closeModal();
       renderSettings();
@@ -6070,8 +6460,15 @@ function openProfileEditor() {
     button.disabled = true;
     try {
       status('Saving username…');
+      const previousUsername = S.user?.username || '';
       const data = await api('/api/account/profile/username', { method:'PUT', body:{ username } });
       applyAccountUpdate(data);
+      applyChatIdentityUpdate({
+        userId: data?.user?._id || data?.user?.id || S.user?._id || S.user?.id,
+        username: data?.user?.username || username,
+        previousUsername,
+        name: data?.user?.name || data?.user?.displayName || username
+      });
       updateNavAvatar();
       closeModal();
       renderSettings();
@@ -6123,7 +6520,7 @@ async function renderCosmeticsSidebarLegacy() {
 
   if (action) action.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:4px;background:rgba(251,191,36,.08);border-radius:10px;font-size:12px;color:#fbbf24">
     <span class="material-icons-round" style="font-size:16px">toll</span>
-    <strong data-wallet-coins>${coins.toLocaleString()}</strong> coins
+    <strong data-wallet-coins>${formatCoins(coins)}</strong> coins
   </div>`;
 
   function effectStoreItem(e) {
@@ -6185,7 +6582,7 @@ async function renderCosmeticsSidebarLegacy() {
 
   html += '<div class="coin-store-card">'
     + '<div class="coin-store-top"><span class="coin-store-icon"><span class="material-icons-round" style="font-size:19px">paid</span></span>'
-    + '<div class="coin-store-copy"><div class="coin-store-title">Purchase coins</div><div class="coin-store-balance"><strong data-wallet-coins>' + coins.toLocaleString() + '</strong> coins available</div></div></div>'
+    + '<div class="coin-store-copy"><div class="coin-store-title">Purchase coins</div><div class="coin-store-balance"><strong data-wallet-coins>' + formatCoins(coins) + '</strong> coins available</div></div></div>'
     + '<button class="coin-store-buy" onclick="openCoinStore()"><span class="material-icons-round" style="font-size:14px">storefront</span>Open coin shop</button></div>';
 
   // Message Effects
@@ -6256,7 +6653,7 @@ function cosmeticCard(effect, scope) {
   }
   const motionEvents = scope === 'profile' && id !== 'none' ? ' onmouseenter="setProfileCardEffectMotion(this,true)" onmouseleave="setProfileCardEffectMotion(this,false)"' : '';
   return `<button type="button" class="cosmetic-shop-card cosmetic-shop-card-${scope}${state.active ? ' active' : ''}${state.owned && !state.active ? ' owned' : ''}" data-name="${esc(effect.name.toLowerCase())}" data-price="${price}" data-owned="${state.owned}" aria-label="Preview ${esc(effect.name)}${state.active ? ', equipped' : state.owned ? ', owned' : ''}" onclick="openCosmeticPreview('${esc(scope)}','${esc(id)}')"${motionEvents}>
-    ${badge}${visual}<span class="cosmetic-card-copy"><small class="shop-product-type">${esc(scopeLabel)}</small><strong>${esc(effect.name)}</strong><span class="shop-card-meta"><span class="cosmetic-card-price">${price > 0 ? price.toLocaleString() + ' coins' : 'Free'}</span><span class="cosmetic-card-preview">Preview <span class="material-icons-round">arrow_forward</span></span></span></span>
+    ${badge}${visual}<span class="cosmetic-card-copy"><small class="shop-product-type">${esc(scopeLabel)}</small><strong>${esc(effect.name)}</strong><span class="shop-card-meta"><span class="cosmetic-card-price">${price > 0 ? formatCoins(price) + ' coins' : 'Free'}</span><span class="cosmetic-card-preview">Preview <span class="material-icons-round">arrow_forward</span></span></span></span>
   </button>`;
 }
 
@@ -6287,7 +6684,7 @@ function tagManagerMarkup(data = {}) {
       </div>
     </div>
     <div class="owner-tag-list-head"><div><h3>Available tags</h3><p>Edit built-in and custom tags. Changes update the public shop.</p></div><span>${active.length}</span></div>
-    <div class="owner-tag-list">${active.map(tag => `<article class="owner-tag-row" data-managed-tag-id="${esc(tag.id)}"><div class="owner-tag-row-preview">${tagBadgeHtml(tag)}</div><div class="owner-tag-row-copy"><strong>${esc(tag.name)}</strong><span>${esc(tag.source === 'custom' ? 'Custom' : 'Built-in')} · ${Number(tag.price || 0).toLocaleString()} coins · ${esc(TAG_EFFECT_NAMES[tag.effect] || 'None')}</span></div><button data-owner-tag-edit class="cosmetics-icon-button" title="Edit ${esc(tag.name)}"><span class="material-icons-round">edit</span></button><button data-owner-tag-remove class="cosmetics-icon-button owner-tag-delete" title="Remove ${esc(tag.name)}"><span class="material-icons-round">delete</span></button></article>`).join('')}</div>
+    <div class="owner-tag-list">${active.map(tag => `<article class="owner-tag-row" data-managed-tag-id="${esc(tag.id)}"><div class="owner-tag-row-preview">${tagBadgeHtml(tag)}</div><div class="owner-tag-row-copy"><strong>${esc(tag.name)}</strong><span>${esc(tag.source === 'custom' ? 'Custom' : 'Built-in')} · ${formatCoins(tag.price)} coins · ${esc(TAG_EFFECT_NAMES[tag.effect] || 'None')}</span></div><button data-owner-tag-edit class="cosmetics-icon-button" title="Edit ${esc(tag.name)}"><span class="material-icons-round">edit</span></button><button data-owner-tag-remove class="cosmetics-icon-button owner-tag-delete" title="Remove ${esc(tag.name)}"><span class="material-icons-round">delete</span></button></article>`).join('')}</div>
     ${hidden.length ? `<div class="owner-tag-list-head owner-tag-hidden-head"><div><h3>Hidden tags</h3><p>Restore a built-in tag to return it to the shop.</p></div><span>${hidden.length}</span></div><div class="owner-tag-list">${hidden.map(tag => `<article class="owner-tag-row muted" data-managed-tag-id="${esc(tag.id)}"><div class="owner-tag-row-preview">${tagEditorPreviewHtml(tag)}</div><div class="owner-tag-row-copy"><strong>${esc(tag.name)}</strong><span>Hidden built-in tag</span></div><button data-owner-tag-restore class="cosmetics-icon-button"><span class="material-icons-round">restore</span><span>Restore</span></button></article>`).join('')}</div>` : ''}
   </section>`;
 }
@@ -6378,10 +6775,109 @@ function bindTagManager(data = {}) {
   }));
 }
 
-async function renderCosmetics() {
+let cosmeticsRenderVersion = 0;
+const COMMUNITY_STORE_CACHE_MS = 30_000;
+
+function absorbCommunityStoreData(data) {
+  if (!data || typeof data !== 'object') return S.communityStoreData;
+  S.communityStoreData = data;
+  S.communityStoreFetchedAt = Date.now();
+  const userId = S.user?.id || S.user?._id;
+  if (userId && Number.isFinite(Number(data.coins))) walletSync.commit(userId, Number(data.coins));
+  return data;
+}
+
+async function loadCommunityStoreData({ force = false } = {}) {
+  const fresh = S.communityStoreData && Date.now() - Number(S.communityStoreFetchedAt || 0) < COMMUNITY_STORE_CACHE_MS;
+  if (!force && fresh) return S.communityStoreData;
+  if (S.communityStoreFlight) return S.communityStoreFlight;
+  const flight = api('/api/community/me', { cache:'no-store' }).then(absorbCommunityStoreData);
+  S.communityStoreFlight = flight;
+  try { return await flight; }
+  finally { if (S.communityStoreFlight === flight) S.communityStoreFlight = null; }
+}
+
+let shopLotteryTicker = null;
+let shopLotteryRefreshing = false;
+let shopLotteryBusy = false;
+function shopLotteryPendingKey() { return 'nebulo-shop-pending-lottery:' + String(S.user?.id || S.user?._id || myUsername()); }
+function shopLotteryPendingRequest() {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(shopLotteryPendingKey()) || 'null');
+    return value?.action === 'lottery_enter' && Number.isSafeInteger(value.amount) && value.amount > 0 ? value : null;
+  } catch { return null; }
+}
+function shopLotteryDuration(ms) {
+  if (ms <= 0) return 'Drawing now';
+  const days = Math.floor(ms / 86_400_000);
+  const hours = Math.floor((ms % 86_400_000) / 3_600_000);
+  const minutes = Math.floor((ms % 3_600_000) / 60_000);
+  const seconds = Math.floor((ms % 60_000) / 1000);
+  return days ? `${days}d ${hours}h ${minutes}m` : hours ? `${hours}h ${minutes}m ${seconds}s` : `${minutes}m ${seconds}s`;
+}
+function shopUpdateLotteryCountdown() {
+  document.querySelectorAll('[data-lottery-countdown]').forEach(node => {
+    node.textContent = shopLotteryDuration(Number(node.dataset.endAt || 0) - Date.now());
+  });
+}
+function shopStopLotteryUpdates() {
+  if (shopLotteryTicker) clearInterval(shopLotteryTicker);
+  shopLotteryTicker = null;
+}
+function shopStartLotteryUpdates() {
+  shopStopLotteryUpdates();
+  shopUpdateLotteryCountdown();
+  let refreshAt = Date.now() + 5000;
+  shopLotteryTicker = setInterval(async () => {
+    shopUpdateLotteryCountdown();
+    if (Date.now() < refreshAt || shopLotteryRefreshing || shopLotteryBusy || S.section !== 'cosmetics' || S.cosmeticsCategory !== 'tickets') return;
+    refreshAt = Date.now() + 5000;
+    shopLotteryRefreshing = true;
+    try {
+      await loadCommunityStoreData({ force:true });
+      if (S.section === 'cosmetics' && S.cosmeticsCategory === 'tickets') await renderCosmetics();
+    } catch { /* Keep the saved view visible and retry on the next interval. */ }
+    finally { shopLotteryRefreshing = false; }
+  }, 1000);
+}
+async function shopEnterLottery(amount) {
+  if (shopLotteryBusy) return;
+  let command = shopLotteryPendingRequest();
+  if (!command) {
+    if (!Number.isSafeInteger(amount) || amount < 1) { toast('Enter a positive whole coin amount.', 'error'); return; }
+    if (amount > Number(S.user?.coins ?? S.communityStoreData?.coins ?? 0)) { toast('Not enough coins for that contribution.', 'error'); return; }
+    command = { action:'lottery_enter', amount, requestId:crypto.randomUUID() };
+    sessionStorage.setItem(shopLotteryPendingKey(), JSON.stringify(command));
+  }
+  shopLotteryBusy = true;
+  const surface = document.querySelector('.shop-lottery');
+  if (surface) surface.setAttribute('aria-busy', 'true');
+  try {
+    const data = await api('/api/community/action', { method:'POST', body:command, skipWalletRefresh:true });
+    sessionStorage.removeItem(shopLotteryPendingKey());
+    if (data.state) {
+      absorbCommunityStoreData(data.state);
+      if (S.user) setUser({ ...S.user, coins:data.state.coins });
+    }
+    toast(data.result?.msg || 'Your weekly lottery ticket is confirmed.', 'success');
+    await renderCosmetics({ forceCommunity:true });
+  } catch (error) {
+    const status = Number(error.status || error.response?.status || 0);
+    if (status >= 400 && status < 500) sessionStorage.removeItem(shopLotteryPendingKey());
+    toast(error.data?.msg || error.message || 'Entry confirmation failed. Retry to safely check the same ticket.', 'error');
+    await renderCosmetics();
+  } finally {
+    shopLotteryBusy = false;
+    if (surface?.isConnected) surface.removeAttribute('aria-busy');
+  }
+}
+
+async function renderCosmetics(options = {}) {
+  const casinoFast = options?.casinoFast === true;
+  const renderVersion = ++cosmeticsRenderVersion;
   const main = document.getElementById('main-area');
   if (!main) return;
-  const number = value => Number(value || 0).toLocaleString();
+  const number = value => formatCoins(value);
   const date = value => value ? new Date(value).toLocaleString() : '—';
   if (!S.shopCasinoView) S.shopCasinoView = 'lobby';
   if (!S.shopCasinoHeld) S.shopCasinoHeld = new Set();
@@ -6390,7 +6886,7 @@ async function renderCosmetics() {
   if (!S.shopHLState) S.shopHLState = { current:null, next:null, bet:10, streak:0, active:false, revealed:false, won:false, roundId:null, version:0 };
   if (!S.shopGuessState) S.shopGuessState = { target:0, guess:null, attempts:0, bet:10, active:false, hint:'', roundId:null, version:0 };
   if (!S.shopTriviaState) S.shopTriviaState = { question:null, options:[], answered:false, bet:10, active:false, roundId:null, version:0, selected:null, correct:null };
-  const shopCasinoCard = (items, holdable=false) => `<div class="ch-cards">${(items||[]).map((card,i) => card.hidden ? '<div class="ch-playing-card ch-card-hidden"><span>?</span></div>' : `<${holdable?'button':'div'} ${holdable?`type="button" data-shop-action="hold" data-index="${i}"`:''} class="ch-playing-card ${['H','D'].includes(card.suit)?'ch-red':''} ${S.shopCasinoHeld.has(i)&&holdable?'is-held':''}"><span>${esc(card.rank)}</span><b>${esc({S:'♠',H:'♥',D:'♦',C:'♣'}[card.suit]||'')}</b>${holdable?`<small>${S.shopCasinoHeld.has(i)?'Held':'Hold'}</small>`:''}</${holdable?'button':'div'}>`).join('')}</div>`;
+  const shopCasinoCard = (items, holdable=false) => `<div class="ch-cards">${(items||[]).map((card,i) => card.hidden ? '<div class="ch-playing-card ch-card-hidden"><span>?</span></div>' : `<${holdable?'button':'div'} ${holdable?`type="button" data-shop-action="hold" data-index="${i}" aria-pressed="${S.shopCasinoHeld.has(i)}"`:''} class="ch-playing-card ${['H','D'].includes(card.suit)?'ch-red':''} ${S.shopCasinoHeld.has(i)&&holdable?'is-held':''}"><span>${esc(card.rank)}</span><b>${esc({S:'♠',H:'♥',D:'♦',C:'♣'}[card.suit]||'')}</b>${holdable?`<small>${S.shopCasinoHeld.has(i)?'Held':'Hold'}</small>`:''}</${holdable?'button':'div'}>`).join('')}</div>`;
   document.body.classList.add('cosmetics-open');
   const allCategories = ['overview','banners','profile','message','avatar','tags','perks','status','tickets','membership','rewards','casino','leaderboard','support'];
   const category = allCategories.includes(S.cosmeticsCategory) ? S.cosmeticsCategory : 'overview';
@@ -6403,26 +6899,46 @@ async function renderCosmetics() {
     tags: { label:'Tags', icon:'local_offer', title:'Profile tags', copy:'Small labels displayed beside your name.', scope:'tag' },
     perks: { label:'Perks', icon:'bolt', title:'Power-ups & boosts', copy:'Temporary boosts that give you an edge.', scope:'perk' },
     status: { label:'Identity', icon:'badge', title:'Status, names & badges', copy:'Custom status, glowing names, and collectible badges.', scope:'status' },
-    tickets: { label:'Lottery', icon:'confirmation_number', title:'Lottery tickets', copy:'View your existing tickets and lottery availability.', scope:'ticket' },
-    membership: { label:'Premium', icon:'workspace_premium', title:'Nebulo Premium', copy:'Exclusive themes, cursors, name color for 30 days.', scope:'membership' },
+    tickets: { label:'Lottery', icon:'confirmation_number', title:'Weekly lottery', copy:'Add any whole coin amount to the shared pot. Every account gets one ticket.', scope:'ticket' },
+    membership: { label:'Premium', icon:'workspace_premium', title:'Premium · Coming soon', copy:'New themes, cursors and profile customization are being prepared.', scope:'membership' },
     rewards: { label:'Rewards', icon:'redeem', title:'Daily rewards', copy:'Collect daily coins and bonuses, and track your streak.', scope:'rewards' },
-    casino: { label:'Casino', icon:'casino', title:'Coin casino', copy:'Play blackjack, video poker, mines, crash and more.', scope:'casino' },
+    casino: { label:'Casino', icon:'casino', title:'Coin casino', copy:'Server-run games with published rules and real house odds.', scope:'casino' },
     leaderboard: { label:'Leaderboard', icon:'leaderboard', title:'Top members', copy:'See who leads the community in coins, wins and streaks.', scope:'leaderboard' },
     support: { label:'Support', icon:'support_agent', title:'Get help', copy:'Contact the team or check your open tickets.', scope:'support' }
   };
   const info = categoryInfo[category];
   const noneNames = { banner:'No banner', profile:'No profile effect', message:'No message effect', avatar:'No avatar ring', tag:'No tag' };
   const isLegacyCosmetic = ['banners','profile','message','avatar','tags'].includes(category);
-  const isCommunityFeature = ['rewards','casino','leaderboard','support'].includes(category);
+  const isCommunityFeature = ['rewards','casino','tickets','leaderboard','support'].includes(category);
   const effects = isLegacyCosmetic ? [{ id:'none', name:noneNames[info.scope], price:0, scope:info.scope }, ...EFFECTS.filter(effect => effect.scope === info.scope && effect.id !== 'none')] : [];
-  let communityStoreData = null;
-  try { communityStoreData = await api('/api/community/me'); } catch (error) { communityStoreData = null; }
-  S.communityStoreData = communityStoreData;
+  let communityStoreData = S.communityStoreData;
+  let communityLoadFailed = false;
+  let communityLoadPending = false;
+  const needsCommunityStore = !isLegacyCosmetic && category !== 'overview';
+  if (!(casinoFast && category === 'casino' && communityStoreData) && needsCommunityStore) {
+    const storeIsFresh = communityStoreData && Date.now() - Number(S.communityStoreFetchedAt || 0) < COMMUNITY_STORE_CACHE_MS;
+    const shouldRefresh = options?.forceCommunity === true || !storeIsFresh;
+    if (shouldRefresh && options?.communityResolved !== true) {
+      communityLoadPending = !communityStoreData;
+      void loadCommunityStoreData({ force:options?.forceCommunity === true }).then(() => {
+        if (S.section === 'cosmetics' && S.cosmeticsCategory === category) {
+          void renderCosmetics({ casinoFast:category === 'casino', communityResolved:true });
+        }
+      }).catch(() => {
+        if (S.section === 'cosmetics' && S.cosmeticsCategory === category) {
+          void renderCosmetics({ communityResolved:true, communityLoadFailed:true });
+        }
+      });
+    }
+    communityLoadFailed = options?.communityLoadFailed === true;
+  }
+  if (renderVersion !== cosmeticsRenderVersion || S.section !== 'cosmetics') return;
   let tagManagerData = null;
   if (category === 'tags' && isOwner() && S.tagManagerOpen) {
     try { tagManagerData = await api('/api/tlk/tag-manager'); }
     catch (error) { toast(error.data?.msg || 'Could not load tag manager', 'error'); S.tagManagerOpen = false; }
   }
+  if (renderVersion !== cosmeticsRenderVersion || S.section !== 'cosmetics') return;
   const userCoins = S.user?.coins ?? communityStoreData?.coins ?? 0;
   const communityStore = communityStoreData?.store || {};
   const communityItems = communityStore.items || [];
@@ -6442,7 +6958,7 @@ async function renderCosmetics() {
     const daily = communityStoreData?.daily || {}, spin = communityStoreData?.spin || {};
     const streak = Number(daily.streak) || 0;
     const bestStreak = Number(daily.bestStreak) || 0;
-    const nextReward = 100 + 25 * (Math.min(streak, 7) - 1);
+    const nextReward = 100 + 25 * Math.min(streak, 6);
     const progress = Math.min(100, (streak / 7) * 100);
     const weekDays = Array.from({length:7},(_,i)=>{
       const earned = i < Math.min(7, streak);
@@ -6489,89 +7005,64 @@ async function renderCosmetics() {
     const cv = S.shopCasinoView;
     const casinoRound = communityStoreData?.casino?.round;
     const casinoHistory = communityStoreData?.casino?.history || [];
-    const active = casinoRound?.status === 'playing';
-    if (active && cv === 'lobby') S.shopCasinoView = casinoRound.game;
-    const game = cv === 'lobby' ? '' : active ? casinoRound.game : cv;
+    const active = casinoRound?.status === 'playing' && casinoRound.game === cv;
+    const game = cv === 'lobby' ? '' : cv;
     const casinoSummary = `<div class="shop-casino-balance"><span>Balance</span><strong><span data-wallet-coins>${number(userCoins)}</span> coins</strong></div>`;
-    const casinoNames = {blackjack:'Blackjack',videopoker:'Video Poker',higherlower:'Higher or Lower',mines:'Mines',numberguess:'Number Guess',crash:'Crash',trivia:'Trivia'};
+    const casinoNames = {blackjack:'Blackjack',videopoker:'Video Poker',higherlower:'Higher or Lower',mines:'Mines',numberguess:'Number Guess',crash:'Crash'};
     const casinoHistoryHtml = casinoHistory.length ? `<div class="shop-rewards-section"><div class="shop-section-head"><span class="material-icons-round">history</span><h3>Recent hands</h3></div><div class="shop-recent-list">${casinoHistory.slice(0,6).map(h => `<div class="shop-recent-item"><div><strong>${esc(casinoNames[h.game]||h.game)}</strong><small>${esc(h.outcome)} · ${number(h.stake??h.bet)} stake</small></div><span class="${h.net>0?'shop-positive':''}">${h.net>0?'+':''}${number(h.net)}</span></div>`).join('')}</div></div>` : '';
+    const retiredTriviaRefund = casinoRound?.game === 'trivia' && casinoRound?.status === 'playing'
+      ? `<div class="shop-pending-notice" role="status"><span>Trivia has been retired from the casino. Your ${number(casinoRound.stake)} coin stake is ready to return.</span><button type="button" class="ch-button" data-shop-action="refund-trivia">Return my stake</button></div>`
+      : '';
     if (!game) {
       catalogHtml = `
-        <div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Coin Casino</h3><p>Bet your coins on text-based games. Play at your own pace.</p></div></div>
-        ${casinoSummary}
+        <div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Coin Casino</h3><p>Every result and payout is calculated on the server with a published house edge.</p></div></div>
+        ${casinoSummary}${retiredTriviaRefund}
         <div class="shop-casino-grid">
           <button class="shop-game-card" data-shop-action="choose-game" data-game="blackjack"><span class="shop-game-emoji material-icons-round">style</span><strong>Blackjack</strong><small>Hit, stand or double. Get closer to 21.</small><span class="shop-game-tag">3:2 payout</span></button>
           <button class="shop-game-card" data-shop-action="choose-game" data-game="videopoker"><span class="shop-game-emoji material-icons-round">filter_5</span><strong>Video Poker</strong><small>Five cards, one draw. Build your hand.</small><span class="shop-game-tag">250× royal</span></button>
-          <button class="shop-game-card" data-shop-action="choose-game" data-game="higherlower"><span class="shop-game-emoji material-icons-round">swap_vert</span><strong>Higher or Lower</strong><small>Guess higher or lower. Build streaks.</small><span class="shop-game-tag">Streak bonus</span></button>
-          <button class="shop-game-card" data-shop-action="choose-game" data-game="mines"><span class="shop-game-emoji material-icons-round">grid_on</span><strong>Mines</strong><small>Reveal tiles, avoid mines, collect multipliers.</small><span class="shop-game-tag">5×5 grid</span></button>
-          <button class="shop-game-card" data-shop-action="choose-game" data-game="numberguess"><span class="shop-game-emoji material-icons-round">pin</span><strong>Number Guess</strong><small>Guess 1-100. Fewer attempts = bigger wins.</small><span class="shop-game-tag">7 tries</span></button>
-          <button class="shop-game-card" data-shop-action="choose-game" data-game="crash"><span class="shop-game-emoji material-icons-round">trending_up</span><strong>Crash</strong><small>Watch the multiplier climb. Cash out before crash.</small><span class="shop-game-tag">2×-100×</span></button>
-          <button class="shop-game-card" data-shop-action="choose-game" data-game="trivia"><span class="shop-game-emoji material-icons-round">quiz</span><strong>Trivia</strong><small>Answer questions to earn coins.</small><span class="shop-game-tag">Timed</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="higherlower"><span class="shop-game-emoji material-icons-round">swap_vert</span><strong>Higher or Lower</strong><small>Numbers from 1–100. Equal numbers lose.</small><span class="shop-game-tag">82% return</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="mines"><span class="shop-game-emoji material-icons-round">grid_on</span><strong>Mines</strong><small>Seven mines across the 5×5 grid.</small><span class="shop-game-tag">82% return</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="numberguess"><span class="shop-game-emoji material-icons-round">pin</span><strong>Number Guess</strong><small>Five unique blind picks from 1–100.</small><span class="shop-game-tag">80% return</span></button>
+          <button class="shop-game-card" data-shop-action="choose-game" data-game="crash"><span class="shop-game-emoji material-icons-round">trending_up</span><strong>Crash</strong><small>Watch the multiplier climb. Cash out before crash.</small><span class="shop-game-tag">82% return</span></button>
         </div>${casinoHistoryHtml}`;
     } else {
       const visible = casinoRound?.game === game ? casinoRound : null;
       const toolbar = `<div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button><span>${active?'Hand in progress':'Ready to deal'}</span></div>`;
-      const wagerForm = `<form data-shop-casino-form="true" class="ch-deal-form"><input type="hidden" name="game" value="${esc(game)}"><label class="ch-field">Stake<input name="bet" value="${S.shopCasinoWager}" type="number" min="1" required></label><button class="ch-button ch-primary" type="submit">Deal</button></form>`;
+      const wagerForm = `<form data-shop-casino-form="true" class="ch-deal-form"><input type="hidden" name="game" value="${esc(game)}"><label class="ch-field">Stake<input name="bet" value="${S.shopCasinoWager}" type="number" min="1" step="1" required></label><button class="ch-button ch-primary" type="submit">Start round</button></form>`;
       if (game === 'blackjack') {
-        const bj = active && visible ? visible : null;
+        const bj = visible;
         catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Blackjack</h3><p>Dealer stands on soft 17 · Blackjack pays 3:2</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${bj ? `<div class="ch-hand-label">Dealer <span>${active?'One card hidden':number(bj.dealerTotal)}</span></div>${shopCasinoCard(bj.dealer)}<div class="ch-table-rule"></div><div class="ch-hand-label">You<span>${number(bj.playerTotal)}</span></div>${shopCasinoCard(bj.player)}${bj.status==='settled'?`<div class="ch-hand-result" role="status"><strong>${esc(bj.outcome)}</strong><span>${bj.net>0?'+':''}${number(bj.net)} coins · ${number(bj.payout)} returned</span></div>`:`<p class="ch-table-instruction">Choose your next move.</p>`}`:`<div class="ch-table-empty"><span class="ch-table-mark">21</span><h4>Take a seat at the table</h4><p>Place a stake to deal your first two cards.</p></div>`}</section>${active?`<div class="ch-game-actions"><span>Stake <strong>${number(casinoRound.stake)} coins</strong></span><div>${(casinoRound.actions||[]).map(move=>`<button type="button" class="ch-button" data-shop-action="casino-move" data-move="${esc(move)}">${{hit:'Hit',stand:'Stand',double:'Double down'}[move]||move}</button>`).join('')}</div></div>`:wagerForm}`;
       } else if (game === 'videopoker') {
-        const vp = active && visible ? visible : null;
+        const vp = visible;
         catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Video Poker</h3><p>Jacks or Better · Five-card draw</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${vp ? `<div class="ch-hand-label">Your hand<span>${active?'Select cards to hold':'Final hand'}</span></div>${shopCasinoCard(vp.player,active)}${vp.status==='settled'?`<div class="ch-hand-result" role="status"><strong>${esc(vp.outcome)}</strong><span>${vp.net>0?'+':''}${number(vp.net)} coins · ${number(vp.payout)} returned</span></div>`:`<p class="ch-table-instruction">Hold any cards you want to keep, then draw once.</p>`}`:`<div class="ch-table-empty"><span class="ch-table-mark">J Q K A</span><h4>Make your best five-card hand</h4><p>Deal five cards, hold your favorites and draw replacements.</p></div>`}</section>${active?`<div class="ch-game-actions"><span>Stake <strong>${number(casinoRound.stake)} coins</strong></span><div><button type="button" class="ch-button" data-shop-action="casino-move" data-move="draw">Draw cards</button></div></div>`:wagerForm}`;
-      } else if (game === 'higherlower') {
-        const hl = S.shopHLState;
-        const suits = ['♠','♥','♦','♣'];
-        const suitColor = s => s==='♥'||s==='♦' ? 'ch-red' : '';
-        const currentCard = hl.current ? { rank: hl.current.rank, suit: suits[hl.current.suit] } : null;
-        const nextCard = hl.next ? { rank: hl.next.rank, suit: suits[hl.next.suit] } : null;
-        let hlContent;
-        if (hl.active && currentCard) {
-          hlContent = `<div class="ch-hl-display"><div class="ch-hl-card ${suitColor(currentCard.suit)}"><span>${currentCard.rank}</span><small>${currentCard.suit}</small></div><span class="ch-hl-arrow">vs</span>${nextCard ? `<div class="ch-hl-card ${suitColor(nextCard.suit)}"><span>${nextCard.rank}</span><small>${nextCard.suit}</small></div>` : `<div class="ch-hl-card" style="background:#2a2d35;border-color:#444"><span style="color:#666">?</span></div>`}</div>${!hl.revealed ? `<div class="ch-hl-buttons"><button type="button" class="ch-button" data-shop-action="hl-guess" data-choice="higher">Higher</button><button type="button" class="ch-button" data-shop-action="hl-guess" data-choice="lower">Lower</button></div>` : `<div style="text-align:center;margin-top:14px"><p style="font-size:13px;color:${hl.won?'#4ade80':'#f87171'};font-weight:550">${hl.won?'Correct!':'Wrong!'} ${nextCard?nextCard.rank+nextCard.suit:''}</p><div style="margin-top:12px"><button type="button" class="ch-button" data-shop-action="hl-next">Next card</button> <button type="button" class="ch-button ch-primary" data-shop-action="hl-cashout">Cash out</button></div></div>`}`;
-        } else {
-          hlContent = `<div class="ch-table-empty"><span class="ch-table-mark">A K Q</span><h4>Higher or Lower</h4><p>Guess if the next card is higher or lower. Streak multiplier increases your payout.</p></div>`;
+      } else if (['higherlower','mines','numberguess','crash'].includes(game)) {
+        const gd = visible?.gameData || {};
+        const playing = visible?.status === 'playing';
+        const hasRound = !!visible;
+        const result = visible?.status === 'settled' ? `<div class="ch-hand-result" role="status"><strong>${esc(visible.log?.at(-1) || visible.outcome || 'Round complete')}</strong><span>${Number(visible.net) > 0 ? '+' : ''}${number(visible.net)} coins net · ${number(visible.payout)} returned</span></div>` : '';
+        const introductions = { higherlower:'Predict whether the next number from 1–100 is higher or lower. Equal numbers lose; payouts use an 82% server return.', mines:'Reveal safe tiles, then cash out. Seven mines and an 82% return make every pick risky.', numberguess:'Pick up to five different numbers from 1–100. No high or low hints; a hit returns 16×.', crash:'Cash out before the multiplier crashes. The server uses an 82% return curve.' };
+        let content = `<div class="ch-table-empty"><h4>${esc(casinoNames[game])}</h4><p>${esc(introductions[game])}</p></div>`;
+        let actions = '';
+        if (game === 'higherlower' && hasRound) {
+          const currentNumber = Number(gd.currentNumber);
+          content = `<div class="ch-hl-display"><div class="ch-hl-card"><span>${Number.isInteger(currentNumber) ? currentNumber : '—'}</span><small>Current · 1–100</small></div></div><p class="ch-table-instruction">Streak: ${number(gd.streak)} · Cash-out multiplier: ${Number(gd.multiplier || 1).toFixed(2)}×<br>${esc(visible.log?.at(-1) || '')}</p>`;
+          if (playing) actions = `<div class="ch-game-actions"><span>Return now: ${number(Math.floor(visible.stake * Number(gd.multiplier || 1)))} coins</span><div><button class="ch-button" data-shop-action="hl-guess" data-choice="higher" ${currentNumber === 100 ? 'disabled' : ''}>Higher</button><button class="ch-button" data-shop-action="hl-guess" data-choice="lower" ${currentNumber === 1 ? 'disabled' : ''}>Lower</button><button class="ch-button ch-primary" data-shop-action="hl-cashout">Cash out</button></div></div>`;
         }
-        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Higher or Lower</h3><p>Guess higher or lower. Build your streak for bigger payouts.</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${hlContent}</section>${!hl.active ? wagerForm : `<div class="ch-game-actions"><span>Stake <strong>${number(hl.bet)} coins</strong></span><span>Streak: ${hl.streak}</span></div>`}`;
-      } else if (game === 'mines') {
-        const ms = S.shopMinesState;
-        const gridSize = 25, mineCount = 5;
-        const gridHtml = Array.from({length:gridSize},(_,i)=>{
-          const isRevealed = ms.revealed.includes(i);
-          const isMine = ms.mines.includes(i);
-          let cls = 'ch-mines-cell', content = '';
-          if (isRevealed) { cls += ' ch-mines-revealed'; if (isMine) { cls += ' ch-mines-mine'; content = '💣'; } else { cls += ' ch-mines-safe'; content = ms.multipliers?.[i] ? `${ms.multipliers[i]}×` : '✓'; } }
-          return `<button type="button" class="${cls}" data-shop-action="mines-reveal" data-index="${i}" ${isRevealed?'disabled':''}>${content}</button>`;
-        }).join('');
-        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Mines</h3><p>Reveal safe tiles to increase your multiplier. Cash out anytime to collect.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button>${ms.active?`<span>Streak: ${ms.revealed.length}</span>`:''}</div>${casinoSummary}${ms.active?`<div class="shop-casino-balance"><span>Current multiplier</span><strong>${ms.multiplier.toFixed(2)}×</strong></div><div class="shop-casino-balance"><span>Potential win</span><strong>${number(Math.floor(ms.bet*ms.multiplier))} coins</strong></div>`:''}<section class="ch-game-table">${ms.active?`<div class="ch-mines-grid">${gridHtml}</div><div style="display:flex;justify-content:space-between;margin-top:14px"><span style="font-size:12px;color:#777782">${ms.revealed.length} tiles revealed · ${mineCount} mines</span><div><button type="button" class="ch-button ch-primary" data-shop-action="mines-cashout">Cash out</button></div></div>`:`<div class="ch-table-empty"><span class="ch-table-mark">💣</span><h4>Mines</h4><p>Avoid mines and collect multipliers. Cash out after each safe tile to lock in your winnings.</p></div>`}</section>${!ms.active?wagerForm:''}`;
-      } else if (game === 'numberguess') {
-        const gs = S.shopGuessState;
-        const maxAttempts = 7;
-        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Number Guess</h3><p>Guess a secret number between 1 and 100. Fewer attempts means bigger wins.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button></div>${casinoSummary}<section class="ch-game-table">${gs.active?`<div class="ch-guess-display"><div class="ch-guess-range">Attempts: ${gs.attempts} / ${maxAttempts}</div>${gs.hint?`<div class="ch-guess-hint ${gs.hint.includes('High')?'ch-guess-too-high':gs.hint.includes('Low')?'ch-guess-too-low':'ch-guess-correct'}">${esc(gs.hint)}</div>`:''}</div><form data-shop-guess-form="true" class="ch-deal-form" style="justify-content:center"><label class="ch-field">Your guess<input name="guess" type="number" min="1" max="100" required placeholder="1-100"></label><button class="ch-button ch-primary" type="submit">Guess</button></form>${gs.attempts>=maxAttempts&&!gs.hint?.includes('Correct')?`<div style="text-align:center;margin-top:12px"><p style="font-size:12px;color:#777782">The number was ${gs.target}</p></div>`:''}`:`<div class="ch-table-empty"><span class="ch-table-mark">1-100</span><h4>Number Guess</h4><p>Guess a number between 1 and 100. Get hints after each guess. Win with fewer attempts for higher payouts.</p></div>`}</section>${!gs.active?wagerForm:''}`;
-      } else if (game === 'crash') {
-        const cs = S.shopCrashState;
-        const crashClass = cs.crashed ? 'ch-crash-crashed' : cs.multiplier < 2 ? 'ch-crash-low' : cs.multiplier < 5 ? 'ch-crash-mid' : 'ch-crash-high';
-        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Crash</h3><p>Watch the multiplier climb. Cash out before it crashes to collect.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button></div>${casinoSummary}<section class="ch-game-table">${cs.active||cs.crashed||cs.cashedOut?`<div class="ch-crash-display"><div class="ch-crash-value ${crashClass}" data-crash-value>${cs.crashed?'CRASHED':`${cs.multiplier.toFixed(2)}×`}</div><div class="ch-crash-label" data-crash-label>${cs.crashed?`Crashed at ${cs.crashPoint.toFixed(2)}×`:cs.cashedOut?`Cashed out at ${cs.lastCashout.toFixed(2)}×`:'Climbing...'}</div>${cs.active&&!cs.crashed&&!cs.cashedOut?`<div style="margin-top:20px" data-crash-btn-wrap><button type="button" class="ch-button ch-primary" data-shop-action="crash-cashout">Cash out at ${cs.multiplier.toFixed(2)}× (${number(Math.floor(cs.bet*cs.multiplier))} coins)</button></div>`:''}${cs.cashedOut?`<div style="margin-top:16px"><p style="font-size:14px;font-weight:550;color:#4ade80">Cashed out at ${cs.lastCashout.toFixed(2)}× · +${number(cs.lastWin)} coins</p></div>`:''}${cs.crashed&&!cs.cashedOut?`<div style="margin-top:16px"><p style="font-size:14px;font-weight:550;color:#f87171">You lost ${number(cs.bet)} coins</p></div>`:''}</div>`:`<div class="ch-table-empty"><span class="ch-table-mark">📈</span><h4>Crash</h4><p>The multiplier starts at 1× and climbs randomly. Cash out before it crashes.</p></div>`}</section>${!cs.active?wagerForm:''}`;
-      } else if (game === 'trivia') {
-        const ts = S.shopTriviaState;
-        const triviaQs = [
-          {q:'What planet is known as the Red Planet?',opts:['Venus','Mars','Jupiter','Saturn'],correct:1,cat:'Science'},
-          {q:'Which element has the chemical symbol "O"?',opts:['Gold','Osmium','Oxygen','Iron'],correct:2,cat:'Science'},
-          {q:'In what year did World War II end?',opts:['1943','1944','1945','1946'],correct:2,cat:'History'},
-          {q:'What is the largest ocean on Earth?',opts:['Atlantic','Indian','Arctic','Pacific'],correct:3,cat:'Geography'},
-          {q:'Which programming language was created by Brendan Eich?',opts:['Python','Java','JavaScript','C++'],correct:2,cat:'Technology'},
-          {q:'What is the speed of light in km/s?',opts:['150,000','200,000','300,000','400,000'],correct:2,cat:'Science'},
-          {q:'Which country has the most natural lakes?',opts:['USA','Russia','Canada','Brazil'],correct:2,cat:'Geography'},
-          {q:'What does "HTTP" stand for?',opts:['HyperText Transfer Protocol','High Tech Transfer Process','Home Tool Transfer Protocol','HyperText Transmission Platform'],correct:0,cat:'Technology'},
-          {q:'Which planet has the most moons?',opts:['Jupiter','Saturn','Uranus','Neptune'],correct:1,cat:'Science'},
-          {q:'In what year was the first iPhone released?',opts:['2005','2006','2007','2008'],correct:2,cat:'Technology'},
-        ];
-        const keys = ['A','B','C','D'];
-        let triviaContent;
-        if (ts.active && ts.question) {
-          triviaContent = `<div class="ch-trivia-category">${esc(ts.question.cat)}</div><div class="ch-trivia-question">${esc(ts.question.q)}</div><div class="ch-trivia-options">${ts.question.opts.map((opt,i)=>`<button type="button" class="ch-trivia-option ${ts.answered&&i===ts.question.correct?'ch-trivia-correct':ts.answered&&i===ts.selected&&i!==ts.question.correct?'ch-trivia-wrong':''}" data-shop-action="trivia-answer" data-index="${i}" ${ts.answered?'disabled':''}><span class="ch-trivia-key">${keys[i]}</span>${esc(opt)}</button>`).join('')}</div>${ts.answered?`<div style="text-align:center;margin-top:16px"><p style="font-size:13px;color:${ts.correct?'#4ade80':'#f87171'};font-weight:550">${ts.correct?'Correct!':'Wrong!'}</p><button type="button" class="ch-button ch-primary" data-shop-action="trivia-next">Next question</button></div>`:''}`;
-        } else {
-          triviaContent = `<div class="ch-table-empty"><span class="ch-trivia-key" style="font-size:20px;width:48px;height:48px">?</span><h4>Trivia</h4><p>Test your knowledge and earn coins. Each correct answer pays out based on your stake.</p></div>`;
+        if (game === 'mines' && hasRound) {
+          const revealed = gd.revealed || [], mines = gd.mines || [];
+          content = `<div class="ch-mines-grid">${Array.from({length:25},(_,i) => `<button type="button" class="ch-mines-cell${mines.includes(i) ? ' ch-mines-revealed ch-mines-mine' : revealed.includes(i) ? ' ch-mines-revealed ch-mines-safe' : ''}" data-shop-action="mines-reveal" data-index="${i}" aria-label="Tile ${i+1}${mines.includes(i) ? ', mine' : revealed.includes(i) ? ', safe' : ''}" ${!playing || revealed.includes(i) ? 'disabled' : ''}>${mines.includes(i) ? '×' : revealed.includes(i) ? '✓' : ''}</button>`).join('')}</div><p class="ch-table-instruction">${revealed.length} tiles revealed · ${Number(gd.multiplier || 1).toFixed(2)}× multiplier</p>`;
+          if (playing) actions = `<div class="ch-game-actions"><span>Return on cash out: ${number(Math.floor(visible.stake * Number(gd.multiplier || 1)))} coins</span><button class="ch-button ch-primary" data-shop-action="mines-cashout">Cash out</button></div>`;
         }
-        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Trivia</h3><p>Answer questions correctly to earn coins.</p></div></div><div class="ch-table-toolbar"><button type="button" class="ch-button" data-shop-action="casino-lobby">← All games</button></div>${casinoSummary}<section class="ch-game-table">${triviaContent}</section>${!ts.active?wagerForm:''}`;
+        if (game === 'numberguess' && hasRound) {
+          const guesses = Array.isArray(gd.guesses) ? gd.guesses : [];
+          content = `<div class="ch-guess-display"><h4>Find the number · ${Number(gd.multiplier || 16).toFixed(1)}×</h4><p class="ch-guess-range">${number(gd.attempts)} of ${number(gd.maxAttempts || 5)} picks used</p>${guesses.length ? `<p class="ch-guess-hint">Picked: ${guesses.map(number).join(', ')}</p>` : '<p class="ch-guess-hint">No directional hints. Each number can be picked once.</p>'}${!playing ? `<p>The number was ${number(gd.target)}.</p>` : ''}</div>`;
+          if (playing) actions = `<form data-shop-guess-form="true" class="ch-deal-form"><label class="ch-field">Your guess<input name="guess" type="number" min="1" max="100" step="1" required placeholder="1–100" autocomplete="off"></label><button class="ch-button ch-primary" type="submit">Guess</button></form>`;
+        }
+        if (game === 'crash' && hasRound) {
+          content = `<div class="ch-crash-display"><div class="ch-crash-value ${gd.crashed ? 'ch-crash-crashed' : 'ch-crash-low'}" data-crash-value>${gd.crashed ? 'CRASHED' : Number(gd.multiplier || 1).toFixed(2) + '×'}</div><p class="ch-crash-label" data-crash-label>${gd.crashed ? 'Round ended' : playing ? 'Live multiplier · final payout confirmed by server' : 'Round complete'}</p></div>`;
+          if (playing && !gd.crashed) actions = `<div class="ch-game-actions"><span>Stake: ${number(visible.stake)} coins</span><button class="ch-button ch-primary" data-shop-action="crash-cashout">Cash out</button></div>`;
+        }
+        catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">sports_esports</span></div><div><h3>${esc(casinoNames[game])}</h3><p>${esc(introductions[game])}</p></div></div>${toolbar}${casinoSummary}<section class="ch-game-table">${content}${result}</section>${actions}${!playing ? wagerForm : ''}`;
       } else {
         catalogHtml = `<div class="shop-casino-hero"><div class="shop-casino-icon"><span class="material-icons-round">casino</span></div><div><h3>Coin Casino</h3><p>Select a game to play.</p></div></div>${casinoSummary}`;
       }
@@ -6607,29 +7098,59 @@ async function renderCosmetics() {
   } else {
     const storeCatFilter = category === 'perks' ? communityItems.filter(i => i.cat === 'perk')
       : category === 'status' ? communityItems.filter(i => i.cat === 'cosmetic')
-      : category === 'tickets' ? communityItems.filter(i => i.id === 'lottery_ticket')
+      : category === 'tickets' ? []
       : category === 'membership' ? communityItems.filter(i => i.id === 'premium')
       : communityItems;
-    const lotteryHtml = category === 'tickets' && communityStore.lottery ? `<div class="cosmetics-lottery-pot"><span class="material-icons-round">emoji_events</span><span>Weekly pot: <strong>${number(communityStore.lottery.pot || 0)}</strong> coins</span><span>${communityStore.lottery.tickets || 0} existing tickets · new purchases unavailable</span></div>` : '';
-    catalogHtml = `${lotteryHtml}<div class="cosmetics-grid cosmetics-grid-store">${storeCatFilter.map(item => {
+    const lottery = category === 'tickets' ? communityStore.lottery : null;
+    const lotteryLast = lottery?.lastDraw;
+    const pendingLottery = shopLotteryPendingRequest();
+    const lotteryHtml = lottery ? `<section class="shop-lottery" aria-labelledby="shop-lottery-title">
+      <div class="shop-lottery-heading"><div><span class="shop-eyebrow">One ticket per account</span><h3 id="shop-lottery-title">One winner takes the weekly pot.</h3><p>Choose how many coins to contribute. Your amount grows the prize, while every ticket has the same chance to win.</p></div><span class="shop-lottery-live"><span></span>Drawing open</span></div>
+      <div class="shop-lottery-pot"><span>Current pot</span><strong>${number(lottery.pot)} <small>coins</small></strong><p>Funded by ${number(lottery.ticketCount)} ${Number(lottery.ticketCount) === 1 ? 'account' : 'accounts'}</p></div>
+      <div class="shop-lottery-stats"><div><span>Draw closes</span><strong data-lottery-countdown data-end-at="${Number(lottery.endAt || 0)}">Calculating…</strong></div><div><span>Your ticket</span><strong>${lottery.entered ? number(lottery.entryAmount) + ' coins' : 'Not entered'}</strong></div><div><span>Your wins</span><strong>${number(lottery.wins)}</strong></div></div>
+      ${pendingLottery ? `<div class="shop-pending-notice" role="status"><span>Your ${number(pendingLottery.amount)} coin entry is awaiting confirmation.</span><button type="button" class="ch-button" data-shop-action="retry-lottery">Retry confirmation</button></div>` : ''}
+      ${lottery.entered ? `<div class="shop-lottery-ticket" role="status"><span class="material-icons-round">confirmation_number</span><div><strong>Ticket confirmed</strong><p>You added ${number(lottery.entryAmount)} coins on ${date(lottery.enteredAt)}. This account cannot enter again until the next drawing.</p></div></div>` : `<form class="shop-lottery-entry" data-shop-lottery-form><label><span>Your contribution</span><div class="shop-lottery-input"><span class="material-icons-round">paid</span><input name="amount" type="number" min="1" step="1" max="${Math.max(0, Number(userCoins))}" value="${pendingLottery?.amount || Math.min(100, Math.max(1, Number(userCoins)))}" required aria-describedby="shop-lottery-help"><button type="button" data-shop-action="lottery-max">Max</button></div></label><button type="submit" class="shop-primary-btn" ${Number(userCoins) < 1 ? 'disabled' : ''}>Get this week’s ticket</button><small id="shop-lottery-help">Available balance: ${number(userCoins)} coins. Your contribution is final once confirmed.</small></form>`}
+      ${lotteryLast ? `<div class="shop-lottery-last"><span class="material-icons-round">emoji_events</span><span>Last weekly winner</span><strong>${lotteryLast.won ? 'You won' : '@' + esc(lotteryLast.winnerUsername || 'member')} · ${number(lotteryLast.payout)} coins</strong><small>${date(lotteryLast.at)}</small></div>` : '<div class="shop-lottery-last"><span class="material-icons-round">schedule</span><span>First drawing</span><strong>Winner announced after this week closes</strong></div>'}
+      ${lottery.settlementPending ? '<p class="shop-lottery-notice">The account service is reconnecting. Entries remain saved and the draw will settle automatically.</p>' : ''}
+    </section>` : '';
+    catalogHtml = `${lotteryHtml}${category === 'tickets' ? '' : `<div class="cosmetics-grid cosmetics-grid-store">${storeCatFilter.map(item => {
       const owned = (item.id === 'name_glow' && communityStore.nameEffect === 'glow') || (item.id === 'name_rainbow' && communityStore.nameEffect === 'rainbow') || (item.id === 'badge_star' && (communityStore.ownedBadges || []).includes('badge_star')) || (item.id === 'badge_verified' && (communityStore.ownedBadges || []).includes('badge_verified')) || (item.id === 'premium' && communityStoreData?.premium?.active);
-      const isActive = (item.id === 'channel_boost' && communityStore.boostActive) || (item.id === 'proxy_priority' && communityStore.proxyActive) || (item.id === 'upload_boost' && communityStore.uploadActive);
+      const isActive = (item.id === 'channel_boost' && communityStore.boostActive) || (item.id === 'upload_boost' && communityStore.uploadActive);
       const needText = item.id === 'custom_status';
-      const flag = owned ? '<span class="cosmetic-card-badge owned">Owned</span>' : isActive ? '<span class="cosmetic-card-badge equipped">Active</span>' : item.price > 0 ? `<span class="cosmetic-card-badge price">${number(item.price)} coins</span>` : '<span class="cosmetic-card-badge">Free</span>';
-      const cta = item.available === false ? 'Unavailable' : owned ? 'Owned' : isActive ? 'Active' : item.price > 0 ? `Buy · ${number(item.price)} coins` : 'Get for free';
-      return `<button type="button" class="cosmetic-shop-card cosmetic-shop-card-store${owned ? ' owned' : ''}${isActive ? ' active' : ''}" data-name="${esc(item.name.toLowerCase())}" data-price="${Number(item.price || 0)}" data-owned="${!!owned || !!isActive}" ${item.available === false ? 'disabled' : ''} onclick="buyCommunityItem('${esc(item.id)}',${needText})">
+      const flag = item.available === false ? `<span class="cosmetic-card-badge">${esc(item.unavailableLabel || 'Coming soon')}</span>` : owned ? '<span class="cosmetic-card-badge owned">Owned</span>' : isActive ? '<span class="cosmetic-card-badge equipped">Active</span>' : item.price > 0 ? `<span class="cosmetic-card-badge price">${number(item.price)} coins</span>` : '<span class="cosmetic-card-badge">Free</span>';
+      const equippedBadge = owned && item.id.startsWith('badge_') && communityStore.equippedBadge === item.id;
+      const cta = item.available === false ? (item.unavailableLabel || 'Coming soon') : owned && item.id.startsWith('badge_') ? (equippedBadge ? 'Remove badge' : 'Equip badge') : owned ? 'Owned' : isActive ? 'Active' : item.price > 0 ? `Buy · ${number(item.price)} coins` : 'Get for free';
+      return `<button type="button" class="cosmetic-shop-card cosmetic-shop-card-store${owned ? ' owned' : ''}${isActive ? ' active' : ''}" data-name="${esc(item.name.toLowerCase())}" data-price="${Number(item.price || 0)}" data-owned="${!!owned || !!isActive}" ${item.available === false || (owned && !item.id.startsWith('badge_')) || isActive ? 'disabled' : ''} onclick="buyCommunityItem('${equippedBadge ? 'none' : esc(item.id)}',${needText})">
         ${flag}
         <span class="cosmetic-card-store-icon">${item.icon}</span>
         <span class="cosmetic-card-copy"><span class="shop-product-type">${esc(info.label)}</span><strong>${esc(item.name)}</strong><small>${esc(item.desc)}</small>${item.available === false ? `<small class="shop-unavailable-reason">${esc(item.unavailableReason || 'This item is currently unavailable.')}</small>` : ''}
-          ${owned ? '<span class="cosmetic-card-status">Owned</span>' : isActive ? '<span class="cosmetic-card-status active">Active</span>' : ''}
-          <span class="cosmetic-card-price"><span class="material-icons-round">paid</span>${item.price > 0 ? number(item.price) : 'Free'}</span>
+          ${equippedBadge ? '<span class="cosmetic-card-status active">Equipped</span>' : owned ? '<span class="cosmetic-card-status">Owned</span>' : isActive ? '<span class="cosmetic-card-status active">Active</span>' : ''}
+          <span class="cosmetic-card-price"><span class="material-icons-round">${item.available === false ? 'schedule' : 'paid'}</span>${item.available === false ? 'Coming soon' : item.price > 0 ? number(item.price) : 'Free'}</span>
         </span>
         <span class="cosmetic-card-buy">${cta}</span>
       </button>`;
-    }).join('')}</div>`;
-    if (!storeCatFilter.length) catalogHtml += `<div class="cosmetics-empty" style="display:block">No items in this category.</div>`;
+    }).join('')}</div>`}`;
+    if (category !== 'tickets' && !storeCatFilter.length) catalogHtml += `<div class="cosmetics-empty" style="display:block">No items in this category.</div>`;
   }
+  if (communityLoadPending && !communityStoreData) {
+    catalogHtml = `<div class="shop-loading-state" role="status" aria-live="polite"><span class="material-icons-round">sync</span><strong>Loading ${esc(info.label.toLowerCase())}</strong><small>Your shop is ready while account data syncs.</small></div>`;
+  }
+  if (category === 'casino') catalogHtml = `<div class="shop-casino-surface" data-shop-casino-surface>${catalogHtml}${shopCasinoOutcomeMarkup()}</div>`;
   let page = document.getElementById('cosmetics-page');
+  if (casinoFast && page?.dataset.category === 'casino') {
+    const surface = page.querySelector('[data-shop-casino-surface]');
+    if (surface) {
+      const nextSurface = document.createElement('div');
+      nextSurface.innerHTML = catalogHtml;
+      surface.replaceWith(nextSurface.firstElementChild);
+      document.querySelectorAll('[data-wallet-coins]').forEach(node => { node.textContent = number(userCoins); });
+      page.querySelector('.shop-pending-notice')?.remove();
+      page.querySelector('.cosmetics-catalog-head')?.insertAdjacentHTML('afterend', shopCasinoPendingMarkup());
+      shopFocusCasinoOutcome();
+      if (S.shopCasinoView === 'crash' && !communityLoadFailed) shopStartCrashAnimation(); else shopStopCrashUpdates();
+      return;
+    }
+  }
   if (!page) {
     page = document.createElement('section');
     page.id = 'cosmetics-page';
@@ -6637,26 +7158,33 @@ async function renderCosmetics() {
   }
   const groups = { collection:['overview','banners','profile','message','avatar','tags','perks','status','membership'], earn:['rewards','casino','tickets','leaderboard'], help:['support'] };
   const group = Object.keys(groups).find(key => groups[key].includes(category)) || 'collection';
-  const hasCatalogControls = !isCommunityFeature && category !== 'overview' && !tagManagerData;
+  const hasCatalogControls = !isCommunityFeature && category !== 'overview' && !tagManagerData && (!communityLoadFailed || isLegacyCosmetic);
+  if (communityLoadFailed && !isLegacyCosmetic && category !== 'overview') catalogHtml = '<div class="shop-pending-notice" role="alert"><span>Could not load this page. Your balance and purchases have not been changed by this view.</span><button type="button" class="ch-button" onclick="setCosmeticsCategory(\'' + category + '\')">Try again</button></div>';
+  const catalogInnerHtml = `
+      <div class="cosmetics-catalog-head"><div><span class="shop-eyebrow">${group === 'collection' ? 'The collection' : group === 'earn' ? 'Earn & play' : 'Here to help'}</span><h2>${tagManagerData ? 'Manage tags' : info.title}</h2><p>${tagManagerData ? 'Create, edit, animate, remove, and restore tags.' : info.copy}</p></div>${category === 'tags' && isOwner() ? `<button class="cosmetics-icon-button" onclick="setTagManagerOpen(${tagManagerData ? 'false' : 'true'})"><span class="material-icons-round">${tagManagerData ? 'arrow_back' : 'tune'}</span><span>${tagManagerData ? 'Back to tags' : 'Manage tags'}</span></button>` : ''}</div>
+      ${hasCatalogControls ? `<div class="shop-catalog-tools"><label class="cosmetics-search"><span class="material-icons-round">search</span><input id="cosmetics-search-input" value="${esc(S.cosmeticsSearch || '')}" aria-label="Search ${esc(info.label.toLowerCase())}" placeholder="Search ${esc(info.label.toLowerCase())}"></label><div class="shop-filter-controls"><label><span>Show</span><select id="shop-owned-filter" aria-label="Filter by ownership"><option value="all" ${S.shopOwnedFilter !== 'owned' ? 'selected' : ''}>All items</option><option value="owned" ${S.shopOwnedFilter === 'owned' ? 'selected' : ''}>Owned</option></select></label><label><span>Sort</span><select id="shop-sort" aria-label="Sort products"><option value="featured" ${!S.shopSort || S.shopSort === 'featured' ? 'selected' : ''}>Collection order</option><option value="price-asc" ${S.shopSort === 'price-asc' ? 'selected' : ''}>Price: low to high</option><option value="price-desc" ${S.shopSort === 'price-desc' ? 'selected' : ''}>Price: high to low</option><option value="name" ${S.shopSort === 'name' ? 'selected' : ''}>Name: A–Z</option></select></label></div><span id="shop-results-count" role="status" aria-live="polite"></span></div>` : ''}
+      ${tagManagerData ? tagManagerMarkup(tagManagerData) : catalogHtml}<div id="cosmetics-empty" class="cosmetics-empty" hidden><span class="material-icons-round">search_off</span><h3>No matching items</h3><p>Try another search or show all items.</p><button type="button" class="cosmetics-icon-button" id="shop-clear-filters">Clear filters</button></div>
+      <footer class="shop-footer-note"><span>Personalize your space. Prices are in coins.</span><button type="button" class="shop-text-button" onclick="setCosmeticsCategory('support')">Shop support <span class="material-icons-round">arrow_forward</span></button></footer>`;
+  const sameCategory = page.dataset.category === category;
   page.dataset.category = category;
-  page.innerHTML = `<header class="cosmetics-page-header">
+  const currentCatalog = sameCategory ? page.querySelector('.shop-catalog-inner') : null;
+  if (currentCatalog) {
+    currentCatalog.innerHTML = catalogInnerHtml;
+    page.querySelectorAll('[data-wallet-coins]').forEach(node => { node.textContent = number(userCoins); });
+  } else page.innerHTML = `<header class="cosmetics-page-header">
     <div class="cosmetics-header-left"><span class="shop-store-logo"><span class="material-icons-round">storefront</span></span><h1>Shop<span>Nebulo</span></h1></div>
     <div class="cosmetics-header-actions"><div class="cosmetics-coins" aria-label="Wallet balance"><span class="material-icons-round">toll</span><span data-wallet-coins>${number(userCoins)}</span><span>coins</span></div><button type="button" class="shop-primary-btn" onclick="setCosmeticsCategory('rewards')">Get coins</button><button type="button" class="cosmetics-icon-button shop-back-chat" onclick="renderSection('channels')" aria-label="Back to chat"><span class="material-icons-round">arrow_back</span><span>Back to chat</span></button></div>
   </header>
   <nav class="shop-primary-nav" aria-label="Shop sections">${Object.entries({collection:'Collection',earn:'Earn & play',help:'Help'}).map(([key,label]) => `<button type="button" class="${key === group ? 'active' : ''}" ${key === group ? 'aria-current="true"' : ''} onclick="setCosmeticsCategory('${groups[key][0]}')">${label}</button>`).join('')}</nav>
   <div class="cosmetics-page-body">
     <nav class="cosmetics-category-nav" aria-label="${group === 'collection' ? 'Collection departments' : group === 'earn' ? 'Earn and play pages' : 'Help pages'}">${groups[group].map(key => `<button type="button" class="${key === category ? 'active' : ''}" ${key === category ? 'aria-current="page"' : ''} onclick="setCosmeticsCategory('${key}')">${esc(categoryInfo[key].label)}</button>`).join('')}</nav>
-    <main class="cosmetics-catalog"><div class="shop-catalog-inner">
-      <div class="cosmetics-catalog-head"><div><span class="shop-eyebrow">${group === 'collection' ? 'The collection' : group === 'earn' ? 'Earn & play' : 'Here to help'}</span><h2>${tagManagerData ? 'Manage tags' : info.title}</h2><p>${tagManagerData ? 'Create, edit, animate, remove, and restore tags.' : info.copy}</p></div>${category === 'tags' && isOwner() ? `<button class="cosmetics-icon-button" onclick="setTagManagerOpen(${tagManagerData ? 'false' : 'true'})"><span class="material-icons-round">${tagManagerData ? 'arrow_back' : 'tune'}</span><span>${tagManagerData ? 'Back to tags' : 'Manage tags'}</span></button>` : ''}</div>
-      ${hasCatalogControls ? `<div class="shop-catalog-tools"><label class="cosmetics-search"><span class="material-icons-round">search</span><input id="cosmetics-search-input" value="${esc(S.cosmeticsSearch || '')}" aria-label="Search ${esc(info.label.toLowerCase())}" placeholder="Search ${esc(info.label.toLowerCase())}"></label><div class="shop-filter-controls"><label><span>Show</span><select id="shop-owned-filter" aria-label="Filter by ownership"><option value="all" ${S.shopOwnedFilter !== 'owned' ? 'selected' : ''}>All items</option><option value="owned" ${S.shopOwnedFilter === 'owned' ? 'selected' : ''}>Owned</option></select></label><label><span>Sort</span><select id="shop-sort" aria-label="Sort products"><option value="featured" ${!S.shopSort || S.shopSort === 'featured' ? 'selected' : ''}>Collection order</option><option value="price-asc" ${S.shopSort === 'price-asc' ? 'selected' : ''}>Price: low to high</option><option value="price-desc" ${S.shopSort === 'price-desc' ? 'selected' : ''}>Price: high to low</option><option value="name" ${S.shopSort === 'name' ? 'selected' : ''}>Name: A–Z</option></select></label></div><span id="shop-results-count" role="status" aria-live="polite"></span></div>` : ''}
-      ${tagManagerData ? tagManagerMarkup(tagManagerData) : catalogHtml}<div id="cosmetics-empty" class="cosmetics-empty" hidden><span class="material-icons-round">search_off</span><h3>No matching items</h3><p>Try another search or show all items.</p><button type="button" class="cosmetics-icon-button" id="shop-clear-filters">Clear filters</button></div>
-      <footer class="shop-footer-note"><span>Personalize your space. Prices are in coins.</span><button type="button" class="shop-text-button" onclick="setCosmeticsCategory('support')">Shop support <span class="material-icons-round">arrow_forward</span></button></footer>
-    </div></main>
+    <main class="cosmetics-catalog"><div class="shop-catalog-inner">${catalogInnerHtml}</div></main>
   </div>`;
+  window.NebuloAds?.mount(page);
   const input = document.getElementById('cosmetics-search-input');
   const ownedFilter = document.getElementById('shop-owned-filter');
   const sort = document.getElementById('shop-sort');
-  const applyCatalogFilters = () => {
+  const applyCatalogFilters = (sortCards = false) => {
     if (!hasCatalogControls) return;
     S.cosmeticsSearch = input?.value || '';
     S.shopOwnedFilter = ownedFilter?.value || 'all';
@@ -6664,39 +7192,70 @@ async function renderCosmetics() {
     const query = S.cosmeticsSearch.trim().toLowerCase();
     const cards = Array.from(page.querySelectorAll('.cosmetic-shop-card'));
     cards.forEach((card, index) => { if (!card.dataset.collectionOrder) card.dataset.collectionOrder = String(index + 1); });
-    cards.sort((a,b) => S.shopSort === 'name' ? a.dataset.name.localeCompare(b.dataset.name) : S.shopSort === 'price-asc' ? Number(a.dataset.price) - Number(b.dataset.price) : S.shopSort === 'price-desc' ? Number(b.dataset.price) - Number(a.dataset.price) : Number(a.dataset.collectionOrder) - Number(b.dataset.collectionOrder));
+    if (sortCards && cards.length) {
+      cards.sort((a,b) => S.shopSort === 'name' ? a.dataset.name.localeCompare(b.dataset.name) : S.shopSort === 'price-asc' ? Number(a.dataset.price) - Number(b.dataset.price) : S.shopSort === 'price-desc' ? Number(b.dataset.price) - Number(a.dataset.price) : Number(a.dataset.collectionOrder) - Number(b.dataset.collectionOrder));
+      const container = cards[0].parentElement;
+      const fragment = document.createDocumentFragment();
+      cards.forEach(card => fragment.appendChild(card));
+      container?.appendChild(fragment);
+    }
     let visible = 0;
     cards.forEach(card => {
       const show = (!query || card.dataset.name.includes(query)) && (S.shopOwnedFilter !== 'owned' || card.dataset.owned === 'true');
       card.hidden = !show;
-      card.parentElement.appendChild(card);
       if (show) visible += 1;
     });
     document.getElementById('cosmetics-empty').hidden = visible > 0;
     document.getElementById('shop-results-count').textContent = `${visible} ${visible === 1 ? 'item' : 'items'}`;
   };
-  input?.addEventListener('input', applyCatalogFilters);
-  ownedFilter?.addEventListener('change', applyCatalogFilters);
-  sort?.addEventListener('change', applyCatalogFilters);
-  document.getElementById('shop-clear-filters')?.addEventListener('click', () => { input.value = ''; ownedFilter.value = 'all'; applyCatalogFilters(); input.focus(); });
-  applyCatalogFilters();
+  let filterFrame = 0;
+  input?.addEventListener('input', () => {
+    cancelAnimationFrame(filterFrame);
+    filterFrame = requestAnimationFrame(() => applyCatalogFilters(false));
+  });
+  ownedFilter?.addEventListener('change', () => applyCatalogFilters(false));
+  sort?.addEventListener('change', () => applyCatalogFilters(true));
+  document.getElementById('shop-clear-filters')?.addEventListener('click', () => { input.value = ''; ownedFilter.value = 'all'; applyCatalogFilters(false); input.focus(); });
+  applyCatalogFilters(true);
   if (tagManagerData) bindTagManager(tagManagerData);
   page.removeEventListener('click', shopHandleCasinoClick);
   page.removeEventListener('submit', shopHandleCasinoSubmit);
+  page.removeEventListener('keydown', shopHandleCasinoKeydown);
   page.addEventListener('click', shopHandleCasinoClick);
   page.addEventListener('submit', shopHandleCasinoSubmit);
+  page.addEventListener('keydown', shopHandleCasinoKeydown);
+  if (category === 'casino') page.querySelector('.cosmetics-catalog-head')?.insertAdjacentHTML('afterend', shopCasinoPendingMarkup());
+  shopFocusCasinoOutcome();
+  if (category === 'casino' && S.shopCasinoView === 'crash' && !communityLoadFailed) shopStartCrashAnimation(); else shopStopCrashUpdates();
+  if (category === 'tickets' && !communityLoadFailed) shopStartLotteryUpdates(); else shopStopLotteryUpdates();
 }
 
 window.setCosmeticsCategory = function(category) {
-  if (S.cosmeticsCategory === 'casino' && category !== 'casino' && shopCrashInterval) { cancelAnimationFrame(shopCrashInterval); shopCrashInterval = null; }
+  if (S.cosmeticsCategory === 'casino' && category !== 'casino') { shopStopCrashUpdates(); S.shopCasinoOutcome = null; }
+  if (S.cosmeticsCategory === 'tickets' && category !== 'tickets') shopStopLotteryUpdates();
   S.cosmeticsCategory = category;
   S.tagManagerOpen = false;
-  void renderCosmetics();
+  void renderCosmetics({ forceCommunity: category === 'tickets' });
 };
+
+function shopSetControlBusy(control, label = 'Updating…') {
+  if (!control?.matches?.('button,[type="submit"]')) return () => {};
+  const original = control.textContent;
+  control.disabled = true;
+  control.setAttribute('aria-busy', 'true');
+  control.textContent = label;
+  return () => {
+    if (!control.isConnected) return;
+    control.disabled = false;
+    control.removeAttribute('aria-busy');
+    control.textContent = original;
+  };
+}
 
 window.buyCommunityItem = async function(itemId, needsText) {
   if (S.shopPurchaseBusy) return;
   S.shopPurchaseBusy = true;
+  const restoreControl = shopSetControlBusy(document.activeElement?.closest?.('button'), 'Confirming…');
   try {
     let command = S.shopPurchasePending;
     if (command && command.itemId !== itemId) {
@@ -6704,10 +7263,10 @@ window.buyCommunityItem = async function(itemId, needsText) {
       return;
     }
     if (!command) {
-      const me = await api('/api/community/me');
+      const me = S.communityStoreData || await loadCommunityStoreData();
       const item = (me.store?.items || []).find(entry => entry.id === itemId);
       if (item?.available === false) { toast(item.unavailableReason || 'This item is unavailable.', 'error'); return; }
-      const ownedBadge = (me.store?.ownedBadges || []).includes(itemId);
+      const ownedBadge = itemId === 'none' || (me.store?.ownedBadges || []).includes(itemId);
       command = { action: ownedBadge ? 'equip_badge' : itemId === 'premium' ? 'premium' : 'buy_store', itemId, requestId: crypto.randomUUID() };
       if (itemId === 'custom_status') {
         const text = prompt('Enter your custom status:');
@@ -6716,46 +7275,49 @@ window.buyCommunityItem = async function(itemId, needsText) {
       }
       S.shopPurchasePending = command;
     }
-    const data = await api('/api/community/action', { method: 'POST', body: command });
+    const data = await api('/api/community/action', { method: 'POST', body: command, skipWalletRefresh: true });
     S.shopPurchasePending = null;
     if (data.state && S.user) {
       const identity = data.state.store || {};
+      absorbCommunityStoreData(data.state);
       setUser({ ...S.user, coins: data.state.coins, nameEffect: identity.nameEffect || 'none', equippedBadge: identity.equippedBadge || 'none', ownedBadges: identity.ownedBadges || [], customStatus: identity.customStatus || '' });
       if (identity.customStatus) S.customStatus = identity.customStatus;
       S.socket?.emit('presence_ping', presencePayload());
       void fetchPresence();
     }
-    await walletSync.refresh();
     toast(data.result?.msg || (command.action === 'equip_badge' ? 'Badge equipped.' : 'Purchase complete.'), 'success');
     void renderCosmetics();
   } catch (error) {
     if (error.status && error.status < 500) S.shopPurchasePending = null;
     toast(error.data?.msg || error.message || 'Purchase not confirmed. Select this item again to retry safely.', 'error');
-  } finally { S.shopPurchaseBusy = false; }
+  } finally { S.shopPurchaseBusy = false; restoreControl(); }
 };
 
 window.shopClaimDaily = async function() {
+  const restoreControl = shopSetControlBusy(document.activeElement?.closest?.('button'), 'Claiming…');
   try {
-    await api('/api/community/action', { method: 'POST', body: { action: 'daily', requestId: crypto.randomUUID() } });
-    const me = await api('/api/community/me');
-    if (S.user) S.user.coins = me.coins;
+    const data = await api('/api/community/action', { method: 'POST', body: { action: 'daily', requestId: crypto.randomUUID() }, skipWalletRefresh:true });
+    if (data?.state) absorbCommunityStoreData(data.state); else await loadCommunityStoreData({ force:true });
     toast('Daily reward claimed!', 'success');
     void renderCosmetics();
   } catch (error) { toast(error.data?.msg || 'Claim failed', 'error'); }
+  finally { restoreControl(); }
 };
 
 window.shopClaimSpin = async function() {
+  const restoreControl = shopSetControlBusy(document.activeElement?.closest?.('button'), 'Claiming…');
   try {
-    const result = await api('/api/community/action', { method: 'POST', body: { action: 'spin', requestId: crypto.randomUUID() } });
-    const me = await api('/api/community/me');
-    if (S.user) S.user.coins = me.coins;
+    const result = await api('/api/community/action', { method: 'POST', body: { action: 'spin', requestId: crypto.randomUUID() }, skipWalletRefresh:true });
+    if (result?.state) absorbCommunityStoreData(result.state); else await loadCommunityStoreData({ force:true });
     toast(result?.result?.message || 'Bonus claimed!', 'success');
     void renderCosmetics();
   } catch (error) { toast(error.data?.msg || 'Claim failed', 'error'); }
+  finally { restoreControl(); }
 };
 
 window.shopOpenCasino = function(game) {
-  if (shopCrashInterval) { cancelAnimationFrame(shopCrashInterval); shopCrashInterval = null; }
+  shopStopCrashUpdates();
+  S.shopCasinoOutcome = null;
   S.shopCasinoView = game || 'lobby';
   S.shopCasinoHeld = new Set();
   S.shopCasinoHeldRound = '';
@@ -6765,7 +7327,7 @@ window.shopOpenCasino = function(game) {
   S.shopHLState = { current:null, next:null, bet:10, streak:0, active:false, revealed:false, won:false, roundId:null, version:0 };
   S.shopGuessState = { target:0, guess:null, attempts:0, bet:10, active:false, hint:'', roundId:null, version:0 };
   S.shopTriviaState = { question:null, options:[], answered:false, bet:10, active:false, roundId:null, version:0, selected:null, correct:null };
-  void renderCosmetics();
+  void renderCosmetics({ casinoFast:true });
 };
 
 window.shopLoadLeaderboard = async function(metric) {
@@ -6787,10 +7349,11 @@ window.shopSubmitSupport = async function(event) {
   const body = form.body?.value?.trim();
   if (!subject || !body) return;
   try {
-    await api('/api/community/action', { method: 'POST', body: { action: 'support', subject, body, requestId: crypto.randomUUID() } });
+    const data = await api('/api/community/action', { method: 'POST', body: { action: 'support', subject, body, requestId: crypto.randomUUID() }, skipWalletRefresh:true });
+    if (data?.state) absorbCommunityStoreData(data.state); else S.communityStoreFetchedAt = 0;
     toast('Support request sent!', 'success');
     form.reset();
-    void renderCosmetics();
+    await renderCosmetics();
   } catch (error) { toast(error.data?.msg || 'Failed to send', 'error'); }
 };
 
@@ -6806,26 +7369,38 @@ function shopHandleCasinoClick(event) {
   event.preventDefault();
   const action = target.dataset.shopAction;
   if (action === 'choose-game') { shopOpenCasino(target.dataset.game); return; }
-  if (action === 'casino-lobby') { S.shopCasinoView = 'lobby'; void renderCosmetics(); return; }
+  if (action === 'casino-lobby') { S.shopCasinoView = 'lobby'; S.shopCasinoOutcome = null; void renderCosmetics({casinoFast:true}); return; }
   if (action === 'hold') {
     const i = Number(target.dataset.index);
     if (S.shopCasinoHeld.has(i)) S.shopCasinoHeld.delete(i); else S.shopCasinoHeld.add(i);
-    void renderCosmetics(); return;
+    const held = S.shopCasinoHeld.has(i);
+    target.classList.toggle('is-held', held);
+    target.setAttribute('aria-pressed', String(held));
+    const label = target.querySelector('small');
+    if (label) label.textContent = held ? 'Held' : 'Hold';
+    return;
   }
+  if (action === 'dismiss-outcome') { shopDismissOutcome(target.closest('[data-shop-outcome]')?.dataset.shopOutcome); return; }
+  if (action === 'outcome-replay') { shopDismissOutcome('casino'); requestAnimationFrame(() => document.querySelector('[data-shop-casino-form] input[name="bet"]')?.focus()); return; }
+  if (action === 'outcome-lobby') { shopDismissOutcome('casino'); S.shopCasinoView = 'lobby'; void renderCosmetics({casinoFast:true}); return; }
+  if (action === 'lottery-max') { const input = target.closest('form')?.elements?.amount; if (input) input.value = String(Math.floor(Number(S.user?.coins ?? S.communityStoreData?.coins ?? 0))); return; }
+  if (action === 'retry-lottery') { void shopEnterLottery(shopLotteryPendingRequest()?.amount); return; }
+  if (action === 'retry-casino') { void shopMutateCasino(null); return; }
   if (action === 'casino-move') shopCasinoMove(target.dataset.move);
   if (action === 'hl-guess') shopHandleHLGuess(target.dataset.choice);
-  if (action === 'hl-next') { const hl = S.shopHLState; hl.current = hl.next || hl.current; hl.next = null; hl.revealed = false; void renderCosmetics(); }
   if (action === 'hl-cashout') shopHandleHLCashout();
   if (action === 'mines-reveal') shopHandleMinesReveal(Number(target.dataset.index));
   if (action === 'mines-cashout') shopHandleMinesCashout();
   if (action === 'crash-cashout') shopHandleCrashCashout();
-  if (action === 'trivia-answer') shopHandleTriviaAnswer(Number(target.dataset.index));
-  if (action === 'trivia-next') shopHandleTriviaNext();
+  if (action === 'refund-trivia') shopCasinoMove('refund');
 }
 
 function shopHandleCasinoSubmit(event) {
   const form = event.target;
-  if (form.dataset.shopCasinoForm) {
+  if (form.dataset.shopLotteryForm !== undefined) {
+    event.preventDefault();
+    void shopEnterLottery(Number(new FormData(form).get('amount')));
+  } else if (form.dataset.shopCasinoForm) {
     event.preventDefault();
     const fd = new FormData(form);
     const bet = Number(fd.get('bet'));
@@ -6842,246 +7417,211 @@ function shopHandleCasinoSubmit(event) {
   }
 }
 
+let shopCasinoBusy = false;
+let shopCrashInterval = null;
+let shopCrashPoll = null;
+let shopCrashCashoutPending = false;
+function shopOutcomeSeenKey() { return 'nebulo-shop-settled-round:' + String(S.user?.id || S.user?._id || myUsername()); }
+function shopCreateOutcome({ context='casino', roundId='', net=0, payout=0, stake=0, label='Casino' } = {}) {
+  return { context, roundId:String(roundId || ''), net:Number(net || 0), payout:Number(payout || 0), stake:Number(stake || 0), label:String(label || 'Casino') };
+}
+
+function shopHandleCasinoKeydown(event) {
+  if (event.key !== 'Escape') return;
+  const outcome = event.target.closest?.('[data-shop-outcome]') || document.querySelector('[data-shop-outcome]');
+  if (!outcome) return;
+  event.preventDefault();
+  shopDismissOutcome(outcome.dataset.shopOutcome);
+}
+function shopCaptureCasinoOutcome(previousRound, nextRound) {
+  if (!nextRound?.id || nextRound.status !== 'settled') return;
+  const transitioned = previousRound?.id !== nextRound.id || previousRound?.status === 'playing';
+  if (!transitioned || sessionStorage.getItem(shopOutcomeSeenKey()) === String(nextRound.id)) return;
+  const names = { blackjack:'Blackjack', videopoker:'Video Poker', higherlower:'Higher or Lower', mines:'Mines', numberguess:'Number Guess', crash:'Crash', trivia:'Trivia' };
+  const outcome = shopCreateOutcome({ context:'casino', roundId:nextRound.id, net:nextRound.net, payout:nextRound.payout, stake:nextRound.stake, label:names[nextRound.game] || nextRound.game });
+  S.shopCasinoOutcome = outcome;
+  S.shopLastCasinoOutcome = outcome;
+  sessionStorage.setItem(shopOutcomeSeenKey(), String(nextRound.id));
+}
+function shopOutcomeMarkup(outcome) {
+  if (!outcome) return '';
+  const number = value => formatCoins(value);
+  const isWin = outcome.net > 0;
+  const isLoss = outcome.net < 0;
+  const mood = isWin ? 'win' : isLoss ? 'loss' : 'push';
+  const title = isWin ? 'YOU WON' : isLoss ? 'ROUND LOST' : 'STAKE RETURNED';
+  const amount = isWin ? `+${number(outcome.net)} coins` : isLoss ? `−${number(Math.abs(outcome.net))} coins` : `${number(outcome.stake)} coins returned`;
+  const copy = isWin ? `${number(outcome.payout)} coins were paid to your wallet.` : isLoss ? 'That one did not land. Take a breath, then play again when you are ready.' : 'No win and no loss. Your full stake is back in your wallet.';
+  const pieces = Array.from({length:isWin ? 18 : isLoss ? 12 : 0}, (_, index) => `<i style="--i:${index};--x:${4 + ((index * 37) % 92)}%;--r:${(index * 47) % 180}deg" aria-hidden="true"></i>`).join('');
+  return `<section class="shop-outcome shop-outcome-${mood}" data-shop-outcome="${esc(outcome.context)}" role="dialog" aria-modal="true" aria-labelledby="shop-outcome-title-${esc(outcome.context)}" tabindex="-1">
+    <div class="shop-outcome-atmosphere" aria-hidden="true">${pieces}</div>
+    <button type="button" class="shop-outcome-close" data-shop-action="dismiss-outcome" aria-label="Close result"><span class="material-icons-round">close</span></button>
+    <div class="shop-outcome-copy" role="status" aria-live="assertive"><span class="shop-outcome-kicker">${esc(outcome.label)}</span><h3 id="shop-outcome-title-${esc(outcome.context)}">${title}</h3><strong>${amount}</strong><p>${copy}</p></div>
+    <div class="shop-outcome-actions"><button type="button" class="ch-button ch-primary" data-shop-action="outcome-replay">Play again</button><button type="button" class="ch-button" data-shop-action="outcome-lobby">All games</button></div>
+  </section>`;
+}
+function shopCasinoOutcomeMarkup() { return S.shopCasinoOutcome?.context === 'casino' ? shopOutcomeMarkup(S.shopCasinoOutcome) : ''; }
+function shopDismissOutcome(context) {
+  if (!context || context === 'casino') S.shopCasinoOutcome = null;
+  const outcome = document.querySelector(`[data-shop-outcome="${context || 'casino'}"]`);
+  outcome?.classList.add('is-leaving');
+  setTimeout(() => {
+    outcome?.remove();
+    const next = document.querySelector('[data-shop-casino-form] input[name="bet"], [data-shop-action="casino-lobby"]');
+    next?.focus({ preventScroll:true });
+  }, 180);
+}
+function shopFocusCasinoOutcome() {
+  requestAnimationFrame(() => {
+    const outcome = document.querySelector('[data-shop-outcome]');
+    if (!outcome) return;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    outcome.scrollIntoView({ block:'center', behavior:reducedMotion ? 'auto' : 'smooth' });
+    outcome.focus({ preventScroll:true });
+  });
+}
+function shopPendingKey() { return 'nebulo-shop-pending-casino:' + String(S.user?.id || S.user?._id || myUsername()); }
+function shopPendingRequest() {
+  try { return JSON.parse(sessionStorage.getItem(shopPendingKey()) || 'null'); } catch { return null; }
+}
+function shopCasinoPendingMarkup() {
+  return shopPendingRequest() ? '<div class="shop-pending-notice" role="status"><span>A game action is awaiting confirmation.</span><button type="button" class="ch-button" data-shop-action="retry-casino">Retry confirmation</button></div>' : '';
+}
 async function shopMutateCasino(payload) {
+  if (shopCasinoBusy) return null;
+  const pending = shopPendingRequest();
+  if (pending && payload) { toast('Confirm the pending game action before starting another.', 'info'); return null; }
+  const request = pending || { ...payload, requestId: crypto.randomUUID() };
+  if (!request.game) return null;
+  const previousRound = S.communityStoreData?.casino?.round || null;
+  const pendingControl = document.activeElement?.closest?.('button,[type="submit"]') || null;
+  const casinoSurface = document.querySelector('[data-shop-casino-surface]');
+  const previousControlText = pendingControl?.textContent || '';
+  shopCasinoBusy = true;
+  sessionStorage.setItem(shopPendingKey(), JSON.stringify(request));
+  if (casinoSurface) { casinoSurface.classList.add('is-processing'); casinoSurface.setAttribute('aria-busy', 'true'); }
+  if (pendingControl) {
+    pendingControl.disabled = true;
+    pendingControl.setAttribute('aria-busy', 'true');
+    if (pendingControl.matches('button,[type="submit"]')) pendingControl.textContent = 'Updating…';
+  }
   try {
-    const data = await api('/api/community/action', { method: 'POST', body: { ...payload, requestId: crypto.randomUUID() } });
-    if (data.state && S.user && Number.isFinite(Number(data.state.coins))) S.user.coins = Number(data.state.coins);
+    const data = await api('/api/community/action', { method:'POST', body:request, skipWalletRefresh:true });
+    sessionStorage.removeItem(shopPendingKey());
+    if (data.state) {
+      absorbCommunityStoreData(data.state);
+      shopCaptureCasinoOutcome(previousRound, data.state.casino?.round);
+    }
     return data;
   } catch (error) {
-    toast(error.data?.msg || error.message || 'Casino action failed', 'error');
-    throw error;
-  }
-}
-
-function shopShowWin(amount) {
-  const page = document.getElementById('cosmetics-page');
-  if (!page) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'shop-win-overlay';
-  overlay.innerHTML = `<div class="shop-win-content"><div class="shop-win-text">WIN!</div><div class="shop-win-amount">+${Number(amount).toLocaleString()}</div><div class="shop-win-subtitle">coins added to your wallet</div></div>`;
-  page.appendChild(overlay);
-  for (let i = 0; i < 40; i++) {
-    const confetti = document.createElement('div');
-    confetti.className = 'shop-confetti-piece';
-    confetti.style.left = Math.random() * 100 + '%';
-    confetti.style.animationDelay = Math.random() * 0.8 + 's';
-    confetti.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
-    confetti.style.background = ['#fbbf24','#34d399','#818cf8','#f472b6','#38bdf8','#a3e635'][Math.floor(Math.random()*6)];
-    overlay.appendChild(confetti);
-  }
-  setTimeout(() => { overlay.style.transition = 'opacity .6s'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 600); }, 2200);
-}
-
-function shopShowLoss(amount) {
-  const page = document.getElementById('cosmetics-page');
-  if (!page) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'shop-loss-overlay';
-  overlay.innerHTML = `<div class="shop-loss-content"><div class="shop-loss-text">LOSS</div><div class="shop-loss-amount">-${Number(amount).toLocaleString()}</div><div class="shop-loss-subtitle">better luck next time</div></div>`;
-  page.appendChild(overlay);
-  setTimeout(() => { overlay.style.transition = 'opacity .5s'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 500); }, 2000);
-}
-
-async function shopCasinoDeal(game, bet) {
-  if (bet > Number(S.user?.coins || S.communityStoreData?.coins || 0)) { toast('Not enough coins.', 'error'); return; }
-  try {
-    const data = await shopMutateCasino({ action: 'casino', game, move: 'deal', bet });
-    const round = data.state?.casino?.round;
-    if (!round) return;
-    if (game === 'higherlower') {
-      S.shopHLState = { current:{rank:round.gameData.currentCard,suit:Math.floor(Math.random()*4)}, next:null, bet, streak:0, active:true, revealed:false, won:false, roundId:round.id, version:round.version };
-    } else if (game === 'mines') {
-      S.shopMinesState = { grid:[], revealed:[], mines:round.gameData.mines||[], multiplier:1, bet, active:true, crashed:false, roundId:round.id, version:round.version, multipliers:{} };
-    } else if (game === 'numberguess') {
-      S.shopGuessState = { target:round.gameData?.target||Math.floor(Math.random()*100)+1, guess:null, attempts:0, bet, active:true, hint:'', roundId:round.id, version:round.version };
-    } else if (game === 'crash') {
-      S.shopCrashState = { multiplier:1, bet, active:true, crashed:false, cashedOut:false, crashPoint:round.gameData?.crashPoint||2, lastCashout:0, lastWin:0, roundId:round.id, version:round.version };
-      shopStartCrashAnimation();
-    } else if (game === 'trivia') {
-      S.shopTriviaState.bet = bet; S.shopTriviaState.active = true; S.shopTriviaState.roundId = round.id; S.shopTriviaState.version = round.version;
-      shopHandleTriviaNext();
-      return;
+    const status = Number(error.status || error.response?.status || 0);
+    if (status >= 400 && status < 500) sessionStorage.removeItem(shopPendingKey());
+    toast(error.data?.msg || error.message || 'Could not confirm the action. Retry to check its result.', 'error');
+    return null;
+  } finally {
+    shopCasinoBusy = false;
+    if (casinoSurface?.isConnected) { casinoSurface.classList.remove('is-processing'); casinoSurface.removeAttribute('aria-busy'); }
+    if (pendingControl?.isConnected) {
+      pendingControl.disabled = false;
+      pendingControl.removeAttribute('aria-busy');
+      pendingControl.textContent = previousControlText;
     }
-    void renderCosmetics();
-  } catch {}
+    if (S.section === 'cosmetics' && S.cosmeticsCategory === 'casino') await renderCosmetics({casinoFast:true});
+  }
 }
-
-async function shopCasinoMove(move) {
+async function shopCasinoDeal(game, bet) {
+  if (!Number.isSafeInteger(bet) || bet < 1) { toast('Enter a whole number of coins.', 'error'); return; }
+  if (bet > Number(S.user?.coins ?? S.communityStoreData?.coins ?? 0)) { toast('Not enough coins.', 'error'); return; }
+  const existing = S.communityStoreData?.casino?.round;
+  if (existing?.status === 'playing' && !confirm(`Starting a new round ends your ${existing.game} round and forfeits its ${existing.stake} coin stake. Continue?`)) return;
+  S.shopCasinoOutcome = null;
+  S.shopCasinoHeld = new Set();
+  await shopMutateCasino({ action:'casino', game, move:'deal', bet });
+}
+async function shopCasinoMove(move, extra = {}) {
   const round = S.communityStoreData?.casino?.round;
   if (!round || round.status !== 'playing') return;
-  const payload = { action:'casino', game:round.game, move, roundId:round.id, version:round.version };
+  const payload = { action:'casino', game:round.game, move, roundId:round.id, version:round.version, ...extra };
   if (move === 'draw') payload.hold = [...S.shopCasinoHeld].sort((a,b)=>a-b);
-  const data = await shopMutateCasino(payload);
-  const newRound = data.state?.casino?.round;
-  if (newRound && newRound.status === 'completed') {
-    const payout = Number(newRound.gameData?.payout || 0);
-    if (payout > 0) shopShowWin(payout);
-  } else if (newRound && newRound.status === 'lost') {
-    shopShowLoss(round.bet || 10);
+  await shopMutateCasino(payload);
+}
+function shopHandleHLGuess(choice) { return shopCasinoMove('guess', {choice}); }
+function shopHandleHLCashout() { return shopCasinoMove('cashout'); }
+function shopHandleMinesReveal(index) { return shopCasinoMove('reveal', {index}); }
+function shopHandleMinesCashout() { return shopCasinoMove('cashout'); }
+async function shopHandleCrashCashout() {
+  if (shopCrashCashoutPending || shopCasinoBusy) return;
+  const round = S.communityStoreData?.casino?.round;
+  if (round?.game !== 'crash' || round.status !== 'playing') return;
+  shopCrashCashoutPending = true;
+  shopStopCrashUpdates();
+  const button = document.querySelector('[data-shop-action="crash-cashout"]');
+  const label = document.querySelector('[data-crash-label]');
+  if (button) {
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = 'Cashing out…';
   }
-  void renderCosmetics();
-}
-
-function shopHandleHLGuess(choice) {
-  const hl = S.shopHLState;
-  if (!hl.active || hl.revealed) return;
-  const nextCard = { rank: Math.floor(Math.random()*13), suit: Math.floor(Math.random()*4) };
-  hl.next = nextCard;
-  hl.revealed = true;
-  const currentVal = (hl.current?.rank ?? 0) + 2;
-  const nextVal = nextCard.rank + 2;
-  hl.won = (choice === 'higher' && nextVal > currentVal) || (choice === 'lower' && nextVal < currentVal) || (nextVal === currentVal);
-  if (hl.won) hl.streak++; else { hl.active = false; shopShowLoss(hl.bet); }
-  void renderCosmetics();
-}
-
-function shopHandleHLCashout() {
-  const hl = S.shopHLState;
-  if (!hl.active) return;
-  const payout = Math.floor(hl.bet * (1 + hl.streak * 0.5));
-  shopShowWin(payout);
-  toast(`Cashed out with ${hl.streak} streak! +${payout} coins`, 'success');
-  hl.active = false;
-  shopMutateCasino({ action:'casino', game:'higherlower', move:'cashout', bet:hl.bet, streak:hl.streak, roundId:hl.roundId, version:hl.version }).then(()=>void renderCosmetics()).catch(()=>void renderCosmetics());
-}
-
-async function shopHandleMinesReveal(index) {
-  const ms = S.shopMinesState;
-  if (!ms.active || ms.revealed.includes(index)) return;
-  if (ms.mines.includes(index)) {
-    ms.revealed = [...ms.mines];
-    ms.crashed = true;
-    ms.active = false;
-    shopShowLoss(ms.bet);
-    toast(`Boom! You hit a mine.`, 'error');
-    shopMutateCasino({ action:'casino', game:'mines', move:'crash', bet:ms.bet, roundId:ms.roundId, version:ms.version }).catch(()=>{});
-  } else {
-    try {
-      const data = await shopMutateCasino({ action:'casino', game:'mines', move:'reveal', index, bet:ms.bet, roundId:ms.roundId, version:ms.version });
-      const round = data.state?.casino?.round;
-      if (round && round.game === 'mines' && round.status === 'playing') {
-        ms.version = round.version;
-        ms.revealed = round.gameData?.revealed ?? ms.revealed;
-        ms.multiplier = round.gameData?.multiplier ?? ms.multiplier;
-        ms.multipliers = round.gameData?.multipliers ?? ms.multipliers;
-      }
-    } catch {}
+  if (label) label.textContent = 'Cash-out locked · confirming with server';
+  try {
+    await shopCasinoMove('cashout');
+  } finally {
+    shopCrashCashoutPending = false;
+    const current = S.communityStoreData?.casino?.round;
+    if (current?.game === 'crash' && current.status === 'playing') shopStartCrashAnimation();
   }
-  void renderCosmetics();
 }
-
-function shopHandleMinesCashout() {
-  const ms = S.shopMinesState;
-  if (!ms.active || ms.revealed.length === 0) return;
-  const payout = Math.floor(ms.bet * ms.multiplier);
-  shopShowWin(payout);
-  toast(`Cashed out at ${ms.multiplier.toFixed(2)}×! +${payout} coins`, 'success');
-  ms.active = false;
-  shopMutateCasino({ action:'casino', game:'mines', move:'cashout', bet:ms.bet, multiplier:ms.multiplier, roundId:ms.roundId, version:ms.version }).then(()=>void renderCosmetics()).catch(()=>void renderCosmetics());
-}
-
-let shopCrashInterval = null;
-function shopStartCrashAnimation() {
+function shopHandleGuessSubmit(guess) { return shopCasinoMove('guess', {guess}); }
+function shopStopCrashUpdates() {
   if (shopCrashInterval) cancelAnimationFrame(shopCrashInterval);
-  const cs = S.shopCrashState;
-  const crashStart = performance.now();
-  const cp = cs.crashPoint;
-  const tick = (now) => {
-    if (!cs.active || cs.crashed || cs.cashedOut) return;
-    const t = (now - crashStart) / 1000;
-    cs.multiplier = Math.min(1 + t * (cp - 1) * 0.6 + t * t * (cp - 1) * 0.15, cp);
-    if (cs.multiplier >= cp) {
-      cs.multiplier = cp; cs.crashed = true; cs.active = false;
-      shopShowLoss(cs.bet);
-      toast(`Crashed at ${cp.toFixed(2)}×!`, 'error');
-      shopMutateCasino({ action:'casino', game:'crash', move:'crash', bet:cs.bet, roundId:cs.roundId, version:cs.version }).catch(()=>{});
-      void renderCosmetics(); return;
+  if (shopCrashPoll) clearTimeout(shopCrashPoll);
+  shopCrashInterval = null;
+  shopCrashPoll = null;
+}
+function shopStartCrashAnimation() {
+  shopStopCrashUpdates();
+  const round = S.communityStoreData?.casino?.round;
+  if (S.section !== 'cosmetics' || S.cosmeticsCategory !== 'casino' || S.shopCasinoView !== 'crash' || round?.game !== 'crash' || round.status !== 'playing' || shopCrashCashoutPending) return;
+  // Derive every frame from the server's round start. Frame drops and slow
+  // requests can no longer pause or reset the number shown to the player.
+  const serverClockOffset = Number(round.serverNow || Date.now()) - Date.now();
+  const startedAt = Number(round.startedAt || (Date.now() + serverClockOffset));
+  let lastPaint = 0;
+  const tick = now => {
+    if (S.section !== 'cosmetics' || S.cosmeticsCategory !== 'casino' || S.shopCasinoView !== 'crash') { shopStopCrashUpdates(); return; }
+    if (shopCrashCashoutPending) return;
+    if (!document.hidden && now - lastPaint >= 50) {
+      lastPaint = now;
+      const elapsed = Math.max(0, Date.now() + serverClockOffset - startedAt);
+      const multiplier = Math.floor(Math.exp(Math.min(elapsed, 50_000) / 10_000) * 100) / 100;
+      const value = document.querySelector('[data-crash-value]');
+      if (value && !round.gameData?.crashed) value.textContent = multiplier.toFixed(2) + '×';
+      const cashout = document.querySelector('[data-shop-action="crash-cashout"]');
+      if (cashout) cashout.textContent = `Cash out · ${formatCoins(Math.floor(Number(round.stake || 0) * multiplier))} coins`;
     }
-    const valEl = document.querySelector('[data-crash-value]');
-    const lblEl = document.querySelector('[data-crash-label]');
-    const btnWrap = document.querySelector('[data-crash-btn-wrap]');
-    if (valEl) { valEl.textContent = `${cs.multiplier.toFixed(2)}×`; valEl.className = `ch-crash-value ${cs.multiplier<2?'ch-crash-low':cs.multiplier<5?'ch-crash-mid':'ch-crash-high'}`; }
-    if (lblEl) lblEl.textContent = 'Climbing...';
-    if (btnWrap) btnWrap.querySelector('button').textContent = `Cash out at ${cs.multiplier.toFixed(2)}× (${Math.floor(cs.bet*cs.multiplier).toLocaleString()} coins)`;
     shopCrashInterval = requestAnimationFrame(tick);
   };
-  shopCrashInterval = requestAnimationFrame(tick);
-}
-
-function shopHandleCrashCashout() {
-  const cs = S.shopCrashState;
-  if (!cs.active || cs.crashed || cs.cashedOut) return;
-  cs.cashedOut = true; cs.active = false;
-  cs.lastCashout = cs.multiplier;
-  cs.lastWin = Math.floor(cs.bet * cs.multiplier);
-  shopShowWin(cs.lastWin);
-  toast(`Cashed out at ${cs.lastCashout.toFixed(2)}×! +${cs.lastWin} coins`, 'success');
-  if (shopCrashInterval) cancelAnimationFrame(shopCrashInterval);
-  const valEl = document.querySelector('[data-crash-value]');
-  const lblEl = document.querySelector('[data-crash-label]');
-  const btnWrap = document.querySelector('[data-crash-btn-wrap]');
-  if (valEl) { valEl.textContent = `${cs.lastCashout.toFixed(2)}×`; valEl.className = 'ch-crash-value ch-crash-high'; }
-  if (lblEl) lblEl.textContent = `Cashed out at ${cs.lastCashout.toFixed(2)}×`;
-  if (btnWrap) btnWrap.outerHTML = `<div style="margin-top:16px"><p style="font-size:14px;font-weight:550;color:#4ade80">Cashed out at ${cs.lastCashout.toFixed(2)}× · +${cs.lastWin} coins</p></div>`;
-  shopMutateCasino({ action:'casino', game:'crash', move:'cashout', bet:cs.bet, multiplier:cs.lastCashout, roundId:cs.roundId, version:cs.version }).catch(()=>{});
-}
-
-function shopHandleTriviaAnswer(index) {
-  const ts = S.shopTriviaState;
-  if (!ts.active || ts.answered || !ts.question) return;
-  ts.answered = true; ts.selected = index;
-  ts.correct = index === ts.question.correct;
-  if (ts.correct) {
-    shopShowWin(ts.bet);
-    toast(`Correct! +${ts.bet} coins`, 'success');
-    shopMutateCasino({ action:'casino', game:'trivia', move:'answer', bet:ts.bet, correct:true, roundId:ts.roundId, version:ts.version }).catch(()=>{});
-  } else {
-    shopShowLoss(ts.bet);
-    toast(`Wrong! The answer was ${ts.question.opts[ts.question.correct]}`, 'error');
-    shopMutateCasino({ action:'casino', game:'trivia', move:'answer', bet:ts.bet, correct:false, roundId:ts.roundId, version:ts.version }).catch(()=>{});
-  }
-  void renderCosmetics();
-}
-
-function shopHandleTriviaNext() {
-  const questions = [
-    {q:'What planet is known as the Red Planet?',opts:['Venus','Mars','Jupiter','Saturn'],correct:1,cat:'Science'},
-    {q:'Which element has the chemical symbol "O"?',opts:['Gold','Osmium','Oxygen','Iron'],correct:2,cat:'Science'},
-    {q:'In what year did World War II end?',opts:['1943','1944','1945','1946'],correct:2,cat:'History'},
-    {q:'What is the largest ocean on Earth?',opts:['Atlantic','Indian','Arctic','Pacific'],correct:3,cat:'Geography'},
-    {q:'Which programming language was created by Brendan Eich?',opts:['Python','Java','JavaScript','C++'],correct:2,cat:'Technology'},
-    {q:'What is the speed of light in km/s?',opts:['150,000','200,000','300,000','400,000'],correct:2,cat:'Science'},
-    {q:'Which country has the most natural lakes?',opts:['USA','Russia','Canada','Brazil'],correct:2,cat:'Geography'},
-    {q:'What does "HTTP" stand for?',opts:['HyperText Transfer Protocol','High Tech Transfer Process','Home Tool Transfer Protocol','HyperText Transmission Platform'],correct:0,cat:'Technology'},
-    {q:'Which planet has the most moons?',opts:['Jupiter','Saturn','Uranus','Neptune'],correct:1,cat:'Science'},
-    {q:'In what year was the first iPhone released?',opts:['2005','2006','2007','2008'],correct:2,cat:'Technology'},
-  ];
-  const ts = S.shopTriviaState;
-  ts.question = questions[Math.floor(Math.random()*questions.length)];
-  ts.answered = false; ts.selected = null; ts.correct = null;
-  void renderCosmetics();
-}
-
-async function shopHandleGuessSubmit(guess) {
-  const gs = S.shopGuessState;
-  gs.attempts++; gs.guess = guess;
-  if (guess === gs.target) {
-    gs.hint = 'Correct!';
-    const payout = Math.floor(gs.bet * (1 + (7 - gs.attempts) * 0.3));
-    shopShowWin(payout);
-    toast(`You got it in ${gs.attempts} attempts! +${payout} coins`, 'success');
-    gs.active = false;
-    shopMutateCasino({ action:'casino', game:'numberguess', move:'guess', bet:gs.bet, attempts:gs.attempts, correct:true, roundId:gs.roundId, version:gs.version }).catch(()=>{});
-  } else if (gs.attempts >= 7) {
-    gs.hint = `The number was ${gs.target}`;
-    gs.active = false;
-    shopShowLoss(gs.bet);
-    toast(`Out of attempts! The number was ${gs.target}.`, 'error');
-    shopMutateCasino({ action:'casino', game:'numberguess', move:'guess', bet:gs.bet, attempts:gs.attempts, correct:false, roundId:gs.roundId, version:gs.version }).catch(()=>{});
-  } else {
-    gs.hint = guess > gs.target ? 'Too high!' : 'Too low!';
-  }
-  void renderCosmetics();
+  if (!round.gameData?.crashed) shopCrashInterval = requestAnimationFrame(tick);
+  shopCrashPoll = setTimeout(async () => {
+    if (S.section !== 'cosmetics' || S.cosmeticsCategory !== 'casino' || S.shopCasinoView !== 'crash') return;
+    if (document.hidden) { shopStartCrashAnimation(); return; }
+    if (shopCasinoBusy) { shopStartCrashAnimation(); return; }
+    try {
+      const state = await api('/api/community/me');
+      if (shopCasinoBusy || S.communityStoreData?.casino?.round?.id !== round.id) return;
+      S.communityStoreData = state;
+      const refreshed = state.casino?.round;
+      if (refreshed?.id === round.id && refreshed.status === 'playing' && refreshed.gameData?.crashed) await shopCasinoMove('tick');
+      else if (refreshed?.id === round.id && refreshed.status === 'settled') {
+        shopCaptureCasinoOutcome(round, refreshed);
+        await renderCosmetics({casinoFast:true});
+      } else shopStartCrashAnimation();
+    } catch {
+      const label = document.querySelector('[data-crash-label]');
+      if (label) label.textContent = 'Connection interrupted. Checking the round…';
+      shopStartCrashAnimation();
+    }
+  }, round.gameData?.crashed ? 0 : 1000);
 }
 
 function cosmeticPreviewVisual(effect, scope) {
@@ -7099,15 +7639,27 @@ window.openCosmeticPreview = function(scope, id) {
   const state = cosmeticOwnedState(scope, id);
   const duration = scope === 'profile' && id !== 'none' ? `${(Number(effect.durationMs || 1000) / 1000).toFixed(1).replace('.0','')} second animation` : '';
   const actionLabel = state.active ? 'Equipped' : state.owned ? (id === 'none' ? 'Remove cosmetic' : 'Equip') : 'Buy & equip';
-  openModal(`<article class="cosmetic-preview-modal cosmetic-preview-modal-${esc(scope)}">
+  cosmeticPreviewReturnFocus = document.activeElement;
+  openModal(`<article role="dialog" aria-modal="true" aria-labelledby="cosmetic-preview-title" class="cosmetic-preview-modal cosmetic-preview-modal-${esc(scope)}">
     <button class="cosmetic-preview-close" onclick="closeModal()" aria-label="Close"><span class="material-icons-round">close</span></button>
     ${cosmeticPreviewVisual(effect, scope)}
-    <div class="cosmetic-preview-details"><span class="cosmetic-preview-type">${esc(scope === 'profile' ? 'Quick profile effect' : scope)}</span><h2>${esc(effect.name)}</h2><p>${esc(effect.description || (scope === 'banner' ? 'Cinematic profile banner.' : 'Preview this cosmetic before equipping it.'))}</p>${duration ? `<span class="cosmetic-preview-duration"><span class="material-icons-round">timer</span>${duration}</span>` : ''}
-      <div class="cosmetic-preview-purchase"><div><span>${state.owned ? 'Status' : 'Price'}</span><strong>${state.owned ? (state.active ? 'Equipped' : 'Owned') : effect.price > 0 ? `${Number(effect.price).toLocaleString()} coins` : 'Included'}</strong><small><span data-wallet-coins>${Number(S.user?.coins || 0).toLocaleString()}</span> coins available</small></div>
+    <div class="cosmetic-preview-details"><span class="cosmetic-preview-type">${esc(scope === 'profile' ? 'Quick profile effect' : scope)}</span><h2 id="cosmetic-preview-title">${esc(effect.name)}</h2><p>${esc(effect.description || (scope === 'banner' ? 'Cinematic profile banner.' : 'Preview this cosmetic before equipping it.'))}</p>${duration ? `<span class="cosmetic-preview-duration"><span class="material-icons-round">timer</span>${duration}</span>` : ''}
+      <div class="cosmetic-preview-purchase"><div><span>${state.owned ? 'Status' : 'Price'}</span><strong>${state.owned ? (state.active ? 'Equipped' : 'Owned') : effect.price > 0 ? `${formatCoins(effect.price)} coins` : 'Included'}</strong><small><span data-wallet-coins>${formatCoins(S.user?.coins)}</span> coins available</small></div>
       <button class="modal-btn modal-btn-primary" ${state.active ? 'disabled' : ''} onclick="applyCosmeticPreview('${esc(scope)}','${esc(id)}')">${esc(actionLabel)}</button></div>
       ${scope === 'profile' && id !== 'none' ? '<button class="cosmetic-replay" onclick="replayProfileEffect()"><span class="material-icons-round">replay</span>Replay effect</button>' : ''}
     </div>
   </article>`);
+  const dialog = document.querySelector('.cosmetic-preview-modal');
+  dialog?.querySelector('button')?.focus();
+  dialog?.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); closeModal(); }
+    if (event.key === 'Tab') {
+      const buttons = Array.from(dialog.querySelectorAll('button:not(:disabled),[tabindex="0"]'));
+      const first = buttons[0], last = buttons.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
+  });
 };
 
 window.replayProfileEffect = function() {
@@ -7167,7 +7719,7 @@ window.openCoinStore = function() {
     <div class="coin-shop-content">
       <div class="coin-shop-hero">
         <div><div class="coin-shop-kicker">UBG Chat Store</div><h2>Make chat yours.</h2><p>Purchase coins or pick up a curated cosmetic collection. Every purchase is connected to your signed-in UBG Chat account.</p></div>
-        <div class="coin-shop-wallet"><div class="coin-shop-wallet-label">Your wallet</div><div class="coin-shop-wallet-value"><span class="material-icons-round">toll</span><span data-wallet-coins>${Number(S.user?.coins || 0).toLocaleString()}</span></div></div>
+        <div class="coin-shop-wallet"><div class="coin-shop-wallet-label">Your wallet</div><div class="coin-shop-wallet-value"><span class="material-icons-round">toll</span><span data-wallet-coins>${formatCoins(S.user?.coins)}</span></div></div>
       </div>
       <section class="coin-shop-section">
         <div class="coin-shop-section-head"><div><div class="coin-shop-section-title">Coin Packs</div><div class="coin-shop-section-subtitle">Flexible currency for any cosmetic in the shop.</div></div><span class="coin-shop-section-label">Best everyday value</span></div>
@@ -7175,7 +7727,7 @@ window.openCoinStore = function() {
           ${Object.entries(COIN_PACKS).map(([id, pack]) => { const copy = packCopy[id]; return `<article class="coin-shop-pack${copy.featured ? ' featured' : ''}">
             ${copy.featured ? '<span class="coin-shop-popular">Most popular</span>' : ''}
             <div class="coin-shop-pack-name">${copy.name}</div>
-            <div class="coin-shop-pack-coins"><span class="material-icons-round">toll</span>${pack.coins.toLocaleString()}</div>
+            <div class="coin-shop-pack-coins"><span class="material-icons-round">toll</span>${formatCoins(pack.coins)}</div>
             <div class="coin-shop-pack-desc">${copy.desc}</div>
             <div class="coin-shop-pack-price">${pack.price} <span>USD</span></div>
             <button onclick="purchaseShopPack('${id}')">Purchase coins</button>
@@ -7238,8 +7790,12 @@ window.setEquippedEffectFromCosmetics = async function(id, options = {}) {
     }
   }
   try {
-    await api('/api/tlk/chat-effects/equip', { method: 'POST', body: { effectId: id } });
-  } catch {}
+    const data = await api('/api/tlk/chat-effects/equip', { method: 'POST', body: { effectId: id } });
+    if (data?.user) setUser({ ...(S.user || {}), ...data.user });
+  } catch (error) {
+    toast(error?.data?.msg || 'Could not equip this effect. Please try again.', 'error');
+    return;
+  }
   S.equippedEffect = id;
   localStorage.setItem('equippedEffect', id);
   if (S.user) S.user.equippedEffect = id;
@@ -7826,11 +8382,11 @@ function setupAppHandlers() {
   );
 
   document.getElementById('mobile-sections-btn')?.addEventListener('click', openMobileSectionPanel);
-  document.getElementById('mobile-section-close')?.addEventListener('click', closeMobilePanels);
-  document.getElementById('mobile-members-close')?.addEventListener('click', closeMobilePanels);
-  document.getElementById('mobile-panel-backdrop')?.addEventListener('click', closeMobilePanels);
+  document.getElementById('mobile-section-close')?.addEventListener('click', () => closeMobilePanels({ restoreFocus: true }));
+  document.getElementById('mobile-members-close')?.addEventListener('click', () => closeMobilePanels({ restoreFocus: true }));
+  document.getElementById('mobile-panel-backdrop')?.addEventListener('click', () => closeMobilePanels({ restoreFocus: true }));
   document.getElementById('mobile-more-btn')?.addEventListener('click', toggleMobileMoreMenu);
-  document.getElementById('mobile-more-close')?.addEventListener('click', closeMobilePanels);
+  document.getElementById('mobile-more-close')?.addEventListener('click', () => closeMobilePanels({ restoreFocus: true }));
   document.querySelectorAll('[data-mobile-destination]').forEach(button => {
     button.addEventListener('click', async () => {
       const destination = button.dataset.mobileDestination;
@@ -7851,11 +8407,35 @@ function setupAppHandlers() {
   // Send
   document.getElementById('send-btn')?.addEventListener('click', sendMessage);
   document.getElementById('messages-list')?.addEventListener('click', event => {
+    const actionToggle = event.target.closest('[data-message-actions-toggle]');
+    if (actionToggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      const item = actionToggle.closest('.msg-virtual-item');
+      const shouldOpen = !item?.classList.contains('mobile-actions-open');
+      closeMessageActionTray();
+      if (shouldOpen && item) {
+        item.classList.add('mobile-actions-open');
+        actionToggle.setAttribute('aria-expanded', 'true');
+        requestAnimationFrame(() => {
+          const tray = item.querySelector('.msg-actions');
+          const scroller = document.getElementById('messages-container');
+          if (!tray || !scroller) return;
+          const trayRect = tray.getBoundingClientRect();
+          const scrollerRect = scroller.getBoundingClientRect();
+          if (trayRect.bottom > scrollerRect.bottom - 8) {
+            scroller.scrollBy({ top: trayRect.bottom - scrollerRect.bottom + 12, behavior: 'smooth' });
+          }
+        });
+      }
+      return;
+    }
     const actionButton = event.target.closest('[data-message-action]');
     if (actionButton) {
       event.preventDefault();
       event.stopPropagation();
       const message = S.lastMsgs.find(item => String(getMessageId(item)) === String(actionButton.dataset.messageId));
+      closeMessageActionTray();
       if (!message) return toast('Message is no longer available', 'error');
       const action = actionButton.dataset.messageAction;
       if (action === 'reply') setReply(message);
@@ -7873,6 +8453,14 @@ function setupAppHandlers() {
       event.preventDefault();
       event.stopPropagation();
       toggleMessageReaction(reaction.dataset.messageId, reaction.dataset.reactionEmoji);
+      return;
+    }
+    const imageTarget = event.target.closest('.msg-bubble img');
+    if (imageTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      const fullImage = imageTarget.dataset.fullImage || imageTarget.closest('[data-chat-image-link]')?.getAttribute('href') || imageTarget.currentSrc || imageTarget.src;
+      openChatImageViewer(fullImage, imageTarget.alt);
       return;
     }
     const jumpTarget = event.target.closest('[data-jump-message-id]');
@@ -7901,7 +8489,8 @@ function setupAppHandlers() {
     }
     const target = event.target.closest('[data-reply-id]');
     if (target?.dataset.replyId) {
-      if (event.target.closest('a, input, textarea, select')) return;
+      if (event.target.closest('a, button, input, textarea, select')) return;
+      if (String(window.getSelection?.() || '').trim()) return;
       event.preventDefault();
       event.stopPropagation();
       setReplyById(target.dataset.replyId);
@@ -7913,13 +8502,14 @@ function setupAppHandlers() {
   input?.addEventListener('keydown', e => {
     if (e.key === 'Escape') renderSlashCommandPanel('');
     if (handleMentionKey(e)) return;
+    if (isMobileChat()) return;
     const enterToSend = getChatBool('chatEnterToSend', true);
     const shouldSend = enterToSend ? !e.shiftKey : (e.ctrlKey || e.metaKey);
     if (e.key === 'Enter' && shouldSend) { e.preventDefault(); sendMessage(); }
   });
   input?.addEventListener('input', () => {
     input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    input.style.height = Math.min(input.scrollHeight, isMobileChat() ? 112 : 120) + 'px';
     // Mention autocomplete
     const val = input.value;
     onTypingInput();
@@ -7982,6 +8572,7 @@ function setupAppHandlers() {
 
   // Close popover/panel on outside click
   document.addEventListener('click', () => {
+    closeMessageActionTray();
     const pop = document.getElementById('effects-popover');
     if (pop) pop.style.display = 'none';
     hideMentionPanel();
@@ -8007,6 +8598,9 @@ function setupAppHandlers() {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       noteActivity();
+      if (!S.socket?.connected) S.socket?.connect();
+      else if (S.room) S.socket.emit('join_room', S.room);
+      void pollMessages();
       scheduleMarkRead();
     }
   });
@@ -8020,7 +8614,31 @@ function setupAppHandlers() {
   });
 
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && isMobileChat()) closeMobilePanels();
+    if (event.key === 'Escape' && document.getElementById('chat-image-viewer')?.classList.contains('visible')) {
+      event.preventDefault();
+      closeChatImageViewer();
+      return;
+    }
+    if (event.key === 'Tab' && isMobileChat()) {
+      const activePanel = document.querySelector('#section-panel.mobile-open, #members-panel.mobile-open, #mobile-more-menu.mobile-open');
+      if (activePanel) {
+        const focusable = [...activePanel.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')]
+          .filter(node => node.getClientRects().length);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    }
+    if (event.key === 'Escape' && isMobileChat()) {
+      if (closeMessageActionTray({ restoreFocus: true })) return;
+      closeMobilePanels({ restoreFocus: true });
+    }
   });
 
   // Sidebar search
@@ -8084,7 +8702,15 @@ window.addEventListener('storage', (event) => {
 });
 window.addEventListener('resize', () => {
   if (!isMobileChat()) closeMobilePanels();
+  syncMobileViewport();
 });
+window.visualViewport?.addEventListener('resize', syncMobileViewport, { passive: true });
+window.visualViewport?.addEventListener('scroll', syncMobileViewport, { passive: true });
+document.addEventListener('focusin', event => {
+  if (event.target.matches?.('input, textarea, select, [contenteditable="true"]')) syncMobileViewport();
+});
+document.addEventListener('focusout', () => setTimeout(syncMobileViewport, 80));
+syncMobileViewport();
 window.addEventListener('message', (event) => {
   const data = event.data;
   if (data?.type === 'setting-changed' && String(data.key || '').startsWith('chat')) applyChatPreferences();
@@ -8124,7 +8750,10 @@ async function boot() {
 
 const communityHub = initCommunityHub({
   api, getUser: () => S.user, setUser, openModal, closeModal, toast,
-  openProfileEditor, openCosmetics: () => renderSection('cosmetics'),
+  openProfileEditor, openCosmetics: (category = 'overview') => {
+    S.cosmeticsCategory = category;
+    return renderSection('cosmetics');
+  },
   applyAccountUpdate, closeMobilePanels,
 });
 window.__openCommunityHub = (mode, tab) => communityHub.open(mode, tab);
@@ -8133,4 +8762,12 @@ boot().catch(err => console.error('[UBG Chat] Boot error:', err));
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && S.user) void walletSync.refresh();
 });
-window.addEventListener('online', () => { if (S.user) void walletSync.refresh(); });
+window.addEventListener('online', () => {
+  if (!S.user) return;
+  void walletSync.refresh();
+  if (!S.socket?.connected) S.socket?.connect();
+  if (S.room) {
+    S.socket?.emit('join_room', S.room);
+    void pollMessages();
+  }
+});

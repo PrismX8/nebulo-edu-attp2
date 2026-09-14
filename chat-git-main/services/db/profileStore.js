@@ -96,6 +96,16 @@ function mapAccount(row = {}) {
   if (!row.id) return null;
   const username = String(row.username || row.email || '').trim();
   const metadata = row.user_metadata && typeof row.user_metadata === 'object' ? row.user_metadata : {};
+  const community = metadata.nebulo_community && typeof metadata.nebulo_community === 'object' ? metadata.nebulo_community : {};
+  const now = Date.now();
+  const nameEffect = Number(community.nameEffectUntil || 0) > now && ['glow', 'rainbow'].includes(community.nameEffect)
+    ? community.nameEffect
+    : 'none';
+  const ownedBadges = Array.isArray(community.ownedBadges) ? community.ownedBadges : [];
+  const equippedBadge = ownedBadges.includes(community.equippedBadge) ? community.equippedBadge : 'none';
+  const customStatus = Number(community.customStatusUntil || 0) > now && typeof community.customStatus === 'string'
+    ? community.customStatus.slice(0, 80)
+    : '';
   const displayName = String(metadata.display_name || username).trim() || username;
   return {
     _id: String(row.id),
@@ -113,6 +123,9 @@ function mapAccount(row = {}) {
     is_admin: !!row.is_admin,
     is_premium: !!row.is_premium,
     is_booster: !!row.is_booster,
+    nameEffect,
+    equippedBadge,
+    customStatus,
     email_confirmed: !!row.email_confirmed,
     updated_at: row.updated_at || null,
     source: 'database',
@@ -212,7 +225,6 @@ async function createAccount({ id, email, username, displayName, passwordHash })
       [id, username]
     );
     await client.query('commit');
-    for (const id of changed) require('../chat/walletEvents').changed(id);
     return findAccountById(id);
   } catch (error) {
     await client.query('rollback').catch(() => {});
@@ -445,6 +457,139 @@ async function getAdminStats() {
   };
 }
 
+async function resetAllCoinsOnce({ version, message } = {}) {
+  const cleanVersion = String(version || '').trim();
+  const cleanMessage = String(message || '').trim().slice(0, 1000);
+  if (!cleanVersion || !cleanMessage) throw new Error('A reset version and notification message are required');
+  const markerPrefix = `coin-reset:${cleanVersion}`.slice(0, 150);
+  const client = await getPool().connect();
+  try {
+    await client.query('begin');
+    await client.query('select pg_advisory_xact_lock(hashtext($1))', [markerPrefix]);
+    const marker = await client.query(
+      `select 1 from public.users
+        where user_metadata #>> '{nebulo_community,coinResetVersion}' = $1
+        limit 1`,
+      [cleanVersion]
+    );
+    if (marker.rows[0]) {
+      const backfill = await client.query(
+        `update public.users u
+            set user_metadata = jsonb_set(
+                  coalesce(u.user_metadata, '{}'::jsonb),
+                  '{nebulo_community}',
+                  coalesce(u.user_metadata -> 'nebulo_community', '{}'::jsonb) ||
+                    jsonb_build_object(
+                      'coinResetVersion', $1::text,
+                      'coinResetNotice', jsonb_build_object(
+                        'id', $3 || ':' || u.id::text,
+                        'type', 'system',
+                        'message', $2::text,
+                        'metadata', jsonb_build_object('kind', 'coin_balance_reset', 'version', $1::text),
+                        'at', $4::bigint
+                      )
+                    ),
+                  true
+                )
+          where (u.user_metadata #>> '{nebulo_community,coinResetVersion}') is distinct from $1
+            and exists (select 1 from public.profiles p where p.id = u.id)
+          returning id`,
+        [cleanVersion, cleanMessage, markerPrefix, Date.now()]
+      );
+      await client.query('commit');
+      return { applied: false, accounts: 0, previousTotal: 0, noticesBackfilled: backfill.rowCount };
+    }
+
+    const accounts = await client.query('select id, coins from public.profiles order by id for update');
+    await client.query('update public.profiles set coins = 0, updated_at = now() where coins <> 0');
+    await client.query(
+      `update public.users u
+          set user_metadata = jsonb_set(
+                coalesce(u.user_metadata, '{}'::jsonb),
+                '{nebulo_community}',
+                coalesce(u.user_metadata -> 'nebulo_community', '{}'::jsonb) ||
+                  jsonb_build_object(
+                    'coinResetVersion', $1::text,
+                    'coinResetNotice', jsonb_build_object(
+                      'id', $3 || ':' || u.id::text,
+                      'type', 'system',
+                      'message', $2::text,
+                      'metadata', jsonb_build_object('kind', 'coin_balance_reset', 'version', $1::text),
+                      'at', $4::bigint
+                    )
+                  ),
+                true
+              )
+        where exists (select 1 from public.profiles p where p.id = u.id)`,
+      [cleanVersion, cleanMessage, markerPrefix, Date.now()]
+    );
+    await client.query('commit');
+    return {
+      applied: true,
+      accounts: accounts.rowCount,
+      previousTotal: accounts.rows.reduce((total, account) => total + Number(account.coins || 0), 0)
+    };
+  } catch (error) {
+    await client.query('rollback').catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function listSystemNotifications(userId) {
+  const id = String(userId || '').trim();
+  if (!id) return [];
+  const result = await getPool().query(
+    `select user_metadata #> '{nebulo_community,coinResetNotice}' as notice
+       from public.users
+      where id = $1::uuid
+      limit 1`,
+    [id]
+  );
+  const notice = result.rows[0]?.notice;
+  return notice && typeof notice === 'object' && notice.id && notice.message ? [notice] : [];
+}
+
+async function clearSystemNotification(userId, notificationId) {
+  const id = String(userId || '').trim();
+  const alertId = String(notificationId || '').trim();
+  if (!id || !alertId) return false;
+  const result = await getPool().query(
+    `update public.users
+        set user_metadata = jsonb_set(
+              coalesce(user_metadata, '{}'::jsonb),
+              '{nebulo_community}',
+              coalesce(user_metadata -> 'nebulo_community', '{}'::jsonb) - 'coinResetNotice',
+              true
+            )
+      where id = $1::uuid
+        and user_metadata #>> '{nebulo_community,coinResetNotice,id}' = $2
+      returning id`,
+    [id, alertId]
+  );
+  return !!result.rows[0];
+}
+
+async function clearSystemNotifications(userId) {
+  const id = String(userId || '').trim();
+  if (!id) return 0;
+  const result = await getPool().query(
+    `update public.users
+        set user_metadata = jsonb_set(
+              coalesce(user_metadata, '{}'::jsonb),
+              '{nebulo_community}',
+              coalesce(user_metadata -> 'nebulo_community', '{}'::jsonb) - 'coinResetNotice',
+              true
+            )
+      where id = $1::uuid
+        and user_metadata #> '{nebulo_community,coinResetNotice}' is not null
+      returning id`,
+    [id]
+  );
+  return result.rowCount;
+}
+
 module.exports = {
   getPool,
   query,
@@ -463,6 +608,10 @@ module.exports = {
   spendCoins,
   adminGrantCoins,
   transferCoins,
+  resetAllCoinsOnce,
+  listSystemNotifications,
+  clearSystemNotification,
+  clearSystemNotifications,
   getAdminStats,
   mapAccount
 };

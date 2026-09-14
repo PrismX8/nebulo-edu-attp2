@@ -9,7 +9,7 @@ const USERS_FILE = path.join(DATA_DIR, "users.json");
 const RESERVED_USERNAMES = new Set(["moderation"]);
 const cache = {
   mtimeMs: -1,
-  store: { users: [] },
+  store: { users: [], migrations: {} },
   byId: new Map(),
   byUsername: new Map(),
   byEmail: new Map()
@@ -27,8 +27,23 @@ function ensureStore() {
 
 function normalizeStore(input = {}) {
   return {
-    users: Array.isArray(input.users) ? input.users.map((user) => normalizeUser(user)) : []
+    users: Array.isArray(input.users) ? input.users.map((user) => normalizeUser(user)) : [],
+    migrations: input.migrations && typeof input.migrations === "object" && !Array.isArray(input.migrations)
+      ? { ...input.migrations }
+      : {}
   };
+}
+
+function normalizeSystemNotifications(value) {
+  return (Array.isArray(value) ? value : []).map((notification) => ({
+    id: String(notification?.id || crypto.randomUUID()),
+    type: String(notification?.type || "info").slice(0, 30),
+    message: String(notification?.message || "").slice(0, 1000),
+    metadata: notification?.metadata && typeof notification.metadata === "object" && !Array.isArray(notification.metadata)
+      ? { ...notification.metadata }
+      : {},
+    at: Number(notification?.at || Date.now())
+  })).filter((notification) => notification.message).slice(-100);
 }
 
 function sanitizeCoins(value) {
@@ -122,13 +137,24 @@ function normalizeUser(user = {}) {
     avatar: typeof user.avatar === "string" ? user.avatar : null,
     coins: sanitizeCoins(user.coins),
     ...(user.community && typeof user.community === 'object' ? { community: user.community } : {}),
+    systemNotifications: normalizeSystemNotifications(user.systemNotifications),
     ownedEffects,
     equippedEffect: normalizeEquippedEffect(user.equippedEffect, ownedEffects),
     equippedAvatarEffect: normalizeEquippedAvatarEffect(user.equippedAvatarEffect, ownedEffects),
+    ...normalizeShopCosmetics(user),
     friends: normalizeFriends(user.friends),
     friendRequestsSent: normalizeFriendRequests(user.friendRequestsSent),
     friendRequestsReceived: normalizeFriendRequests(user.friendRequestsReceived),
   };
+}
+
+function normalizeShopCosmetics(user) {
+  const result = {};
+  for (const [owned, equipped] of [['ownedBanners','equippedBanner'], ['ownedProfileEffects','equippedProfileEffect'], ['ownedTags','equippedTag']]) {
+    result[owned] = [...new Set(['none', ...(Array.isArray(user[owned]) ? user[owned] : []).filter(id => typeof id === 'string' && /^[a-z0-9_-]{1,100}$/.test(id))])];
+    result[equipped] = result[owned].includes(user[equipped]) ? user[equipped] : 'none';
+  }
+  return result;
 }
 
 function rebuildIndexes(store) {
@@ -198,7 +224,21 @@ function writeStore(store) {
     fs.writeFileSync(fd, JSON.stringify(nextStore, null, 2), 'utf8');
     fs.fsyncSync(fd);
     fs.closeSync(fd); fd = undefined;
-    fs.renameSync(temp, USERS_FILE);
+    // Windows can briefly reject an otherwise valid atomic replacement while
+    // virus scanners or another reader still hold the destination handle. The
+    // cross-process writer lock already protects against stale writes, so retry
+    // only these transient filesystem errors and keep the durable temp file
+    // intact until the replacement succeeds.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        fs.renameSync(temp, USERS_FILE);
+        break;
+      } catch (error) {
+        const transient = ['EPERM', 'EBUSY', 'EACCES'].includes(error?.code);
+        if (!transient || attempt >= 7) throw error;
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Math.min(5 * (attempt + 1), 35));
+      }
+    }
   } catch (error) {
     if (fd !== undefined) { try { fs.closeSync(fd); } catch {} }
     try { fs.unlinkSync(temp); } catch {}
@@ -728,6 +768,70 @@ function communityTransaction(id, callback) {
   return result;
 }
 
+function resetAllCoinsOnce({ version, message } = {}) {
+  const cleanVersion = String(version || "").trim();
+  const cleanMessage = String(message || "").trim().slice(0, 1000);
+  if (!cleanVersion || !cleanMessage) throw new Error("A reset version and notification message are required");
+  const store = readStore();
+  if (store.migrations?.[cleanVersion]) {
+    return { applied: false, accounts: store.users.length, previousTotal: 0 };
+  }
+
+  let previousTotal = 0;
+  const at = Date.now();
+  store.users = store.users.map((entry) => {
+    const user = normalizeUser(entry);
+    previousTotal += Number(user.coins || 0);
+    const systemNotifications = [...user.systemNotifications];
+    if (user.source !== "database") {
+      const id = `coin-reset:${cleanVersion}:${user._id}`;
+      if (!systemNotifications.some((notification) => notification.id === id)) {
+        systemNotifications.push({
+          id,
+          type: "system",
+          message: cleanMessage,
+          metadata: { kind: "coin_balance_reset", version: cleanVersion },
+          at
+        });
+      }
+    }
+    return normalizeUser({ ...user, coins: 0, systemNotifications });
+  });
+  store.migrations = {
+    ...(store.migrations || {}),
+    [cleanVersion]: { appliedAt: at, accounts: store.users.length, previousTotal }
+  };
+  writeStore(store);
+  return { applied: true, accounts: store.users.length, previousTotal };
+}
+
+function listSystemNotifications(userId) {
+  const user = readStore().users.find((entry) => String(entry._id) === String(userId));
+  return user ? normalizeSystemNotifications(user.systemNotifications) : [];
+}
+
+function clearSystemNotification(userId, notificationId) {
+  const store = readStore();
+  const user = store.users.find((entry) => String(entry._id) === String(userId));
+  if (!user) return false;
+  const before = normalizeSystemNotifications(user.systemNotifications);
+  user.systemNotifications = before.filter((notification) => notification.id !== String(notificationId));
+  if (user.systemNotifications.length === before.length) return false;
+  writeStore(store);
+  return true;
+}
+
+function clearSystemNotifications(userId) {
+  const store = readStore();
+  const user = store.users.find((entry) => String(entry._id) === String(userId));
+  if (!user) return 0;
+  const count = normalizeSystemNotifications(user.systemNotifications).length;
+  if (!count) return 0;
+  user.systemNotifications = [];
+  writeStore(store);
+  return count;
+}
+
 function unlockEffect(userId, effectId = "") {
   const effect = effects.getEffect(effectId);
   if (!effect || effect.id === "none") {
@@ -893,12 +997,17 @@ function sanitizeUser(user) {
     ownedAvatarEffects: ownedEffectsByScope(normalized.ownedEffects, "avatar"),
     equippedEffect: normalizeEquippedEffect(normalized.equippedEffect, normalizeOwnedEffects(normalized.ownedEffects)),
     equippedAvatarEffect: normalizeEquippedAvatarEffect(normalized.equippedAvatarEffect, normalizeOwnedEffects(normalized.ownedEffects)),
+    ...normalizeShopCosmetics(normalized),
     friends: normalizeFriends(normalized.friends),
   };
 }
 
 module.exports = {
   communityTransaction,
+  resetAllCoinsOnce,
+  listSystemNotifications,
+  clearSystemNotification,
+  clearSystemNotifications,
   listUsers,
   findByUsername,
   findByIdentifier,
@@ -929,7 +1038,8 @@ module.exports = {
 
 // Serialize every writer across local server processes. Contention fails safely
 // and is retryable; it never writes a stale snapshot over another process.
-for (const name of ['communityTransaction', 'upsertRemoteUser', 'addFriend',
+for (const name of ['communityTransaction', 'resetAllCoinsOnce', 'clearSystemNotification',
+  'clearSystemNotifications', 'upsertRemoteUser', 'addFriend',
   'addFriendRequest', 'acceptFriendRequest', 'denyFriendRequest',
   'removeFriendRelationship', 'createUser', 'updateProfile', 'updatePassword',
   'deleteUser', 'grantCoins', 'spendCoins', 'transferCoins', 'purchaseEffect',

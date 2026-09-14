@@ -1,6 +1,11 @@
 // Native Nebulo community/account UI. Wallet mutations are authoritative on the server.
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const number = value => Number(value || 0).toLocaleString();
+const compactNumber = new Intl.NumberFormat('en-US', { notation:'compact', compactDisplay:'short', maximumFractionDigits:1 });
+const number = value => {
+  const amount = Number(value || 0);
+  if (!Number.isFinite(amount)) return '0';
+  return Math.abs(amount) < 10_000 ? Math.trunc(amount).toLocaleString('en-US') : compactNumber.format(Math.trunc(amount));
+};
 const tabs = {
   community: ['Rewards', 'Casino', 'Leaderboard', 'Support'],
   account: ['Info', 'Profile', 'Appearance', 'Premium', 'DMs', 'Password', 'Recovery', 'Blocked', 'Sounds'],
@@ -29,6 +34,7 @@ export function initCommunityHub(deps) {
   let audio = null, lastSound = 0, returnFocus = null;
   let casinoView = '', held = new Set(), heldRound = '', wager = 10;
   let storeCategory = 'all';
+  let renderViewMemory = { scrollTop: 0, focus: null };
   // New game states
   let minesState = { grid: [], revealed: [], mines: [], multiplier: 1, bet: 10, active: false, crashed: false };
   let crashState = { multiplier: 1, bet: 10, active: false, crashed: false, cashedOut: false, crashPoint: 0 };
@@ -38,6 +44,50 @@ export function initCommunityHub(deps) {
   const activeSounds = new Set();
   const stopSounds = () => { for(const item of activeSounds){try{item.osc.stop();item.gain.disconnect();}catch{}}activeSounds.clear(); };
   const root = () => document.getElementById('community-hub');
+  function describeFocusedControl(container) {
+    const node = document.activeElement;
+    if (!node || !container.contains(node)) return null;
+    const form = node.closest('[data-ch-form]');
+    return {
+      id: node.id || '',
+      tag: node.tagName,
+      name: node.getAttribute('name') || '',
+      type: node.getAttribute('type') || '',
+      action: node.dataset?.chAction || '',
+      tab: node.dataset?.chTab || '',
+      index: node.dataset?.index || '',
+      game: node.dataset?.game || '',
+      form: form?.dataset?.chForm || '',
+      selectionStart: typeof node.selectionStart === 'number' ? node.selectionStart : null,
+      selectionEnd: typeof node.selectionEnd === 'number' ? node.selectionEnd : null,
+    };
+  }
+  function restoreRenderedView(container) {
+    const body = container.querySelector('.ch-body');
+    if (body) body.scrollTop = renderViewMemory.scrollTop || 0;
+    const key = renderViewMemory.focus;
+    if (!key) return;
+    let node = key.id ? document.getElementById(key.id) : null;
+    if (node && !container.contains(node)) node = null;
+    if (!node) {
+      node = [...container.querySelectorAll('button,input,select,textarea,a[href]')].find(candidate => {
+        const form = candidate.closest('[data-ch-form]');
+        return candidate.tagName === key.tag &&
+          (candidate.getAttribute('name') || '') === key.name &&
+          (candidate.getAttribute('type') || '') === key.type &&
+          (candidate.dataset?.chAction || '') === key.action &&
+          (candidate.dataset?.chTab || '') === key.tab &&
+          (candidate.dataset?.index || '') === key.index &&
+          (candidate.dataset?.game || '') === key.game &&
+          (form?.dataset?.chForm || '') === key.form;
+      });
+    }
+    if (!node || node.disabled) return;
+    node.focus({ preventScroll: true });
+    if (key.selectionStart !== null && typeof node.setSelectionRange === 'function') {
+      node.setSelectionRange(key.selectionStart, key.selectionEnd);
+    }
+  }
   const premium = () => !!state?.premium?.active;
   const isStaff = () => ['owner','admin'].includes(String(getUser()?.role || '').toLowerCase());
   const applyPreferences = () => {
@@ -83,6 +133,7 @@ export function initCommunityHub(deps) {
   }
   let openSource = 'community';
   function open(nextMode='community', nextTab) {
+    if(nextMode==='community' && nextTab==='Casino') return openCosmetics('casino');
     openSource = nextMode;
     returnFocus = document.activeElement;
     mode = nextMode; tab = nextTab || tabs[mode][0]; error=''; result=''; board=null; recoveryCodes=[];
@@ -104,7 +155,7 @@ export function initCommunityHub(deps) {
     const bestStreak = Number(daily.bestStreak) || 0;
     const nextReward = 100 + 25 * (Math.min(streak, 7) - 1);
     const progress = Math.min(100, (streak / 7) * 100);
-    return `${heading('Rewards', 'Earn coins for cosmetics and membership. Rewards reset at midnight UTC.')}
+    return `${heading('Rewards', 'Earn coins for cosmetics and games. Rewards reset at midnight UTC.')}
 
       <div class="ch-rewards-hero">
         <div class="ch-rewards-hero-inner">
@@ -208,11 +259,10 @@ export function initCommunityHub(deps) {
     if (s.customStatus) statusItems.push({ label: 'Custom status', value: s.customStatus, until: s.customStatusUntil });
     if (s.nameEffect && s.nameEffect !== 'none') statusItems.push({ label: 'Name effect', value: s.nameEffect, until: s.nameEffectUntil });
     if (s.boostActive) statusItems.push({ label: 'Channel boost', value: 'Active', until: s.boostUntil });
-    if (s.proxyActive) statusItems.push({ label: 'Proxy priority', value: 'Active', until: s.proxyUntil });
     if (s.uploadActive) statusItems.push({ label: 'Upload boost', value: 'Active', until: s.uploadUntil });
     const activeStatuses = statusItems.length ? `<div class="ch-store-statuses">${statusItems.map(i => `<div class="ch-store-status"><span class="ch-store-status-label">${esc(i.label)}</span><span class="ch-store-status-value">${esc(i.value)}</span><span class="ch-store-status-until">${i.until ? `Until ${esc(date(i.until))}` : ''}</span></div>`).join('')}</div>` : '';
 
-    const lotteryInfo = s.lottery ? `<div class="ch-store-lottery"><div class="ch-store-lottery-inner"><div><span class="ch-store-lottery-label">Weekly lottery</span><span class="ch-store-lottery-pot">${number(s.lottery.pot)} coins in pot</span></div><div class="ch-store-lottery-meta">${s.lottery.tickets > 0 ? `Your tickets: ${number(s.lottery.tickets)}` : 'No tickets yet'}</div></div></div>` : '';
+    const lotteryInfo = s.lottery ? `<div class="ch-store-lottery"><div class="ch-store-lottery-inner"><div><span class="ch-store-lottery-label">Weekly Lottery</span><span class="ch-store-lottery-pot">${number(s.lottery.pot)} coin pot</span><small>${number(s.lottery.ticketCount)} ${Number(s.lottery.ticketCount) === 1 ? 'ticket' : 'tickets'} · closes ${esc(date(s.lottery.endAt))}</small></div><div class="ch-store-lottery-meta">One ticket per account<br>${s.lottery.entered ? `Entered with ${number(s.lottery.entryAmount)} coins` : `${number(s.lottery.wins)} wins`}</div></div>${s.lottery.entered ? `<div class="ch-store-lottery-ticket">✓ Your ticket is confirmed for this drawing.</div>` : `<form class="ch-store-lottery-form" data-ch-form="lottery"><label>Contribution<input name="amount" type="number" min="1" step="1" max="${Math.max(0, Number(coins))}" value="${Math.min(100, Math.max(1, Number(coins)))}" required></label><button type="submit" class="ch-button ch-primary" ${Number(coins) < 1 ? 'disabled' : ''}>Get weekly ticket</button></form>`}${s.lottery.lastDraw ? `<div class="ch-store-lottery-last">Last winner: ${s.lottery.lastDraw.won ? 'you' : '@' + esc(s.lottery.lastDraw.winnerUsername || 'member')} · ${number(s.lottery.lastDraw.payout)} coins</div>` : ''}</div>` : '';
 
     const itemCards = filtered.map(item => {
       const owned = (item.id === 'name_glow' && s.nameEffect === 'glow') ||
@@ -221,7 +271,6 @@ export function initCommunityHub(deps) {
                     (item.id === 'badge_verified' && (s.ownedBadges || []).includes('badge_verified')) ||
                     (item.id === 'premium' && state.premium?.active);
       const isActive = (item.id === 'channel_boost' && s.boostActive) ||
-                       (item.id === 'proxy_priority' && s.proxyActive) ||
                        (item.id === 'upload_boost' && s.uploadActive);
       const statusBadge = owned ? '<span class="ch-store-badge-owned">Owned</span>' : isActive ? '<span class="ch-store-badge-active">Active</span>' : '';
       const needText = item.id === 'custom_status';
@@ -234,8 +283,8 @@ export function initCommunityHub(deps) {
           ${statusBadge}
         </div>
         <div class="ch-store-item-action">
-          ${item.price > 0 ? `<span class="ch-store-price">${number(item.price)} coins</span>` : ''}
-          ${item.available === false ? `<button type="button" class="ch-button ch-store-buy" disabled title="${esc(item.unavailableReason || 'Unavailable')}">Unavailable</button>` : owned ? `<button type="button" class="ch-button ch-store-buy" disabled>Owned</button>` :
+          ${item.price > 0 && item.available !== false ? `<span class="ch-store-price">${number(item.price)} coins</span>` : ''}
+          ${item.available === false ? `<button type="button" class="ch-button ch-store-buy" disabled title="${esc(item.unavailableReason || 'Coming soon')}">${esc(item.unavailableLabel || 'Coming soon')}</button>` : owned ? `<button type="button" class="ch-button ch-store-buy" disabled>Owned</button>` :
             item.price > 0 ? `<button type="button" class="ch-button ch-primary ch-store-buy" data-ch-action="store-buy" data-item="${esc(item.id)}" ${coins < item.price ? 'disabled title="Not enough coins"' : ''}>Buy</button>` : ''}
         </div>
       </div>`;
@@ -357,7 +406,7 @@ export function initCommunityHub(deps) {
       case 'Info': return `${heading('Account overview','Manage your identity, preferences and account security.')}<div class="ch-identity"><span class="ch-avatar">${esc((user.displayName || user.username || "N").slice(0,1).toUpperCase())}</span><div><strong>${esc(user.displayName || user.username)}</strong><p>@${esc(user.username)}</p></div><span class="ch-badge">${premium()?"Premium":"Member"}</span></div><dl class="ch-info"><div><dt>Display name</dt><dd>${esc(user.displayName || user.username)}</dd></div><div><dt>Username</dt><dd>@${esc(user.username)}</dd></div><div><dt>Role</dt><dd>${esc(user.role || 'Member')}</dd></div><div><dt>Coins</dt><dd data-wallet-coins>${number(getUser()?.coins ?? state.coins)}</dd></div><div><dt>Membership</dt><dd>${premium()?'Premium active':'Free member'}</dd></div></dl><div class="ch-row" style="gap:10px">${button('Edit name & avatar','profile-editor')} ${button('Community rewards','community')}</div>`;
       case 'Profile': return `${heading('Profile details','Name and avatar editing are in your profile editor.')}${button('Edit name & avatar','profile-editor')}<form class="ch-form ch-divider" data-ch-form="profile"><label class="ch-field">About me<textarea name="bio" maxlength="280" rows="3" placeholder="Tell others about yourself...">${esc(p.bio)}</textarea></label><div class="ch-two">${field('Pronouns','pronouns',p.pronouns,'maxlength="40" placeholder="e.g. they/them"')}${field('Favorite game','favoriteGame',p.favoriteGame,'maxlength="60" placeholder="e.g. Chess"')}</div>${field('Birthday (MM-DD)','birthday',p.birthday,'pattern="[0-9]{2}-[0-9]{2}" placeholder="MM-DD"')}${field('Profile name color (Premium)','nameColor',p.nameColor || '#60a5fa',`type="color" ${premium()?'':'disabled'}`)}<p class="ch-muted">These details are visible to other members. Leave anything private blank.</p><button type="submit" class="ch-button ch-primary">Save profile</button></form>`;
       case 'Appearance': return `${heading('Appearance','Saved on this browser. Message and animation settings are separate.')}<form class="ch-form" data-ch-form="appearance">${select('Theme','theme',prefs.theme,[['nebulo','Nebulo blue'],['midnight','Midnight'],...(premium()?[['ocean','Ocean · Premium'],['forest','Forest · Premium']]:[])])}<div class="ch-two">${select('Message font','font',prefs.font,[['default','Inter'],['serif','Serif'],['mono','Monospace']])}${select('Message text size','size',prefs.size,[12,13,14,16,18,20].map(i=>[i,`${i}px`]))}</div>${select('Cursor','cursor',prefs.cursor,[['default','Default'],...(premium()?[['crosshair','Crosshair · Premium'],['cell','Cell · Premium']]:[])])}<div class="ch-message-preview"><strong>Nebulo</strong><p>A familiar place. Your messages, your style.</p></div><button type="submit" class="ch-button ch-primary">Save appearance</button></form>${premium()?'':'<p class="ch-muted">Ocean, Forest and alternate cursors unlock with earned-coin Premium.</p>'}`;
-      case 'Premium': return `${heading('Premium membership','Use site coins, not a credit card. No recurring charge.')}<div class="ch-premium"><span class="ch-eyebrow">NEBULO PREMIUM</span><h4>Additional personalization</h4><ul><li>Ocean and Forest chat themes</li><li>Crosshair and Cell cursors</li><li>Your own profile name color</li></ul><strong>${number(state.premium?.price || 2000)} coins <small>/ ${state.premium?.days || 30} days</small></strong><p>${premium()?`Active until ${esc(date(state.premium.expiresAt))}`:'Get coins from daily rewards, bonuses and chat participation.'}</p>${button(premium()?'Extend membership':'Activate Premium','premium')}</div>`;
+      case 'Premium': return `${heading('Premium membership','Coming soon.')}<div class="ch-premium"><span class="ch-eyebrow">COMING SOON</span><h4>Nebulo Premium</h4><ul><li>Ocean and Forest chat themes</li><li>Crosshair and Cell cursors</li><li>Your own profile name color</li></ul><p>${premium()?`Your existing Premium access stays active until ${esc(date(state.premium.expiresAt))}.`:'Premium purchases are not open yet. More details will appear here when it launches.'}</p><button type="button" class="ch-button" disabled>Coming soon</button></div>`;
       case 'DMs': return `${heading('Messages & privacy','Choose who can start conversations and send friend requests.')}<form class="ch-form" data-ch-form="privacy">${select('Who can message me','dms',privacy.dms || 'everyone',[['everyone','Everyone'],['friends','Friends only'],['none','No one']])}${select('Who can send friend requests','friendRequests',privacy.friendRequests || 'everyone',[['everyone','Everyone'],['mutual','People with mutual friends'],['none','No one']])}<button type="submit" class="ch-button ch-primary">Save privacy</button></form>`;
       case 'Password': return `${heading('Change password','Your current password protects this change.')}<form class="ch-form" data-ch-form="password">${field('Current password','currentPassword','','type="password" autocomplete="current-password" required')}${field('New password','newPassword','','type="password" autocomplete="new-password" minlength="8" maxlength="128" required')}${field('Confirm new password','confirmPassword','','type="password" autocomplete="new-password" minlength="8" maxlength="128" required')}<button type="submit" class="ch-button ch-primary">Update password</button></form>`;
       case 'Recovery': return `${heading('Account recovery','One-use recovery codes can reset your password if you lose access.')}<p>${number(state.recovery?.remaining)} unused codes remaining.</p><aside class="ch-note">Generating a new set invalidates your old codes. Store these somewhere private, outside this browser. Never share them with support.</aside><form class="ch-form" data-ch-form="recovery">${field('Confirm current password','currentPassword','','type="password" autocomplete="current-password" required')}<button type="submit" class="ch-button ch-primary">Generate new recovery codes</button></form>${recoveryCodes.length?`<section class="ch-codes"><h4>Save these now. They are shown only once.</h4><pre>${recoveryCodes.map(esc).join('\n')}</pre>${button('Copy codes','copy-codes')}</section>`:''}`;
@@ -370,12 +419,20 @@ export function initCommunityHub(deps) {
     const favorites=Array.isArray(prefs.soundFavorites)?prefs.soundFavorites:[];
     return `<section class="ch-divider"><div class="ch-row"><div><h4>Soundboard</h4><p>Local playback only — not broadcast to the room or a call.</p></div>${button('Stop all','stop-sounds')}</div><label class="ch-field ch-sound-search">Find a sound<input type="search" data-ch-sound-search placeholder="Search sounds"></label><div class="ch-sound-options"><label><input type="checkbox" data-ch-favorites-only> Favorites only</label><label><input type="checkbox" data-ch-overlap ${prefs.soundOverlap?'checked':''}> Allow overlap</label></div><ul class="ch-sound-list">${soundboard.map(item=>`<li data-sound-name="${esc(item.name.toLowerCase())}" data-sound-favorite="${favorites.includes(item.id)}">${button(item.name,'sound',`data-sound="${item.id}" aria-label="Play ${item.name}"`)}${button(favorites.includes(item.id)?'★':'☆','favorite-sound',`data-sound="${item.id}" aria-label="Favorite ${item.name}" aria-pressed="${favorites.includes(item.id)}"`)}</li>`).join('')}</ul><p class="ch-empty" data-ch-no-sounds hidden>No sounds match this filter.</p></section>`;
   }
-  function render() {
+  function render(options = {}) {
     const el=root(); if(!el)return;
+    if (options.resetView) renderViewMemory = { scrollTop: 0, focus: null };
+    else {
+      const body = el.querySelector('.ch-body');
+      if (body) renderViewMemory.scrollTop = body.scrollTop;
+      const focused = describeFocusedControl(el);
+      if (focused) renderViewMemory.focus = focused;
+    }
     const user=getUser() || {};
     const labels={Info:'Overview',DMs:'Messages & privacy',Premium:'Membership',Blocked:'Blocked accounts'};
     const visibleGroups = openSource === 'account' ? [['account', tabs.account]] : Object.entries(tabs);
     el.innerHTML=`<aside class="ch-sidebar"><div class="ch-brand">Nebulo<span>${openSource === 'account' ? 'Account settings' : 'Community'}</span></div><nav class="ch-navigation" aria-label="Account and community sections">${visibleGroups.map(([group,items])=>`<div class="ch-nav-group"><h3>${group==='account'?'Account':'Community'}</h3>${items.map(name=>`<button type="button" data-ch-tab="${name}" data-ch-mode="${group}" aria-current="${mode===group&&tab===name?'page':'false'}">${labels[name] || name}${name==='Casino'?'<span class="ch-nav-tag">Play</span>':''}</button>`).join('')}</div>`).join('')}</nav><div class="ch-sidebar-user"><span class="ch-avatar">${esc((user.displayName || user.username || 'N').slice(0,1).toUpperCase())}</span><div><strong>${esc(user.displayName || user.username || 'Your account')}</strong><small><span data-wallet-coins>${number(user.coins ?? state?.coins)}</span> site coins</small></div></div></aside><div class="ch-workspace"><header class="ch-header"><h2 id="ch-title">${mode==='account'?'Account':'Community'}<span>/</span>${labels[tab] || tab}</h2>${button('×','close','aria-label="Close account and community"')}</header><main class="ch-body" aria-busy="${busy}">${error?`<div class="ch-error" role="alert">${esc(error)}</div>`:''}${result?`<div class="ch-result" role="status">${esc(result)}</div>`:''}${pending&&!busy?`<aside class="ch-note">The last action could not be confirmed. Retry checks the same request; it will not charge twice. ${button('Retry last action','retry')}</aside>`:''}${state?(mode==='account'?account():({Rewards:rewards,Casino:casino,Leaderboard:leaderboard,Support:support}[tab] || rewards)()):`<p class="ch-empty">${error?'Your account could not be loaded.':'Loading your account…'}</p>${error?button('Try again','reload'):''}`}</main><footer class="ch-footer"><span>${busy?'Saving changes…':'Nebulo community'}</span><span>${mode==='account'?'Your settings, in one place':'Bet your coins and play'}</span></footer></div>`;
+    window.NebuloAds?.mount(el);
     if(busy) el.querySelectorAll('form button, [data-ch-action]:not([data-ch-action="close"]), [data-ch-tab]').forEach(b=>b.disabled=true);
     el.onclick = click;
     el.onsubmit = submit;
@@ -392,6 +449,7 @@ export function initCommunityHub(deps) {
         else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
       }
     };
+    restoreRenderedView(el);
   }
   function filterSounds(){
     const query=(root()?.querySelector('[data-ch-sound-search]')?.value||'').toLowerCase(), favoritesOnly=root()?.querySelector('[data-ch-favorites-only]')?.checked;
@@ -430,7 +488,8 @@ export function initCommunityHub(deps) {
     if(nav&&!busy){
       const nextMode=nav.dataset.chMode || mode;
       if(openSource==='account' && nextMode!=='account') return;
-      tab=nav.dataset.chTab;mode=nextMode;error='';result='';recoveryCodes=[];render();root()?.querySelector(`[data-ch-tab="${tab}"]`)?.focus();if(tab==='Leaderboard')await fetchBoard();return;
+      if(nextMode==='community' && nav.dataset.chTab==='Casino'){finish();openCosmetics('casino');return;}
+      tab=nav.dataset.chTab;mode=nextMode;error='';result='';recoveryCodes=[];render({ resetView:true });root()?.querySelector(`[data-ch-tab="${tab}"]`)?.focus();if(tab==='Leaderboard')await fetchBoard();return;
     }
     const target=event.target.closest('[data-ch-action]'); if(!target)return;
     const action=target.dataset.chAction;
@@ -609,6 +668,12 @@ export function initCommunityHub(deps) {
   async function submit(event) {
     const form=event.target.closest('[data-ch-form]');if(!form)return;event.preventDefault();if(busy)return;
     const values=Object.fromEntries(new FormData(form)), type=form.dataset.chForm;
+    if(type==='lottery'){
+      const amount=Number(values.amount), balance=Number(getUser()?.coins ?? state.coins ?? 0);
+      if(!Number.isSafeInteger(amount)||amount<1){error='Enter a positive whole coin amount.';render();return;}
+      if(amount>balance){error='Not enough coins for that contribution.';render();return;}
+      return mutate({action:'lottery_enter',amount});
+    }
     if(type==='casino'){
       if(Number(values.bet)>Number(getUser()?.coins || state.coins || 0)){error='Not enough coins. Claim a daily reward or bonus to earn more.';render();return;}
       wager=Number(values.bet);

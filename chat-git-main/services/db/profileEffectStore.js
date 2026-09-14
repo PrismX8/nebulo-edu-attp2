@@ -54,6 +54,33 @@ async function getUserProfileEffects(userId, queryable = profileStore) {
   };
 }
 
+async function getEquippedProfileEffects(userIds = []) {
+  const ids = [...new Set((Array.isArray(userIds) ? userIds : [])
+    .map((id) => String(id || '').trim())
+    .filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)))];
+  if (!ids.length) return new Map();
+  const mode = await ensureAccess();
+  const valid = validProfileEffectIds();
+  if (mode === 'banner-compat') {
+    const result = await profileStore.query(
+      `select user_id, banner_id from public.chat_user_banners
+        where user_id = any($1::uuid[]) and banner_id like 'profilefx-equipped:%'`,
+      [ids]
+    );
+    return new Map(result.rows
+      .map((row) => [String(row.user_id), String(row.banner_id || '').slice(19)])
+      .filter(([, effectId]) => valid.has(effectId)));
+  }
+  const result = await profileStore.query(
+    `select user_id, effect_id from public.chat_user_profile_effects
+      where user_id = any($1::uuid[]) and equipped`,
+    [ids]
+  );
+  return new Map(result.rows
+    .filter((row) => valid.has(String(row.effect_id)))
+    .map((row) => [String(row.user_id), String(row.effect_id)]));
+}
+
 async function purchaseAndEquip(userId, effect) {
   const mode = await ensureAccess();
   const id = String(userId || '').trim();
@@ -118,4 +145,4 @@ async function equip(userId, effectId) {
   });
 }
 
-module.exports = { equip, getUserProfileEffects, purchaseAndEquip };
+module.exports = { equip, getEquippedProfileEffects, getUserProfileEffects, purchaseAndEquip };

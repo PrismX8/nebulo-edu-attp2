@@ -79,6 +79,10 @@
 
   // ── Recently played tracking ──
   const trackRecentlyPlayed = () => {
+    // The games library records the catalog title, cover, and categories as
+    // soon as its player opens. Do not replace that richer entry with the
+    // embedded document title a few seconds later.
+    if (window.self !== window.top) return;
     const token = getToken();
     if (!token) return;
     const gameName = document.title || location.pathname.split('/').filter(Boolean).pop() || 'Game';

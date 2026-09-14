@@ -6,7 +6,19 @@
       "password": "$2a$10$qGLupnjv.7s7SmmzQPyZm.nUg9tNfaWBIQDP/MpN..wMjTdezul/.",
       "role": "owner",
       "avatar": null,
-      "coins": 998774,
+      "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:6b629194-fe8b-4e18-a5be-65ec5ff2828c",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none",
         "flashbands",
@@ -14,6 +26,18 @@
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "avatar_shadow_pulse",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prism2",
         "ek0sz",
@@ -33,11 +57,35 @@
       "role": "admin",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:816e38d6-c73a-49d5-9b1a-bbc252f1885b",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -51,11 +99,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:bb2ddd86-c562-49f2-a715-9da764ee236a",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -67,11 +139,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:9aef1eba-36cd-447f-922d-5681825f03b3",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -82,12 +178,36 @@
       "password": "$2a$10$p79n6AmfEqhdqLtCz3gb6.7ktj0oouBt.ikUSwkq/vifzqJGa8FcO",
       "role": "user",
       "avatar": null,
-      "coins": 1014,
+      "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:ed8e3052-d848-42d0-bf1c-781cc7491f9e",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -98,7 +218,19 @@
       "password": "$2a$10$HWVWlcJv82LqPQWeKeTb1uR87TnPjbSKzSc0tIGGCEsSTKcKRfxyy",
       "role": "user",
       "avatar": null,
-      "coins": 367,
+      "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:6ec9cef2-a808-4b46-89e7-b582a1a670f8",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none",
         "flashbang",
@@ -107,6 +239,18 @@
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -117,7 +261,19 @@
       "password": "$2a$12$jz0mwfjXcna2XOiHQge0luPrLSrjMu5ztOZ9Tk3dt6Zf0Hou8xcMe",
       "role": "owner",
       "avatar": null,
-      "coins": 2008,
+      "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:af501dc2-4408-468b-be44-959b9a302269",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none",
         "flashbang",
@@ -127,6 +283,18 @@
       ],
       "equippedEffect": "gold",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -137,11 +305,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:975a909f-b569-4589-9959-8e62c50e2e21",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -152,11 +344,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:8f8f4963-c731-4362-81f8-57dfb540a34c",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -167,11 +383,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:23c96781-d359-409f-b6ab-525bbc4df487",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -182,11 +422,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:c43c1c99-fcb6-4d1b-af17-7ed0056d656c",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -197,11 +461,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:803854a5-ef83-4fb6-b5a9-6e6cbcc37f07",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -212,11 +500,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:a217f64f-c334-4988-99ae-c7efd008c9a3",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -227,11 +539,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:2b51a0a5-ae8c-4e9f-a901-6567032010ab",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -242,11 +578,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:04374664-1e31-43c3-b71f-93ecb994a55d",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -257,11 +617,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:3d270c3c-4e5d-41f9-a2a3-510459569c45",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -272,11 +656,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:dacafe2c-9365-4c27-bd55-b2df8d080d32",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -287,11 +695,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:c8de9b7d-0a52-49b0-8ad8-1fe5124049ef",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -302,11 +734,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:035eae96-605c-4911-98c8-229dd57af51e",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -317,11 +773,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:b910785d-8965-4ff7-a077-dd4e00798ea3",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -332,11 +812,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:e194cb2b-3531-4036-a600-7281cb9f3173",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -347,11 +851,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:d1ed3ac6-e5f0-44a0-bd72-d2a79207776a",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -362,11 +890,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:568bde75-852b-4dfa-b642-f9c49f167b67",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -377,11 +929,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:bd8f45f7-431d-482e-bfc3-92673021e6f1",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -392,11 +968,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:491c606f-5f58-49a0-9979-a1b4d2a68947",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -407,11 +1007,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:762fbeeb-1a0b-4f7b-b8d9-acb979a8380c",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -422,11 +1046,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:ad20d389-0e0d-4a51-a3e7-10122bcb8b0d",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -437,11 +1085,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:d0ac9af1-3297-4f4e-82f6-fdacad8dc523",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -452,11 +1124,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:c33a59c9-c2b7-4248-a796-297a38634ced",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -467,11 +1163,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:3b4d640a-a518-4188-a51e-b8e8b353cea2",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -482,11 +1202,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:5f9e5504-5218-4655-9899-54b48c418961",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -497,11 +1241,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:321b8072-6b83-4d31-beac-3316a977f239",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -512,11 +1280,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:5ece4cda-49bc-42d9-be60-8d3c0b1f91f4",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -527,11 +1319,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:23f94c6e-2c50-4cc9-af2f-0c7c225532f1",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -542,11 +1358,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:853e95cd-3c01-4099-aa17-3e053cf13423",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -557,11 +1397,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:a5f32459-34cc-4166-aa08-742e09015322",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -572,11 +1436,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:1fc6b0d1-7ac4-47fd-8342-a5311f3851e6",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -587,11 +1475,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:e1e87e8a-eb34-4cf0-886b-b92e8a1f856e",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -602,11 +1514,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:310fd3a7-d81c-44ac-ba5c-2fcb17bda6c6",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -619,11 +1555,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:677c9300-1b42-4d92-8303-b57474d75834",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -634,11 +1594,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:9f279323-6fe0-4386-8936-b96b3b27233b",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -649,11 +1633,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:6fd48fef-6700-454e-8bd7-982371397b15",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -664,11 +1672,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:733f0289-5c89-428d-90d2-172aabe8bf51",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -679,11 +1711,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:2676c635-32e6-454e-a4d5-c2c6dc488473",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -694,11 +1750,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:081da051-c1ba-47f9-aabb-b51df91b1b2e",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -709,11 +1789,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:c13d3802-5d80-4b11-89ad-df24e46dd452",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -724,11 +1828,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:c4ff0e02-e4fb-4863-a202-2cdc18965e3a",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -739,11 +1867,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:19f844e1-433e-4ed3-a1ef-bf5ac0999456",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -754,11 +1906,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:bea83067-02ff-4238-a908-e5d77983a926",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -769,11 +1945,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:5f5b8789-9a5d-4a75-9208-8b50b78b2af0",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -784,11 +1984,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:13665143-ebe4-4613-9c37-acb68ef3f6db",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -799,11 +2023,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:4199baeb-6560-4134-b29b-0c0dd220be6d",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -814,11 +2062,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:13a72a18-d767-4eaa-aa54-9e404cf638de",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -829,11 +2101,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:2a81c7bc-a198-4cb5-953c-b5d62a4c0771",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -844,11 +2140,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:e146278d-079c-4142-a9ae-c78195d306d0",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -859,11 +2179,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:ee2d8b49-4494-473a-90a9-afe326761ce6",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -874,11 +2218,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:1060c35e-09ac-47ff-bc48-8ba3b13149e9",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -889,11 +2257,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:4aab3ed6-56ce-4ecc-8120-5e4d177d3ce5",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -904,11 +2296,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:2292cf85-2529-472e-9dcb-d7b8cb50db6f",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -919,11 +2335,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:2dcb3c2b-294e-4509-be05-994c51c2392e",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -934,11 +2374,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:9d18e309-a714-4f38-9183-dbd29b8d156b",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -949,11 +2413,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:9fdefc0b-acda-46c6-9032-b165ef6eef4b",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -964,11 +2452,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:db070118-d076-44fb-83c1-747ad52f549a",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -979,11 +2491,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:bfcda241-6f77-4b7e-b323-4ac6c218a7be",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -994,11 +2530,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:ef82901e-fecf-454e-b000-94cb6e648028",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1009,11 +2569,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:0d5c66bb-96a5-4089-85ae-e052e29ec9c6",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1024,11 +2608,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:637e1f26-fd40-411f-b3b4-4888d014e90f",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1039,11 +2647,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:be10d97d-6750-4118-bd27-dd87d07a7159",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1054,11 +2686,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:374de3ec-f4a9-4b5f-88d2-7ca470e6c937",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1069,11 +2725,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:bd10d4cf-ddb9-4705-a771-e62ddd5745b4",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -1086,11 +2766,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:4d29ff8a-2c67-4286-a3e9-71ad9763fe1a",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -1103,11 +2807,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:bf5d0ffd-4a41-4394-bb36-62281101be4f",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1118,11 +2846,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:6816a168-d0af-4faf-922a-db1a5aa7f68d",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1133,11 +2885,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:fb788523-b288-4614-9776-3eda111a7b6f",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1148,11 +2924,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:70f0fd49-082a-450a-9abd-fce7ffde3081",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1163,11 +2963,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:70812f06-b365-4fc5-aee5-9116ad704aab",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1178,11 +3002,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:74c2a8d9-e587-4c88-b2af-079646f61415",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -1195,11 +3043,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:fd49405c-cacd-4e73-b057-7ea20accf771",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1210,11 +3082,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:8c9b9485-5734-4338-8167-095e6549447c",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
@@ -1225,11 +3121,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:45a3006f-1808-4ea2-9814-c173bf75c0fe",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -1242,11 +3162,35 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:97f2ea76-df4d-4f6e-9b78-c1bf1f6c439f",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [
         "prismx"
       ],
@@ -1259,14 +3203,45 @@
       "role": "user",
       "avatar": null,
       "coins": 0,
+      "systemNotifications": [
+        {
+          "id": "coin-reset:2026-09-13-wallet-casino-reset-v1:aa40e77f-8935-4c8c-8dd1-97b012fec17f",
+          "type": "system",
+          "message": "Your coin balance was reset to 0 for the wallet and casino update. Previous coins were removed because old casino odds and coin-saving bugs made balances unreliable. All purchased and equipped cosmetics were kept.",
+          "metadata": {
+            "kind": "coin_balance_reset",
+            "version": "2026-09-13-wallet-casino-reset-v1"
+          },
+          "at": 1789325021940
+        }
+      ],
       "ownedEffects": [
         "none"
       ],
       "equippedEffect": "none",
       "equippedAvatarEffect": "none",
+      "ownedBanners": [
+        "none"
+      ],
+      "equippedBanner": "none",
+      "ownedProfileEffects": [
+        "none"
+      ],
+      "equippedProfileEffect": "none",
+      "ownedTags": [
+        "none"
+      ],
+      "equippedTag": "none",
       "friends": [],
       "friendRequestsSent": [],
       "friendRequestsReceived": []
     }
-  ]
+  ],
+  "migrations": {
+    "2026-09-13-wallet-casino-reset-v1": {
+      "appliedAt": 1789325021940,
+      "accounts": 82,
+      "previousTotal": 1002163
+    }
+  }
 }

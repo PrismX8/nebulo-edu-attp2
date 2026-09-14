@@ -1,21 +1,36 @@
 const crypto = require('crypto');
 
 const DAY = 86400000;
+const HOUSE_RETURN = 0.82;
+const NUMBER_GUESS_MULTIPLIER = 16;
+const TRIVIA = [
+  { prompt: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], answer: 1 },
+  { prompt: 'How many sides does a hexagon have?', options: ['Five', 'Eight', 'Six', 'Seven'], answer: 2 },
+  { prompt: 'What is the chemical symbol for gold?', options: ['Ag', 'Fe', 'Gd', 'Au'], answer: 3 },
+  { prompt: 'Which ocean is the largest?', options: ['Pacific', 'Atlantic', 'Indian', 'Arctic'], answer: 0 },
+  { prompt: 'What is 12 multiplied by 8?', options: ['88', '96', '108', '84'], answer: 1 },
+  { prompt: 'Which language runs natively in web browsers?', options: ['Python', 'C++', 'JavaScript', 'Rust'], answer: 2 },
+  { prompt: 'How many minutes are in two and a half hours?', options: ['120', '180', '125', '150'], answer: 3 },
+  { prompt: 'Which gas do plants absorb during photosynthesis?', options: ['Carbon dioxide', 'Oxygen', 'Helium', 'Hydrogen'], answer: 0 },
+  { prompt: 'What is the square root of 144?', options: ['14', '12', '16', '11'], answer: 1 },
+  { prompt: 'Which instrument measures temperature?', options: ['Barometer', 'Compass', 'Thermometer', 'Altimeter'], answer: 2 },
+];
+const crashMultiplier = (round, now) => Math.floor(Math.exp(Math.min(50000, Math.max(0, now - round.startedAt)) / 10000) * 100) / 100;
 const PAYTABLE = [
   ['Royal flush', 250], ['Straight flush', 50], ['Four of a kind', 25],
   ['Full house', 9], ['Flush', 6], ['Straight', 4], ['Three of a kind', 3],
   ['Two pair', 2], ['Jacks or better', 1], ['No win', 0],
 ].map(([name, multiplier]) => ({ name, multiplier }));
 const RULES = {
-  blackjack: 'Dealer stands on all 17s. Blackjack pays 3:2. Other wins pay 1:1. A push returns your stake. Double on your first two cards. No split or insurance.',
+  blackjack: 'Dealer stands on all 17s. Blackjack pays 3:2, rounded down to whole coins. Other wins pay 1:1. A push returns your stake. Double on your first two cards. No split or insurance.',
   videopoker: 'Five-card draw, Jacks or Better. Hold any cards, then draw once. Payouts in the paytable include your stake.',
-  higherlower: 'Guess if the next card is higher or lower. Build your streak for bigger payouts. Cash out anytime.',
-  mines: 'Reveal safe tiles on a 5×5 grid. Avoid 5 mines. Multiplier increases with each safe tile. Cash out anytime.',
-  numberguess: 'Guess a number between 1 and 100. Fewer attempts means bigger wins. Up to 7 attempts with progressive hints.',
-  crash: 'Multiplier climbs from 1×. Cash out before it crashes. Random crash point between 1× and 100×.',
-  trivia: 'Answer trivia questions correctly to earn coins. Each correct answer pays 1× your stake.',
+  higherlower: 'Guess if the next number from 1 to 100 is higher or lower. Equal numbers lose. Each return is calculated from the exact chance of your choice with an 82% return rate.',
+  mines: 'Reveal safe tiles on a 5×5 grid with 7 mines. Cash-out returns use the exact probability of surviving every revealed tile with an 82% return rate.',
+  numberguess: 'Pick up to 5 different numbers from 1 to 100. There are no directional hints. A correct pick returns 16× your stake.',
+  crash: 'Multiplier climbs from 1×. Cash out before it crashes. The crash curve has an 82% return rate and a 100× cap.',
 };
 function fail(message, status = 400) { const error = new Error(message); error.status = status; throw error; }
+function floorTo(value, places = 100) { return Math.floor((Number(value) + 1e-10) * places) / places; }
 const rank = card => card % 13 + 2;
 const suit = card => Math.floor(card / 13);
 function cardView(card) {
@@ -67,6 +82,15 @@ function take(round) {
   return card;
 }
 
+function minesMultiplier(safeRevealed, safeTiles = 20, totalTiles = 25) {
+  if (!Number.isInteger(safeRevealed) || safeRevealed < 1) return 1;
+  let survivalChance = 1;
+  for (let i = 0; i < safeRevealed; i++) {
+    survivalChance *= (safeTiles - i) / (totalTiles - i);
+  }
+  return floorTo(HOUSE_RETURN / survivalChance);
+}
+
 // settle() records the outcome. Caller (communityModel) handles coin mutations.
 function settle(state, outcome, payout, now) {
   const round = state.casinoRound;
@@ -107,8 +131,10 @@ function finishBlackjack(state, now) {
 // apply() returns {bet, payout, net, ...}. Caller deducts bet and adds payout to coins.
 function apply(state, request, { now = Date.now(), randomInt = crypto.randomInt } = {}) {
   const { game, move } = request;
-  const supportedGames = ['blackjack', 'videopoker', 'higherlower', 'mines', 'numberguess', 'crash', 'trivia'];
-  if (!supportedGames.includes(game)) fail('Choose Blackjack or Video Poker.');
+  const supportedGames = ['blackjack', 'videopoker', 'higherlower', 'mines', 'numberguess', 'crash'];
+  const canRefundRetiredTrivia = game === 'trivia' && ['answer', 'refund'].includes(move) &&
+    state.casinoRound?.game === 'trivia' && state.casinoRound?.status === 'playing';
+  if (!supportedGames.includes(game) && !canRefundRetiredTrivia) fail('Choose a current casino game.');
   
   if (['higherlower', 'mines', 'numberguess', 'crash', 'trivia'].includes(game)) {
     return applyTextGame(state, request, { now, randomInt });
@@ -120,7 +146,6 @@ function apply(state, request, { now = Date.now(), randomInt = crypto.randomInt 
     if (!Number.isSafeInteger(bet) || bet < 1) fail('Bet must be a positive whole number.');
     const today = Math.floor(now / DAY);
     if (state.casinoDay !== today) { state.casinoDay = today; state.playsToday = 0; }
-    if (!abandoned && state.lastPlayAt && now - state.lastPlayAt < 2000) fail('Wait two seconds before dealing a new hand.', 429);
     const round = {
       id: request.requestId, game, status: 'playing', version: 1, bet, stake: bet,
       player: [], dealer: [], deck: shuffledDeck(randomInt), outcome: null,
@@ -136,7 +161,7 @@ function apply(state, request, { now = Date.now(), randomInt = crypto.randomInt 
       const dealerNatural = blackjackTotal(round.dealer) === 21;
       if (playerNatural || dealerNatural) {
         settle(state, playerNatural && dealerNatural ? 'push' : playerNatural ? 'blackjack' : 'loss',
-          playerNatural && dealerNatural ? bet : playerNatural ? bet * 2.5 : 0, now);
+          playerNatural && dealerNatural ? bet : playerNatural ? Math.floor(bet * 2.5) : 0, now);
       }
     } else {
       for (let i = 0; i < 5; i++) round.player.push(take(round));
@@ -186,7 +211,6 @@ function applyTextGame(state, request, { now, randomInt }) {
     const abandoned = abandonCurrentRound(state, now);
     const bet = request.bet;
     if (!Number.isSafeInteger(bet) || bet < 1) fail('Bet must be a positive whole number.');
-    if (!abandoned && state.lastPlayAt && now - state.lastPlayAt < 1000) fail('Wait a moment before starting another game.', 429);
     
     state.playsToday++;
     state.lastPlayAt = now;
@@ -199,28 +223,25 @@ function applyTextGame(state, request, { now, randomInt }) {
     };
     
     if (game === 'mines') {
-      const mineCount = 5;
-      const minePositions = new Set();
-      while (minePositions.size < mineCount) {
-        minePositions.add(randomInt(25));
-      }
-      round.gameData.mines = [...minePositions];
+      const mineCount = 7;
+      const tiles = Array.from({ length: 25 }, (_, i) => i);
+      round.gameData.mines = Array.from({ length: mineCount }, () => tiles.splice(randomInt(tiles.length), 1)[0]);
       round.gameData.revealed = [];
       round.gameData.multiplier = 1;
     } else if (game === 'numberguess') {
       round.gameData.target = randomInt(100) + 1;
       round.gameData.attempts = 0;
-      round.gameData.maxAttempts = 7;
+      round.gameData.maxAttempts = 5;
+      round.gameData.guesses = [];
     } else if (game === 'crash') {
       const r = randomInt(10000) / 10000;
-      round.gameData.crashPoint = Math.max(1, Math.floor((1 / (1 - r)) * 100) / 100);
+      round.gameData.crashPoint = Math.max(1, Math.floor((HOUSE_RETURN / (1 - r)) * 100) / 100);
       if (round.gameData.crashPoint > 100) round.gameData.crashPoint = 100;
       round.gameData.multiplier = 1;
     } else if (game === 'higherlower') {
-      round.gameData.currentCard = randomInt(13);
+      round.gameData.currentNumber = randomInt(100) + 1;
       round.gameData.streak = 0;
-    } else if (game === 'trivia') {
-      round.gameData.questionIndex = randomInt(10);
+      round.gameData.multiplier = 1;
     }
     
     state.casinoRound = round;
@@ -235,6 +256,11 @@ function applyTextGame(state, request, { now, randomInt }) {
   if (!round || round.id !== request.roundId || round.game !== game) fail('This game is no longer current. Refresh.', 409);
   if (round.status !== 'playing') fail('This game is already complete.', 409);
   if (!Number.isSafeInteger(request.version) || request.version !== round.version) fail('This game changed in another tab. Refresh.', 409);
+  const allowed = { higherlower: ['guess', 'cashout'], mines: ['reveal', 'cashout'], numberguess: ['guess'], crash: ['tick', 'cashout'], trivia: ['answer', 'refund'] };
+  if (!allowed[game].includes(move)) fail('Invalid move for this game.');
+  if (game === 'higherlower' && !Number.isFinite(Number(round.gameData.multiplier))) {
+    round.gameData.multiplier = 1 + Math.max(0, Number(round.gameData.streak || 0)) * 0.5;
+  }
   
   let payout = 0;
   let outcome = '';
@@ -244,15 +270,27 @@ function applyTextGame(state, request, { now, randomInt }) {
     if (move === 'guess') {
       const choice = request.choice;
       if (!['higher', 'lower'].includes(choice)) fail('Choose higher or lower.');
-      const currentVal = round.gameData.currentCard;
-      const nextCard = randomInt(13);
-      round.gameData.currentCard = nextCard;
-      const won = (choice === 'higher' && nextCard > currentVal) || 
-                  (choice === 'lower' && nextCard < currentVal) ||
-                  (nextCard === currentVal);
+      const savedNumber = Number(round.gameData.currentNumber);
+      const legacyCard = Number(round.gameData.currentCard);
+      const currentVal = Number.isInteger(savedNumber) && savedNumber >= 1 && savedNumber <= 100
+        ? savedNumber
+        : Number.isInteger(legacyCard) && legacyCard >= 0 && legacyCard <= 12
+          ? Math.round((legacyCard / 12) * 99) + 1
+          : null;
+      if (currentVal === null) fail('This round is invalid. Start a new game.', 409);
+      const winningNumbers = choice === 'higher' ? 100 - currentVal : currentVal - 1;
+      if (winningNumbers < 1) fail(`No number can be ${choice} than ${currentVal}. Choose the other direction.`);
+      const winProbability = winningNumbers / 100;
+      const nextNumber = randomInt(100) + 1;
+      round.gameData.currentNumber = nextNumber;
+      delete round.gameData.currentCard;
+      const won = (choice === 'higher' && nextNumber > currentVal) ||
+                  (choice === 'lower' && nextNumber < currentVal);
       if (won) {
         round.gameData.streak++;
-        msg = `Correct! Streak: ${round.gameData.streak}`;
+        round.gameData.multiplier = floorTo(Number(round.gameData.multiplier || 1) * HOUSE_RETURN / winProbability, 10000);
+        msg = `Correct! Streak: ${round.gameData.streak}. Cash out at ${round.gameData.multiplier.toFixed(2)}×.`;
+        round.log.push(msg);
         round.version++;
         return { kind: 'casino', game, roundId: round.id, status: 'playing',
           bet: round.bet, stake: round.stake, outcome: null, payout: 0,
@@ -260,10 +298,10 @@ function applyTextGame(state, request, { now, randomInt }) {
       } else {
         outcome = 'loss';
         payout = 0;
+        msg = nextNumber === currentVal ? 'Equal number. Ties lose.' : 'Wrong direction.';
       }
     } else if (move === 'cashout') {
-      const streak = request.streak ?? round.gameData.streak ?? 0;
-      payout = Math.floor(round.stake * (1 + streak * 0.5));
+      payout = Math.floor(round.stake * Number(round.gameData.multiplier || 1));
       outcome = 'cashout';
     }
   } else if (game === 'mines') {
@@ -281,79 +319,63 @@ function applyTextGame(state, request, { now, randomInt }) {
       } else {
         const safeRevealed = round.gameData.revealed.filter(i => !round.gameData.mines.includes(i)).length;
         const totalSafe = 25 - round.gameData.mines.length;
-        round.gameData.multiplier = 1 + (safeRevealed / totalSafe) * 4;
+        round.gameData.multiplier = minesMultiplier(safeRevealed, totalSafe, 25);
         msg = `Safe! Multiplier now ${round.gameData.multiplier.toFixed(2)}×`;
+        round.log.push(msg);
         round.version++;
         return { kind: 'casino', game, roundId: round.id, status: 'playing',
           bet: round.bet, stake: round.stake, outcome: null, payout: 0,
           win: false, coinsEarned: 0, msg };
       }
     } else if (move === 'cashout') {
-      const multiplier = request.multiplier || round.gameData.multiplier || 1;
+      const multiplier = round.gameData.multiplier || 1;
       payout = Math.floor(round.stake * multiplier);
       outcome = 'cashout';
-    } else if (move === 'crash') {
-      outcome = 'loss';
-      msg = 'Boom! You hit a mine.';
     }
   } else if (game === 'numberguess') {
     if (move === 'guess') {
-      // Accept either server-side validation (request.guess) or client-settled (request.correct)
-      if (request.correct !== undefined) {
-        // Client settled: use attempts from request
-        round.gameData.attempts = request.attempts || round.gameData.attempts;
-        if (request.correct) {
-          payout = Math.floor(round.stake * (1 + (round.gameData.maxAttempts - round.gameData.attempts) * 0.3));
-          outcome = 'win';
-          msg = `Correct! Got it in ${round.gameData.attempts} attempts.`;
-        } else {
-          outcome = 'loss';
-          msg = `Out of attempts. The number was ${round.gameData.target}.`;
-        }
-      } else {
         const guess = request.guess;
         if (!Number.isInteger(guess) || guess < 1 || guess > 100) fail('Guess must be between 1 and 100.');
+        if (!Array.isArray(round.gameData.guesses)) round.gameData.guesses = [];
+        if (round.gameData.guesses.includes(guess)) fail('Choose a number you have not tried yet.');
+        round.gameData.guesses.push(guess);
         round.gameData.attempts++;
         
         if (guess === round.gameData.target) {
-          payout = Math.floor(round.stake * (1 + (round.gameData.maxAttempts - round.gameData.attempts) * 0.3));
+          payout = Math.floor(round.stake * NUMBER_GUESS_MULTIPLIER);
           outcome = 'win';
-          msg = `Correct! Got it in ${round.gameData.attempts} attempts.`;
+          msg = `Correct! ${NUMBER_GUESS_MULTIPLIER.toFixed(1)}× returned after ${round.gameData.attempts} ${round.gameData.attempts === 1 ? 'pick' : 'picks'}.`;
         } else if (round.gameData.attempts >= round.gameData.maxAttempts) {
           outcome = 'loss';
           msg = `Out of attempts. The number was ${round.gameData.target}.`;
         } else {
-          const hint = guess > round.gameData.target ? 'Too high!' : 'Too low!';
-          msg = hint;
+          const remaining = round.gameData.maxAttempts - round.gameData.attempts;
+          msg = `Not it. ${remaining} ${remaining === 1 ? 'pick' : 'picks'} left.`;
+          round.log.push(msg);
           round.version++;
           return { kind: 'casino', game, roundId: round.id, status: 'playing',
             bet: round.bet, stake: round.stake, outcome: null, payout: 0,
             win: false, coinsEarned: 0, msg };
         }
-      }
     }
   } else if (game === 'crash') {
-    if (move === 'cashout') {
-      const multiplier = request.multiplier || 1;
+    const multiplier = crashMultiplier(round, now);
+    round.gameData.multiplier = Math.min(multiplier, round.gameData.crashPoint);
+    if (multiplier >= round.gameData.crashPoint) {
+      outcome = 'crash';
+      msg = `Crashed at ${round.gameData.crashPoint.toFixed(2)}×`;
+    } else if (move === 'cashout') {
       payout = Math.floor(round.stake * multiplier);
       outcome = 'cashout';
       msg = `Cashed out at ${multiplier.toFixed(2)}×`;
-    } else if (move === 'crash') {
-      outcome = 'crash';
-      msg = `Crashed at ${round.gameData.crashPoint?.toFixed(2) || '?'}×`;
+    } else {
+      return { kind: 'casino', game, roundId: round.id, status: 'playing', bet: round.bet, stake: round.stake, payout: 0, win: false, coinsEarned: 0, msg: `Multiplier ${multiplier.toFixed(2)}×` };
     }
   } else if (game === 'trivia') {
-    if (move === 'answer') {
-      const correct = request.correct;
-      if (correct) {
-        payout = round.stake;
-        outcome = 'win';
-        msg = 'Correct answer!';
-      } else {
-        outcome = 'loss';
-        msg = 'Wrong answer.';
-      }
-    }
+    if (move === 'answer' && (!Number.isInteger(request.answer) || request.answer < 0 || request.answer > 3)) fail('Choose an answer.');
+    payout = round.stake;
+    outcome = 'push';
+    msg = 'Trivia was retired. Your full stake was returned.';
   }
   
   // Settle the game
@@ -362,6 +384,7 @@ function applyTextGame(state, request, { now, randomInt }) {
   round.payout = payout;
   round.net = payout - round.stake;
   round.finishedAt = now;
+  round.version++;
   state.games++;
   state.wins += round.net > 0 ? 1 : 0;
   state.net += round.net;
@@ -383,7 +406,7 @@ function applyTextGame(state, request, { now, randomInt }) {
     win: round.net > 0, coinsEarned: 0, msg };
 }
 
-function snapshotRound(round, coins) {
+function snapshotRound(round, coins, now = Date.now()) {
   if (!round) return null;
   const blackjack = round.game === 'blackjack';
   const playing = round.status === 'playing';
@@ -392,7 +415,7 @@ function snapshotRound(round, coins) {
     id: round.id, game: round.game, status: round.status, version: round.version,
     bet: round.bet, stake: round.stake,
     outcome: round.outcome, payout: round.payout, net: round.net, canDouble,
-    startedAt: round.startedAt, finishedAt: round.finishedAt, log: [...round.log],
+    startedAt: round.startedAt, finishedAt: round.finishedAt, serverNow: now, log: [...round.log],
   };
   if (blackjack) {
     return { ...base,
@@ -411,11 +434,33 @@ function snapshotRound(round, coins) {
       actions: !playing ? [] : ['draw'],
     };
   }
+  const data = round.gameData || {};
+  let gameData = {};
+  if (round.game === 'higherlower') {
+    const savedNumber = Number(data.currentNumber);
+    const legacyCard = Number(data.currentCard);
+    const currentNumber = Number.isInteger(savedNumber) && savedNumber >= 1 && savedNumber <= 100
+      ? savedNumber
+      : Number.isInteger(legacyCard) && legacyCard >= 0 && legacyCard <= 12
+        ? Math.round((legacyCard / 12) * 99) + 1
+        : null;
+    gameData = { currentNumber, streak: data.streak, multiplier: data.multiplier || 1 };
+  }
+  if (round.game === 'mines') gameData = { revealed: [...(data.revealed || [])], multiplier: data.multiplier, ...(!playing ? { mines: [...(data.mines || [])] } : {}) };
+  if (round.game === 'numberguess') gameData = { attempts: data.attempts, maxAttempts: data.maxAttempts, guesses: [...(data.guesses || [])], multiplier: NUMBER_GUESS_MULTIPLIER, ...(!playing ? { target: data.target } : {}) };
+  if (round.game === 'trivia') {
+    const question = TRIVIA[data.questionIndex] || TRIVIA[0];
+    gameData = { question: { prompt: question.prompt, options: [...question.options] }, ...(!playing ? { answer: question.answer } : {}) };
+  }
+  if (round.game === 'crash') {
+    const current = playing ? crashMultiplier(round, now) : data.multiplier;
+    gameData = { multiplier: Math.min(current, data.crashPoint), crashed: current >= data.crashPoint, ...(!playing || current >= data.crashPoint ? { crashPoint: data.crashPoint } : {}) };
+  }
   return { ...base,
     player: [], dealer: [],
     playerTotal: null, dealerTotal: null,
     actions: playing ? [round.game] : [],
-    gameData: round.gameData || {},
+    gameData,
   };
 }
-module.exports = { apply, snapshotRound, blackjackTotal, pokerRank, shuffledDeck, PAYTABLE, RULES };
+module.exports = { apply, snapshotRound, blackjackTotal, pokerRank, shuffledDeck, minesMultiplier, PAYTABLE, RULES, HOUSE_RETURN, NUMBER_GUESS_MULTIPLIER };

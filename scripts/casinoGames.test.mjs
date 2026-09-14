@@ -23,9 +23,9 @@ function rig(draws) {
 function deal(game, draws, coins = 900, bet = 10) {
   return model.action({}, coins, req({ game, move: 'deal', bet }), { now, randomInt: rig(draws) });
 }
-function move(previous, name, extra = {}, at = now) {
+function move(previous, name, extra = {}, at = now, randomInt) {
   const round = previous.state.casinoRound;
-  return model.action(previous.state, previous.coins, req({ game: round.game, move: name, roundId: round.id, version: round.version, ...extra }), { now: at });
+  return model.action(previous.state, previous.coins, req({ game: round.game, move: name, roundId: round.id, version: round.version, ...extra }), { now: at, ...(randomInt ? { randomInt } : {}) });
 }
 
 test('shuffles use a complete unique deck and ace totals do not bust prematurely', () => {
@@ -145,4 +145,111 @@ test('holding all poker cards is valid and limits never prevent finishing a paid
   assert.equal(settled.coins, 900 - 10 + 2500); // 3390
   assert.equal(settled.state.casinoHistory[0].outcome, 'Royal flush');
   assert.equal(settled.state.games, 1); assert.equal(settled.state.wins, 1);
+});
+
+function textStart(game, randomInt = () => 0) {
+  return model.action({}, 1000, req({ game, move: 'start', bet: 10 }), { now, randomInt });
+}
+
+test('text game snapshots hide answers and mine positions until settlement', () => {
+  for (const game of ['mines', 'numberguess', 'crash']) {
+    const start = textStart(game, () => game === 'crash' ? 9000 : 0);
+    const view = model.snapshot(start.state, start.coins, now).casino.round;
+    for (const key of ['mines', 'target', 'answer', 'questionIndex', 'crashPoint']) assert.ok(!(key in view.gameData), `${game} leaked ${key}`);
+  }
+});
+
+test('number guess uses five unique blind picks with a fixed 80% return', () => {
+  const start = textStart('numberguess', () => 41);
+  assert.throws(() => move(start, 'guess', {correct: true, attempts: 1}), /Guess must/);
+  const wrong = move(start, 'guess', {guess: 70});
+  assert.equal(wrong.coins, 990);
+  const view = model.snapshot(wrong.state, wrong.coins, now).casino.round;
+  assert.equal(view.gameData.attempts, 1);
+  assert.deepEqual(view.gameData.guesses, [70]);
+  assert.ok(!('hint' in view.gameData));
+  assert.equal(view.gameData.multiplier, 16);
+  assert.throws(() => move(wrong, 'guess', {guess: 70}), /not tried/);
+  const restored = {state: JSON.parse(JSON.stringify(wrong.state)), coins: wrong.coins};
+  const win = move(restored, 'guess', {guess: 42});
+  assert.equal(win.coins, 1150); assert.equal(win.state.casinoRound.status, 'settled');
+  assert.throws(() => move(win, 'guess', {guess: 42}), /complete/);
+});
+
+test('mines cashouts use saved revealed tiles and reject invalid moves without losing a hand', () => {
+  const start = textStart('mines');
+  assert.deepEqual(start.state.casinoRound.gameData.mines, [0,1,2,3,4,5,6]);
+  const safe = move(start, 'reveal', {index: 24});
+  assert.equal(safe.state.casinoRound.gameData.multiplier, 1.13);
+  const secondSafe = move(safe, 'reveal', {index: 23});
+  assert.equal(secondSafe.state.casinoRound.gameData.multiplier, 1.6);
+  assert.throws(() => move(safe, 'reveal', {index: 24}), /already/);
+  assert.throws(() => move(safe, 'unexpected'), /Invalid move/);
+  const cash = move(safe, 'cashout', {multiplier: 99999});
+  assert.equal(cash.coins, 1001); assert.equal(cash.state.casinoRound.payout, 11);
+  const loss = move(start, 'reveal', {index: 0});
+  assert.equal(loss.coins, 990); assert.equal(loss.state.casinoRound.status, 'settled');
+});
+
+test('higher/lower uses exact 1-100 odds and equal numbers lose', () => {
+  const start = textStart('higherlower', () => 49);
+  assert.equal(casino.snapshotRound(start.state.casinoRound, start.coins, now).gameData.currentNumber, 50);
+  const won = move(start, 'guess', {choice: 'higher'}, now, () => 99);
+  assert.equal(won.state.casinoRound.gameData.streak, 1);
+  assert.equal(won.state.casinoRound.gameData.multiplier, 1.64);
+  assert.equal(won.state.casinoRound.version, 2);
+  const cash = move(won, 'cashout', {streak: 999999});
+  assert.equal(cash.coins, 1006);
+  const tieStart = textStart('higherlower', () => 49);
+  const tie = move(tieStart, 'guess', {choice: 'higher'}, now, () => 49);
+  assert.equal(tie.coins, 990);
+  assert.equal(tie.state.casinoRound.outcome, 'loss');
+  assert.match(tie.state.casinoRound.log.at(-1), /Ties lose/);
+  const maximum = textStart('higherlower', () => 99);
+  assert.throws(() => move(maximum, 'guess', {choice:'higher'}, now, () => 0), /Choose the other/);
+});
+
+test('repeatable trivia questions cannot be used to farm casino coins', () => {
+  assert.throws(() => textStart('trivia'), /current casino game/);
+  const legacy = model.normalize({ casinoRound: {
+    id: randomUUID(), game:'trivia', status:'playing', version:1, bet:10, stake:10,
+    player:[], dealer:[], deck:[], outcome:null, payout:0, net:0, startedAt:now,
+    finishedAt:null, log:['Trivia started. 10 coins staked.'], gameData:{questionIndex:0}
+  }});
+  const refunded = model.action(legacy, 990, req({ game:'trivia', move:'refund', roundId:legacy.casinoRound.id, version:1 }), { now });
+  assert.equal(refunded.coins, 1000);
+  assert.equal(refunded.state.casinoRound.outcome, 'push');
+  assert.match(refunded.state.casinoRound.log.at(-1), /full stake was returned/);
+});
+
+test('crash uses an 82% server-side curve and cannot accept an invented multiplier', () => {
+  const start = textStart('crash', () => 5000); // 1.64x crash point
+  const cash = move(start,'cashout',{multiplier:999999},now+4000);
+  assert.equal(cash.coins,1004); // 1.49x rounds to 14 coins returned
+  const after = move(start,'cashout',{multiplier:1.5},now+8000);
+  assert.equal(after.coins,990); assert.equal(after.state.casinoRound.outcome,'crash');
+  const view = model.snapshot(start.state,start.coins,now+8000).casino.round;
+  assert.equal(view.gameData.crashed,true);
+  const tick = move(start,'tick',{},now+8000);
+  assert.equal(tick.state.casinoRound.status,'settled');
+});
+
+test('odd blackjack bets never leave fractional coins that disappear on reload', () => {
+  const natural = deal('blackjack',[c('A'),c(9),c('K'),c(7)],900,11);
+  assert.equal(natural.coins,916); assert.equal(Number.isSafeInteger(natural.coins),true);
+  assert.equal(model.normalize(natural.state).net,16);
+});
+
+test('settled games can start again immediately without an artificial cooldown', () => {
+  const natural = deal('blackjack', [c('A'), c(9), c('K'), c(7)], 900, 10);
+  const nextHand = model.action(natural.state, natural.coins, req({ game: 'blackjack', move: 'deal', bet: 10 }), {
+    now,
+    randomInt: rig([c(2), c(3), c(4), c(5)]),
+  });
+  assert.equal(nextHand.state.casinoRound.status, 'playing');
+
+  const guess = textStart('numberguess', () => 0);
+  const settled = move(guess, 'guess', { guess: 1 });
+  const nextGuess = model.action(settled.state, settled.coins, req({ game: 'numberguess', move: 'start', bet: 10 }), { now, randomInt: () => 1 });
+  assert.equal(nextGuess.state.casinoRound.status, 'playing');
 });

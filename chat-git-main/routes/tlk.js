@@ -30,6 +30,7 @@ const uploadRoute = require('./upload');
 const chatImageStore = require('../services/db/chatImageStore');
 const { prepareNativeMediaMessage, LOCAL_IMAGE_PATH } = require('../services/chat/attachments');
 const communityStore = require('../services/chat/communityStore');
+const localCosmetics = require('../services/chat/localCosmetics');
 
 const router = express.Router();
 
@@ -149,13 +150,6 @@ function isGroupMember(room, username = '', role = '') {
   if (!normalizedUsername) return false;
   return Array.isArray(group.members) &&
     group.members.some((member) => String(member || '').trim().toLowerCase() === normalizedUsername);
-}
-
-function excludesGlobalSlowmode(room = '') {
-  const normalizedRoom = String(room || '').trim().toLowerCase();
-  if (!normalizedRoom) return false;
-  if (groupChats.getGroupSync(normalizedRoom)) return true;
-  return buildDmParticipantsMap().has(normalizedRoom);
 }
 
 function canUseRoomSettings(room = '', user = null, write = false) {
@@ -826,10 +820,14 @@ router.post('/chat-avatar-effects/equip', auth, async (req, res) => {
 
 router.post('/chat-tags/:tagId/purchase', auth, async (req, res) => {
   try {
-    if (req.user?.source !== 'database') return res.status(400).json({ msg: 'Tags require a database-backed account' });
     const userId = req.user?.id || req.user?._id;
     const tag = resolveTagDefinition(req.params.tagId);
     if (!tag || tag.scope !== 'tag') return res.status(400).json({ msg: 'Tag not found' });
+    if (req.user?.source !== 'database') {
+      const user = localCosmetics.change(userId, 'tag', tag, true);
+      identityStore.updateByUserId(userId, user);
+      return res.json({ ok: true, tag, user });
+    }
     const state = await effectStore.purchaseAndEquipTag(userId, tag);
     const account = await profileStore.findAccountById(userId);
     const user = { ...account, ...state, source:'database' };
@@ -851,11 +849,15 @@ router.post('/chat-tags/:tagId/purchase', auth, async (req, res) => {
 
 router.post('/chat-tags/equip', auth, async (req, res) => {
   try {
-    if (req.user?.source !== 'database') return res.status(400).json({ msg: 'Tags require a database-backed account' });
     const userId = req.user?.id || req.user?._id;
     const tagId = String(req.body?.tagId || 'none').trim().toLowerCase();
     const tag = tagId === 'none' ? { id:'none', name:'No tag' } : resolveTagDefinition(tagId);
     if (!tag || (tag.id !== 'none' && tag.scope !== 'tag')) return res.status(400).json({ msg: 'Tag not found' });
+    if (req.user?.source !== 'database') {
+      const user = localCosmetics.change(userId, 'tag', tag, false);
+      identityStore.updateByUserId(userId, user);
+      return res.json({ ok: true, tag, user });
+    }
     const state = await effectStore.equipTag(userId, tag.id);
     const account = await profileStore.findAccountById(userId);
     const user = { ...account, ...state, source:'database' };
@@ -873,10 +875,14 @@ router.post('/chat-tags/equip', auth, async (req, res) => {
 
 router.post('/chat-banners/:bannerId/purchase', auth, async (req, res) => {
   try {
-    if (req.user?.source !== 'database') return res.status(400).json({ msg:'Banners require a database-backed account' });
     const userId = req.user?.id || req.user?._id;
     const banner = effectDefinitions.get(String(req.params.bannerId || '').trim().toLowerCase());
     if (!banner || banner.scope !== 'banner') return res.status(400).json({ msg:'Banner not found' });
+    if (req.user?.source !== 'database') {
+      const user = localCosmetics.change(userId, 'banner', banner, true);
+      identityStore.updateByUserId(userId, user);
+      return res.json({ ok: true, banner, user });
+    }
     const state = await bannerStore.purchaseAndEquip(userId, banner);
     const account = await profileStore.findAccountById(userId);
     const user = { ...account, ...state, source:'database' };
@@ -889,11 +895,15 @@ router.post('/chat-banners/:bannerId/purchase', auth, async (req, res) => {
 
 router.post('/chat-banners/equip', auth, async (req, res) => {
   try {
-    if (req.user?.source !== 'database') return res.status(400).json({ msg:'Banners require a database-backed account' });
     const userId = req.user?.id || req.user?._id;
     const bannerId = String(req.body?.bannerId || 'none').trim().toLowerCase();
     const banner = bannerId === 'none' ? { id:'none', name:'No banner' } : effectDefinitions.get(bannerId);
     if (!banner || (banner.id !== 'none' && banner.scope !== 'banner')) return res.status(400).json({ msg:'Banner not found' });
+    if (req.user?.source !== 'database') {
+      const user = localCosmetics.change(userId, 'banner', banner, false);
+      identityStore.updateByUserId(userId, user);
+      return res.json({ ok: true, banner, user });
+    }
     const state = await bannerStore.equip(userId, banner.id);
     const account = await profileStore.findAccountById(userId);
     const user = { ...account, ...state, source:'database' };
@@ -906,10 +916,14 @@ router.post('/chat-banners/equip', auth, async (req, res) => {
 
 router.post('/chat-profile-effects/:effectId/purchase', auth, async (req, res) => {
   try {
-    if (req.user?.source !== 'database') return res.status(400).json({ msg:'Profile effects require a database-backed account' });
     const userId = req.user?.id || req.user?._id;
     const effect = effectDefinitions.get(String(req.params.effectId || '').trim().toLowerCase());
     if (!effect || effect.scope !== 'profile') return res.status(400).json({ msg:'Profile effect not found' });
+    if (req.user?.source !== 'database') {
+      const user = localCosmetics.change(userId, 'profile', effect, true);
+      identityStore.updateByUserId(userId, user);
+      return res.json({ ok: true, effect, user });
+    }
     const state = await profileEffectStore.purchaseAndEquip(userId, effect);
     const account = await profileStore.findAccountById(userId);
     const user = { ...account, ...state, source:'database' };
@@ -923,11 +937,15 @@ router.post('/chat-profile-effects/:effectId/purchase', auth, async (req, res) =
 
 router.post('/chat-profile-effects/equip', auth, async (req, res) => {
   try {
-    if (req.user?.source !== 'database') return res.status(400).json({ msg:'Profile effects require a database-backed account' });
     const userId = req.user?.id || req.user?._id;
     const effectId = String(req.body?.effectId || 'none').trim().toLowerCase();
     const effect = effectId === 'none' ? { id:'none', name:'No profile effect' } : effectDefinitions.get(effectId);
     if (!effect || (effect.id !== 'none' && effect.scope !== 'profile')) return res.status(400).json({ msg:'Profile effect not found' });
+    if (req.user?.source !== 'database') {
+      const user = localCosmetics.change(userId, 'profile', effect, false);
+      identityStore.updateByUserId(userId, user);
+      return res.json({ ok: true, effect, user });
+    }
     const state = await profileEffectStore.equip(userId, effect.id);
     const account = await profileStore.findAccountById(userId);
     const user = { ...account, ...state, source:'database' };
@@ -1586,18 +1604,28 @@ async function sendRoomMessageOnce({
       return { status: 403, data: { msg: `User/account/device banned by moderation policy. ${BAN_APPEAL_TEXT}` } };
     }
 
-    const moderation = await netState.moderateText(cleanBody);
+    const moderation = netState.moderateChatText(cleanBody);
     if (!moderation?.allowed) {
       const primaryReason = (moderation?.reasons || [])[0] || 'harmful content';
-      if (!persistentDm) {
-        await postRoomNote(normalizedRoom, `${userName} message blocked by moderation (${primaryReason}).`, SYSTEM_BOT_NAME);
-      }
-
       return {
         status: 400,
         data: {
-          msg: `Message blocked by AI moderation: ${primaryReason}`,
+          msg: `Message blocked: ${primaryReason}`,
           moderation
+        }
+      };
+    }
+
+    const spam = netState.checkSpam(identity, cleanBody);
+    if (spam.blocked) {
+      const seconds = Math.max(1, Math.ceil(spam.retryAfterMs / 1000));
+      return {
+        status: 429,
+        data: {
+          msg: spam.reason === 'spam_detected'
+            ? 'Spam detected. You are timed out for 1 minute.'
+            : `Spam timeout active. Try again in ${seconds}s.`,
+          moderation: { blocked: true, category: 'spam', retryAfterMs: spam.retryAfterMs }
         }
       };
     }
@@ -1629,21 +1657,6 @@ async function sendRoomMessageOnce({
           }
         }
       };
-    }
-
-    const isOwner = callerRole === 'owner';
-    if (!isOwner) {
-      const cooldown = netState.checkCooldown(userToken, {
-        room: normalizedRoom,
-        excludeGlobal: excludesGlobalSlowmode(normalizedRoom)
-      });
-      if (cooldown.blocked) {
-        const seconds = Math.ceil(cooldown.retryAfterMs / 1000);
-        return {
-          status: 429,
-          data: { msg: `Slowmode active. Wait ${seconds}s before sending another message.` }
-        };
-      }
     }
 
     // Native media belongs to Nebulo, not the upstream text service.
@@ -1698,6 +1711,7 @@ async function sendRoomMessageOnce({
       });
     }
 
+    const resolvedReply = messageFeatureStore.resolveReply(normalizedRoom, reply);
     let enrichedMessage = {
       ...(persistentDm
         ? { body: cleanBody, nickname: userName, username: authUser?.username || userName, user_token: userToken }
@@ -1716,11 +1730,11 @@ async function sendRoomMessageOnce({
         equippedTag: senderSafe.equippedTag || 'none'
       } : {}),
       roomId: normalizedRoom,
-      reply: reply && typeof reply === 'object' ? reply : null,
+      reply: resolvedReply,
       attachments: Array.isArray(attachments) ? attachments : [],
       ...(clientNonce ? { clientNonce } : {})
     };
-    const replyMessageId = String(reply?.messageId || reply?.id || '').trim();
+    const replyMessageId = String(resolvedReply?.messageId || '').trim();
     const earnsReplyReward = !!(
       replyMessageId && messageFeatureStore.hasMessage(normalizedRoom, replyMessageId)
     );
@@ -1740,7 +1754,7 @@ async function sendRoomMessageOnce({
       enrichedMessage.body = media.nativeBody;
       enrichedMessage.content = media.nativeBody;
     }
-    messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply, attachments, nativeBody: media.nativeBody });
+    messageFeatureStore.recordMessage(normalizedRoom, enrichedMessage, { reply: resolvedReply, attachments, nativeBody: media.nativeBody });
     if ((authUser?._id || authUser?.id) && !DISABLE_MESSAGE_COIN_REWARD) {
       let rewardAmount = earnsReplyReward ? 2 : 1;
       try {
@@ -1870,9 +1884,7 @@ function enrichMessageIdentity(msg) {
     system: isSystem
   };
   const tokenProfile = identityStore.getByToken(msg?.user_token);
-  const profile = identityMatchesMessageName(tokenProfile, decodedNickname)
-    ? tokenProfile
-    : null;
+  const profile = tokenProfile || null;
   if (!profile) {
     const byName = userStore.findByUsername(String(decodedNickname || '').trim());
     const idByUsername = identityStore.getByUsername(String(decodedNickname || '').trim());
@@ -1883,7 +1895,7 @@ function enrichMessageIdentity(msg) {
       ...baseMessage,
       userId: identityProfile?.userId || safe?._id || safe?.id || null,
       username: identityProfile?.username || safe?.username || baseMessage.username || null,
-      nickname: decodedNickname || safe?.username || 'Unknown',
+      nickname: identityProfile?.name || decodedNickname || safe?.username || 'Unknown',
       avatar: identityProfile?.avatar || safe?.avatar || null,
       role: identityProfile?.role || safe?.role || null,
       is_owner: !!(identityProfile?.is_owner || safe?.is_owner),
@@ -1892,6 +1904,10 @@ function enrichMessageIdentity(msg) {
       equippedEffect: identityProfile?.equippedEffect || safe?.equippedEffect || "none",
       equippedAvatarEffect: identityProfile?.equippedAvatarEffect || safe?.equippedAvatarEffect || "none",
       equippedTag: identityProfile?.equippedTag || safe?.equippedTag || "none",
+      equippedBanner: identityProfile?.equippedBanner || safe?.equippedBanner || "none",
+      equippedProfileEffect: identityProfile?.equippedProfileEffect || safe?.equippedProfileEffect || "none",
+      nameEffect: identityProfile?.nameEffect || safe?.nameEffect || "none",
+      equippedBadge: identityProfile?.equippedBadge || safe?.equippedBadge || "none",
       system: isSystem
     };
   }
@@ -1899,9 +1915,7 @@ function enrichMessageIdentity(msg) {
     ...baseMessage,
     userId: profile.userId || null,
     username: profile.username || baseMessage.username || null,
-    // The upstream nickname is the authored value. A matching local profile
-    // can supply cosmetics, but must never replace the saved author label.
-    nickname: decodedNickname || profile.name || profile.username || "Unknown",
+    nickname: profile.name || decodedNickname || profile.username || "Unknown",
     avatar: profile.avatar || null,
     role: profile.role || null,
     is_owner: !!(profile.is_owner),
@@ -1910,6 +1924,10 @@ function enrichMessageIdentity(msg) {
     equippedEffect: profile.equippedEffect || "none",
     equippedAvatarEffect: profile.equippedAvatarEffect || "none",
     equippedTag: profile.equippedTag || "none",
+    equippedBanner: profile.equippedBanner || "none",
+    equippedProfileEffect: profile.equippedProfileEffect || "none",
+    nameEffect: profile.nameEffect || "none",
+    equippedBadge: profile.equippedBadge || "none",
     system: isSystem
   };
 }
@@ -1927,10 +1945,10 @@ function profileForMessageUserId(userId) {
   if (!safeStoredUser) return identityProfile;
   if (!identityProfile) return safeStoredUser;
   return {
-    ...identityProfile,
     ...safeStoredUser,
+    ...identityProfile,
     userId: cleanUserId,
-    username: safeStoredUser.username || identityProfile.username || null,
+    username: identityProfile.username || safeStoredUser.username || null,
     name: identityProfile.name || safeStoredUser.username || null,
     // The newest authenticated binding contains the account's current avatar.
     // Use its explicit null too, so removing an avatar clears old history.
@@ -1947,12 +1965,19 @@ function attachStableMessageAuthor(message = {}) {
     ...message,
     userId: profile._id || profile.id || profile.userId || message.userId || null,
     username: profile.username || message.username || null,
-    nickname: message.nickname || profile.name || profile.username || 'Unknown',
+    nickname: profile.name || profile.displayName || message.nickname || profile.username || 'Unknown',
     avatar: profile.avatar !== undefined ? profile.avatar : (message.avatar || null),
     role: profile.role || message.role || null,
     is_owner: profile.is_owner !== undefined ? !!profile.is_owner : !!message.is_owner,
     is_premium: profile.is_premium !== undefined ? !!profile.is_premium : !!message.is_premium,
-    is_booster: profile.is_booster !== undefined ? !!profile.is_booster : !!message.is_booster
+    is_booster: profile.is_booster !== undefined ? !!profile.is_booster : !!message.is_booster,
+    equippedEffect: message.equippedEffect || profile.equippedEffect || 'none',
+    equippedAvatarEffect: message.equippedAvatarEffect || profile.equippedAvatarEffect || 'none',
+    equippedTag: message.equippedTag || profile.equippedTag || 'none',
+    equippedBanner: message.equippedBanner || profile.equippedBanner || 'none',
+    equippedProfileEffect: message.equippedProfileEffect || profile.equippedProfileEffect || 'none',
+    nameEffect: message.nameEffect || profile.nameEffect || 'none',
+    equippedBadge: message.equippedBadge || profile.equippedBadge || 'none'
   };
 }
 
@@ -2548,7 +2573,7 @@ router.patch('/rooms/:room/messages/:messageId', auth, security.chatWriteRateLim
     return res.status(400).json({ msg: `Message is too long. Limit is ${MAX_MESSAGE_BODY_LENGTH} characters.` });
   }
   try {
-    const moderation = await netState.moderateText(body);
+    const moderation = netState.moderateChatText(body);
     if (!moderation?.allowed) {
       return res.status(400).json({ msg: `Message blocked by moderation: ${(moderation.reasons || [])[0] || 'content policy'}` });
     }

@@ -11,6 +11,7 @@ import {
   rewritePlatinumText,
   toPlatinumLocalUrl,
 } from "../services/platinumGameMirror.js";
+import { getGameCacheLimitBytes, pruneGameCache } from "../services/gameAssetCache.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const catalogPath = path.join(root, "public", "assets", "data", "activities.json");
@@ -21,6 +22,8 @@ const textLimit = 16 * 1024 * 1024;
 const assetExtension = /\.(?:html?|js|mjs|css|json|xml|txt|map|wasm|pck|data|mem|unityweb|unity3d|bundle|bin|br|gz|zip|swf|png|jpe?g|webp|gif|svg|ico|avif|mp3|ogg|wav|m4a|mp4|webm|ogv|ttf|otf|woff2?|eot|atlas|fnt)(?:[?#].*)?$/i;
 const textFile = /(?:\.(?:html?|js|mjs|css|json|xml|txt|map|svg|atlas|fnt)$|\/$)/i;
 const entryVersion = "20260819-game-assets-1";
+const cacheLimitBytes = getGameCacheLimitBytes();
+const pruneStepBytes = 32 * 1024 * 1024;
 
 const args = new Set(process.argv.slice(2));
 const rewriteCatalog = args.has("--rewrite-catalog");
@@ -40,6 +43,22 @@ let completed = 0;
 let downloaded = 0;
 let downloadedBytes = 0;
 let repairedAssets = 0;
+let nextPruneAt = pruneStepBytes;
+let pruneQueue = Promise.resolve();
+let latestPrune = { beforeBytes: 0, afterBytes: 0, removedFiles: 0, maxBytes: cacheLimitBytes };
+const activeCacheFiles = new Set();
+
+function enforceCacheLimit(force = false) {
+  if (!force && downloadedBytes < nextPruneAt) return pruneQueue;
+  nextPruneAt = downloadedBytes + pruneStepBytes;
+  pruneQueue = pruneQueue
+    .catch(() => {})
+    .then(async () => {
+      latestPrune = await pruneGameCache(cacheRoot, cacheLimitBytes, new Set(activeCacheFiles));
+      return latestPrune;
+    });
+  return pruneQueue;
+}
 
 const oldUnityBootstrapRepairs = new Map([
   ["/cdn/blocky%20snakes/index.html", ["gameContainer", "build.json"]],
@@ -139,6 +158,8 @@ async function streamAtomic(filePath, body) {
 
 async function cacheUrl(url) {
     const filePath = getPlatinumCachePath(cacheRoot, url);
+    await pruneQueue.catch(() => {});
+    activeCacheFiles.add(filePath);
     try {
       const existing = await fsp.stat(filePath).catch(() => null);
       const refreshEntry = refreshEntries && requiredUrls.has(url.toString()) && /\.html?$/i.test(url.pathname);
@@ -187,10 +208,13 @@ async function cacheUrl(url) {
     }
     await writeAtomic(`${filePath}.meta.json`, Buffer.from(`${JSON.stringify({ contentType, source: url.toString(), decoded: !!response.headers.get('content-encoding') })}\n`));
     downloaded += 1;
+    await enforceCacheLimit();
   } catch (error) {
     const failure = { url: url.toString(), error: error.message };
     if (requiredUrls.has(url.toString())) requiredFailures.push(failure);
     else optionalFailures.push(failure);
+  } finally {
+    activeCacheFiles.delete(filePath);
   }
 }
 
@@ -220,6 +244,9 @@ async function repairCachedTextFiles(directory) {
     repairedAssets += 1;
   }));
 }
+
+await fsp.mkdir(cacheRoot, { recursive: true });
+latestPrune = await pruneGameCache(cacheRoot, cacheLimitBytes);
 
 if (repairCache) await repairCachedTextFiles(cacheRoot);
 
@@ -276,6 +303,7 @@ async function worker() {
 }
 
 await Promise.all(Array.from({ length: concurrency }, () => worker()));
+latestPrune = await enforceCacheLimit(true);
 
 if (rewriteCatalog) {
   const localCatalog = catalog.map((entry) => ({
@@ -298,6 +326,8 @@ const summary = {
   processedAssets: completed,
   downloadedAssets: downloaded,
   downloadedMiB: Number((downloadedBytes / 1024 / 1024).toFixed(1)),
+  cacheLimitMiB: Number((cacheLimitBytes / 1024 / 1024).toFixed(1)),
+  cacheAfterMiB: Number((latestPrune.afterBytes / 1024 / 1024).toFixed(1)),
   repairedAssets,
   requiredFailures: requiredFailures.length,
   optionalMissingReferences: optionalFailures.length,

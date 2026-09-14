@@ -1,4 +1,4 @@
-import { createWalletSync } from './wallet-sync.js?v=20260906-coins-1';
+import { createWalletSync } from './wallet-sync.js?v=20260909-shop-speed-1';
 import { getSocket } from './socket.js';
 import { createVoiceModule } from './voice.js';
 

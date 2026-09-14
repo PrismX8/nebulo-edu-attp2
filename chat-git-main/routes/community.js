@@ -8,6 +8,7 @@ const localStore = require('../services/auth/localStore');
 const profiles = require('../services/db/profileStore');
 const store = require('../services/chat/communityStore');
 const model = require('../services/chat/communityModel');
+const presence = require('../services/network/presence');
 
 const router = express.Router();
 const wrap = fn => async (req, res) => {
@@ -17,6 +18,11 @@ const wrap = fn => async (req, res) => {
   }
 };
 const stateOf = context => model.snapshot(context.state, context.coins, Date.now(), context.premium);
+const fullState = async user => {
+  await store.settleLottery(user);
+  const context = await store.read(user);
+  return model.snapshot(context.state, context.coins, Date.now(), context.premium, await store.lotteryView(user, context.state));
+};
 const verifyPassword = async (password, hash) => typeof hash === 'string' && /^\$2[aby]\$/.test(hash) && await bcrypt.compare(password, hash);
 const privateHeaders = (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); };
 router.use(privateHeaders);
@@ -61,19 +67,36 @@ router.use((req, res, next) => {
   next();
 });
 router.use(security.rateLimit({ prefix: 'community-user', windowMs: 60000, max: 90, keyGenerator: req => store.id(req.user) }));
-router.get('/me', wrap(async (req, res) => res.json(stateOf(await store.read(req.user)))));
+router.get('/me', wrap(async (req, res) => res.json(await fullState(req.user))));
 router.get('/profile/:username', wrap(async (req, res) => {
   const target = await store.resolveUsername(req.params.username);
   if (!target) model.fail('Profile not found.', 404);
   const value = stateOf(await store.read(target));
   res.json({ profile: { ...value.profile, nameColor: value.premium.active ? value.profile.nameColor : '#0099ff' }, premium: { active: value.premium.active }, equippedBadge: value.store?.equippedBadge || 'none' });
 }));
-router.post('/action', security.rateLimit({ prefix: 'community-action', windowMs: 60000, max: 35, keyGenerator: req => store.id(req.user) }), wrap(async (req, res) => {
+router.post('/action', security.rateLimit({ prefix: 'community-action', windowMs: 60000, max: 90, keyGenerator: req => store.id(req.user) }), wrap(async (req, res) => {
+  const now = Date.now();
+  if (req.body?.action === 'lottery_enter') await store.settleLottery(req.user, now);
+  let committedState;
   const response = await store.mutate(req.user, ctx => {
-    const next = model.action(ctx.state, ctx.coins, req.body, { premium: ctx.premium });
+    const next = model.action(ctx.state, ctx.coins, req.body, { now, premium: ctx.premium });
     ctx.state = next.state; ctx.coins = next.coins;
+    committedState = next.state;
     return { result: next.result, state: stateOf(ctx), replay: !!next.replay };
   });
+  if (req.body?.action === 'lottery_enter') {
+    store.invalidateLottery(req.user);
+    response.state.store.lottery = await store.lotteryView(req.user, committedState, now);
+  }
+  // Refresh connected identities only after the purchase has been committed.
+  if (['buy_store', 'equip_badge', 'premium'].includes(req.body?.action)) {
+    const identity = response.state.store;
+    for (const socket of globalThis.__nebuloChatIo?.sockets?.sockets?.values() || []) {
+      if (store.id(socket.data?.user) !== store.id(req.user)) continue;
+      socket.data.user = { ...socket.data.user, nameEffect: identity.nameEffect, equippedBadge: identity.equippedBadge, customStatus: identity.customStatus };
+      presence.touch(socket.data.clientId, socket.data.presenceRoom || '_online', socket.data.user);
+    }
+  }
   res.json(response);
 }));
 router.get('/leaderboard', wrap(async (req, res) => {

@@ -7,6 +7,8 @@
   <meta name="description" content="Choose how Nebulo starts.">
   <title>Nebulo Setup</title>
   <script src="/assets/js/identity-mask.js" defer></script>
+  <link rel="stylesheet" href="/assets/css/site-ads.css?v=20260913-direct-page-ads-8">
+  <script src="/assets/js/site-ads.js?v=20260913-direct-page-ads-8" defer></script>
   <style>
     :root {
       color-scheme: dark;
@@ -381,12 +383,13 @@
       text-transform: uppercase;
     }
 
-    .sponsor-slot {
+    .ad-slot {
       margin-top: 16px;
       padding-top: 12px;
       border-top: 1px solid var(--border);
+      text-align: center;
     }
-    .sponsor-slot > span {
+    .ad-slot > span {
       display: block;
       margin-bottom: 6px;
       color: var(--muted);
@@ -397,11 +400,21 @@
       text-transform: uppercase;
       opacity: .6;
     }
-    .sponsor-link {
+    .ad-network-unit {
+      width: 100%;
+      min-height: 50px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+    .ad-network-unit > div {
+      max-width: 100%;
+    }
+    .ad-link {
       display: flex;
       width: max-content;
       min-height: 28px;
-      margin: 0 auto;
+      margin: 8px auto 0;
       padding: 6px 12px;
       align-items: center;
       justify-content: center;
@@ -416,8 +429,8 @@
       text-transform: uppercase;
       transition: border-color .15s ease, background .15s ease, color .15s ease;
     }
-    .sponsor-link:hover { border-color: rgba(59, 130, 246, .35); background: rgba(59, 130, 246, .1); color: #a8c4e8; }
-    .sponsor-link:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+    .ad-link:hover { border-color: rgba(59, 130, 246, .35); background: rgba(59, 130, 246, .1); color: #a8c4e8; }
+    .ad-link:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 
     /* ── Auth step ── */
     .auth-views > [hidden] { display: none !important; }
@@ -831,13 +844,11 @@
       </div>
       <div class="card-foot">
         <p class="footer-note">This choice resets each time the root address is opened.</p>
-        <aside class="sponsor-slot" aria-label="Sponsored content">
-          <span>Sponsored</span>
-          <a class="sponsor-link" href="https://omg10.com/4/11728073" target="_blank" rel="sponsored nofollow noopener noreferrer">Visit sponsor</a>
-        </aside>
       </div>
     </section>
 
+    <div class="nebulo-ad-slot" data-ad-kind="direct"></div>
+    <div class="nebulo-ad-slot" data-ad-kind="network"></div>
   </main>
 
   <script>

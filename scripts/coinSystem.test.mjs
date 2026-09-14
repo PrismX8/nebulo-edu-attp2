@@ -50,6 +50,49 @@ function fixture(t) {
   return { dir, file, store, events, fail: value => { fail = value; } };
 }
 
+test('local shop cosmetics charge once, persist ownership, and roll back failed saves', t => {
+  const f = fixture(t);
+  const shop = load('../chat-git-main/services/chat/localCosmetics.js', {'../auth/localStore':f.store});
+  const items = [
+    {id:'test-banner',scope:'banner',price:10,owned:'ownedBanners',equipped:'equippedBanner'},
+    {id:'test-profile',scope:'profile',price:10,owned:'ownedProfileEffects',equipped:'equippedProfileEffect'},
+    {id:'custom-tag',scope:'tag',price:10,owned:'ownedTags',equipped:'equippedTag'},
+  ];
+  let balance=100;
+  for(const item of items){
+    const saved=shop.change('alice',item.scope,item,true);
+    assert.equal(saved.coins,balance-=10);assert.equal(saved[item.equipped],item.id);
+    assert.equal(shop.change('alice',item.scope,item,true).coins,balance);
+    shop.change('alice',item.scope,{id:'none'},false);
+    assert.equal(shop.change('alice',item.scope,item,false)[item.equipped],item.id);
+  }
+  const reload=load('../chat-git-main/services/auth/localStore.js',{}, {CHAT_LOCAL_DATA_DIR:f.dir});
+  for(const item of items) assert.ok(reload.sanitizeUser(reload.findById('alice'))[item.owned].includes(item.id));
+  const before=fs.readFileSync(f.file,'utf8');
+  f.fail(true);
+  assert.throws(()=>shop.change('alice','banner',{id:'another',scope:'banner',price:10},true),/disk failure/);
+  assert.equal(fs.readFileSync(f.file,'utf8'),before);
+  assert.equal(f.store.findById('alice').coins,70);
+});
+
+test('coin reset runs once, preserves cosmetics, and leaves a dismissible account notice', t => {
+  const f = fixture(t);
+  f.store.updateProfile('alice', { equippedEffect: 'none' });
+  const first = f.store.resetAllCoinsOnce({ version: 'test-reset-v1', message: 'Balances were reset. Cosmetics were kept.' });
+  assert.equal(first.applied, true);
+  assert.equal(first.previousTotal, 120);
+  assert.equal(f.store.findById('alice').coins, 0);
+  assert.ok(f.store.findById('alice').ownedEffects.includes('none'));
+  const notice = f.store.listSystemNotifications('alice')[0];
+  assert.equal(notice.metadata.kind, 'coin_balance_reset');
+  f.store.grantCoins('alice', 25);
+  const replay = f.store.resetAllCoinsOnce({ version: 'test-reset-v1', message: 'Balances were reset. Cosmetics were kept.' });
+  assert.equal(replay.applied, false);
+  assert.equal(f.store.findById('alice').coins, 25);
+  assert.equal(f.store.clearSystemNotification('alice', notice.id), true);
+  assert.equal(f.store.listSystemNotifications('alice').length, 0);
+});
+
 test('failed save preserves disk, cache, and both sides of a transfer', t => {
   const f = fixture(t);
   const before = fs.readFileSync(f.file, 'utf8');
@@ -181,6 +224,20 @@ test('database transfers commit both balances and notify only after commit', asy
   assert.equal(notifications.length, 0);
 });
 
+test('database account creation commits and returns the new account', async () => {
+  const calls = [];
+  const row = { id:'10000000-0000-4000-8000-000000000001', email:'new@example.test', username:'new_user', password_hash:'hash', user_metadata:{display_name:'New User'}, coins:0 };
+  const client = { release() {}, async query(sql) { calls.push(sql); return { rows:[] }; } };
+  class Pool {
+    on() {}
+    async connect() { return client; }
+    async query(sql) { calls.push(sql); return { rows:[row] }; }
+  }
+  const profiles = load('../chat-git-main/services/db/profileStore.js', { pg:{Pool}, '../chat/walletEvents':{changed:()=>assert.fail('A new zero-balance account should not emit a wallet change.')} }, { PROFILE_DATABASE_URL:'test' });
+  const account = await profiles.createAccount({ id:row.id, email:row.email, username:row.username, displayName:'New User', passwordHash:'hash' });
+  assert.equal(account.id,row.id);assert.equal(account.displayName,'New User');assert.equal(calls.includes('commit'),true);
+});
+
 test('database wallet writes never fall back to the local identity mirror', async () => {
   const wallet = load('../chat-git-main/services/chat/wallet.js', {
     '../db/profileStore': { spendCoins: async () => { throw new Error('database unavailable'); } },
@@ -215,6 +272,16 @@ test('live database balance reads verify the session without cosmetic or mirror 
 
 const syncSource = fs.readFileSync(new URL('../chat-git-main/public/modules/wallet-sync.js', import.meta.url), 'utf8');
 const { createWalletSync } = await import(`data:text/javascript;base64,${Buffer.from(syncSource).toString('base64')}`);
+test('live wallet publishes an authoritative action balance without another network read', () => {
+  const displayed = [];
+  const sync = createWalletSync({ read: async () => assert.fail('Commit should not read the wallet'), changed: n => displayed.push(n) });
+  sync.reset('alice');
+  assert.equal(sync.commit('alice', 140), true);
+  assert.equal(sync.balance, 140);
+  assert.deepEqual(displayed, [140]);
+  assert.equal(sync.commit('alice', -1), false);
+  assert.equal(sync.balance, 140);
+});
 test('live wallet ignores stale reads, preserves confirmed coins on failure, and resets on account changes', async () => {
   const requests = [], displayed = [];
   const sync = createWalletSync({ read: () => new Promise((resolve, reject) => requests.push({ resolve, reject })), changed: n => displayed.push(n) });

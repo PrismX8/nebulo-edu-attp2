@@ -27,11 +27,10 @@ const state = {
   clearedRooms: new Map(),
   roomEffects: new Map(),
   roomSettings: new Map(),
-  roomSlowmodes: new Map(),
   warningsByUser: new Map(),
-  cooldownByUser: new Map(),
+  spamActivityByUser: new Map(),
+  spamTimeoutsByUser: new Map(),
   pendingAlerts: new Map(),
-  slowmodeMs: null
 };
 
 function savePersistentState() {
@@ -43,9 +42,7 @@ function savePersistentState() {
       clearedRooms: Object.fromEntries(state.clearedRooms.entries()),
       roomEffects: Object.fromEntries(state.roomEffects.entries()),
       roomSettings: Object.fromEntries(state.roomSettings.entries()),
-      roomSlowmodes: Object.fromEntries(state.roomSlowmodes.entries()),
       pendingAlerts: Object.fromEntries(state.pendingAlerts.entries()),
-      slowmodeMs: Math.max(0, Number(state.slowmodeMs || 0)),
       lockdownActive: !!state.lockdownActive
     };
     fs.writeFileSync(PERSIST_FILE, JSON.stringify(payload, null, 2), "utf8");
@@ -70,13 +67,6 @@ function loadPersistentState() {
       ? parsed.roomSettings
       : {};
     state.roomSettings = new Map(Object.entries(roomSettings));
-    const roomSlowmodes = parsed?.roomSlowmodes && typeof parsed.roomSlowmodes === "object"
-      ? parsed.roomSlowmodes
-      : {};
-    state.roomSlowmodes = new Map(Object.entries(roomSlowmodes).map(([room, value]) => [
-      String(room || "").trim().toLowerCase(),
-      Math.max(0, Number(value || 0))
-    ]));
     const pendingAlerts = parsed?.pendingAlerts && typeof parsed.pendingAlerts === "object"
       ? parsed.pendingAlerts
       : {};
@@ -84,9 +74,6 @@ function loadPersistentState() {
       String(key || "").trim(),
       (Array.isArray(alerts) ? alerts : []).filter((alert) => alert && typeof alert === "object").slice(-100)
     ]).filter(([key]) => key));
-    if (Object.prototype.hasOwnProperty.call(parsed || {}, "slowmodeMs")) {
-      state.slowmodeMs = Math.max(0, Number(parsed?.slowmodeMs || 0));
-    }
     if (Object.prototype.hasOwnProperty.call(parsed || {}, "lockdownActive")) {
       state.lockdownActive = !!parsed?.lockdownActive;
     }
@@ -96,11 +83,7 @@ function loadPersistentState() {
 
 loadPersistentState();
 const warningLimit = Number(process.env.MOD_WARNING_LIMIT || 3);
-const defaultCooldownMs = Number(process.env.MOD_COOLDOWN_MS || 6000);
-const defaultPrivateSlowmodeMs = Math.max(0, Number(process.env.PRIVATE_ROOM_SLOWMODE_MS || 1000));
-if (!Number.isFinite(state.slowmodeMs) || state.slowmodeMs < 0) {
-  state.slowmodeMs = Math.max(0, defaultCooldownMs);
-}
+const SPAM_TIMEOUT_MS = 60_000;
 const useBlockedWords = String(process.env.MOD_USE_BLOCKED_WORDS || "false").toLowerCase() === "true";
 const strictMode = String(process.env.MOD_STRICT_MODE || "false").toLowerCase() === "true";
 const strictMinSeverity = String(process.env.MOD_STRICT_MIN_SEVERITY || "medium").toLowerCase();
@@ -322,9 +305,7 @@ function getModeration() {
     bannedDevices: asArray(state.bannedDevices),
     warnings: Object.fromEntries(Array.from(state.warningsByUser.entries()).map(([key, value]) => [key, Number(value)])),
     warningLimit,
-    lockdownActive: !!state.lockdownActive,
-    slowmodeMs: Math.max(0, Number(state.slowmodeMs || 0)),
-    roomSlowmodes: Object.fromEntries(state.roomSlowmodes.entries())
+    lockdownActive: !!state.lockdownActive
   };
 }
 
@@ -369,59 +350,12 @@ function setModeration(payload = {}) {
     );
   }
 
-  if (payload.slowmodeMs !== undefined) {
-    state.slowmodeMs = Math.max(0, Number(payload.slowmodeMs || 0));
-    savePersistentState();
-  }
-
   if (payload.lockdownActive !== undefined) {
     state.lockdownActive = payload.lockdownActive === true || String(payload.lockdownActive).toLowerCase() === 'true';
     savePersistentState();
   }
 
   return getModeration();
-}
-
-function getSlowmodeMs() {
-  return Math.max(0, Number(state.slowmodeMs || 0));
-}
-
-function setSlowmodeMs(value) {
-  state.slowmodeMs = Math.max(0, Number(value || 0));
-  savePersistentState();
-  return getSlowmodeMs();
-}
-
-function getRoomSlowmodeMs(room = "") {
-  const key = String(room || "").trim().toLowerCase();
-  if (!key) return 0;
-  return Math.max(0, Number(state.roomSlowmodes.get(key) || 0));
-}
-
-function setRoomSlowmodeMs(room = "", value = 0) {
-  const key = String(room || "").trim().toLowerCase();
-  if (!key) return 0;
-  const next = Math.max(0, Number(value || 0));
-  if (next > 0) state.roomSlowmodes.set(key, next);
-  else state.roomSlowmodes.delete(key);
-  savePersistentState();
-  return getRoomSlowmodeMs(key);
-}
-
-function getEffectiveSlowmodeMs(room = "", options = {}) {
-  const key = String(room || "").trim().toLowerCase();
-  const roomMs = getRoomSlowmodeMs(key);
-  if (roomMs > 0) {
-    return { slowmodeMs: roomMs, scope: "room", room: key };
-  }
-  if (options.excludeGlobal) {
-    return {
-      slowmodeMs: defaultPrivateSlowmodeMs,
-      scope: defaultPrivateSlowmodeMs > 0 ? "private-default" : "none",
-      room: key
-    };
-  }
-  return { slowmodeMs: getSlowmodeMs(), scope: "global", room: key };
 }
 
 function isBlockedWord(body = "") {
@@ -865,29 +799,50 @@ function applyManualWarning(identity = {}, reason = "Moderator warning") {
   return result;
 }
 
-function checkCooldown(userToken, options = {}) {
-  const key = String(userToken || "").trim();
-  const room = String(options.room || "").trim().toLowerCase();
-  const effective = getEffectiveSlowmodeMs(room, { excludeGlobal: !!options.excludeGlobal });
-  const cooldownMs = effective.slowmodeMs;
-  const cooldownKey = `${key}:${effective.scope}:${effective.room || "global"}`;
-  if (!key) return { blocked: false, retryAfterMs: 0, cooldownMs };
-  if (!cooldownMs) return { blocked: false, retryAfterMs: 0, cooldownMs, scope: effective.scope };
+function spamIdentityKey(identity = {}) {
+  const userId = String(identity.userId || '').trim().toLowerCase();
+  const userToken = String(identity.userToken || '').trim().toLowerCase();
+  const deviceId = String(identity.deviceId || '').trim().toLowerCase();
+  return userId ? `account:${userId}` : userToken ? `token:${userToken}` : deviceId ? `device:${deviceId}` : '';
+}
 
-  const now = Date.now();
-  const lastAt = Number(state.cooldownByUser.get(cooldownKey) || 0);
-  const delta = now - lastAt;
-  if (lastAt && delta < cooldownMs) {
-    return {
-      blocked: true,
-      retryAfterMs: cooldownMs - delta,
-      cooldownMs,
-      scope: effective.scope
-    };
+function normalizeSpamSample(body = '') {
+  return String(body || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/https?:\/\/[^\s]+/gi, value => value.toLowerCase().replace(/[?#].*$/, ''))
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 600);
+}
+
+// This fast behavioral check keeps normal conversation immediate and only
+// intervenes after a clear burst, repeated posts, or character flooding.
+function checkSpam(identity = {}, body = '', options = {}) {
+  const key = spamIdentityKey(identity);
+  if (!key) return { blocked: false, retryAfterMs: 0, timeoutMs: SPAM_TIMEOUT_MS };
+  const now = Number.isFinite(Number(options.now)) ? Number(options.now) : Date.now();
+  const timeoutUntil = Number(state.spamTimeoutsByUser.get(key) || 0);
+  if (timeoutUntil > now) {
+    return { blocked: true, retryAfterMs: timeoutUntil - now, timeoutMs: SPAM_TIMEOUT_MS, reason: 'spam_timeout' };
   }
+  if (timeoutUntil) state.spamTimeoutsByUser.delete(key);
 
-  state.cooldownByUser.set(cooldownKey, now);
-  return { blocked: false, retryAfterMs: 0, cooldownMs, scope: effective.scope };
+  const sample = normalizeSpamSample(body);
+  const recent = (state.spamActivityByUser.get(key) || []).filter(item => now - item.at <= 30_000);
+  recent.push({ at: now, sample });
+  state.spamActivityByUser.set(key, recent.slice(-16));
+
+  const inEightSeconds = recent.filter(item => now - item.at <= 8_000).length;
+  const inTwentyFiveSeconds = recent.filter(item => now - item.at <= 25_000).length;
+  const repeated = sample && recent.filter(item => now - item.at <= 20_000 && item.sample === sample).length;
+  const characterFlood = /(.)\1{17,}/u.test(sample) || /(.{2,12})\1{7,}/u.test(sample.replace(/\s/g, ''));
+  const isSpam = inEightSeconds >= 7 || inTwentyFiveSeconds >= 12 || repeated >= 3 || characterFlood;
+  if (!isSpam) return { blocked: false, retryAfterMs: 0, timeoutMs: SPAM_TIMEOUT_MS };
+
+  state.spamTimeoutsByUser.set(key, now + SPAM_TIMEOUT_MS);
+  state.spamActivityByUser.delete(key);
+  return { blocked: true, retryAfterMs: SPAM_TIMEOUT_MS, timeoutMs: SPAM_TIMEOUT_MS, reason: 'spam_detected' };
 }
 
 function buildAiResponse(siteId, prompt) {
@@ -978,6 +933,84 @@ function ruleModerateText(body = "") {
     reasons,
     suggestions,
     rewritten: allowed ? text : "Please rewrite your message to follow moderation rules."
+  };
+}
+
+// Public chat is intentionally lightly moderated. This path avoids the remote
+// classifier (and its latency/false positives) and only stops content that is
+// clearly unsafe or explicit in context. Ordinary profanity, arguments, and
+// normal links are allowed.
+function moderateChatText(body = "") {
+  const text = String(body || "").trim();
+  if (!text) {
+    return {
+      allowed: false,
+      severity: "low",
+      reasons: ["Empty message"],
+      suggestions: ["Write a non-empty message."],
+      rewritten: ""
+    };
+  }
+
+  const lower = text.toLowerCase();
+  const normalized = normalizeModerationText(text);
+  const reasons = [];
+  const suggestions = [];
+  const adultServiceNames = '(?:porn(?:hub)?|xvideos|xnxx|redtube|youporn|xhamster|spankbang|tube8|eporner|hentai|rule34|nsfw|xxx|onlyfans|fansly|adultfriendfinder|chaturbate|stripchat|camgirl|camwhores)';
+  const urls = text.match(new RegExp(`(?:https?:\\/\\/|www\\.)[^\\s<>"']+|\\b${adultServiceNames}\\.(?:com|net|org|tv|xxx)\\b[^\\s<>"']*`, 'gi')) || [];
+  const adultUrlTerms = new RegExp(adultServiceNames, 'i');
+  const decodedUrls = urls.map((url) => {
+    try { return decodeURIComponent(url); } catch { return url; }
+  });
+  const adultLinkContext = /\b(?:porn|hentai|nsfw|xxx|nudes?|sex\s*tape|onlyfans\s*leaks?|adult\s*(?:video|site|content))\b/i;
+  if (decodedUrls.some((url) => adultUrlTerms.test(url)) || (urls.length && adultLinkContext.test(lower))) {
+    reasons.push("Adult or explicit link detected");
+    suggestions.push("Remove the adult link.");
+  }
+
+  if (/\b(?:child\s*porn|sexual\s+minor|minor\s+sexual|underage\s+(?:nudes?|porn|sex))\b/i.test(lower) ||
+      /\b(?:childporn|sexualminor|minorsexual|underagenudes|underageporn|underagesex)\b/i.test(normalized.compact)) {
+    reasons.push("Sexual exploitation involving minors detected");
+    suggestions.push("Remove exploitative sexual content involving minors.");
+  }
+
+  const adultMediaTerms = '(?:porn(?:ography|ographic)?|hentai|nsfw|xxx|nudes?|explicit\\s+sex(?:ual)?(?:\\s+content)?|sex\\s+tape|onlyfans\\s+leaks?)';
+  const explicitDistribution = new RegExp(
+    `(?:\\b(?:send|show|share|post|trade|buy|sell|leak|request|upload|download|dm\\s+me|looking\\s+for)\\b.{0,40}\\b${adultMediaTerms}\\b|\\b${adultMediaTerms}\\b.{0,40}\\b(?:link|site|download|send|share|trade|buy|sell|leak)\\b)`,
+    'i'
+  );
+  if (explicitDistribution.test(lower) || explicitDistribution.test(normalized.spaced)) {
+    reasons.push("Explicit sexual content or solicitation detected");
+    suggestions.push("Remove requests for or distribution of explicit sexual media.");
+  }
+
+  const contextualSevereHate = severeHatePatterns.slice(3).some((pattern) =>
+    pattern.test(text) || pattern.test(normalized.spaced) || pattern.test(normalized.compact)
+  );
+  if (contextualSevereHate) {
+    reasons.push("Severe hate speech detected");
+    suggestions.push("Remove severe hate speech.");
+  }
+
+  if (/\b(?:i\s*will|i\s+am\s+going\s+to|i'?m\s+going\s+to|im\s+going\s+to|imma|gonna)\s+(?:kill|murder|shoot|stab|doxx|swat|bomb)\s+(?:you|u|him|her|them)\b/i.test(lower) ||
+      /\b(?:iwill|imgoingto|imgonnato|imma|gonna)(?:kill|murder|shoot|stab|doxx|swat|bomb)(?:you|u|him|her|them)\b/i.test(normalized.compact)) {
+    reasons.push("Direct threat detected");
+    suggestions.push("Remove the direct threat.");
+  }
+
+  if (/\b(?:kill yourself|hang yourself|slit your wrists|commit suicide)\b/i.test(lower) ||
+      /\b(?:killyourself|hangyourself|slityourwrists|commitsuicide)\b/i.test(normalized.compact)) {
+    reasons.push("Self-harm encouragement detected");
+    suggestions.push("Remove self-harm encouragement.");
+  }
+
+  const allowed = reasons.length === 0;
+  return {
+    allowed,
+    severity: allowed ? "low" : "high",
+    reasons,
+    suggestions,
+    rewritten: allowed ? text : "Remove the blocked content and try again."
   };
 }
 
@@ -1169,13 +1202,10 @@ module.exports = {
   addWarning,
   clearWarnings,
   applyManualWarning,
-  getSlowmodeMs,
-  setSlowmodeMs,
-  getRoomSlowmodeMs,
-  setRoomSlowmodeMs,
-  getEffectiveSlowmodeMs,
-  checkCooldown,
+  checkSpam,
+  SPAM_TIMEOUT_MS,
   buildAiResponse,
   moderateText: aiModerateText,
+  moderateChatText,
   moderateTextRules: ruleModerateText
 };

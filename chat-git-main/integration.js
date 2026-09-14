@@ -131,16 +131,27 @@ function installSocketHandlers(io) {
       }
     });
 
-    socket.on('presence_ping', (data = {}) => touchPresence(data.roomId, {
-      avatar: data.avatar,
-      equippedEffect: data.equippedEffect,
-      equippedAvatarEffect: data.equippedAvatarEffect,
-      equippedTag: data.equippedTag,
-      equippedBanner: data.equippedBanner,
-      equippedProfileEffect: data.equippedProfileEffect,
-      status: data.status,
-      customStatus: data.customStatus
-    }));
+    socket.on('presence_ping', (data = {}) => {
+      const updates = {
+        avatar: data.avatar,
+        equippedEffect: data.equippedEffect,
+        equippedAvatarEffect: data.equippedAvatarEffect,
+        equippedTag: data.equippedTag,
+        equippedBanner: data.equippedBanner,
+        equippedProfileEffect: data.equippedProfileEffect,
+        nameEffect: data.nameEffect,
+        equippedBadge: data.equippedBadge,
+        status: data.status,
+        customStatus: data.customStatus
+      };
+      touchPresence(data.roomId, updates);
+      io.emit('presence_updated', {
+        roomId: normalizeRoom(data.roomId) || socket.data.presenceRoom || '_online',
+        userId: socket.data.user?._id || socket.data.user?.id || null,
+        username: username(socket),
+        ...updates
+      });
+    });
 
     socket.on('send_message', async (data = {}, ack) => {
       const reply = typeof ack === 'function' ? ack : () => {};

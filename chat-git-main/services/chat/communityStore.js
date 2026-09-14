@@ -1,11 +1,97 @@
+const crypto = require('crypto');
 const profileStore = require('../db/profileStore');
 const localStore = require('../auth/localStore');
 const model = require('./communityModel');
+
+const LOTTERY_CACHE_MS = 5000;
+const lotteryCache = new Map();
 
 function databaseConfigured() {
   return !!(process.env.PROFILE_DATABASE_URL || (process.env.PROFILE_DB_HOST && process.env.PROFILE_DB_PASSWORD));
 }
 function id(user) { return String(user?.id || user?._id || ''); }
+function lotterySource(userOrSource) { return userOrSource === 'database' || userOrSource?.source === 'database' ? 'database' : 'local'; }
+function lotteryKey(account) { return `${account.source}:${account.id}`; }
+function invalidateLottery(userOrSource) { lotteryCache.delete(lotterySource(userOrSource)); }
+async function lotteryAccounts(userOrSource, { force = false } = {}) {
+  const source = lotterySource(userOrSource);
+  const cached = lotteryCache.get(source);
+  if (!force && cached && Date.now() - cached.at < LOTTERY_CACHE_MS) return cached.accounts;
+  let accounts;
+  if (source === 'database') {
+    const result = await profileStore.query(`select u.id, p.username, u.user_metadata->'nebulo_community' as community
+      from public.users u join public.profiles p on p.id=u.id`);
+    accounts = result.rows.map(row => ({ id: String(row.id), username: String(row.username || ''), source, state: model.normalize(row.community) }));
+  } else {
+    accounts = localStore.listUsers().filter(user => user.source !== 'database').map(user => ({
+      id: String(user._id), username: String(user.username || ''), source, state: model.normalize(user.community)
+    }));
+  }
+  lotteryCache.set(source, { at: Date.now(), accounts });
+  return accounts;
+}
+function lotteryWinner(entries, week) {
+  const ordered = [...entries].sort((a, b) => lotteryKey(a).localeCompare(lotteryKey(b)));
+  const roster = ordered.map(entry => `${lotteryKey(entry)}:${entry.state.lotteryEntry.amount}:${entry.state.lotteryEntry.enteredAt}:${entry.state.lotteryEntry.requestId}`).join('|');
+  const digest = crypto.createHmac('sha256', process.env.JWT_SECRET || 'nebulo-weekly-lottery').update(`${week}|${roster}`).digest('hex');
+  return ordered[Number(BigInt(`0x${digest.slice(0, 16)}`) % BigInt(ordered.length))];
+}
+async function settleLottery(userOrSource = 'local', now = Date.now()) {
+  const source = lotterySource(userOrSource);
+  const currentWeek = model.lotteryWeek(now);
+  const accounts = await lotteryAccounts(source, { force: true });
+  const weeks = [...new Set(accounts.map(account => account.state.lotteryEntry?.week).filter(week => Number.isSafeInteger(week) && week < currentWeek))].sort((a, b) => a - b);
+  const draws = [];
+  for (const week of weeks) {
+    const entries = accounts.filter(account => account.state.lotteryEntry?.week === week);
+    if (!entries.length) continue;
+    const pot = entries.reduce((total, entry) => total + entry.state.lotteryEntry.amount, 0);
+    if (!Number.isSafeInteger(pot) || pot < 1) continue;
+    const winner = lotteryWinner(entries, week);
+    if (winner.state.lotteryPaidWeeks.includes(week) || winner.state.lotteryLast?.week === week) continue;
+    let paid = false;
+    await mutate({ id: winner.id, source: winner.source }, context => {
+      if (context.state.lotteryPaidWeeks.includes(week) || context.state.lotteryLast?.week === week) return;
+      if (!Number.isSafeInteger(context.coins + pot) || context.coins + pot > 1e9) model.fail('Lottery payout exceeds the wallet limit.', 409);
+      context.coins += pot;
+      context.state.lotteryWins += 1;
+      context.state.lotteryPaidWeeks = [...context.state.lotteryPaidWeeks, week].slice(-104);
+      context.state.lotteryLast = { week, at: now, payout: pot, contribution: winner.state.lotteryEntry.amount };
+      paid = true;
+    });
+    draws.push({ week, pot, ticketCount: entries.length, winnerId: winner.id, winnerUsername: winner.username, paid });
+  }
+  if (draws.some(draw => draw.paid)) invalidateLottery(source);
+  return draws;
+}
+async function settleAllLotteries(now = Date.now()) {
+  const results = { local: await settleLottery('local', now) };
+  if (databaseConfigured()) results.database = await settleLottery('database', now);
+  return results;
+}
+async function lotteryView(user, rawState, now = Date.now()) {
+  const source = lotterySource(user);
+  const state = model.normalize(rawState);
+  const week = model.lotteryWeek(now);
+  let accounts;
+  let settlementPending = false;
+  try { accounts = await lotteryAccounts(source); }
+  catch { accounts = [{ id: id(user), username: String(user?.username || ''), source, state }]; settlementPending = true; }
+  const entries = accounts.filter(account => account.state.lotteryEntry?.week === week);
+  const pot = entries.reduce((total, entry) => total + entry.state.lotteryEntry.amount, 0);
+  const currentEntry = state.lotteryEntry?.week === week ? state.lotteryEntry : null;
+  const lastWinner = accounts.filter(account => account.state.lotteryLast).sort((a, b) => (b.state.lotteryLast.week - a.state.lotteryLast.week) || (b.state.lotteryLast.at - a.state.lotteryLast.at))[0];
+  const lastDraw = lastWinner ? {
+    ...lastWinner.state.lotteryLast,
+    winnerUsername: lastWinner.username,
+    won: lotteryKey(lastWinner) === lotteryKey({ id: id(user), source })
+  } : null;
+  return {
+    ...model.lotteryBounds(week), pot, ticketCount: entries.length,
+    entered: !!currentEntry, entryAmount: currentEntry?.amount || 0, enteredAt: currentEntry?.enteredAt || null,
+    wins: state.lotteryWins, oneTicketPerUser: true, lastDraw, settlementPending, serverTime: now
+  };
+}
 async function read(user) {
   if (user?.source === 'database') {
     const result = await profileStore.query(`select p.coins, p.is_premium, u.user_metadata->'nebulo_community' as community
@@ -89,4 +175,4 @@ async function assertContact(actor, target, kind = 'dm') {
   const setting = kind === 'blocked' ? 'everyone' : kind === 'friend' ? b.state.privacy.friendRequests : b.state.privacy.dms;
   if (setting === 'none' || (setting === 'friends' && !relation.friends) || (setting === 'mutual' && !relation.friends && !relation.mutual)) model.fail('This user’s privacy settings do not allow this interaction.', 403);
 }
-module.exports = { read, mutate, leaderboard, supportInbox, resolveUsername, assertContact, id, databaseConfigured };
+module.exports = { read, mutate, leaderboard, supportInbox, resolveUsername, assertContact, id, databaseConfigured, invalidateLottery, lotteryView, settleLottery, settleAllLotteries };

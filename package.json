@@ -10,6 +10,11 @@
   "scripts": {
     "start": "node app.js",
     "test:coins": "node --test scripts/coinSystem.test.mjs scripts/chatCommunity.test.mjs scripts/chatNativeAttachments.test.mjs scripts/casinoGames.test.mjs",
+    "test:gn-games": "node --test scripts/gnMathGames.test.mjs",
+    "test:game-progress": "node --test scripts/gameProgress.test.mjs",
+    "import:gn-games": "node scripts/importGnMathGames.mjs",
+    "dedupe:games": "node scripts/dedupeGames.mjs",
+    "prune:game-cache": "node scripts/pruneGameCache.mjs",
     "mirror:games": "node scripts/mirrorPlatinumGames.mjs --repair-cache --entries-only --rewrite-catalog",
     "mirror:games:full": "node scripts/mirrorPlatinumGames.mjs --rewrite-catalog"
   },

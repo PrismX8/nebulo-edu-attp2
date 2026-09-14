@@ -34,6 +34,23 @@ async function getUserBanners(userId, queryable = profileStore) {
   };
 }
 
+async function getEquippedBanners(userIds = []) {
+  const ids = [...new Set((Array.isArray(userIds) ? userIds : [])
+    .map((id) => String(id || '').trim())
+    .filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)))];
+  if (!ids.length) return new Map();
+  await ensureAccess();
+  const valid = validBannerIds();
+  const result = await profileStore.query(
+    `select user_id, banner_id from public.chat_user_banners
+      where user_id = any($1::uuid[]) and equipped`,
+    [ids]
+  );
+  return new Map(result.rows
+    .filter((row) => valid.has(String(row.banner_id)))
+    .map((row) => [String(row.user_id), String(row.banner_id)]));
+}
+
 async function purchaseAndEquip(userId, banner) {
   await ensureAccess();
   const id = String(userId || '').trim();
@@ -75,5 +92,5 @@ async function equip(userId, bannerId) {
   });
 }
 
-module.exports = { equip, getUserBanners, purchaseAndEquip };
+module.exports = { equip, getEquippedBanners, getUserBanners, purchaseAndEquip };
 

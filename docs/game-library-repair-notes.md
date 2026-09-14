@@ -5,7 +5,7 @@
 - Mobile/touch entry automatically replaces the fake error page with `/setup-v2`; desktop retains the N-key entry.
 - Game mirror now reads the local cache, atomically fills missing assets, shares concurrent downloads, preserves binary bytes, and supports HEAD, ranges, conditional requests, and correct compression/MIME headers.
 - Rewritten scripts revalidate so compatibility fixes do not remain hidden behind a one-hour browser cache.
-- Removed the over-broad ad cleanup that deleted entire startup scripts. Refreshed cached entry pages with recoverable backups under `game-cache/platinum/before-entry-repair/`.
+- Removed the over-broad ad cleanup that deleted entire startup scripts. Entry repair can create temporary safety copies under `game-cache/platinum/before-entry-repair/`; automatic cache cleanup removes them after repair.
 - Removed generic JavaScript string rewriting that damaged engine keys and regexes. Root asset requests with a same-host mirrored-game referrer route into the game mount instead.
 - Added targeted compatibility repairs for old Unity bootstraps, custom Brotli loaders, duplicate Crossy Road/Traffic Tour scripts, MotoX3M containers, PlayCanvas loading screens, Basketball Stars decoding, Bouncemasters locale handling, and Undertale's absent optional worker template.
 - Local portal adapters preserve browser-local progress; they do not supply external accounts, purchases, online leaderboards, or ad rewards.
@@ -39,3 +39,17 @@ pm2 restart nebulo --update-env
 ```
 
 The refresh needs the upstream host to be reachable. Existing entry copies are backed up before replacement. Large engine assets stay cached; missing assets download on demand. Test actual gameplay on the deployed host before considering the library complete.
+
+## Disk usage
+
+`game-cache/platinum/` is disposable. It stores older Platinum game assets so repeat launches are faster and can survive a temporary upstream outage. If it is removed, the server recreates it and downloads assets again as games are opened.
+
+The runtime and mirror command enforce a 512 MiB least-recently-used disk limit by default. Change the limit with `GAME_CACHE_MAX_MB`; for example, `GAME_CACHE_MAX_MB=1024` allows 1 GiB. Apply the current limit immediately with:
+
+```sh
+npm run prune:game-cache
+du -sh game-cache
+df -h
+```
+
+The source catalog remains in the project and evicted game assets are fetched on demand.

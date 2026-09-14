@@ -5,20 +5,19 @@ const DAY = 86_400_000;
 const CATALOG = [
   { id: 'daily', name: 'Daily check-in', description: '100 coins, plus 25 per consecutive day up to day seven.', price: 0 },
   { id: 'spin', name: 'Daily spin', description: 'One free spin each UTC day: 20–200 coins.', price: 0 },
-  { id: 'premium', name: 'Nebulo Plus', description: '30 days of extra reading themes, cursors and profile color.', price: 2000 }
+  { id: 'premium', name: 'Nebulo Plus', description: 'Premium membership is coming soon.', price: 2000, available: false }
 ];
 const WEEK = 7 * DAY;
+const LOTTERY_EPOCH = 4 * DAY; // Monday, 1970-01-05 00:00:00 UTC.
 const STORE_ITEMS = [
-  { id: 'lottery_ticket', cat: 'spend', name: 'Lottery Ticket', desc: 'Enter the weekly draw. Top prize 50% of the pot.', price: 100, icon: '🎟️', available: false, unavailableReason: 'Weekly lottery draws are not available yet.' },
   { id: 'channel_boost', cat: 'perk', name: 'Channel Boost', desc: 'Double message rewards for 1 hour.', price: 500, icon: '⚡' },
-  { id: 'proxy_priority', cat: 'perk', name: 'Proxy Priority', desc: 'Skip the proxy queue for 30 minutes.', price: 150, icon: '🚀', available: false, unavailableReason: 'Proxy priority is not available on this server.' },
   { id: 'upload_boost', cat: 'perk', name: 'Upload Boost', desc: 'Double the image upload limit for 24 hours.', price: 300, icon: '📎' },
   { id: 'custom_status', cat: 'cosmetic', name: 'Custom Status', desc: 'A personal status line shown in the member list for 30 days.', price: 250, icon: '💬' },
   { id: 'name_glow', cat: 'cosmetic', name: 'Name Glow', desc: 'Subtle glow around your username for 30 days.', price: 400, icon: '✨' },
   { id: 'name_rainbow', cat: 'cosmetic', name: 'Rainbow Name', desc: 'Your username cycles through colors for 30 days.', price: 800, icon: '🌈' },
   { id: 'badge_star', cat: 'cosmetic', name: 'Star Badge', desc: 'A ★ badge on your profile.', price: 600, icon: '⭐' },
   { id: 'badge_verified', cat: 'cosmetic', name: 'Verified Badge', desc: 'A ✓ badge on your profile.', price: 1000, icon: '✅' },
-  { id: 'premium', cat: 'cosmetic', name: 'Nebulo Plus', desc: '30 days of extra themes, cursors and profile color.', price: 2000, icon: '💎' }
+  { id: 'premium', cat: 'cosmetic', name: 'Nebulo Plus', desc: 'Extra themes, cursors and profile colors are coming soon.', price: 2000, icon: '💎', available: false, unavailableLabel: 'Coming soon', unavailableReason: 'Premium is coming soon.' }
 ];
 const NAME_EFFECTS = ['none', 'glow', 'rainbow'];
 const BADGES = ['none', 'badge_star', 'badge_verified'];
@@ -26,6 +25,11 @@ function fail(message, status = 400) { const e = new Error(message); e.status = 
 function integer(value, max = 1e9) { return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, max) : 0; }
 function cleanText(value, max) { return typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, max) : ''; }
 function dayKey(now) { return Math.floor(now / DAY); }
+function lotteryWeek(now = Date.now()) { return Math.floor((now - LOTTERY_EPOCH) / WEEK); }
+function lotteryBounds(week = lotteryWeek()) {
+  const startAt = LOTTERY_EPOCH + week * WEEK;
+  return { week, startAt, endAt: startAt + WEEK };
+}
 function normalize(input = {}) {
   const value = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
   return {
@@ -59,31 +63,41 @@ function normalize(input = {}) {
     nameEffectUntil: integer(value.nameEffectUntil, Number.MAX_SAFE_INTEGER),
     equippedBadge: BADGES.includes(value.equippedBadge) ? value.equippedBadge : 'none',
     ownedBadges: Array.isArray(value.ownedBadges) ? value.ownedBadges.filter(b => BADGES.includes(b)).slice(0, 20) : [],
-    proxyPriorityUntil: integer(value.proxyPriorityUntil, Number.MAX_SAFE_INTEGER),
     uploadBoostUntil: integer(value.uploadBoostUntil, Number.MAX_SAFE_INTEGER),
     boostUntil: integer(value.boostUntil, Number.MAX_SAFE_INTEGER),
-    lotteryTickets: integer(value.lotteryTickets, 50),
-    lotteryWeek: integer(value.lotteryWeek, 100000),
-    lotteryPot: integer(value.lotteryPot, 1e9)
+    lotteryEntry: value.lotteryEntry && typeof value.lotteryEntry === 'object' && Number.isSafeInteger(value.lotteryEntry.week) && Number.isSafeInteger(value.lotteryEntry.amount) && value.lotteryEntry.amount > 0 ? {
+      week: value.lotteryEntry.week,
+      amount: integer(value.lotteryEntry.amount),
+      enteredAt: integer(value.lotteryEntry.enteredAt, Number.MAX_SAFE_INTEGER),
+      requestId: cleanText(value.lotteryEntry.requestId, 80)
+    } : null,
+    lotteryWins: integer(value.lotteryWins, 100000),
+    lotteryPaidWeeks: [...new Set((Array.isArray(value.lotteryPaidWeeks) ? value.lotteryPaidWeeks : []).filter(Number.isSafeInteger))].slice(-104),
+    lotteryLast: value.lotteryLast && typeof value.lotteryLast === 'object' ? {
+      week: Number.isSafeInteger(value.lotteryLast.week) ? value.lotteryLast.week : -1,
+      at: integer(value.lotteryLast.at, Number.MAX_SAFE_INTEGER),
+      payout: integer(value.lotteryLast.payout),
+      contribution: integer(value.lotteryLast.contribution)
+    } : null
   };
 }
-function snapshot(raw, coins, now = Date.now(), premium = false) {
+function snapshot(raw, coins, now = Date.now(), premium = false, lotteryGlobal = null) {
   const state = normalize(raw); const today = dayKey(now);
-  const currentWeek = Math.floor(now / WEEK);
+  const currentWeek = lotteryWeek(now);
   const nextStreak = state.dailyDay === today - 1 ? state.streak + 1 : state.dailyDay === today ? state.streak : 1;
-  const lotteryActive = state.lotteryWeek === currentWeek;
+  const bounds = lotteryBounds(currentWeek);
+  const currentEntry = state.lotteryEntry?.week === currentWeek ? state.lotteryEntry : null;
   const customStatusActive = state.customStatusUntil > now;
   const nameEffectActive = state.nameEffectUntil > now;
   const boostActive = state.boostUntil > now;
-  const proxyActive = state.proxyPriorityUntil > now;
   const uploadActive = state.uploadBoostUntil > now;
   return {
     coins, serverTime: now,
     daily: { streak: state.dailyDay >= today - 1 ? state.streak : 0, bestStreak: state.bestStreak, claimedToday: state.dailyDay === today, nextClaimAt: (today + 1) * DAY, reward: 100 + 25 * (Math.min(nextStreak, 7) - 1) },
     spin: { claimedToday: state.spinDay === today, nextClaimAt: (today + 1) * DAY },
-    casino: { playsToday: state.casinoDay === today ? state.playsToday : 0, round: casino.snapshotRound(state.casinoRound, coins), history: [...state.casinoHistory].reverse(), paytable: casino.PAYTABLE, rules: casino.RULES },
+    casino: { playsToday: state.casinoDay === today ? state.playsToday : 0, round: casino.snapshotRound(state.casinoRound, coins, now), history: [...state.casinoHistory].reverse(), paytable: casino.PAYTABLE, rules: casino.RULES },
     stats: { wins: state.wins, games: state.games, net: state.net },
-    premium: { active: premium || state.premiumUntil > now, expiresAt: state.premiumUntil || null, price: 2000, days: 30 },
+    premium: { active: premium || state.premiumUntil > now, expiresAt: state.premiumUntil || null, price: 2000, days: 30, available: false, comingSoon: true },
     profile: state.profile, privacy: state.privacy, blocked: state.blocked,
     recovery: { remaining: state.recoveryHashes.length }, tickets: state.tickets,
     recent: state.receipts.slice(-10).reverse().map(x => ({ at: x.at, ...x.result })), catalog: CATALOG,
@@ -96,9 +110,19 @@ function snapshot(raw, coins, now = Date.now(), premium = false) {
       equippedBadge: state.ownedBadges.includes(state.equippedBadge) ? state.equippedBadge : 'none',
       ownedBadges: state.ownedBadges,
       boostActive, boostUntil: boostActive ? state.boostUntil : null,
-      proxyActive, proxyUntil: proxyActive ? state.proxyPriorityUntil : null,
       uploadActive, uploadUntil: uploadActive ? state.uploadBoostUntil : null,
-      lottery: { tickets: lotteryActive ? state.lotteryTickets : 0, pot: state.lotteryPot, week: currentWeek }
+      lottery: {
+        ...bounds,
+        pot: currentEntry?.amount || 0,
+        ticketCount: currentEntry ? 1 : 0,
+        entered: !!currentEntry,
+        entryAmount: currentEntry?.amount || 0,
+        enteredAt: currentEntry?.enteredAt || null,
+        wins: state.lotteryWins,
+        oneTicketPerUser: true,
+        lastDraw: state.lotteryLast,
+        ...(lotteryGlobal && typeof lotteryGlobal === 'object' ? lotteryGlobal : {})
+      }
     }
   };
 }
@@ -107,7 +131,7 @@ function action(raw, balance, request, { now = Date.now(), randomInt = crypto.ra
   const id = String(request?.requestId || '');
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id)) fail('A valid request ID is required.');
   const kind = request?.action;
-  const fingerprint = JSON.stringify([kind, request?.game ?? null, request?.bet ?? null, request?.choice ?? null, request?.move ?? null, request?.roundId ?? null, request?.version ?? null, request?.hold ?? null, request?.index ?? null, request?.multiplier ?? null, request?.correct ?? null, request?.guess ?? null, request?.streak ?? null, request?.itemId ?? null, request?.text ?? null]);
+  const fingerprint = JSON.stringify([kind, request?.game ?? null, request?.bet ?? null, request?.amount ?? null, request?.choice ?? null, request?.move ?? null, request?.roundId ?? null, request?.version ?? null, request?.hold ?? null, request?.index ?? null, request?.multiplier ?? null, request?.correct ?? null, request?.guess ?? null, request?.streak ?? null, request?.itemId ?? null, request?.text ?? null, request?.answer ?? null]);
   const receipt = state.receipts.find(x => x.id === id);
   if (receipt) {
     if (receipt.fingerprint !== fingerprint) fail('Request ID was already used for a different action.', 409);
@@ -158,15 +182,21 @@ function action(raw, balance, request, { now = Date.now(), randomInt = crypto.ra
       coins += result.payout;
     }
   } else if (kind === 'premium') {
-    if (premium || state.premiumUntil > now) fail('Your membership is already active.', 409);
-    if (coins < 2000) fail('You need 2,000 coins for Nebulo Plus.', 402);
-    coins -= 2000; state.premiumUntil = now + 30 * DAY;
-    result = { kind, msg: 'Nebulo Plus unlocked for 30 days.' };
+    fail('Premium is coming soon.', 409);
   } else if (kind === 'equip_badge') {
     const badge = String(request?.itemId || 'none');
     if (!BADGES.includes(badge) || (badge !== 'none' && !state.ownedBadges.includes(badge))) fail('You do not own this badge.', 403);
     state.equippedBadge = badge;
     result = { kind, msg: badge === 'none' ? 'Badge removed.' : 'Badge equipped.' };
+  } else if (kind === 'lottery_enter') {
+    const amount = request?.amount;
+    const week = lotteryWeek(now);
+    if (!Number.isSafeInteger(amount) || amount < 1) fail('Enter a positive whole coin amount.');
+    if (state.lotteryEntry?.week === week) fail('You already have a ticket for this week’s drawing.', 409);
+    if (coins < amount) fail('Not enough coins for this contribution.', 402);
+    coins -= amount;
+    state.lotteryEntry = { week, amount, enteredAt: now, requestId: id };
+    result = { kind: 'lottery_entry', week, amount, msg: `Ticket confirmed with ${amount.toLocaleString()} coins added to the weekly pot.` };
   } else if (kind === 'buy_store') {
     const itemId = String(request?.itemId || '');
     const item = STORE_ITEMS.find(x => x.id === itemId);
@@ -176,13 +206,7 @@ function action(raw, balance, request, { now = Date.now(), randomInt = crypto.ra
     if (item.price < 1) fail('This item cannot be purchased this way.');
     if (!ownedBadge && coins < item.price) fail(`Not enough coins. You need ${item.price}.`, 402);
     if (!ownedBadge) coins -= item.price;
-    const currentWeek = Math.floor(now / WEEK);
-    if (itemId === 'lottery_ticket') {
-      if (state.lotteryWeek !== currentWeek) { state.lotteryWeek = currentWeek; state.lotteryTickets = 0; }
-      state.lotteryTickets += 1;
-      state.lotteryPot += item.price;
-      result = { kind, msg: `Lottery ticket purchased. You have ${state.lotteryTickets} ticket${state.lotteryTickets > 1 ? 's' : ''} this week.` };
-    } else if (itemId === 'channel_boost') {
+    if (itemId === 'channel_boost') {
       state.boostUntil = Math.max(state.boostUntil, now) + 60 * 60 * 1000;
       result = { kind, msg: 'Channel boost activated for 1 hour. Message rewards are doubled.' };
     } else if (itemId === 'custom_status') {
@@ -191,9 +215,6 @@ function action(raw, balance, request, { now = Date.now(), randomInt = crypto.ra
       state.customStatus = text;
       state.customStatusUntil = Math.max(state.customStatusUntil, now) + 30 * DAY;
       result = { kind, msg: `Status set to "${text}" for 30 days.` };
-    } else if (itemId === 'proxy_priority') {
-      state.proxyPriorityUntil = Math.max(state.proxyPriorityUntil, now) + 30 * 60 * 1000;
-      result = { kind, msg: 'Proxy priority activated for 30 minutes.' };
     } else if (itemId === 'upload_boost') {
       state.uploadBoostUntil = Math.max(state.uploadBoostUntil, now) + DAY;
       result = { kind, msg: 'Image upload limit doubled for 24 hours.' };
@@ -244,4 +265,4 @@ function updatePrivacy(raw, patch) {
   return state;
 }
 function hashCode(code) { return crypto.createHash('sha256').update(String(code || '').replace(/-/g, '').trim().toUpperCase()).digest('hex'); }
-module.exports = { DAY, WEEK, CATALOG, STORE_ITEMS, NAME_EFFECTS, BADGES, normalize, snapshot, action, updateProfile, updatePrivacy, hashCode, fail, cleanText };
+module.exports = { DAY, WEEK, LOTTERY_EPOCH, CATALOG, STORE_ITEMS, NAME_EFFECTS, BADGES, normalize, snapshot, action, lotteryWeek, lotteryBounds, updateProfile, updatePrivacy, hashCode, fail, cleanText };

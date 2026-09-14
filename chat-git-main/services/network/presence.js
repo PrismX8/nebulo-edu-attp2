@@ -145,6 +145,8 @@ function enrichUsers(resolveProfile) {
       user.equippedEffect = user.equippedEffect !== 'none' ? user.equippedEffect : (profile.equippedEffect || 'none');
       user.equippedAvatarEffect = user.equippedAvatarEffect !== 'none' ? user.equippedAvatarEffect : (profile.equippedAvatarEffect || 'none');
       user.equippedTag = user.equippedTag !== 'none' ? user.equippedTag : (profile.equippedTag || 'none');
+      user.equippedBanner = user.equippedBanner !== 'none' ? user.equippedBanner : (profile.equippedBanner || 'none');
+      user.equippedProfileEffect = user.equippedProfileEffect !== 'none' ? user.equippedProfileEffect : (profile.equippedProfileEffect || 'none');
       user.nameEffect = user.nameEffect !== 'none' ? user.nameEffect : (profile.nameEffect || 'none');
       user.equippedBadge = user.equippedBadge !== 'none' ? user.equippedBadge : (profile.equippedBadge || 'none');
     });

@@ -6,11 +6,12 @@ import os from 'node:os';
 import Fastify from 'fastify';
 import { registerPlatinumGameMirrorRoutes, rewritePlatinumText } from '../services/platinumGameMirror.js';
 import { repairGameExport } from '../services/gameCompatibility.js';
+import { pruneGameCache } from '../services/gameAssetCache.js';
 
-async function fixture(t, fetchImpl) {
+async function fixture(t, fetchImpl, options = {}) {
   const cacheRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'nebulo-game-test-'));
   const app = Fastify();
-  registerPlatinumGameMirrorRoutes(app, {cacheRoot, fetchImpl});
+  registerPlatinumGameMirrorRoutes(app, {cacheRoot, fetchImpl, ...options});
   await app.ready();
   t.after(async()=>{await app.close();await fsp.rm(cacheRoot,{recursive:true,force:true});});
   return {app,cacheRoot};
@@ -124,4 +125,48 @@ test('archived export repairs are scoped and idempotent',()=>{
   assert.equal(repairGameExport(source,new URL('https://platinumunblocker.com/cdn/other/index.html')),source);
   const moto=repairGameExport('<body><script src="motox3m.min.js"></script></body>',new URL('https://platinumunblocker.com/cdn/motox3m-pool/index.html'));
   assert.match(moto,/<body id="content">/);
+});
+
+test('disk cache pruning removes least-recently-used assets and their metadata', async t => {
+  const cacheRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'nebulo-cache-prune-test-'));
+  t.after(() => fsp.rm(cacheRoot, { recursive: true, force: true }));
+  const oldAsset = path.join(cacheRoot, 'cdn', 'old.bin');
+  const newAsset = path.join(cacheRoot, 'cdn', 'new.bin');
+  const repairBackup = path.join(cacheRoot, 'before-entry-repair', 'cdn', 'entry.html');
+  await fsp.mkdir(path.dirname(oldAsset), { recursive: true });
+  await fsp.mkdir(path.dirname(repairBackup), { recursive: true });
+  await fsp.writeFile(oldAsset, Buffer.alloc(80));
+  await fsp.writeFile(`${oldAsset}.meta.json`, '{}');
+  await fsp.writeFile(newAsset, Buffer.alloc(80));
+  await fsp.writeFile(`${newAsset}.meta.json`, '{}');
+  await fsp.writeFile(repairBackup, Buffer.alloc(40));
+  const oldTime = new Date(Date.now() - 60_000);
+  await Promise.all([fsp.utimes(oldAsset, oldTime, oldTime), fsp.utimes(`${oldAsset}.meta.json`, oldTime, oldTime)]);
+
+  const result = await pruneGameCache(cacheRoot, 100);
+  assert.equal(result.beforeBytes, 204);
+  assert.ok(result.afterBytes <= 100);
+  assert.equal(await fsp.stat(oldAsset).catch(() => null), null);
+  assert.equal(await fsp.stat(`${oldAsset}.meta.json`).catch(() => null), null);
+  assert.equal(await fsp.stat(repairBackup).catch(() => null), null);
+  assert.ok((await fsp.stat(newAsset)).isFile());
+});
+
+test('runtime downloads automatically stay inside the configured disk budget', async t => {
+  let calls = 0;
+  const { app, cacheRoot } = await fixture(t, async () => {
+    calls += 1;
+    return new Response(Buffer.alloc(180, calls), { headers: { 'content-type': 'application/octet-stream' } });
+  }, { maxCacheBytes: 420 });
+
+  assert.equal((await app.inject({ url: '/games/platinum/cdn/cache/first.bin' })).statusCode, 200);
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal((await app.inject({ url: '/games/platinum/cdn/cache/second.bin' })).statusCode, 200);
+  await new Promise(resolve => setTimeout(resolve, 50));
+
+  const first = path.join(cacheRoot, 'cdn', 'cache', 'first.bin');
+  const second = path.join(cacheRoot, 'cdn', 'cache', 'second.bin');
+  assert.equal(await fsp.stat(first).catch(() => null), null);
+  assert.ok((await fsp.stat(second)).isFile());
+  assert.equal(calls, 2);
 });
